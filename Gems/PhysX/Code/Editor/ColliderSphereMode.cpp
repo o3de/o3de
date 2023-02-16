@@ -21,14 +21,6 @@ namespace PhysX
         m_entityComponentIdPair = idPair;
         m_sphereViewportEdit = AZStd::make_unique<AzToolsFramework::SphereViewportEdit>();
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_sphereViewportEdit.get(), idPair);
-        m_sphereViewportEdit->InstallGetRotationOffset(
-            [this]()
-            {
-                AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
-                EditorColliderComponentRequestBus::EventResult(
-                    colliderRotation, m_entityComponentIdPair, &EditorColliderComponentRequests::GetColliderRotation);
-                return colliderRotation;
-            });
         m_sphereViewportEdit->InstallGetSphereRadius(
             [this]()
             {

@@ -300,6 +300,16 @@ namespace AZ
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
+        void MergeSharedSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
+        void MergeUserSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
