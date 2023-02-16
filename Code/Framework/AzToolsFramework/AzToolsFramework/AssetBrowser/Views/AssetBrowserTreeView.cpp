@@ -1029,8 +1029,10 @@ namespace AzToolsFramework
                     {
                         // Remove the wildcard characters from the end of the path
                         AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
-                        bool deleteResult = AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str());
-                        AZ_Warning("AssetBrowser", deleteResult, "Failed to delete empty directory %s.", fromPathNoWildcard.c_str());
+                        if (!AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str()))
+                        {
+                            AZ_Warning("AssetBrowser", false, "Failed to delete empty directory %s.", fromPathNoWildcard.c_str());
+                        }
                     }
                 }
             }
