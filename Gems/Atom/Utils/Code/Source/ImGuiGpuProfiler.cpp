@@ -261,10 +261,10 @@ namespace AZ
 
             // Set the window size.
             const ImVec2 windowSize(964.0f, 510.0f);
-            ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+            ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
             // Start drawing the PipelineStatistics window.
-            if (ImGui::Begin("PipelineStatistics Window", &draw, ImGuiWindowFlags_NoResize))
+            if (ImGui::Begin("PipelineStatistics Window", &draw, ImGuiWindowFlags_None))
             {
                 // Pause/unpause the profiling
                 if (ImGui::Button(m_paused ? "Resume" : "Pause"))
@@ -675,8 +675,8 @@ namespace AZ
             }
 
             const ImVec2 windowSize(680.0f, 620.0f);
-            ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-            if (ImGui::Begin("Timestamp View", &draw, ImGuiWindowFlags_NoResize))
+            ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
+            if (ImGui::Begin("Timestamp View", &draw, ImGuiWindowFlags_None))
             {
                 // Draw the header.
                 {
