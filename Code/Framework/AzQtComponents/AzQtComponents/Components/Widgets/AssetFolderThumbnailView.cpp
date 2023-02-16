@@ -781,6 +781,7 @@ namespace AzQtComponents
             {
                 selectionModel()->clear();
                 update();
+                return;
             }
         }
 
