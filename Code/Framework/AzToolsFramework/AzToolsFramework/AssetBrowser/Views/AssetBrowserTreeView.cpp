@@ -17,6 +17,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
@@ -28,6 +29,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -80,6 +83,16 @@ namespace AzToolsFramework
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
 
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                {
+                    // Assign this widget to the Editor Asset Browser Action Context.
+                    hotKeyManagerInterface->AssignWidgetToActionContext(
+                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                }
+            }
+
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
             deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -113,6 +126,15 @@ namespace AzToolsFramework
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
         {
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                {
+                    hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                }
+            }
+
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();

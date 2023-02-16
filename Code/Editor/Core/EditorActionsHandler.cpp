@@ -190,6 +190,15 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
         m_hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_mainWindow);
     }
 
+    // Editor Asset Browser
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor - Asset Browser";
+
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, contextProperties);
+    }
+
     // Editor Entity Property Editor (Entity Inspector)
     {
         AzToolsFramework::ActionContextProperties contextProperties;
