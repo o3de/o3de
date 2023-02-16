@@ -6,8 +6,6 @@
 #
 #
 
-include("${LY_ROOT_FOLDER}/cmake/Version.cmake")
-
 # Copy snapcraft file
 configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
