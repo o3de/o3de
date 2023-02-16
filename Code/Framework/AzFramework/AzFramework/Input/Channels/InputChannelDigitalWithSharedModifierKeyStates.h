@@ -34,21 +34,6 @@ namespace AzFramework
         SuperAny = (SuperL | SuperR)
     };
 
-    inline ModifierKeyMask operator|(ModifierKeyMask a, ModifierKeyMask b)
-    {
-        return static_cast<ModifierKeyMask>(static_cast<int>(a) | static_cast<int>(b));
-    }
-
-    inline ModifierKeyMask operator&(ModifierKeyMask a, ModifierKeyMask b)
-    {
-        return static_cast<ModifierKeyMask>(static_cast<int>(a) & static_cast<int>(b));
-    }
-
-    inline ModifierKeyMask operator~(ModifierKeyMask a)
-    {
-        return static_cast<ModifierKeyMask>(~static_cast<int>(a));
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Custom data struct to store the current state of all modifier keys
     struct ModifierKeyStates : public InputChannel::CustomData
