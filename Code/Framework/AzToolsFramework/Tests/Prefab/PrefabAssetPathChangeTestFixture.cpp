@@ -53,6 +53,22 @@ namespace UnitTest
         PropagateAllTemplateChanges();
     }
 
+    void PrefabAssetPathChangeTestFixture::SendFolderPathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath)
+    {
+        AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+            &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
+            fromPath,
+            toPath);
+    }
+
+    void PrefabAssetPathChangeTestFixture::SendFilePathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath)
+    {
+        AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+            &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+            fromPath,
+            toPath);
+    }
+
     AZ::IO::Path PrefabAssetPathChangeTestFixture::GetAbsoluteFilePathName(AZStd::string_view folderPath, AZStd::string_view fileName)
     {
         AZ::IO::Path absolutePath(m_projectPath, AZ::IO::PosixPathSeparator);

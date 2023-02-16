@@ -30,22 +30,8 @@ namespace UnitTest
         AZ::IO::Path GetPrefabFilePathForSerialization(AZStd::string_view folderPath, AZStd::string_view fileName);
 
     private:
-
-        void SendFolderPathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath)
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
-                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
-                fromPath,
-                toPath);
-        }
-
-        void SendFilePathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath)
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
-                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
-                fromPath,
-                toPath);
-        }
+        void SendFolderPathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath);
+        void SendFilePathNameChangeEvent(AZStd::string_view fromPath, AZStd::string_view toPath);
 
         AZ::IO::Path GetAbsoluteFilePathName(AZStd::string_view folderPath, AZStd::string_view fileName);
 

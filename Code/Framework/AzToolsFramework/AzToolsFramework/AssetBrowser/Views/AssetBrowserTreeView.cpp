@@ -969,6 +969,7 @@ namespace AzToolsFramework
                         // Send notification for listeners to update any in-memory states
                         if (isFolder)
                         {
+                            // Remove the wildcard characters from the end of the paths
                             AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
                             AZStd::string toPathNoWildcard(toPath.substr(0, toPath.size() - 2));
                             AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
@@ -1003,8 +1004,10 @@ namespace AzToolsFramework
                     }
                     if (isFolder)
                     {
+                        // Remove the wildcard characters from the end of the path
                         AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
-                        AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str());
+                        bool deleteResult = AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str());
+                        AZ_Warning("AssetBrowser", deleteResult, "Failed to delete empty directory %s.", fromPathNoWildcard.c_str());
                     }
                 }
             }
