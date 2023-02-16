@@ -129,6 +129,10 @@
                 "Path": "Passes/DownsampleMipChain.pass"
             },
             {
+                "Name": "DownsampleSinglePassLuminanceTemplate",
+                "Path": "Passes/DownsampleSinglePassLuminance.pass"
+            },
+            {
                 "Name": "DisplayMapperTemplate",
                 "Path": "Passes/DisplayMapper.pass"
             },
@@ -487,14 +491,6 @@
             {
                 "Name": "LowEndPipelineTemplate",
                 "Path": "Passes/LowEndPipeline.pass"
-            },
-            {
-                "Name": "LowEndPipelineXRLeftTemplate",
-                "Path": "Passes/LowEndPipelineXRLeft.pass"
-            },
-            {
-                "Name": "LowEndPipelineXRRightTemplate",
-                "Path": "Passes/LowEndPipelineXRRight.pass"
             },
             {
                 "Name": "MultiViewForwardPassTemplate",

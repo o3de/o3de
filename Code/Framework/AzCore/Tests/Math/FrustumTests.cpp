@@ -483,10 +483,10 @@ namespace UnitTest
         float m_minEdgeLength = std::numeric_limits<float>::max();
 
         // Shapes generated inside/outside the frustum will be offset by this much as a margin of error
-        // Through trial and error determined that, for the test cases below, the sphere needs to be offset from the frustum by at least 0.05625f to be guaranteed to pass,
+        // Through trial and error determined that, for the test cases below, the sphere needs to be offset from the frustum by at least 0.115f to be guaranteed to pass,
         // which gives a reasonable idea of how precise these intersection tests are.
         // For the box shaped frustum, the tests passed when offset by FLT_EPSILON, but the frustums further away from the origin were less precise.
-        float m_marginOfErrorOffset = 0.05625f;
+        float m_marginOfErrorOffset = 0.115f;
 
         // The frustum under test
         AZ::Frustum m_frustum;

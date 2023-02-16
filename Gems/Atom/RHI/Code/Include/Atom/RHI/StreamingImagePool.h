@@ -130,6 +130,9 @@ namespace AZ
             //! Set memory budget
             //! Return true if the pool was set to new memory budget successfully
             bool SetMemoryBudget(size_t newBudget);
+            
+            //! Return if it supports tiled image feature
+            bool SupportTiledImage() const;
 
         protected:
             StreamingImagePool() = default;
@@ -160,6 +163,9 @@ namespace AZ
             
             // Called when set a new memory budget.
             virtual ResultCode SetMemoryBudgetInternal(size_t newBudget);
+                        
+            // Return if it supports tiled image feature
+            virtual bool SupportTiledImageInternal() const;
 
             //////////////////////////////////////////////////////////////////////////
 

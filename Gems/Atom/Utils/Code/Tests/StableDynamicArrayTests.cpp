@@ -22,7 +22,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             handles.reserve(s_testCount);
         }
@@ -31,7 +30,6 @@ namespace UnitTest
         {
             handles = AZStd::vector<AZ::StableDynamicArray<TestItem>::Handle>(); // force memory deallocation.
             
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 
@@ -432,16 +430,11 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             s_testItemsConstructed = 0;
             s_testItemsDestructed = 0;
             s_testItemsModified = 0;
         }
 
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        }
         // Used to keep track of the number of times a constructor/destructor/function is called
         // to validate that TestItems are being properly created, destroyed, and modified even when accessed via an interface
         static int s_testItemsConstructed;

@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -118,6 +119,7 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
+        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
         , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
@@ -171,7 +173,7 @@ namespace PhysX
         void OnSelected() override;
         void OnDeselected() override;
 
-        // DisplayCallback overrides...
+        // DisplayCallback overrides ...
         void Display(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
@@ -196,11 +198,15 @@ namespace PhysX
         void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
 
         // AzToolsFramework::BoxManipulatorRequestBus
-        AZ::Vector3 GetDimensions() override;
+        AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Transform GetCurrentTransform() override;
-        AZ::Transform GetCurrentLocalTransform() override;
-        AZ::Vector3 GetBoxScale() override;
+        AZ::Transform GetCurrentLocalTransform() const override;
+
+        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
+        AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
@@ -260,8 +266,8 @@ namespace PhysX
         // Cylinder collider
         void UpdateCylinderCookedMesh();
 
+        void UpdateCollider();
         void CreateStaticEditorCollider();
-        void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
 

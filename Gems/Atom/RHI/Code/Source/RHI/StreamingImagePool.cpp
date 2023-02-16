@@ -190,6 +190,11 @@ namespace AZ
             return SetMemoryBudgetInternal(newBudget) == ResultCode::Success;
         }
 
+        bool StreamingImagePool::SupportTiledImage() const
+        {
+            return SupportTiledImageInternal();
+        }
+
         ResultCode StreamingImagePool::InitInternal(Device&, const StreamingImagePoolDescriptor&)
         {
             return ResultCode::Success;
@@ -213,6 +218,11 @@ namespace AZ
         ResultCode StreamingImagePool::SetMemoryBudgetInternal([[maybe_unused]] size_t newBudget)
         {
             return ResultCode::Unimplemented;
+        }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return false;
         }
     }
 }

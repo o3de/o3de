@@ -18,7 +18,6 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
@@ -46,18 +45,10 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-            }
         }
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
-            }
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -81,6 +72,7 @@ namespace AzToolsFramework
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
+            PrefabOverridePublicHandler::Reflect(context);
 
             if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -196,36 +188,6 @@ namespace AzToolsFramework
             else
             {
                 newInstance->SetTemplateId(newTemplateId);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
-                PropagateTemplateChanges(found->second);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileRemoved(
-            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                RemoveTemplate(found->second);
-
-                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-                if (prefabEditorEntityOwnershipInterface != nullptr)
-                {
-                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                     PropagateTemplateChanges(rootTemplateId);
-                }
-                
             }
         }
 
@@ -845,7 +807,7 @@ namespace AzToolsFramework
 
             if (linkPatches && linkPatches->get().IsArray() && !(linkPatches->get().Empty()))
             {
-                newLink.AddPatchesToLink(linkPatches.value());
+                newLink.SetLinkPatches(linkPatches.value());
             }
 
             //update the target template dom to have the proper values for the source template dom
@@ -1242,6 +1204,12 @@ namespace AzToolsFramework
 
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
+
+                if (removed)
+                {
+                    templateIterator->second.MarkAsDirty(true);
+                    PropagateTemplateChanges(targetTemplateId);
+                }
             }
 
             return removed;

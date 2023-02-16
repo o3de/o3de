@@ -122,6 +122,7 @@ namespace EMotionFX
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/actors-tab/")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &ActorGroup::m_name, "Name actor",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", IActorGroup::TYPEINFO_Uuid())

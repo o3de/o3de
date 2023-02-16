@@ -19,6 +19,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
@@ -42,6 +44,7 @@ ly_add_target(
 # if enabled, "Maestro" module is used for Clients and Servers:
 ly_create_alias(NAME Maestro.Clients  NAMESPACE Gem TARGETS Gem::Maestro)
 ly_create_alias(NAME Maestro.Servers  NAMESPACE Gem TARGETS Gem::Maestro)
+ly_create_alias(NAME Maestro.Unified  NAMESPACE Gem TARGETS Gem::Maestro)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

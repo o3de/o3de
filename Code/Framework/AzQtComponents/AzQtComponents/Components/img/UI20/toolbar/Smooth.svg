@@ -1,25 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
-    <title>Icons / Toolbar / Vertex Snapping</title>
-    <desc>Created with Sketch.</desc>
-    <g id="Icons-/-Toolbar-/-Vertex-Snapping" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
-        <g id="Group-4" transform="translate(2.500000, 4.000000)" fill="#FFFFFF">
-            <rect id="Rectangle" x="0.5" y="7.5" width="18" height="1"></rect>
-            <rect id="Rectangle" x="6.5" y="5" width="6" height="6"></rect>
-            <g id="Group-3" transform="translate(9.000000, 0.000000)">
-                <rect id="Rectangle" x="0" y="0" width="1" height="3" rx="0.5"></rect>
-                <rect id="Rectangle-Copy" x="0" y="13" width="1" height="3" rx="0.5"></rect>
-            </g>
-            <g id="Group-3-Copy" transform="translate(9.750000, 8.274094) rotate(45.000000) translate(-9.750000, -8.274094) translate(8.750000, -1.725906)">
-                <rect id="Rectangle" x="0.129409733" y="0.704788109" width="1" height="3" rx="0.5"></rect>
-                <rect id="Rectangle-Copy" x="0.129409733" y="16.2611373" width="1" height="3" rx="0.5"></rect>
-            </g>
-            <g id="Group-3-Copy-2" transform="translate(9.500000, 8.000000) rotate(-45.000000) translate(-9.500000, -8.000000) translate(9.000000, -2.000000)">
-                <rect id="Rectangle" x="1.15463195e-14" y="0.721825407" width="1" height="3" rx="0.5"></rect>
-                <rect id="Rectangle-Copy" x="1.0658141e-14" y="16.2781746" width="1" height="3" rx="0.5"></rect>
-            </g>
-        </g>
-    </g>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M6.31706 2.54774C4.97501 4.49759 3.4947 6.64832 2.51113 8.35995C1.0657 10.8753 2.63417 16 7.87815 16C13.7384 16 14.8669 10.8489 13.5159 8.35995C12.5887 6.65174 11.0479 4.40482 9.70018 2.43962C9.08425 1.54146 8.50868 0.702146 8.05048 0C7.547 0.76077 6.94727 1.63211 6.31706 2.54774ZM12.0005 11.7394C12.0703 11.4368 11.8589 11.1396 11.5283 11.0757C11.1976 11.0118 10.8729 11.2053 10.8031 11.508C10.7279 11.834 10.3822 12.4248 9.73965 12.7853C9.61163 12.8571 9.34301 12.9684 9.01339 13.0539C8.68345 13.1394 8.35003 13.1839 8.08485 13.1625C7.74821 13.1353 7.45124 13.3631 7.42153 13.6712C7.39183 13.9794 7.64065 14.2512 7.97729 14.2784C8.44676 14.3163 8.94011 14.2372 9.34697 14.1317C9.75416 14.0261 10.1324 13.8789 10.3792 13.7404C11.324 13.2103 11.8597 12.3498 12.0005 11.7394Z" fill="white"/>
 </svg>

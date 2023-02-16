@@ -60,12 +60,14 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode BuildNativeBufferView(Device& device, const Buffer& buffer, const RHI::BufferViewDescriptor& descriptor);
+            void ReleaseView();
+            void ReleaseBindlessIndices();
 
             VkBufferView m_nativeBufferView = VK_NULL_HANDLE;
             VkAccelerationStructureKHR m_nativeAccelerationStructure = VK_NULL_HANDLE;
 
-            uint32_t m_readIndex = ~0u;
-            uint32_t m_readWriteIndex = ~0u;
+            uint32_t m_readIndex = InvalidBindlessIndex;
+            uint32_t m_readWriteIndex = InvalidBindlessIndex;
         };
 
     }

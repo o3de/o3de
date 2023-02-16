@@ -451,7 +451,7 @@ namespace EMotionFX
     {
         if (attrib == AZ_CRC("BlendTreeBlendNNodeParamWeightsElement", 0x7eae1990) && attrValue)
         {
-            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
         }
     }
 

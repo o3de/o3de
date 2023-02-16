@@ -40,6 +40,7 @@ class EditorActionsHandler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
+    , private AzToolsFramework::EditorPickModeNotificationBus::Handler
 {
 public:
     void Initialize(MainWindow* mainWindow);
@@ -85,6 +86,10 @@ private:
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
     void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
+
+    // EditorPickModeNotificationBus overrides ...
+    void OnEntityPickModeStarted() override;
+    void OnEntityPickModeStopped() override;
 
     // Layouts
     void RefreshLayoutActions();

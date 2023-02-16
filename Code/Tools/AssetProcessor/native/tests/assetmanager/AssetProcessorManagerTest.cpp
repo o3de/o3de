@@ -8,6 +8,8 @@
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
+#include "native/AssetManager/assetScannerWorker.h"
+
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/ToolsFileUtils/ToolsFileUtils.h>
@@ -19,6 +21,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManagerDesc.h>
+#include <AzCore/Utils/Utils.h>
 #include <tests/assetmanager/AssetManagerTestingBase.h>
 
 using namespace AssetProcessor;
@@ -83,8 +86,9 @@ void AssetProcessorManagerTest::SetUp()
 
     qRegisterMetaType<AssetProcessor::SourceAssetReference>("SourceAssetReference");
 
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
+    m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
+    m_scopeDir->Setup(m_assetRootDir.path());
 
     m_data = AZStd::make_unique<StaticData>();
 
@@ -102,10 +106,6 @@ void AssetProcessorManagerTest::SetUp()
     m_mockApplicationManager.reset(new AssetProcessor::MockApplicationManager());
 
     AssetUtilities::ResetAssetRoot();
-
-    m_assetRootDir = QDir(m_databaseLocationListener.GetAssetRootDir().c_str());
-    m_scopeDir = AZStd::make_unique<UnitTestUtils::ScopedDir>();
-    m_scopeDir->Setup(m_assetRootDir.path());
 
     auto registry = AZ::SettingsRegistry::Get();
     auto cacheRootKey =
@@ -131,6 +131,10 @@ void AssetProcessorManagerTest::SetUp()
     m_normalizedCacheRootDir.setPath(normalizedCacheRoot);
 
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"));
+    UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"));
 
     m_config->EnablePlatform({ "pc", { "host", "renderer", "desktop" } }, true);
 
@@ -140,6 +144,16 @@ void AssetProcessorManagerTest::SetUp()
     m_config->AddScanFolder(ScanFolderInfo(m_assetRootDir.filePath("subfolder4"), "subfolder4", "subfolder4", false, true, m_config->GetEnabledPlatforms(), 1));
     m_config->AddMetaDataType("assetinfo", "");
     m_config->AddIntermediateScanFolder();
+
+    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    ASSERT_FALSE(m_aUuid.IsNull());
+    ASSERT_FALSE(m_bUuid.IsNull());
+    ASSERT_FALSE(m_cUuid.IsNull());
+    ASSERT_FALSE(m_dUuid.IsNull());
 
     AssetRecognizer rec;
     rec.m_name = "txt files";
@@ -184,27 +198,25 @@ void AssetProcessorManagerTest::TearDown()
     m_qApp.reset();
     m_scopeDir.reset();
 
-    AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
     AssetProcessor::AssetProcessorTest::TearDown();
 }
 
 void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelativePath)
 {
     auto absolutePath = m_assetRootDir.absoluteFilePath(tempFolderRelativePath);
-
     auto scanFolder = m_config->GetScanFolderForFile(absolutePath);
+
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 
     QString relPath;
     m_config->ConvertToRelativePath(absolutePath, scanFolder, relPath);
 
-    auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relPath.toUtf8().constData());
+    auto uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
+
+    ASSERT_FALSE(uuid.IsNull());
 
     AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
-
-    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
 }
 
 void AssetProcessorManagerTest::PopulateDatabase()
@@ -250,7 +262,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -281,6 +293,78 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
     ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
     ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+}
+
+using AssetProcessorManagerUuid = UnitTests::AssetManagerTestingBase;
+
+TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
+{
+    // This test simulates a source control update where someone else has moved a file and created a new file with the same name as the old one (and a new UUID)
+    // This will appear to AP as a content change + UUID change
+    using namespace AssetBuilderSDK;
+
+    CreateBuilder("builder", "*.in", "stage2", false, ProductOutputFlags::ProductAsset);
+
+    AZ::Interface<IUuidRequests>::Get()->EnableGenerationForTypes({ ".in" });
+
+    AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
+    AZStd::string testFilename = "test.in";
+    AZ::IO::Path filePath = (scanFolderDir / testFilename).AsPosix();
+
+    UnitTestUtils::CreateDummyFileAZ(filePath, "unit test file");
+
+    ProcessFileMultiStage(1, true, filePath.c_str());
+
+    auto metadataInterface = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
+
+    // Get the existing UUID entry
+    AzToolsFramework::MetaUuidEntry uuidEntry;
+
+    ASSERT_TRUE(metadataInterface->GetValue(filePath, AzToolsFramework::UuidUtilComponent::UuidKey, uuidEntry));
+
+    ASSERT_FALSE(uuidEntry.m_uuid.IsNull());
+
+    auto oldUuid = uuidEntry.m_uuid;
+
+    // Make a new UUID
+    uuidEntry.m_uuid = AZ::Uuid::CreateRandom();
+
+    // Save it out
+    ASSERT_TRUE(metadataInterface->SetValue(filePath, AzToolsFramework::UuidUtilComponent::UuidKey, uuidEntry));
+
+    AZ::Interface<IUuidRequests>::Get()->FileChanged(AzToolsFramework::MetadataManager::ToMetadataPath(filePath));
+
+    using namespace AzFramework::AssetSystem;
+    AZStd::vector<AssetNotificationMessage> notifications;
+
+    auto connection = QObject::connect(
+        m_assetProcessorManager.get(),
+        &AssetProcessorManager::AssetMessage,
+        [&notifications](AssetNotificationMessage message)
+        {
+            notifications.push_back(message);
+        });
+
+    // Run the file again
+    ProcessFileMultiStage(1, true, filePath.c_str());
+
+    // Verify asset removed and asset changed messages were sent
+    std::sort(
+        notifications.begin(),
+        notifications.end(),
+        [](auto lhs, auto rhs)
+        {
+            return lhs.m_type > rhs.m_type;
+        });
+
+    ASSERT_EQ(notifications.size(), 2);
+    EXPECT_EQ(notifications[0].m_data, "test.stage2");
+    EXPECT_EQ(notifications[0].m_assetId, AZ::Data::AssetId(oldUuid, AssetSubId));
+    EXPECT_EQ(notifications[0].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetRemoved);
+
+    EXPECT_EQ(notifications[1].m_data, "test.stage2");
+    EXPECT_EQ(notifications[1].m_assetId, AZ::Data::AssetId(uuidEntry.m_uuid, AssetSubId));
+    EXPECT_EQ(notifications[1].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
 }
 
 using AssetProcessorManagerFinishTests = UnitTests::AssetManagerTestingBase;
@@ -460,6 +544,168 @@ TEST_F(AssetProcessorManagerFinishTests, MultipleFiles_WithDuplicateJobs_Analysi
     EXPECT_EQ(maxWaitingFiles, 1);
 }
 
+
+class AssetProcessorIntermediateAssetTests
+    : public UnitTests::AssetManagerTestingBase
+{
+protected:
+    void DeleteSourceAndValidateNoAdditionalJobs(QString expectedIntermediatePath)
+    {
+        // Delete the originating source for the intermediate asset
+        // Using Qt to remove because AZ::IO::FileIOStream (used by AZ::Utils::WriteFile) doesn't have a file deletion option.
+        QFile sourceAsset(m_testFilePath.c_str());
+        EXPECT_TRUE(sourceAsset.remove());
+
+        // Purposely call AssessModifiedFile on the intermediate asset before assessing the deleted source asset.
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(),
+            "AssessModifiedFile",
+            Qt::QueuedConnection,
+            Q_ARG(QString, expectedIntermediatePath));
+        QCoreApplication::processEvents();
+
+        // In the previous test, after modifying the intermediate asset and calling AssessModifiedFile + processing the event,
+        // the active file count went to 1 because it had to be processed.
+        // However, now that the source is deleted, it did not add the file to the list of active filess
+        m_assetProcessorManager->CheckFilesToExamine(0);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        // The deleted file has to be assessed before the asset processing step can be done, otherwise it crashes.
+        m_assetProcessorManager->AssessDeletedFile(m_testFilePath.c_str());
+        QCoreApplication::processEvents();
+
+        // There will now be one file to examine, but nothing active to be processed.
+        m_assetProcessorManager->CheckFilesToExamine(1);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        m_assetProcessorManager->ProcessFilesToExamineQueue();
+
+        // Make sure nothing is left to process - the intermediate asset should never have had a job added
+        // because the source was deleted at the same time it was modified.
+        m_assetProcessorManager->CheckFilesToExamine(0);
+        m_assetProcessorManager->CheckActiveFiles(0);
+        m_assetProcessorManager->CheckJobEntries(0);
+
+        // Nothing should have failed to process.
+        EXPECT_FALSE(m_fileFailed);
+    }
+
+};
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_ModifiedToFail_FailsToProcess)
+{
+    // This validates the setup for IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess:
+    // It makes sure that the modified intermediate asset fails to process when the source is not deleted.
+
+    //  Given:
+    //      A source asset that outputs an intermediate asset
+    //      The intermediate asset outputs a product asset
+    //  When:
+    //      The intermediate asset is modified to fail on being processed
+    //  Then:
+    //      The asset fails to process when processed
+    using namespace AssetBuilderSDK;
+
+    // Given: set up the test
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    // When:
+    // Write text to the intermediate asset file that will cause it to auto-fail the job.
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    QMetaObject::invokeMethod(
+        m_assetProcessorManager.get(),
+        "AssessModifiedFile",
+        Qt::QueuedConnection,
+        Q_ARG(QString, QString(expectedIntermediatePath.c_str())));
+    QCoreApplication::processEvents();
+    EXPECT_FALSE(m_fileFailed);
+    // Verify the file is in the queue to be processed.
+    // Not totally necessary for this test - the file failed bool flipping tells this test what it needs.
+    // However, this is done to verify asset processing state to compare to other tests.
+    // If this test verifies the file is in the queue here, then other tests can check the file is not queued.
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(1);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Then: The file fails to process.
+    ProcessSingleStep(1, 1, 0, /*expectSuccess*/ false);
+    EXPECT_TRUE(m_fileFailed);
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+}
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess)
+{
+    // This is a regression test.
+    // There was a situation where a change to the material system was not compatible with old intermediate assets.
+    // The source assets for those intermediate assets had been deleted, so it was a surprise and unexpected
+    // when the stale intermediate assets were failing to process, causing Jenkins jobs to fail due to asset failures.
+    // What was expected was that, because the source asset that generated those intermediate assets had been removed,
+    // the Asset Processor would no longer attempt to process the intermediate assets.
+
+    //  Given:
+    //      A source asset that outputs an intermediate asset
+    //      The intermediate asset outputs a product asset
+    //  When:
+    //      While the asset processor is not running, so these operations are picked up at the same time:
+    //          The source asset is deleted
+    //          A change has been made that would cause the intermediate asset to reprocess
+    //          The next time the intermediate asset reprocesses, it will fail to process
+    //  Then:
+    //      The intermediate asset should not reprocess, because the source asset was deleted
+
+    using namespace AssetBuilderSDK;
+
+    // Given: set up the test
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
+
+    // When:
+    // Write text to the intermediate asset file that would cause it to auto-fail the job if it were processed again.
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    // When: The source is deleted.
+    // Then: No additional jobs are created for the modified intermediate asset, and no jobs fail.
+    DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
+}
+
+TEST_F(AssetProcessorIntermediateAssetTests, NestedIntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess)
+{
+    // This test is a variant of IntermediateAsset_SourceDeleted_IntermediateDoesNotReprocess, but
+    // it tests with a deeply collection of intermediate assets. Source -> Intermediate A -> Intermediate B -> Intermediate C.
+    // It verifies that deleting the root source, and making a change that causes these deeper intermediate assets to reprocess
+    // will not end up re-processing the deep intermediate assets, and instead skip processing them because the root source is gone.
+
+    using namespace AssetBuilderSDK;
+
+    // Given: a deeply nested set of intermediate assets.
+    CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage3", "*.stage3", "stage4", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage4", "*.stage4", "stage5", true, ProductOutputFlags::IntermediateAsset);
+    CreateBuilder("stage5", "*.stage5", "stage6", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(5, true);
+
+    // When:
+    // Write text to the intermediate asset file that would cause it to auto-fail the job if it were processed again.
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage5");
+    EXPECT_TRUE(AZ::Utils::WriteFile(GetJobProcessFailText(), expectedIntermediatePath.c_str()).IsSuccess());
+
+    // When: The source is deleted.
+    // Then: No additional jobs are created for the modified intermediate asset, and no jobs fail.
+    DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
+}
+
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
 {
     // This tests the JobDiagnosticTracker:  Warnings/errors reported to it should be recorded in the database when AssetProcessed is fired and able to be retrieved when querying job status
@@ -491,7 +737,7 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -560,9 +806,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDFailure)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 
-    QString relFileName("assetProcessorManagerTestFailed.txt");
+    QString absolutePath = m_assetRootDir.absoluteFilePath("assetProcessorManagerTestFailed.txt");
 
-    AZ::Uuid uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().data());
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data()));
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -587,7 +833,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
 
-    AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(relFileName.toUtf8().constData());
+    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
@@ -3005,7 +3251,8 @@ TEST_F(AssetProcessorManagerTest, AssessDeletedFile_OnJobInFlight_IsIgnored)
         ASSERT_FALSE(gotUnexpectedAssetToProcess);
 
         // now tell it to stop ignoring the cache delete and let it do the next one.
-        EBUS_EVENT(AssetProcessor::ProcessingJobInfoBus, EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, filePathToGenerate.toUtf8().data(), false);
 
         // simulate a "late" deletion notify coming from the file monitor that it outside the "ignore delete" section.  This should STILL not generate additional
         // deletion notifies as it should ignore these if the file in fact actually there when it gets around to checking it
@@ -3019,6 +3266,32 @@ TEST_F(AssetProcessorManagerTest, AssessDeletedFile_OnJobInFlight_IsIgnored)
     ASSERT_FALSE(gotUnexpectedAssetToProcess);
 
     QObject::disconnect(connection);
+}
+
+void SourceFileDependenciesTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+
+    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt")));
+
+    ASSERT_FALSE(m_sourceFileUuid.IsNull());
+
+    // The files need to be created first before a UUID can be assigned
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
+    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
+    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
+    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+
+    // Clean up the files, different tests have different requirements for which files should exist
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")).remove();
+    QFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")).remove();
 }
 
 void SourceFileDependenciesTest::SetupData(
@@ -3058,7 +3331,7 @@ void SourceFileDependenciesTest::SetupData(
     // construct the dummy job to feed to the database updater function:
     job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_absPath);
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job.m_sourceFileInfo.m_uuid = AssetUtilities::CreateSafeSourceUUIDFromName(job.m_sourceFileInfo.m_sourceAssetReference.RelativePath().c_str());
+    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference);
 
     if (primeMap)
     {
@@ -3421,9 +3694,11 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
 
     // now make c exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
-    AZ::Uuid uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AssetProcessor::SourceAssetReference cAssetReference(m_watchFolderPath, "c.txt");
+    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference);
+
     AssetProcessorManager::JobToProcessEntry job3;
-    job3.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "c.txt");
+    job3.m_sourceFileInfo.m_sourceAssetReference = cAssetReference;
     job3.m_sourceFileInfo.m_scanFolder = m_scanFolder;
     job3.m_sourceFileInfo.m_uuid = uuidOfC;
     m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = SourceAssetReference{ m_watchFolderPath, "c.txt" };
@@ -3755,7 +4030,7 @@ TEST_F(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint)
 
     for(const auto& processResult : processResults)
     {
-        AZStd::string file = (processResult.m_jobEntry.m_sourceAssetReference.RelativePath().Native() + ".arc1");
+        AZStd::string file = AZStd::string(processResult.m_jobEntry.m_sourceAssetReference.RelativePath().c_str()) + ".arc1";
 
         // Create the file on disk
         ASSERT_TRUE(UnitTestUtils::CreateDummyFile((processResult.m_cachePath / file).AsPosix().c_str(), "products."));
@@ -4011,9 +4286,10 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(dependsOnFilec_Job, QString("tempdata\n")));
 
     // construct the dummy job to feed to the database updater function:
-    AZ::Uuid wildcardTestUuid = AssetUtilities::CreateSafeSourceUUIDFromName("wildcardTest.txt");
+    AssetProcessor::SourceAssetReference sourceAsset(absPath);
+    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset);
     AssetProcessorManager::JobToProcessEntry job;
-    job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(absPath);
+    job.m_sourceFileInfo.m_sourceAssetReference = sourceAsset;
     job.m_sourceFileInfo.m_scanFolder = scanFolder;
     job.m_sourceFileInfo.m_uuid = wildcardTestUuid;
 
@@ -4672,9 +4948,13 @@ void WildcardSourceDependencyTest::SetUp()
 
     AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
 
-    auto aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.foo");
-    auto bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.foo");
-    auto dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("folder/one/d.foo");
+    auto aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/a.foo")));
+    auto bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/b.foo")));
+    auto dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/folder/one/d.foo")));
+
+    ASSERT_FALSE(aUuid.IsNull());
+    ASSERT_FALSE(bUuid.IsNull());
+    ASSERT_FALSE(dUuid.IsNull());
 
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
@@ -4880,7 +5160,53 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
     ASSERT_TRUE(excludedFolderCacheInterface);
 
     {
+        m_errorAbsorber->Clear();
         const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(1); // because we didn't precache, we'd expect a warning here, about performance.
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+
+    m_fileStateCache->SignalDeleteEvent(m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
+}
+
+// same as above test but actually runs a file scanner over the root dir and ensures it still functions
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache_WithPrecache)
+{
+    // Add a file to a new ignored folder
+    QString newFilePath = m_assetRootDir.absoluteFilePath("subfolder2/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    {
+        // warm up the cache.
+        AssetScannerWorker worker(m_config.get());
+        bool foundExcludes = false;
+        QObject::connect(
+            &worker,
+            &AssetScannerWorker::ExcludedFound,
+            m_assetProcessorManager.get(),
+            [&](QSet<AssetFileInfo> excluded)
+            {
+                foundExcludes = true;
+                m_assetProcessorManager->RecordExcludesFromScanner(excluded);
+            });
+
+        worker.StartScan();
+        QCoreApplication::processEvents();
+        ASSERT_TRUE(foundExcludes);
+    }
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        m_errorAbsorber->Clear();
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+        m_errorAbsorber->ExpectWarnings(0);  // we precached, so there should not be a warning.
 
         ASSERT_EQ(excludedFolders.size(), 3);
     }

@@ -137,9 +137,6 @@ namespace UnitTest
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // AssetManager required to generate image assets
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
@@ -256,9 +253,6 @@ namespace UnitTest
             AZ::NameDictionary::Destroy();
 
             AZ::Data::AssetManager::Destroy();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();

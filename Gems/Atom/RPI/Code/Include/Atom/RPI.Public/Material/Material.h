@@ -213,7 +213,7 @@ namespace AZ
             ChangeId m_compiledChangeId = DEFAULT_CHANGE_ID;
 
             bool m_isInitializing = false;
-                
+
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
         };
 

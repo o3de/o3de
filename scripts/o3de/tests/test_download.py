@@ -155,6 +155,7 @@ TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD = '''
 TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD = '''
 {
     "engine_name": "TestEngine",
+    "version": "0.0.0",
     "license": "Apache-2.0 Or MIT",
     "origin": "Test Creator",
     "origin_uri": "http://o3derepo.org/TestEngine/engine.zip",
@@ -299,8 +300,20 @@ class TestObjectDownload:
         def download_callback(downloaded, total_size):
             download_callback_called = True
 
+        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+            return json.loads(TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD)
+
+        def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
+            return json.loads(TEST_O3DE_REPO_GEM_JSON_PAYLOAD)
+
+        def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
+            return json.loads(TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD)
+
         with patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _1,\
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as _2, \
+                patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch, \
+                patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch, \
                 patch('o3de.utils.find_ancestor_dir_containing_file', return_value=None) as _3, \
                 patch('urllib.request.urlopen', side_effect=mocked_requests_get) as _4, \
                 patch('pathlib.Path.open', mocked_open) as _5, \

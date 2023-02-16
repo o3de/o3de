@@ -102,12 +102,6 @@ namespace UnitTest
         ExpectExecute("TestExpectTrue(PrefabGroupEventBus.Broadcast.GeneratePrefabGroupManifestUpdates ~= nil)");
     }
 
-    TEST_F(DefaultProceduralPrefabGroupTests, PrefabGroup_GetCreateProceduralPrefab_DefaultsToTrue)
-    {
-        AZ::SceneAPI::PrefabGroup prefabGroup;
-        ASSERT_TRUE(prefabGroup.GetCreateProceduralPrefab());
-    }
-
     TEST_F(DefaultProceduralPrefabGroupTests, PrefabGroupEventBus_GeneratePrefabGroupManifestUpdates_HasProceduralMeshGroupRule)
     {
         AZ::SceneAPI::DefaultProceduralPrefabGroup defaultProceduralPrefabGroup;

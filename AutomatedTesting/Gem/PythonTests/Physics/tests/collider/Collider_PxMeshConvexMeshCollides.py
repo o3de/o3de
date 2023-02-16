@@ -86,8 +86,8 @@ def Collider_PxMeshConvexMeshCollides():
     collider_component = collider.add_component("PhysX Collider")
     Report.result(Tests.physx_collider_added, collider.has_component("PhysX Collider"))
 
-    collider.add_component("PhysX Rigid Body")
-    Report.result(Tests.physx_rigid_body_added, collider.has_component("PhysX Rigid Body"))
+    collider.add_component("PhysX Dynamic Rigid Body")
+    Report.result(Tests.physx_rigid_body_added, collider.has_component("PhysX Dynamic Rigid Body"))
 
     collider.add_component("Mesh")
     Report.result(Tests.mesh_added, collider.has_component("Mesh"))

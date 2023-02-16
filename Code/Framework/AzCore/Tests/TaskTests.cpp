@@ -31,8 +31,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
             m_executor = aznew TaskExecutor();
             TaskExecutor::SetInstance(m_executor); // SetInstance is a null-op if there is already a default instance set
@@ -45,8 +43,6 @@ namespace UnitTest
                 TaskExecutor::SetInstance(nullptr);
             }
             azdestroy(m_executor);
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 

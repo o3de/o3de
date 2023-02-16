@@ -73,7 +73,7 @@ namespace AZ
             memoryAllocDescriptor.m_hostMemoryAccess = descriptorBase.m_hostMemoryAccess;
             memoryAllocDescriptor.m_additionalMemoryPropertyFlags = additionalMemoryPropertyFlags;
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
+            memoryAllocDescriptor.m_recycleOnCollect = false;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             memoryAllocDescriptor.m_bindFlags = bindFlags;
             memoryAllocDescriptor.m_sharedQueueMask = descriptorBase.m_sharedQueueMask;

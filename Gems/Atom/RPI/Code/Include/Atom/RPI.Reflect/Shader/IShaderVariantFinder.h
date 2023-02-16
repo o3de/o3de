@@ -107,3 +107,5 @@ namespace AZ
 
     } // namespace RPI
 }// namespace AZ
+
+DECLARE_EBUS_EXTERN(RPI::ShaderVariantFinderNotification);

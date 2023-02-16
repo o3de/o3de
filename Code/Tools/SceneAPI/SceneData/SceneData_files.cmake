@@ -11,8 +11,6 @@ set(FILES
     DllMain.cpp
     ManifestMetaInfoHandler.h
     ManifestMetaInfoHandler.cpp
-    SceneDataStandaloneAllocator.h
-    SceneDataStandaloneAllocator.cpp
     ReflectionRegistrar.h
     ReflectionRegistrar.cpp
     Behaviors/BehaviorsMeshGroup.cpp
@@ -69,6 +67,8 @@ set(FILES
     Rules/SkinRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
+    Rules/UnmodifiableRule.h
+    Rules/UnmodifiableRule.cpp
     GraphData/CustomPropertyData.h
     GraphData/CustomPropertyData.cpp
     GraphData/MeshData.h

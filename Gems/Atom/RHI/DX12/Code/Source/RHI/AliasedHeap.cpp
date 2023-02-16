@@ -68,8 +68,8 @@ namespace AZ
             heapDesc.Flags = m_descriptor.m_heapFlags;
 
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            heapMemoryUsage.m_residentInBytes = heapDesc.SizeInBytes;
-            heapMemoryUsage.m_reservedInBytes = heapDesc.SizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes = heapDesc.SizeInBytes;
+            heapMemoryUsage.m_usedResidentInBytes = heapDesc.SizeInBytes;
 
             Microsoft::WRL::ComPtr<ID3D12Heap> heap;
             device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));

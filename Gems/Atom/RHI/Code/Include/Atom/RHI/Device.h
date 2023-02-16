@@ -143,7 +143,7 @@ namespace AZ
             };
 
             //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
-            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) = 0;
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) const = 0;
 
             bool WasDeviceRemoved();
             void SetDeviceRemoved();

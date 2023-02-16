@@ -33,7 +33,7 @@ namespace AZ
 
         //! IConsole interface
         //! @{
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             const char* command,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -41,7 +41,7 @@ namespace AZ
             ConsoleFunctorFlags requiredSet = ConsoleFunctorFlags::Null,
             ConsoleFunctorFlags requiredClear = ConsoleFunctorFlags::ReadOnly
         ) override;
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             const ConsoleCommandContainer& commandAndArgs,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -49,7 +49,7 @@ namespace AZ
             ConsoleFunctorFlags requiredSet = ConsoleFunctorFlags::Null,
             ConsoleFunctorFlags requiredClear = ConsoleFunctorFlags::ReadOnly
         ) override;
-        bool PerformCommand
+        PerformCommandResult PerformCommand
         (
             AZStd::string_view command,
             const ConsoleCommandContainer& commandArgs,
@@ -64,8 +64,8 @@ namespace AZ
 
         void ClearDeferredConsoleCommands() override;
 
-        bool HasCommand(AZStd::string_view command) override;
-        ConsoleFunctorBase* FindCommand(AZStd::string_view command) override;
+        bool HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
+        ConsoleFunctorBase* FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) override;
         AZStd::string AutoCompleteCommand(AZStd::string_view command, AZStd::vector<AZStd::string>* matches = nullptr) override;
         void VisitRegisteredFunctors(const FunctorVisitor& visitor) override;
         void RegisterFunctor(ConsoleFunctorBase* functor) override;

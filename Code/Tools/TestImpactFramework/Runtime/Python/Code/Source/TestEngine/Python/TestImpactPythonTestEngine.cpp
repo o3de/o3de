@@ -149,7 +149,6 @@ namespace TestImpact
         InstrumentedRun(
         const AZStd::vector<const PythonTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
-        Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -161,8 +160,7 @@ namespace TestImpact
         if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
-            return GenerateInstrumentedRunResult(
-            RunTests(
+            return RunTests(
                 m_instrumentedNullTestRunner.get(),
                 jobInfos,
                 testTargets,
@@ -173,14 +171,11 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                std::nullopt),
-            integrityFailurePolicy);
+                std::nullopt);
         }
         else
         {
-            DeleteXmlArtifacts();
-            return GenerateInstrumentedRunResult(
-                RunTests(
+            return RunTests(
                     m_instrumentedTestRunner.get(),
                     jobInfos,
                     testTargets,
@@ -191,8 +186,7 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     callback,
-                    std::nullopt),
-                integrityFailurePolicy);
+                    std::nullopt);
         }
     }
 } // namespace TestImpact

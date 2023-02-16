@@ -741,6 +741,7 @@ namespace AZ
 
             if (depthStencilAttachment)
             {
+                SetSamplePositions(depthStencilAttachment->GetImage().GetDescriptor().m_multisampleState);
                 AZ_Assert(depthStencilAttachment->IsStale() == false, "Depth Stencil view is stale!");
                 DescriptorHandle depthStencilDescriptor = depthStencilAttachment->GetDepthStencilDescriptor(depthStencilAccess);
                 D3D12_CPU_DESCRIPTOR_HANDLE depthStencilPlatformDescriptor = m_descriptorContext->GetCpuPlatformHandle(depthStencilDescriptor);
@@ -748,6 +749,7 @@ namespace AZ
             }
             else
             {
+                SetSamplePositions(renderTargets[0]->GetImage().GetDescriptor().m_multisampleState);
                 GetCommandList()->OMSetRenderTargets(renderTargetCount, colorDescriptors, false, nullptr);
             }
 
@@ -808,6 +810,8 @@ namespace AZ
             }
             else if (request.m_clearValue.m_type == RHI::ClearValueType::DepthStencil)
             {
+                // Need to set the custom MSAA positions (if being used) before clearing it.
+                SetSamplePositions(request.m_imageView->GetImage().GetDescriptor().m_multisampleState);
                 D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle =
                     m_descriptorContext->GetCpuPlatformHandle(request.m_imageView->GetDepthStencilDescriptor(RHI::ScopeAttachmentAccess::ReadWrite));
 

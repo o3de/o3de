@@ -38,13 +38,8 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
 
     if(ShouldHandleParallax())
     {
-#if MULTILAYER
-        MultilayerSetPixelDepth(IN.m_blendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents, geoData.uvs, isFrontFace, instanceId, positionSV.z);
-#else
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
                       geoData.uvs, isFrontFace, positionSV.z, positionSV.w, instanceId, geoData.isDisplacementClipped);
-#endif
-
     }
 
     return geoData;
