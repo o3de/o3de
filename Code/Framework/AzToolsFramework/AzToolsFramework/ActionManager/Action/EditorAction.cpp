@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 #include <QAction>
@@ -17,15 +16,15 @@
 namespace AzToolsFramework
 {
     EditorAction::EditorAction(
-        QWidget* parentWidget,
+        QObject* parentObject,
         AZStd::string contextIdentifier,
         AZStd::string identifier,
         AZStd::string name,
         AZStd::string description,
         AZStd::string category,
         AZStd::string iconPath,
-        bool hideFromMenusWhenDisabled,
-        bool hideFromToolBarsWhenDisabled,
+        ActionVisibility menuVisibility,
+        ActionVisibility toolBarVisibility,
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
         : m_contextIdentifier(AZStd::move(contextIdentifier))
@@ -34,18 +33,14 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
-        , m_hideFromMenusWhenDisabled(hideFromMenusWhenDisabled)
-        , m_hideFromToolBarsWhenDisabled(hideFromToolBarsWhenDisabled)
+        , m_menuVisibility(menuVisibility)
+        , m_toolBarVisibility(toolBarVisibility)
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
-
-        // The action needs to be explicitly added, not just parented on creation, or it won't
-        // show up in widget->actions(), and won't handle some events properly
-        parentWidget->addAction(m_action);
+        m_action = new QAction(m_icon, m_name.c_str(), parentObject);
 
         QObject::connect(
-            m_action, &QAction::triggered, parentWidget,
+            m_action, &QAction::triggered, parentObject,
             [h = AZStd::move(handler)]()
             {
                 h();
@@ -64,7 +59,7 @@ namespace AzToolsFramework
 
             // Trigger the update after the handler is called.
             QObject::connect(
-                m_action, &QAction::triggered, parentWidget,
+                m_action, &QAction::triggered, parentObject,
                 [u = AZStd::move(callbackCopy), a = m_action]()
                 {
                     a->setChecked(u());
@@ -77,6 +72,11 @@ namespace AzToolsFramework
     {
         s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(s_actionManagerInterface, "EditorAction - Could not retrieve instance of ActionManagerInterface");
+    }
+
+    const AZStd::string& EditorAction::GetActionIdentifier() const
+    {
+        return m_identifier;
     }
 
     const AZStd::string& EditorAction::GetActionContextIdentifier() const
@@ -146,14 +146,14 @@ namespace AzToolsFramework
         UpdateTooltipText();
     }
 
-    bool EditorAction::GetHideFromMenusWhenDisabled() const
+    ActionVisibility EditorAction::GetMenuVisibility() const
     {
-        return m_hideFromMenusWhenDisabled;
+        return m_menuVisibility;
     }
 
-    bool EditorAction::GetHideFromToolBarsWhenDisabled() const
+    ActionVisibility EditorAction::GetToolBarVisibility() const
     {
-        return m_hideFromToolBarsWhenDisabled;
+        return m_toolBarVisibility;
     }
 
     QAction* EditorAction::GetAction()
@@ -166,12 +166,12 @@ namespace AzToolsFramework
         return m_action;
     }
     
-    void EditorAction::SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
+    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
         if (enabledStateCallback)
         {
-            m_enabledStateCallback = AZStd::move(enabledStateCallback);
-            m_action->setEnabled(m_enabledStateCallback());
+            m_enabledStateCallbacks.emplace_back(AZStd::move(enabledStateCallback));
+            Update();
         }
     }
 
@@ -181,9 +181,9 @@ namespace AzToolsFramework
         Update();
     }
 
-    bool EditorAction::HasEnabledStateCallback() const
+    bool EditorAction::HasEnabledStateCallbacks() const
     {
-        return m_enabledStateCallback != nullptr;
+        return !m_enabledStateCallbacks.empty();
     }
 
     bool EditorAction::IsEnabled() const
@@ -203,14 +203,23 @@ namespace AzToolsFramework
         }
 
         // Refresh enabled state.
-        if (m_enabledStateCallback)
+        bool enabled = IsActiveInCurrentMode();
+
+        if (enabled  && !m_enabledStateCallbacks.empty())
         {
-            m_action->setEnabled(m_enabledStateCallback() && IsEnabledInCurrentMode());
+            for (const auto& enabledStateCallback : m_enabledStateCallbacks)
+            {
+                enabled = enabled && enabledStateCallback();
+
+                // Early out if the bool is already false, since we only AND other results.
+                if (!enabled)
+                {
+                    break;
+                }
+            }
         }
-        else
-        {
-            m_action->setEnabled(IsEnabledInCurrentMode());
-        }
+
+        m_action->setEnabled(enabled);
 
         if (previousCheckedState != m_action->isChecked() || previousEnabledState != m_action->isEnabled())
         {
@@ -246,7 +255,7 @@ namespace AzToolsFramework
         m_action->setToolTip(toolTipText.c_str());
     }
 
-    bool EditorAction::IsEnabledInCurrentMode() const
+    bool EditorAction::IsActiveInCurrentMode() const
     {
         auto outcome = s_actionManagerInterface->GetActiveActionContextMode(m_contextIdentifier);
 

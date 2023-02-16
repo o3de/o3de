@@ -12,12 +12,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/function/function_base.h>
 
+#include <AzToolsFramework/ActionManager/Action/EditorActionUtils.h>
+
 class QWidget;
 
 namespace AzToolsFramework
 {
-    constexpr const char* DefaultActionContextModeIdentifier = "default";
-
     using ActionManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using ActionManagerBooleanResult = AZ::Outcome<bool, AZStd::string>;
     using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
@@ -49,9 +49,12 @@ namespace AzToolsFramework
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
         //! Determines in which mode this action should be accessible.
         //! Empty means action will always appear regardless of the mode.
-        AZStd::vector<AZStd::string> m_modes = {}; 
-        bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
-        bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
+        AZStd::vector<AZStd::string> m_modes;
+
+        //! Determines visibility for this action in Menus.
+        ActionVisibility m_menuVisibility = ActionVisibility::HideWhenDisabled;
+        //! Determines visibility for this action in ToolBars.
+        ActionVisibility m_toolBarVisibility = ActionVisibility::OnlyInActiveMode;
     };
 
     //! Widget Action Properties object.
@@ -75,16 +78,12 @@ namespace AzToolsFramework
         AZ_RTTI(ActionManagerInterface, "{2E2A421E-0842-4F90-9F5C-DDE0C4F820DE}");
 
         //! Register a new Action Context to the Action Manager.
-        //! @param parentContextIdentifier The identifier for the action context the newly registered context should be parented to.
         //! @param contextIdentifier The identifier for the newly registered action context.
         //! @param properties The properties object for the newly registered action context.
-        //! @param widget The owning widget for the newly registered action context.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& parentContextIdentifier,
             const AZStd::string& contextIdentifier,
-            const ActionContextProperties& properties,
-            QWidget* widget
+            const ActionContextProperties& properties
         ) = 0;
 
         //! Returns whether an action context with the identifier queried is registered to the Action Manager.
@@ -264,6 +263,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult AssignModeToAction(
             const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Returns whether the Action is active in the Mode its Action Context is currently in.
+        //! @param actionIdentifier The action to query.
+        //! @return A successful outcome object with the result, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) const = 0;
 
         //! Sets the active mode for an action context via its identifier.
         //! @param actionContextIdentifier The action context to set the active mode to.

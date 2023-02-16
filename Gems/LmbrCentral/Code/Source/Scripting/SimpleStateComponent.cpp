@@ -44,7 +44,7 @@ namespace LmbrCentral
         for (const AZ::EntityId& currId : entitiyIds)
         {
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, currId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, currId);
             if (entity)
             {
                 entityFunction(entity);
@@ -288,7 +288,8 @@ namespace LmbrCentral
         {
             // Notify newly activated State
             // Note: Even if !m_resetStateOnActivate, the prior state to Activation is NullState
-            EBUS_EVENT_ID(GetEntityId(), SimpleStateComponentNotificationBus, OnStateChanged, nullptr, m_currentState->GetNameCStr());
+            SimpleStateComponentNotificationBus::Event(
+                GetEntityId(), &SimpleStateComponentNotificationBus::Events::OnStateChanged, nullptr, m_currentState->GetNameCStr());
         }
     }
 
@@ -330,7 +331,8 @@ namespace LmbrCentral
         {
             m_currentState = newState;
 
-            EBUS_EVENT_ID(GetEntityId(), SimpleStateComponentNotificationBus, OnStateChanged, oldName, newName);
+            SimpleStateComponentNotificationBus::Event(
+                GetEntityId(), &SimpleStateComponentNotificationBus::Events::OnStateChanged, oldName, newName);
         }
     }
 

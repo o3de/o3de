@@ -50,7 +50,7 @@ namespace LmbrCentral
     void EditorSplineComponentMode::BindActionsToModes()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface on RegisterActions.");
+        AZ_Assert(actionManagerInterface, "EditorSplineComponentMode - could not get ActionManagerInterface on RegisterActions.");
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
