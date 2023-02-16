@@ -292,6 +292,7 @@ namespace AssetProcessor
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
+        void HandleSourceUuidChange(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source, AZ::Uuid newUuid);
 
         void AssetFailed(JobEntry jobEntry);
         void AssetCancelled(JobEntry jobEntry);
