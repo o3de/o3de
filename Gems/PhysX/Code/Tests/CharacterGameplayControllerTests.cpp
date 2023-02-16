@@ -98,6 +98,14 @@ namespace PhysX
             }
         }
 
+        /**
+        * Function to delete the ground for tests where the ground can interfere with the intent of the test. 
+        */
+        void DeleteGround()
+        {
+            m_testScene->RemoveSimulatedBody(m_floor->m_bodyHandle);
+        }
+
         AzPhysics::Scene* m_testScene = nullptr;
         AzPhysics::SceneHandle m_sceneHandle;
         AzPhysics::StaticRigidBody* m_floor = nullptr;
@@ -109,7 +117,7 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySets)
     {
-        float expectedGravityMultiplier = 2.5f;
+        const float expectedGravityMultiplier = 2.5f;
 
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
         basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier);
@@ -118,7 +126,7 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
     {
-        float expectedGravityMultiplier = 2.5f;
+        const float expectedGravityMultiplier = 2.5f;
 
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
@@ -137,16 +145,15 @@ namespace PhysX
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_EntityFallsUnderGravity)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
-        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
-        sceneInterface->RemoveSimulatedBody(basis.m_sceneHandle, basis.m_floor->m_bodyHandle);
+
+        // Remove the Ground so we can can test falling without worrying about accidental collisions with objects.
+        basis.DeleteGround();        
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
-        auto startPosition = basis.m_controller->GetPosition();
-        
-        int timeStepCount = 10;
+        const auto startPosition = basis.m_controller->GetPosition();
+        const int timeStepCount = 10;
+        const float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
         float totalTime = 0.0f;
-        float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
-        float distanceFell = 0.0f;
 
         for (int i = 0; i < timeStepCount; i++)
         {
@@ -154,12 +161,13 @@ namespace PhysX
             totalTime += timeStep;
         }
 
-        auto endPosition = basis.m_controller->GetPosition();
-        
+        const auto endPosition = basis.m_controller->GetPosition();
+        const auto gravity = basis.m_testScene->GetGravity();
+
         // calculate distance fallen (d = 0.5 * g * t^2)
-        distanceFell = 0.5f * (-10) * (totalTime * totalTime);
+        const float distanceFell = 0.5f * gravity.GetZ() * (totalTime * totalTime);
         
-        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear(startPosition.GetZ() + distanceFell, 0.1f));
+        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + distanceFell), 0.01f));
     }
 
 } // namespace PhysX
