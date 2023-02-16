@@ -32,6 +32,8 @@ namespace AzToolsFramework
             const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
 
         EditorActionContext* m_editorActionContext = nullptr;
+        bool m_keyQueued = false;
+        int m_key;
     };
 
     //! Action Manager class definition.

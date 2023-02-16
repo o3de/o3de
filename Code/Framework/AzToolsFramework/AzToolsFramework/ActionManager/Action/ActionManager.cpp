@@ -31,7 +31,6 @@ namespace AzToolsFramework
             // replicate it, its owner can instead implement a keyEvent handler
             if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
             {
-                event->accept();
                 return true;
             }
 
@@ -62,32 +61,38 @@ namespace AzToolsFramework
             {
                 // We need to accept the event in addition to return true on this event filter
                 // to ensure the event doesn't get propagated to any parent widgets.
+                // This will trigger a corresponding KeyEvent, which we will mute below.
                 event->accept();
+
+                m_keyQueued = true;
+                m_key = keyCode;
+
                 return true;
             }
             
             break;
         }
-        case QEvent::Shortcut:
+        case QEvent::KeyPress:
+        {
+            if (!m_keyQueued)
             {
-                // QActions default "autoRepeat" to true, which is not an ideal user experience.
-                // We globally disable that behavior here - in the unlikely event a shortcut needs to
-                // replicate it, its owner can instead implement a keyEvent handler
-                if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
-                {
-                    event->accept();
-                    return true;
-                }
-
-            if (auto shortcutEvent = static_cast<QShortcutEvent*>(event))
-            {
-                QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-
-                if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
-                {
-                    return true;
-                }
+                return false;
             }
+
+            // If a shortcut was triggered, we mute the corresponding KeyEvent that is triggered
+            // by accepting a ShortcutOverride.
+            auto keyEvent = static_cast<QKeyEvent*>(event);
+            bool match = (m_key == keyEvent->key());
+
+            // Either way, clear the variables.
+            m_keyQueued = false;
+            m_key = 0;
+
+            if (match)
+            {
+                event->accept();
+            }
+            return match;
             break;
         }
         default:
