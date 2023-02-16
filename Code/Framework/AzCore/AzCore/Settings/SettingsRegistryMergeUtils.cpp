@@ -75,7 +75,6 @@ namespace AZ::Internal
     {
         static constexpr AZStd::string_view InternalProjectJsonPathKey{ "/O3DE/Runtime/Internal/project_json_path" };
 
-        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         using namespace AZ::SettingsRegistryMergeUtils;
         constexpr auto format = AZ::SettingsRegistryInterface::Format::JsonMergePatch;
 
