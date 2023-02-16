@@ -14,11 +14,15 @@
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
+#include <QAction>
+#include <QList>
 #include <QObject>
 
 namespace AzToolsFramework
 {
     constexpr const char* DefaultModeIdentifier = "default";
+
+    class EditorAction;
 
     //! Editor Action Context class definition.
     //! Identifies a collection of Actions and their accessibility in the context of the whole O3DE Editor.
@@ -29,7 +33,7 @@ namespace AzToolsFramework
 
     public:
         EditorActionContext() = default;
-        EditorActionContext(AZStd::string identifier, AZStd::string name, AZStd::string parentIdentifier, QWidget* widget);
+        EditorActionContext(AZStd::string identifier, AZStd::string name);
 
         bool HasMode(const AZStd::string& modeIdentifier) const;
         void AddMode(AZStd::string modeIdentifier);
@@ -37,14 +41,13 @@ namespace AzToolsFramework
         AZStd::string GetActiveMode() const;
         bool SetActiveMode(AZStd::string modeIdentifier);
 
-        void AddAction(AZStd::string actionIdentifier);
+        void AddAction(EditorAction* editorAction);
         void IterateActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const;
 
-        QWidget* GetWidget();
+        const QList<QAction*>& GetActions();
 
     private:
         AZStd::string m_identifier;
-        AZStd::string m_parentIdentifier;
         AZStd::string m_name;
 
         AZStd::string m_activeModeIdentifier = DefaultModeIdentifier;
@@ -52,7 +55,7 @@ namespace AzToolsFramework
 
         AZStd::unordered_set<AZStd::string> m_actionIdentifiers;
 
-        QWidget* m_widget = nullptr;
+        QList<QAction*> m_actions;
     };
 
 } // namespace AzToolsFramework

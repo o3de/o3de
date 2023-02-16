@@ -29,9 +29,9 @@ namespace AzToolsFramework
     {
     }
 
-    void CapsuleViewportEdit::InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset)
+    void CapsuleViewportEdit::SetEnsureHeightExceedsTwiceRadius(bool ensureHeightExceedsTwiceRadius)
     {
-        m_getRotationOffset = AZStd::move(getRotationOffset);
+        m_ensureHeightExceedsTwiceRadius = ensureHeightExceedsTwiceRadius;
     }
 
     void CapsuleViewportEdit::InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius)
@@ -52,16 +52,6 @@ namespace AzToolsFramework
     void CapsuleViewportEdit::InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight)
     {
         m_setCapsuleHeight = AZStd::move(setCapsuleHeight);
-    }
-
-    AZ::Quaternion CapsuleViewportEdit::GetRotationOffset() const
-    {
-        if (m_getRotationOffset)
-        {
-            return m_getRotationOffset();
-        }
-        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetRotationOffset");
-        return AZ::Quaternion::CreateIdentity();
     }
 
     float CapsuleViewportEdit::GetCapsuleRadius() const
@@ -106,11 +96,6 @@ namespace AzToolsFramework
         {
             AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for SetCapsuleHeight");
         }
-    }
-
-    AZ::Transform CapsuleViewportEdit::GetLocalTransform() const
-    {
-        return AZ::Transform::CreateFromQuaternionAndTranslation(GetRotationOffset(), GetTranslationOffset());
     }
 
     void CapsuleViewportEdit::OnCameraStateChanged(const AzFramework::CameraState& cameraState)
@@ -300,8 +285,10 @@ namespace AzToolsFramework
         extent = AZ::GetMax(extent, CapsuleViewportEditConstants::MinCapsuleRadius);
         m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
-        // adjust the height manipulator so it is always clamped to twice the radius.
-        AdjustHeightManipulators(extent);
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustHeightManipulators(extent);
+        }
 
         SetCapsuleRadius(extent);
     }
@@ -319,14 +306,17 @@ namespace AzToolsFramework
         const float symmetryFactor = symmetrical ? 2.0f : 1.0f;
 
         const float oldCapsuleHeight = GetCapsuleHeight();
-        const float newAxisLength = symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis);
+        const float newAxisLength = AZ::GetMax(
+            0.5f * CapsuleViewportEditConstants::MinCapsuleHeight, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
         const float oldAxisLength = 0.5f * symmetryFactor * oldCapsuleHeight;
         const float capsuleHeightDelta = newAxisLength - oldAxisLength;
 
         const float newCapsuleHeight = AZ::GetMax(oldCapsuleHeight + capsuleHeightDelta, CapsuleViewportEditConstants::MinCapsuleHeight);
 
-        // adjust the radius manipulator so it is always clamped to half the capsule height.
-        AdjustRadiusManipulator(newCapsuleHeight);
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustRadiusManipulator(newCapsuleHeight);
+        }
 
         SetCapsuleHeight(newCapsuleHeight);
 
@@ -340,9 +330,12 @@ namespace AzToolsFramework
 
         for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
         {
-            const AZ::Transform updatedLocalTransform = GetLocalTransform();
-            heightManipulator->SetLocalTransform(
-                updatedLocalTransform * AZ::Transform::CreateTranslation(0.5f * newCapsuleHeight * heightManipulator->GetAxis()));
+            if (heightManipulator)
+            {
+                const AZ::Transform updatedLocalTransform = GetLocalTransform();
+                heightManipulator->SetLocalTransform(
+                    updatedLocalTransform * AZ::Transform::CreateTranslation(0.5f * newCapsuleHeight * heightManipulator->GetAxis()));
+            }
         }
     }
 

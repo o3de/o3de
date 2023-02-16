@@ -23,7 +23,7 @@ TESTING_DIR = 'Testing'
 def _get_default_csv_filename():
     # Format default file name based off of date
     now = datetime.datetime.now()
-    return f"{now.year}_{now.month:02d}_{now.day:02d}.csv"
+    return f"{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}.csv"
 
 
 # Setup logging.
@@ -43,17 +43,26 @@ def main():
     args = parse_args()
 
     # Construct the full path to the xml file
-    file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
+    xml_file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
 
     # Create csv file
-    if os.path.exists(args.csv_file):
-        logger.warning(f"The file {args.csv_file} already exists. It will be overriden.")
-    with open(args.csv_file, 'w', encoding='UTF8', newline='') as csv_file:
+    full_path = os.path.join(args.output_directory, args.branch)
+    if args.weeks:
+        week = datetime.datetime.now().isocalendar().week
+        full_path = os.path.join(full_path, f"Week{week:02d}")
+    full_path = os.path.join(full_path, args.csv_file)
+    if os.path.exists(full_path):
+        logger.warning(f"The file {full_path} already exists. It will be overridden.")
+    if not os.path.exists(os.path.split(full_path)[0]):
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.split(full_path)[0])
+
+    with open(full_path, 'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CTEST_FIELDS_HEADER, restval='N/A')
         writer.writeheader()
 
         # Parse CTest xml and write to csv file
-        parse_ctest_xml_to_csv(file_path, writer)
+        parse_ctest_xml_to_csv(xml_file_path, writer)
 
 
 def parse_args():
@@ -70,8 +79,21 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD)."
+        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD_HH_mm)."
     )
+    parser.add_argument(
+        "-o", "--output-directory", action="store", default="",
+        help=f"The directory where the csv to be saved. Prepends the --csv-file arg."
+    )
+    parser.add_argument(
+        "-b", "--branch", action="store", default="",
+        help="The branch the metrics were generated on. Used for directory saving."
+    )
+    parser.add_argument(
+        "-w", "--weeks", action="store_true",
+        help="Boolean whether to include the week number in the created csv path."
+    )
+
     args = parser.parse_args()
     return args
 
@@ -106,7 +128,7 @@ def _get_test_xml_path(build_path, xml_file):
 
 
 def parse_ctest_xml_to_csv(full_xml_path, writer):
-    # type (str, dict, DictWriter) -> None
+    # type (str, DictWriter) -> None
     """
     Parses the CTest xml file and writes the data to a csv file. Each test result will be written as a separate line.
     The structure of the CTest xml is assumed to be as followed:
@@ -153,6 +175,9 @@ def parse_ctest_xml_to_csv(full_xml_path, writer):
     :return: None
     """
     xml_root = xmlElementTree.parse(full_xml_path).getroot()
+    if not os.path.exists(full_xml_path):
+        logger.warning(f"XML file not found at: {full_xml_path}. Script has nothing to convert.")
+        return
 
     # Each CTest test module will have a Test entry
     try:

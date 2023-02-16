@@ -149,6 +149,7 @@ namespace AZ
             {
                 heapMemoryUsage.m_totalResidentInBytes += alignedSize;
                 heapMemoryUsage.m_usedResidentInBytes += alignedSize;
+                heapMemoryUsage.m_uniqueAllocationBytes += alignedSize;
             }
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
         }
@@ -158,9 +159,10 @@ namespace AZ
             AZ_Assert(memoryView.GetType() == BufferMemoryType::Unique, "This call only supports unique BufferMemoryView allocations.");
             const size_t sizeInBytes = memoryView.GetSize();
             
-            RHI::HeapMemoryUsage& heapHemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapHemoryUsage.m_totalResidentInBytes -= sizeInBytes;
-            heapHemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+            heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_uniqueAllocationBytes -= sizeInBytes;
             
             m_descriptor.m_device->QueueForRelease(memoryView);
         }

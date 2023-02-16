@@ -30,13 +30,6 @@ namespace AzToolsFramework
             RadiusManipulatorRequestBus::EventResult(radius, entityComponentIdPair, &RadiusManipulatorRequestBus::Events::GetRadius);
             return radius;
         };
-        auto getRotationOffset = [entityComponentIdPair]()
-        {
-            AZ::Quaternion rotationOffset = AZ::Quaternion::CreateIdentity();
-            ShapeManipulatorRequestBus::EventResult(
-                rotationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetRotationOffset);
-            return rotationOffset;
-        };
         auto setCapsuleHeight = [entityComponentIdPair](float height)
         {
             CapsuleManipulatorRequestBus::Event(entityComponentIdPair, &CapsuleManipulatorRequestBus::Events::SetHeight, height);
@@ -47,7 +40,6 @@ namespace AzToolsFramework
         };
         capsuleViewportEdit->InstallGetCapsuleHeight(AZStd::move(getCapsuleHeight));
         capsuleViewportEdit->InstallGetCapsuleRadius(AZStd::move(getCapsuleRadius));
-        capsuleViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
         capsuleViewportEdit->InstallSetCapsuleHeight(AZStd::move(setCapsuleHeight));
         capsuleViewportEdit->InstallSetCapsuleRadius(AZStd::move(setCapsuleRadius));
     }
