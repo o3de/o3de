@@ -15,9 +15,6 @@
 
 namespace Multiplayer
 {
-    using namespace testing;
-    using namespace ::UnitTest;
-
     using MultiplayerComponentTests = NetworkEntityTests;
 
     TEST_F(MultiplayerComponentTests, SerializeNetworkPropertyHelperArrayCreatesUniqueEntriesForEachValue)
