@@ -37,6 +37,10 @@ namespace Multiplayer
         void OnActivate(EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(EntityIsMigrating entityIsMigrating) override;
 
+        #if AZ_TRAIT_SERVER
+            void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
+        #endif
+
         // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
@@ -62,6 +66,7 @@ namespace Multiplayer
         void OnDeactivate(EntityIsMigrating entityIsMigrating) override;
 
     private:
+        void UpdateClientConnectionCount();
         void OnConnectionAcquired();
         void OnEndpointDisconnected();
 
@@ -78,7 +83,5 @@ namespace Multiplayer
             {
                 this->OnEndpointDisconnected();
             });
-
-        uint32_t m_playerId = 0;
     };
 } // namespace Multiplayer

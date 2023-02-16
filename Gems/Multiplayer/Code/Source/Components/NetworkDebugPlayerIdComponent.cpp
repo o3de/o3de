@@ -7,6 +7,7 @@
  */
 
 #include <Multiplayer/Components/NetworkDebugPlayerIdComponent.h>
+#include <Multiplayer/ConnectionData/IConnectionData.h>
 
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -81,6 +82,17 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusDisconnect();
     }
 
+    #if AZ_TRAIT_SERVER
+    void NetworkDebugPlayerIdComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
+    {
+        if (IsNetEntityRoleAuthority())
+        {
+            const auto controller = static_cast<NetworkDebugPlayerIdComponentController*>(GetController());
+            controller->SetPlayerId(connectionId);
+        }
+    }
+    #endif
+
     void NetworkDebugPlayerIdComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (!cl_debugPlayerIdRender)
@@ -106,7 +118,7 @@ namespace Multiplayer
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
         m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(renderScreenpoint.m_x), aznumeric_cast<float>(renderScreenpoint.m_y), 0.f);
 
-        AZStd::string playerIdText = AZStd::string::format("Player %i", GetPlayerId());
+        AZStd::string playerIdText = AZStd::string::format("Player %i", static_cast<uint32_t>(GetPlayerId()));
         m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, playerIdText);
 
         if (IsNetEntityRoleAutonomous())
@@ -135,21 +147,10 @@ namespace Multiplayer
     void NetworkDebugPlayerIdComponentController::OnActivate([[maybe_unused]] EntityIsMigrating entityIsMigrating)
     {
         # if AZ_TRAIT_SERVER
-            m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
             if (IsNetEntityRoleAuthority())
             {
-                uint32_t currentConnectionCount = m_networkInterface->GetConnectionSet().GetConnectionCount();
-                //SetConnectionCount(currentConnectionCount);
-
-                // Multiplayer system doesn't directly track the number of players.
-                // Instead just assign this player an id by checking how many machines are already connected to this host.
-                // Note 1: Players can have duplicate ids based on how many players were connected at the time they activated.
-                // Note 2: This doesn't support reassigning player-ids to rejoining players
-                // Note 3: This doesn't consider multi-server connections; it's possible that connection count includes other servers (not just player machines)
-                // Note 4: Client-server player count will be wrong by -1; client-server has its own player without any connections.
-                SetPlayerId(currentConnectionCount); 
-                SetConnectionCount(currentConnectionCount);
-
+                m_networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+                UpdateClientConnectionCount();
                 AZ::Interface<IMultiplayer>::Get()->AddConnectionAcquiredHandler(m_connectionAcquiredHandler);
                 AZ::Interface<IMultiplayer>::Get()->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             }
@@ -160,6 +161,28 @@ namespace Multiplayer
     {
         m_connectionAcquiredHandler.Disconnect();
         m_endpointDisconnectedHandler.Disconnect();
+    }
+
+    void NetworkDebugPlayerIdComponentController::UpdateClientConnectionCount()
+    {
+        if (IsNetEntityRoleAuthority())
+        {
+            uint32_t clientConnectionCount = 0;
+            auto sendNetworkUpdates = [&clientConnectionCount](AzNetworking::IConnection& connection)
+            {
+                if (connection.GetUserData() != nullptr)
+                {
+                    const auto connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                    {
+                        clientConnectionCount++;
+                    }
+                }
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+            SetConnectionCount(clientConnectionCount);
+        }
     }
 
     void NetworkDebugPlayerIdComponentController::OnConnectionAcquired()
