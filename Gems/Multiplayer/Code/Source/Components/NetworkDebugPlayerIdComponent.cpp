@@ -31,7 +31,7 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<NetworkDebugPlayerIdComponent>("Network Debug Connection Counter", "Renders the player id as debug text over network players.")
+                editContext->Class<NetworkDebugPlayerIdComponent>("Network Debug Player ID", "Renders the player id as debug text over network players.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))

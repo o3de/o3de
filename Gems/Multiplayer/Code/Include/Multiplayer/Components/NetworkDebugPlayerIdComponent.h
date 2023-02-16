@@ -12,12 +12,9 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Font/FontInterface.h>
 
-namespace AZ
+namespace AZ::RPI
 {
-    namespace RPI
-    {
-        class ViewportContext;
-    }
+    class ViewportContext;
 }
 
 namespace Multiplayer
