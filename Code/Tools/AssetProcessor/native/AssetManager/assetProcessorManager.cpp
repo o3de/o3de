@@ -2165,6 +2165,14 @@ namespace AssetProcessor
             m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), jobsFromLastTime, AZ::Uuid::CreateNull(), QString(), platform);
         }
 
+        // Check for missing common jobs, too. The common platform won't be in the scan folder platform list.
+        m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(),
+            sourceAsset.ScanFolderId(),
+            jobsFromLastTime,
+            AZ::Uuid::CreateNull(),
+            QString(),
+            QString(AssetBuilderSDK::CommonPlatformName));
+
         // so now we have jobsFromLastTime and jobsThisTime.  Whats in last time that is no longer being emitted now?
         if (jobsFromLastTime.empty())
         {
