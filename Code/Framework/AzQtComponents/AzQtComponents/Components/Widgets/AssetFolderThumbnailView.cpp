@@ -742,13 +742,14 @@ namespace AzQtComponents
 
         // check that the preview on one of the top level items was clicked
         // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
+        auto idx = indexAtPos(p);
         {
-            auto idx = indexAtPos(p);
 
             if (idx.isValid())
             {
                 selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
                 emit clicked(idx);
+                update();
                 return;
             }
         }
@@ -770,6 +771,14 @@ namespace AzQtComponents
                     scheduleDelayedItemsLayout();
                     return;
                 }
+            }
+        }
+
+        {
+            if (!idx.isValid())
+            {
+                selectionModel()->clear();
+                update();
             }
         }
 
