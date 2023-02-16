@@ -11,8 +11,8 @@ include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 include(${CPACK_CODESIGN_SCRIPT})
 
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-    add_custom_command(OUTPUT ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
-        COMMAND snapcraft sign-build ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap > ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
+    add_custom_command(OUTPUT ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert
+        COMMAND snapcraft sign-build ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap > ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert
         VERBATIM
     )
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
@@ -63,9 +63,9 @@ if(CPACK_UPLOAD_URL)
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
         if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-            set(latest_assertion_file "${CPACK_UPLOAD_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64_latest.snap.assert")
+            set(latest_assertion_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64_latest.snap.assert")
             file(COPY_FILE
-                O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
+                ${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert
                 ${latest_assertion_file}
             )
             ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_assertion_file}")
