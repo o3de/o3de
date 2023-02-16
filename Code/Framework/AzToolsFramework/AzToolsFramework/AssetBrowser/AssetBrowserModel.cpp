@@ -440,7 +440,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty())
+                if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty() || !m_customNewlyCreatedAssetPathsToCreatorBusIds.empty())
                 {
                     // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
                     AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
@@ -469,16 +469,24 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId)
+        void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId, const bool initialFilenameChange)
         {
-            QModelIndex index = findIndex(assetPath.c_str());
-            if (index.isValid())
+            if (initialFilenameChange)
             {
-                emit RequestOpenItemForEditing(index);
+                QModelIndex index = findIndex(assetPath.c_str());
+                if (index.isValid())
+                {
+                    emit RequestOpenItemForEditing(index);
+                    emit RequestThumbnailviewUpdate();
+                }
+                else
+                {
+                    m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
+                }
             }
             else
             {
-                m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
+                m_customNewlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
             }
         }
 
@@ -548,6 +556,28 @@ namespace AzToolsFramework
                         if (GetEntryIndex(entry, index))
                         {
                             emit RequestOpenItemForEditing(index);
+                            emit RequestThumbnailviewUpdate();
+                        }
+                    });
+            }
+            else if (m_customNewlyCreatedAssetPathsToCreatorBusIds.contains(fullpath))
+            {
+                if (m_customNewlyCreatedAssetPathsToCreatorBusIds[fullpath] != AZ::Crc32())
+                {
+                    m_assetEntriesToCreatorBusIds[entry] = m_customNewlyCreatedAssetPathsToCreatorBusIds[fullpath];
+                }
+
+                m_customNewlyCreatedAssetPathsToCreatorBusIds.erase(fullpath);
+
+                QTimer::singleShot(
+                    0,
+                    this,
+                    [this, entry]()
+                    {
+                        QModelIndex index;
+                        if (GetEntryIndex(entry, index))
+                        {
+                            emit RequestThumbnailviewUpdate();
                         }
                     });
             }

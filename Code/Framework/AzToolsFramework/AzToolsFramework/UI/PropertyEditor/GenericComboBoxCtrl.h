@@ -19,6 +19,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/DHQComboBox.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <QPushButton>
+#include <QToolButton>
 #endif
 
 class QComboBox;
@@ -52,11 +53,29 @@ namespace AzToolsFramework
         virtual void UpdateTabOrder() = 0;
     };
 
+    //! Type Alias for the Error String type that is used when an Edit is rejected
+    //! Uses AZStd::fixed_string to avoid dynamic memory allocations
+    using EditRejectString = AZStd::fixed_string<256>;
+
+    //! Outcome that returns the value that the ComboBox control should set on Success
+    //! On Failure a rejection string with the reason for failure is returned
+    template<typename T>
+    using GenericEditResultOutcome = AZ::Outcome<T, EditRejectString>;
+
+    //! Callback to implement that determines the new value to update the Combo Box Ctrl with
+    //! or to provide the Combo Box Ctrl system with an error message as to why the new value could not be set
+    //! i.e "new value not convertible to type", "new value is out of range", etc...
+    //! @param currentValue The current value stored in the combo box
+    //! @return Outcome which should store the new value to set in the combo box control or a string supplying the reason why the edit has been rejected.
+    template<typename T>
+    using GenericEditButtonCallback = AZStd::function<GenericEditResultOutcome<T>(T currentValue)>;
+
     template<typename T>
     class GenericComboBoxCtrl
         : public GenericComboBoxCtrlBase
     {
         friend class GenericComboBoxHandler<T>;
+
     public:
         AZ_RTTI((GenericComboBoxCtrl, "{FA7EC12F-1DA3-4734-ABDE-CBFD99450571}", T), GenericComboBoxCtrlBase);
         AZ_CLASS_ALLOCATOR(GenericComboBoxCtrl, AZ::SystemAllocator, 0);
@@ -76,6 +95,11 @@ namespace AzToolsFramework
 
         void SetWarning(const AZStd::string& warningText);
 
+        QComboBox* GetComboBox();
+        QToolButton* GetEditButton();
+
+        void SetEditButtonCallBack(GenericEditButtonCallback<T> function);
+
     protected:
         QWidget* GetFirstInTabOrder() override;
         QWidget* GetLastInTabOrder() override;
@@ -84,13 +108,15 @@ namespace AzToolsFramework
         void onChildComboBoxValueChange(int comboBoxIndex) override;
 
     private:
-
+        void OnEditButtonClicked();
         void PrepareWarningLabel();
 
         void addElementImpl(const AZStd::pair<T, AZStd::string>& genericValue);
 
         QLabel* m_warningLabel = nullptr;
-        DHQComboBox* m_pComboBox;
+        DHQComboBox* m_pComboBox = nullptr;
+        QToolButton* m_editButton = nullptr;
+        GenericEditButtonCallback<T> m_editButtonCallback;
         AZStd::vector<AZStd::pair<T, AZStd::string>> m_values;
         AZ::AttributeFunction <void(const T&)>* m_postChangeNotifyCB{};
     };

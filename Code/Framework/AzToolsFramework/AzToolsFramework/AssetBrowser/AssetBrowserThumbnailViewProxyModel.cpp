@@ -51,7 +51,10 @@ namespace AzToolsFramework
 
                     return QIcon(thumbnail->GetPixmap());
                 }
-
+            case Qt::ToolTipRole:
+                {
+                    return assetBrowserEntry->data(11).toString();
+                }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExpandable):
                 {
                     // We don't want to see children on folders in the thumbnail view

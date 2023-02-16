@@ -146,7 +146,7 @@ namespace AZ
         if (m_serializeContext == nullptr)
         {
             // use the default app serialize context
-            EBUS_EVENT_RESULT(m_serializeContext, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(m_serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!m_serializeContext)
             {
                 AZ_Error("Slices", false, "SliceAssetHandler: No serialize context provided! We will not be able to process Slice Asset type");

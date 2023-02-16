@@ -42,7 +42,12 @@ namespace AZ
             collectorDescriptor.m_collectFunction = nullptr;
             m_collector.Init(collectorDescriptor);
 
-            SetName(GetName());
+            AZ::Name name = GetName();
+            if (name.IsEmpty())
+            {
+                name = AZ::Name("DescriptorPool");
+            }
+            SetName(name);
             return result;
         }
 

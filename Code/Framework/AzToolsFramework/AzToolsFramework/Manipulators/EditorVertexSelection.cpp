@@ -83,7 +83,7 @@ namespace AzToolsFramework
         componentModeCollectionInterface->EnumerateActiveComponents(
             [&emptySelection](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
             {
-                int count;
+                int count = 0;
                 EditorVertexSelectionVariableRequestBus::EventResult(
                     count, entityComponentIdPair, &EditorVertexSelectionVariableRequests::GetSelectedVerticesCount);
 
@@ -1084,7 +1084,7 @@ namespace AzToolsFramework
     {
         if (EditorVertexSelectionBase<Vertex>::m_translationManipulator)
         {
-            return EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size();
+            return aznumeric_cast<int>(EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size());
         }
 
         return 0;

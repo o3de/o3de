@@ -161,6 +161,9 @@ function Process(context)
     end
     
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", parallaxFeatureEnabled)
+    
+    local pixelDepthOffsetEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelDepth", parallaxFeatureEnabled and pixelDepthOffsetEnabled)
 end
 
 function ProcessEditor(context)

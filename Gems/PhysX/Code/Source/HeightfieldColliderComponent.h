@@ -30,12 +30,13 @@ namespace PhysX
 {
     class StaticRigidBody;
 
-    //! Component that provides a Heightfield Collider and associated Static Rigid Body.
+    //! Component that provides a Heightfield Collider.
+    //! It covers the static rigid body functionality as well, but it can be refactored out
+    //! once EditorStaticRigidBodyComponent handles the creation of the simulated body.
+    //! 
     //! The heightfield collider is a bit different from the other shape colliders in that it gets the heightfield data from a
     //! HeightfieldProvider, which can control position, rotation, size, and even change its data at runtime.
-    //! 
-    //! Due to these differences, this component directly implements both the collider and static rigid body services instead of
-    //! using BaseColliderComponent and StaticRigidBodyComponent.
+    //! Due to these differences, this component directly implements the collider instead of using BaseColliderComponent.
     class HeightfieldColliderComponent
         : public AZ::Component
         , public ColliderComponentRequestBus::Handler

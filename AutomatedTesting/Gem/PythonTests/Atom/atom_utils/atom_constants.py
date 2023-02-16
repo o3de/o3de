@@ -1432,3 +1432,43 @@ class EntityPreviewViewportSettingsRequestBusEvents(object):
     GET_ALTERNATE_SKYBOX_ENABLED = "GetAlternateSkyboxEnabled"
     SET_FIELD_OF_VIEW = "SetFieldOfView"
     GET_FIELD_OF_VIEW = "GetFieldOfView"
+
+
+class DynamicNodeManagerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.DynamicNodeManagerRequestBus
+    """
+    LOAD_CONFIG_FILES = "LoadConfigFiles"
+    REGISTER_CONFIG = "RegisterConfig"
+    GET_CONFIG_BY_ID = "GetConfigById"
+    CLEAR = "Clear"
+    CREATE_NODE_BY_ID = "CreateNodeById"
+    CREATE_NODE_BY_NAME = "CreateNodeByName"
+
+
+class GraphDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.GraphDocumentRequestBus
+    """
+    GET_GRAPH = "GetGraph"
+    GET_GRAPH_ID = "GetGraphId"
+    GET_GRAPH_NAME = "GetGraphName"
+    SET_GENERATED_FILE_PATHS = "SetGeneratedFilePaths"
+    GET_GENERATED_FILE_PATHS = "GetGeneratedFilePaths"
+    COMPILE_GRAPH = "CompileGraph"
+    QUEUE_COMPILE_GRAPH = "QueueCompileGraph"
+    IS_COMPILE_GRAPH_QUEUED = "IsCompileGraphQueued"
+
+
+class GraphControllerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.editor.graph.GraphControllerRequestBus
+    """
+    ADD_NODE = "AddNode"
+    REMOVE_NODE = "RemoveNode"
+    WRAP_NODE = "WrapNode"
+    ADD_CONNECTION = "AddConnection"
+    ADD_CONNECTION_BY_SLOT_ID = "AddConnectionBySlotId"
+    ARE_SLOTS_CONNECTED = "AreSlotsConnected"
+    REMOVE_CONNECTION = "RemoveConnection"
+    EXTEND_SLOT = "ExtendSlot"
