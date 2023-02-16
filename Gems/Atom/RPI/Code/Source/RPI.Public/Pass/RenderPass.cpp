@@ -71,6 +71,13 @@ namespace AZ
                     continue;
                 }
 
+                // Handle shading rate attachment. There should be only one.
+                if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::ShadingRate)
+                {
+                    layoutBuilder->ShadingRateAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    continue;
+                }
+
                 // Skip bindings that aren't outputs or inputOutputs
                 if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
                 {

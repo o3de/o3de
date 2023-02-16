@@ -32,7 +32,6 @@ namespace AzToolsFramework
         {
             BoxManipulatorRequestBus::Event(entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions);
         };
-        boxViewportEdit->InstallGetLocalTransform(AZStd::move(getLocalTransform));
         boxViewportEdit->InstallGetBoxDimensions(AZStd::move(getBoxDimensions));
         boxViewportEdit->InstallSetBoxDimensions(AZStd::move(setBoxDimensions));
     }
@@ -69,6 +68,11 @@ namespace AzToolsFramework
                 m_entityComponentIdPair);
         }
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
+    }
+
+    BoxComponentMode::~BoxComponentMode()
+    {
+        ShapeComponentModeRequestBus::Handler::BusDisconnect();
     }
 
     AZStd::string BoxComponentMode::GetComponentModeName() const

@@ -34,9 +34,11 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -50,6 +52,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
@@ -499,8 +502,12 @@ namespace AzToolsFramework
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
-
         initEntityPropertyEditorResources();
+
+        if (Prefab::IsInspectorOverrideManagementEnabled())
+        {
+            m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
+        }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
@@ -629,10 +636,32 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                // Assign this widget to the Editor Entity Property Editor Action Context.
+                hotKeyManagerInterface->AssignWidgetToActionContext(
+                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
+            }
+        }
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                // Assign this widget to the Editor Entity Property Editor Action Context.
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
+            }
+        }
+
         qApp->removeEventFilter(this);
 
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
@@ -2067,6 +2096,7 @@ namespace AzToolsFramework
             // refresh state and effectively restore the previously-queued request, which would still execute before the
             // EPE's full refresh.
             // (In UpdateContents(), after the full refresh occurs, we stop preventing RPE refreshes from getting queued)
+            bool ownedFocus = DoesOwnFocus();
             for (auto componentEditor : m_componentEditors)
             {
                 // Cancel any refreshes that were queued prior to this point, since they are no longer guaranteed to
@@ -2074,6 +2104,18 @@ namespace AzToolsFramework
                 componentEditor->CancelQueuedRefresh();
                 // Prevent any future refreshes from getting queued until we've completed the UpdateContents() call.
                 componentEditor->PreventRefresh(true);
+            }
+
+            // If the EntityPropertyEditor or any of its children were the application's focused widget before
+            // the above call to: componentEditor->PreventRefresh(true);
+            // Then that call could result in that widget being disabled, which will clear the focus and leave
+            // the application with no focused widget, which means it won't be able to receive key/shortcut events.
+            // So if we owned the focus and the focusWidget is now nullptr, then reset the focus to the EntityPropertyEditor.
+            // This happens anytime QueuePropertyRefresh is invoked (e.g. when switching between component modes, or triggering a full tree
+            // rebuild)
+            if (ownedFocus && !QApplication::focusWidget())
+            {
+                setFocus();
             }
 
             // Refresh the properties using a singleShot
@@ -3288,15 +3330,7 @@ namespace AzToolsFramework
     {
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view EditorEntityPropertyEditorActionContextIdentifier = "o3de.context.editor.entitypropertyeditor";
-
             m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
-            AzToolsFramework::ActionContextProperties contextProperties;
-            contextProperties.m_name = "O3DE Entity Editor";
-
-            // Register a custom action context to allow duplicated shortcut hotkeys to work
-            m_actionManagerInterface->RegisterActionContext("", EditorEntityPropertyEditorActionContextIdentifier, contextProperties, this);
         }
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);

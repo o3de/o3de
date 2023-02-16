@@ -183,6 +183,11 @@ namespace LmbrCentral
         return worldTransform;
     }
 
+    AZ::Quaternion EditorAxisAlignedBoxShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
+    }
+
     AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();

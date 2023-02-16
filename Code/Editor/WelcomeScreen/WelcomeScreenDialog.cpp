@@ -323,9 +323,16 @@ void WelcomeScreenDialog::OnNewLevelBtnClicked([[maybe_unused]] bool checked)
     accept();
 }
 
-void WelcomeScreenDialog::OnNewLevelLabelClicked([[maybe_unused]] const QString& path)
+void WelcomeScreenDialog::OnNewLevelLabelClicked(const QString& path)
 {
-    OnNewLevelBtnClicked(true);
+    if (path == "Create")
+    {
+        OnNewLevelBtnClicked(true);
+    }
+    else
+    {
+        OnOpenLevelBtnClicked(true);
+    }
 }
 
 void WelcomeScreenDialog::OnOpenLevelBtnClicked([[maybe_unused]] bool checked)

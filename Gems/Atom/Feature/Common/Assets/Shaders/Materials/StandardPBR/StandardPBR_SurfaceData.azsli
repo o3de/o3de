@@ -95,5 +95,26 @@
         albedo = GetAlbedo(baseColor, metallic);
         specularF0 = GetSpecularF0(baseColor, metallic, specularF0Factor);
     }
+    
+    SurfaceData_StandardPBR MakeDebugSurface(float3 position, float3 normal, float3 color)
+    {
+        SurfaceData_StandardPBR output;
+        output.position = position;
+        output.normal = normal;
+        output.vertexNormal = normal;
+        output.baseColor = float3(0,0,0);
+        output.metallic = 0;
+        output.roughnessLinear = 1;
+        output.roughnessA = 1;
+        output.roughnessA2 = 1;
+        output.alpha = 1;
+        output.opacityAffectsSpecularFactor = 0;
+        output.albedo = float3(0,0,0);
+        output.specularF0 = 0;
+        output.emissiveLighting = color;
+        output.diffuseAmbientOcclusion = 1;
+        output.specularOcclusion = 1;
+        return output;
+    }
 
 #endif

@@ -13,6 +13,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -93,6 +95,16 @@ namespace AzToolsFramework
         bool EditorComponentBase::IsSelected() const
         {
             return AzToolsFramework::IsSelected(GetEntityId());
+        }
+
+        void EditorComponentBase::SetSerializedIdentifier(AZStd::string alias)
+        {
+            m_alias = alias;
+        }
+
+        AZStd::string EditorComponentBase::GetSerializedIdentifier() const
+        {
+            return m_alias;
         }
     }
 } // namespace AzToolsFramework

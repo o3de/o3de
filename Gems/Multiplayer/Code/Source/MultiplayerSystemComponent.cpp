@@ -104,7 +104,7 @@ namespace Multiplayer
         "slow down quicker and may be better suited to connections with highly variable latency");
     AZ_CVAR(bool, bg_multiplayerDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw for the multiplayer gem");
     AZ_CVAR(bool, sv_dedicated_host_onstartup, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether dedicated servers will begin hosting on app startup.");
-    AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
+    AZ_CVAR(bool, cl_connect_onstartup, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "[DEPRECATED: use connect instead] Whether to call connect as soon as the Multiplayer SystemComponent is activated.");
     AZ_CVAR(bool, sv_versionMismatch_autoDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Should the server automatically disconnect a client that is attempting connect who is running a build containing different/modified multiplayer components.");
     AZ_CVAR(bool, sv_versionMismatch_sendManifestToClient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -312,7 +312,7 @@ namespace Multiplayer
                         return;
                     }
 
-                    // It's now safe to register and execute the "host" command
+                    // It's now safe to register and execute the "host" and "connect" commands
                     m_hostConsoleCommand = AZStd::make_unique<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>>(
                         "host",
                         "Opens a multiplayer connection as a host for other clients to connect to",
@@ -321,13 +321,20 @@ namespace Multiplayer
                         *this,
                         &MultiplayerSystemComponent::HostConsoleCommand);
 
-                    // ExecuteDeferredConsoleCommands will execute any previous deferred "host" commands now that it has been registered with the AZ Console
+                    m_connectConsoleCommand = AZStd::make_unique<AZ::ConsoleFunctor<MultiplayerSystemComponent, false>>(
+                        "connect",
+                        "Opens a multiplayer connection to a remote host",
+                        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+                        AZ::TypeId{},
+                        *this,
+                        &MultiplayerSystemComponent::ConnectConsoleCommand);
+
+                    // ExecuteDeferredConsoleCommands will execute any previously deferred "host" or "connect" commands now that they have been registered with the AZ Console
                     console->ExecuteDeferredConsoleCommands();
 
                     // Don't access cvars directly (their values might be stale https://github.com/o3de/o3de/issues/5537)
                     bool isDedicatedServer = false;
                     bool dedicatedServerHostOnStartup = false;
-                    bool clientConnectOnStartup = false;
                     if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
                     {
                         AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_isDedicated).")
@@ -340,22 +347,10 @@ namespace Multiplayer
                         return;
                     }
 
-                    if (console->GetCvarValue("cl_connect_onstartup", clientConnectOnStartup) != AZ::GetValueResult::Success)
-                    {
-                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (cl_connect_onstartup).")
-                        return;
-                    }
-
                     // Dedicated servers will automatically begin hosting
                     if (isDedicatedServer && dedicatedServerHostOnStartup)
                     {
                         this->StartHosting(sv_port, /*is dedicated*/ true);
-                    }
-
-                    // Connect client now if cl_connect_onstartup
-                    if (clientConnectOnStartup)
-                    {
-                        this->Connect(LocalHost, cl_serverport);
                     }
                 },
                 "SystemComponentsActivated",
@@ -412,6 +407,13 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
+        if (IsHosting())
+        {
+            AZLOG_WARN("Already hosting on port %u, new host request ignored (request is for port %u).",
+                m_networkInterface->GetPort(), static_cast<uint32_t>(sv_port));
+            return false;
+        }
+
         if (port == UseDefaultHostPort)
         {
             port = sv_port;
@@ -491,6 +493,12 @@ namespace Multiplayer
     {
         return true;
     }
+
+    bool MultiplayerSystemComponent::IsHosting() const
+    {
+        return (GetAgentType() == MultiplayerAgentType::ClientServer) || (GetAgentType() == MultiplayerAgentType::DedicatedServer);
+    }
+
 
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const SessionConfig& sessionConfig)
     {
@@ -1885,10 +1893,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::HostConsoleCommand([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        if (!StartHosting(sv_port, sv_isDedicated))
-        {
-            AZLOG_ERROR("Failed to start listening on any allocated port");
-        }
+        StartHosting(sv_port, sv_isDedicated);
     }
 
     void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
@@ -1918,7 +1923,7 @@ namespace Multiplayer
         }
         
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = AZStd::string::format("%s --cl_connect_onstartup true", gameLauncherPath.c_str());
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format("%s +connect", gameLauncherPath.c_str());
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
         
         // Launch GameLauncher and connect to this server
@@ -1932,18 +1937,12 @@ namespace Multiplayer
     AZ_CONSOLEFREEFUNC(sv_launch_local_client, AZ::ConsoleFunctorFlags::DontReplicate, "Launches a local client and connects to this host server (only works if currently hosting)");
 
 
-    void connect(const AZ::ConsoleCommandContainer& arguments)
+    void MultiplayerSystemComponent::ConnectConsoleCommand(const AZ::ConsoleCommandContainer& arguments)
     {
-        if (!AZ::Interface<IMultiplayer>::Get())
-        {
-            AZLOG_ERROR("Connect failed. MultiplayerSystemComponent hasn't been constructed yet. Did you mean to use cl_connect_onstartup?");
-            return;
-        }
-
         if (arguments.size() < 1)
         {
             const AZ::CVarFixedString remoteAddress = cl_serveraddr;
-            AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), cl_serverport);
+            Connect(remoteAddress.c_str(), cl_serverport);
         }
         else
         {
@@ -1951,7 +1950,7 @@ namespace Multiplayer
             const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
             if (portSeparator == AZStd::string::npos)
             {
-                AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), cl_serverport);
+                Connect(remoteAddress.c_str(), cl_serverport);
             }
             else
             {
@@ -1960,11 +1959,10 @@ namespace Multiplayer
                 const char* addressStr = mutableAddress;
                 const char* portStr = &(mutableAddress[portSeparator + 1]);
                 const uint16_t portNumber = aznumeric_cast<uint16_t>(atol(portStr));
-                AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, portNumber);
+                Connect(addressStr, portNumber);
             }
         }
     }
-    AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");
 
     void disconnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {

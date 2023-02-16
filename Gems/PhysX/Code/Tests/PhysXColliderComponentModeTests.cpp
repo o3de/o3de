@@ -713,7 +713,7 @@ namespace UnitTest
 
         // the expected position of the scale manipulator relative to the central point of the collider, based on collider
         // rotation, entity scale, non-uniform scale and camera state
-        const AZ::Vector3 scaleManipulatorDelta(-1.1952f, -1.8036f, 0.168f);
+        const AZ::Vector3 scaleManipulatorDelta(2.2008f, -0.78993f, -1.75965f);
 
         const AZ::Vector3 worldStart = expectedColliderPosition + scaleManipulatorDelta;
         const AZ::Vector3 worldEnd = worldStart - 0.1f * scaleManipulatorDelta;

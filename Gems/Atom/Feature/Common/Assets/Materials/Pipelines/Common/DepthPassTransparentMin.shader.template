@@ -1,0 +1,22 @@
+{
+    "Source" : "TEMPLATE_AZSL_PATH",
+
+    "RasterState": { "CullMode": "None" },
+
+    "DepthStencilState" : { 
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type" : "Vertex"
+            }
+        ] 
+    },
+
+    "DrawList" : "depthTransparentMin"
+}
