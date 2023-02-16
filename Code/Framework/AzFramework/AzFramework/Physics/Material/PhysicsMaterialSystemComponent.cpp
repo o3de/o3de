@@ -61,6 +61,14 @@ namespace Physics
 
     void MaterialSystemComponent::Deactivate()
     {
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto materialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<MaterialAsset>*>(assetHandler.get());
+                materialAssetHandler != nullptr)
+            {
+                materialAssetHandler->Unregister();
+            }
+        }
         m_assetHandlers.clear();
     }
 } // namespace Physics
