@@ -323,34 +323,63 @@ namespace AZ::DocumentPropertyEditor
     void RowSortAdapter::GenerateMovePatches(
         const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch)
     {
-        AZStd::set<size_t> moveOrigins;
-        for (auto [indexSortedNode, adapterSortedNode] :
-             AZStd::views::zip(sortNode->m_indexSortedChildren, sortNode->m_adapterSortedChildren))
+        // move operations that we generate will affect the indices of the items between the move endpoints,
+        // so we will need to adjust our next move's starting index based on existing move operations we've generated.
+        // keep track of the existing number of operations before we start adding moves so that we can examine
+        // our own moves later.
+        const auto firstMoveIndex = outgoingPatch.size();
+
+        auto zippedView = AZStd::views::zip(sortNode->m_indexSortedChildren, sortNode->m_adapterSortedChildren);
+        // generate all move patch operations for this parent
+        for (auto [indexSortedNode, adapterSortedNode] : zippedView)
         {
-            // <apm> adjust to handle mapToSource as well
-            const size_t destinationIndex = indexSortedNode->m_domIndex;
-            size_t originIndex = adapterSortedNode->m_domIndex;
-
-            auto originIter = moveOrigins.begin();
-            while (originIter != moveOrigins.end() && *originIter <= destinationIndex)
-            {
-                originIter = moveOrigins.erase(originIter);
-            }
-            originIndex += moveOrigins.size();
-
-            indexPath /= destinationIndex;
-            sortedPath /= originIndex;
-
+            size_t sourceIndex, destinationIndex;
             if (mapToSource)
             {
-                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(sortedPath, indexPath));
+                destinationIndex = adapterSortedNode->m_domIndex;
+                sourceIndex = indexSortedNode->m_domIndex;
             }
             else
             {
-                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(indexPath, sortedPath));
+                destinationIndex = indexSortedNode->m_domIndex;
+                sourceIndex = adapterSortedNode->m_domIndex;
             }
-            GenerateMovePatches(static_cast<SortInfoNode*>(indexSortedNode.get()), indexPath, sortedPath, mapToSource, outgoingPatch);
+
+            // adjust sourceIndex based on the moves that have happened already; destination is already correct
+            for (auto operationIndex = firstMoveIndex; operationIndex < outgoingPatch.Size(); ++operationIndex)
+            {
+                auto& currMove = outgoingPatch[operationIndex];
+                const auto operationSource = currMove.GetSourcePath().Back().GetIndex();
+                const auto operationDest = currMove.GetDestinationPath().Back().GetIndex();
+                if (operationSource < operationDest && operationSource <= sourceIndex && operationDest >= sourceIndex)
+                {
+                    --sourceIndex;
+                }
+                else if (operationSource > operationDest && operationSource >= sourceIndex && operationDest <= sourceIndex)
+                {
+                    ++sourceIndex;
+                }
+            }
+            // push the actual move operation now
+            if (mapToSource)
+            {
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(sortedPath / destinationIndex, indexPath / sourceIndex));
+            }
+            else
+            {
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(indexPath / destinationIndex, sortedPath / sourceIndex));
+            }
+        }
+        // Now loop through the children again so that they can generate their children's patches. Note that we can't recurse into children
+        // until all moves for this level are done, because the move operations for this level should be adjacent in the patch for searching
+        for (auto [indexSortedNode, adapterSortedNode] : zippedView)
+        {
+            GenerateMovePatches(
+                static_cast<SortInfoNode*>(indexSortedNode.get()),
+                indexPath / indexSortedNode->m_domIndex,
+                sortedPath / adapterSortedNode->m_domIndex,
+                mapToSource,
+                outgoingPatch);
         }
     }
-
 } // namespace AZ::DocumentPropertyEditor
