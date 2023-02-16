@@ -45,10 +45,12 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -133,6 +135,54 @@ namespace AzToolsFramework
         {
             m_instanceUpdateExecutor.UpdateTemplateInstancesInQueue();
             GarbageCollectTemplates(false);
+        }
+
+        void PrefabSystemComponent::OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName)
+        {
+            // Convert to prefab relative path
+            AZ::IO::Path fromRelativePath = m_prefabLoader.GenerateRelativePath(fromPathName);
+
+            // Update loaded template with new pathname
+            if (Prefab::TemplateId templateId = GetTemplateIdFromFilePath(fromRelativePath); templateId != InvalidTemplateId)
+            {
+                AZ::IO::Path toRelativePath = m_prefabLoader.GenerateRelativePath(toPathName);
+                UpdateTemplateFilePath(templateId, toRelativePath);
+                PropagateTemplateChanges(templateId);
+            }
+        }
+
+        void PrefabSystemComponent::OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName)
+        {
+            // Convert to prefab relative path
+            AZ::IO::Path fromRelativePath = m_prefabLoader.GenerateRelativePath(fromPathName);
+            AZ::IO::Path toRelativePath = m_prefabLoader.GenerateRelativePath(toPathName);
+
+            // Update any loadeded template paths that are descendants of the new path
+            AZStd::vector<TemplateId> descendantTemplates;
+            for (const auto& templateIter : m_templateFilePathToIdMap)
+            {
+                if (templateIter.first.IsRelativeTo(fromRelativePath))
+                {
+                    descendantTemplates.emplace_back(templateIter.second);
+                }
+            }
+
+            for (auto templateId : descendantTemplates)
+            {
+                TemplateReference loadedTemplate = FindTemplate(templateId);
+                if (!loadedTemplate.has_value())
+                {
+                    AZ_Assert(false, "Template with id %llu is not found", templateId);
+                    continue;
+                }
+                
+                const AZ::IO::Path& loadedTemplateFilePathName = loadedTemplate->get().GetFilePath();
+                AZ::IO::Path unchangedPathSegment(loadedTemplateFilePathName.Native().substr(fromRelativePath.Native().size()));
+                AZ::IO::Path updatedTemplateFilePathName(toRelativePath.Native(), AZ::IO::PosixPathSeparator);
+                updatedTemplateFilePathName /= unchangedPathSegment.RelativePath();
+                UpdateTemplateFilePath(templateId, updatedTemplateFilePathName);
+                PropagateTemplateChanges(templateId);
+            }
         }
 
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
