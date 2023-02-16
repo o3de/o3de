@@ -10,12 +10,12 @@ file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 include(${CPACK_CODESIGN_SCRIPT})
 
-if($ENV{O3DE_PACKAGE_TYPE} STREQUAL "SNAP")
+if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
     add_custom_command(OUTPUT ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
         COMMAND snapcraft sign-build ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap > ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
         VERBATIM
     )
-elseif($ENV{O3DE_PACKAGE_TYPE} STREQUAL "DEB")
+elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
     file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
 endif()
@@ -27,7 +27,7 @@ if(CPACK_UPLOAD_URL)
         set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
     endif()
 
-    if($ENV{O3DE_PACKAGE_TYPE} STREQUAL "DEB")
+    if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         # Sign and regenerate checksum
         ly_sign_binaries("${CPACK_TOPLEVEL_DIRECTORY}/*.deb" "")
         file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
@@ -62,7 +62,7 @@ if(CPACK_UPLOAD_URL)
     # for auto tagged builds, we will also upload a second copy of just the boostrapper
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
-        if($ENV{O3DE_PACKAGE_TYPE} STREQUAL "SNAP")
+        if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
             set(latest_assertion_file "${CPACK_UPLOAD_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64_latest.snap.assert")
             file(COPY_FILE
                 O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
