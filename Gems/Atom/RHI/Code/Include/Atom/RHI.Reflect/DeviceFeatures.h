@@ -37,8 +37,8 @@ namespace AZ
             //! Whether the adapter supports dual source blending.
             bool m_dualSourceBlending = false;
 
-            //! Whether the adapter supports custom resolve positions.
-            bool m_customResolvePositions = false;
+            //! Whether the adapter supports custom sample positions.
+            bool m_customSamplePositions = false;
 
             //! Supported query types
             AZStd::array<QueryTypeFlags, HardwareQueueClassCount> m_queryTypesMask = { { QueryTypeFlags::None, QueryTypeFlags::None, QueryTypeFlags::None } };

@@ -99,12 +99,14 @@ namespace AzToolsFramework
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
 
-            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32(), const bool initialFilenameChange = true);
 
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
 
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
+
+            void RequestThumbnailviewUpdate();
 
         private:
             //Non owning pointer
@@ -116,6 +118,7 @@ namespace AzToolsFramework
             bool m_isTickBusEnabled = false;
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
+            AZStd::unordered_map<AZStd::string, AZ::Crc32> m_customNewlyCreatedAssetPathsToCreatorBusIds;
 
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };

@@ -20,6 +20,25 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     endif()
 endif()
 
+# By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
+# and will ignore all overrides in release builds.
+# This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2 or 3 when generating the build files.
+# The override can be removed by passing -UALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES when generating the build files.
+set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES "" CACHE STRING 
+"Forces the Settings Registry development overrides to be used or ignored.
+  If unset, development overrides are used in development builds and ignored in release builds.
+  0 disables the development overrides in all builds.
+  1 = registry overrides are allowed from the command line.
+  2 = registry overrides are allowed from the command line, engine, gem, and project files.
+  3 = registry overrides are allowed from the command line, engine, gem, project, and user files.")
+
+# If there's a value in ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES, the compiler flag will get set to it.
+# Otherwise, the variable will be empty and no compiler flag will be set, leaving it to the code to decide
+# whether or not to allow the Settings Registry development overrides.
+set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG $<$<NOT:$<STREQUAL:"${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}","">>:ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}>)
+
+
+
 ly_add_target(
     NAME O3DEKernel ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE AZ
@@ -68,6 +87,13 @@ ly_add_source_properties(
         AzCore/PlatformId/PlatformId.cpp
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${LY_PAL_TOOLS_DEFINES}
+)
+
+ly_add_source_properties(
+    SOURCES
+        AzCore/Component/ComponentApplication.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG}
 )
 
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
