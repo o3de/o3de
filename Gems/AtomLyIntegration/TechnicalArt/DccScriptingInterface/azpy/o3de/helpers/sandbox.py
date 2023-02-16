@@ -36,6 +36,7 @@ class Sandbox(QtWidgets.QWidget):
 
         self.o3de_connection = None
         self.o3de_envars = config.get_environment_values('o3de')
+        _LOGGER.info(f'O3DE Envars: {self.o3de_envars}')
         self.maya_connection = None
         self.maya_file_location = None
         self.o3de_asset_directory = None
@@ -47,6 +48,7 @@ class Sandbox(QtWidgets.QWidget):
         self.registered_projects = settings.get('REGISTERED_PROJECTS')
         self.current_project = settings.get('CURRENT_PROJECT')
         self.maya_envars = config.get_environment_values('maya')
+        _LOGGER.info(f'Maya Envars:: {self.maya_envars}')
         self.target_maya_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_live_link.py'
         self.target_o3de_script = self.dccsi_base / 'azpy/dcc/o3de/utils/o3de_live_link.py'
         self.audit_maya_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_scene_audit.py'
@@ -300,7 +302,9 @@ class Sandbox(QtWidgets.QWidget):
             'class':                'MayaSceneExporter',
             'export_location':      self.o3de_asset_directory,
             'operation':            'sceneExport',
-            'audit_info':           self.maya_scene_audit
+            'audit_info':           self.maya_scene_audit,
+            'PATH_DCCSIG':          settings.get('PATH_DCCSIG').as_posix(),
+            'O3DE_DEV':             settings.get('O3DE_DEV').as_posix()
         }
         self.run_socket_script('maya', script_path, arguments)
 
@@ -386,6 +390,8 @@ class Sandbox(QtWidgets.QWidget):
             'script': self.target_maya_script,
             'file': self.maya_file_location
         }
+        self.maya_envars['O3DE'] = settings.get('O3DE_DEV')
+        self.maya_envars['PATH_DCCSIG'] = settings.get('PATH_DCCSIG')
         env_data = self.format_qprocess_environment(self.maya_envars, f"SCRIPT={connection_info['script']}")
         app = qt_process.QtProcess(connection_info['exe'], connection_info['file'], env_data)
         app.start_process(socket_connection=True)
@@ -420,7 +426,7 @@ class Sandbox(QtWidgets.QWidget):
         if not self.maya_scene_audit:
             self.audit_maya_file()
         elif not self.scene_assets_transferred:
-            self.transfer_maya_assets()
+            self.start_asset_export()
         else:
             self.start_maya_live_link()
 

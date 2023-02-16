@@ -194,12 +194,12 @@ def get_shape_node(target_mesh):
 
 
 def get_material_info(target_meshes):
-    supported_materials = ['lambert', 'blinn', 'phong', 'standardSurface', 'StingrayPBS', 'aiStandardSurface']
     material_info = {}
     for mesh in target_meshes:
         target_shape = get_shape_node(mesh)
+        assigned_material = get_materials(target_shape)[0]
         file_texture_info = get_file_texture_information(get_materials(target_shape))
-        material_info[mesh] = file_texture_info
+        material_info[mesh] = {'material_name': assigned_material, 'texture_set': file_texture_info}
     return material_info
 
 
