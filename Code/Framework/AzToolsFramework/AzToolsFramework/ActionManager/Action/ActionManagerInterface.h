@@ -78,16 +78,12 @@ namespace AzToolsFramework
         AZ_RTTI(ActionManagerInterface, "{2E2A421E-0842-4F90-9F5C-DDE0C4F820DE}");
 
         //! Register a new Action Context to the Action Manager.
-        //! @param parentContextIdentifier The identifier for the action context the newly registered context should be parented to.
         //! @param contextIdentifier The identifier for the newly registered action context.
         //! @param properties The properties object for the newly registered action context.
-        //! @param widget The owning widget for the newly registered action context.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& parentContextIdentifier,
             const AZStd::string& contextIdentifier,
-            const ActionContextProperties& properties,
-            QWidget* widget
+            const ActionContextProperties& properties
         ) = 0;
 
         //! Returns whether an action context with the identifier queried is registered to the Action Manager.

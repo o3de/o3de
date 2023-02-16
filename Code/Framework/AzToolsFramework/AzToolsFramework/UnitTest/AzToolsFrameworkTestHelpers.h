@@ -24,10 +24,14 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -36,6 +40,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
+#include <QMainWindow>
 #endif // !defined(Q_MOC_RUN)
 
 #include <ostream>
@@ -269,6 +274,27 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
                 viewportHandlerBuilder);
 
+            // If the new action manager is enabled, we need to register the MainWindowActionContextIdentifier action context to a dummy QMainWindow
+            // so that any actions/shortcuts registered to it from tools will work. This is typically only initialized in the Editor itself,
+            // so it doesn't get registered in the ToolsApplicationFixture, but some tools we are testing rely on it (e.g. viewport interactions).
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                m_defaultMainWindow = new QMainWindow();
+
+                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+                AzToolsFramework::ActionContextProperties contextProperties;
+                contextProperties.m_name = "O3DE Editor";
+
+                actionManagerInterface->RegisterActionContext(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
+
+                hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, m_defaultMainWindow);
+            }
+
             SetUpEditorFixtureImpl();
         }
 
@@ -282,6 +308,13 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
 
             TearDownEditorFixtureImpl();
+
+            if (m_defaultMainWindow)
+            {
+                delete m_defaultMainWindow;
+                m_defaultMainWindow = nullptr;
+            }
+
             m_editorActions.Disconnect();
 
             // Stop & delete the Application created by this fixture, hence not using GetApplication() here
@@ -293,6 +326,8 @@ namespace UnitTest
 
             Base::TearDown();
         }
+
+        QMainWindow* m_defaultMainWindow = nullptr;
 
         virtual void SetUpEditorFixtureImpl() {}
         virtual void TearDownEditorFixtureImpl() {}

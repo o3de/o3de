@@ -12,6 +12,8 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/XRRenderingInterface.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace AZ::RHI
 {
@@ -22,6 +24,8 @@ namespace AZ::RPI
 {
     static const int XRMaxNumControllers = 2;
     static const int XRMaxNumViews = 2;
+    class PassTemplate;
+    class AttachmentImage;
 
     //! XR View specific Fov data (in radians).
     struct FovData
@@ -127,6 +131,12 @@ namespace AZ::RPI
 
         //! Return the X button state from the controller.
         virtual float GetTriggerState(const AZ::u32 handIndex) const = 0;
+
+        //! Initialize a shading rate image attachment of a pass template with contents suitable for a foveated level.
+        //! Returns the image that was created and initialized.
+        //! If no foveated level is specified, the value will be retrieved from the settings registry.
+        virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
+            const PassTemplate& passTemplate, const RHI::XRFoveatedLevel* level = nullptr) const = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.

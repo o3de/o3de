@@ -12,9 +12,26 @@
 
 namespace UnitTest
 {
+    TEST_F(ActionManagerFixture, AssignWidgetToActionContext)
+    {
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
+
+        auto outcome = m_hotKeyManagerInterface->AssignWidgetToActionContext("o3de.context.test", m_widget);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveWidgetFromActionContext)
+    {
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
+
+        m_hotKeyManagerInterface->AssignWidgetToActionContext("o3de.context.test", m_widget);
+        auto outcome = m_hotKeyManagerInterface->RemoveWidgetFromActionContext("o3de.context.test", m_widget);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, SetHotKeyToAction)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         auto outcome = m_hotKeyManagerInterface->SetActionHotKey("o3de.action.test", "Ctrl+Z");
@@ -23,7 +40,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, SetInvalidHotKeyToAction)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         auto outcome = m_hotKeyManagerInterface->SetActionHotKey("o3de.action.test", "SomeWeirdString");
@@ -38,7 +55,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, VerifyActionHotkey)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.test", "Ctrl+Z");
@@ -50,7 +67,8 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, VerifyActionHotkeyTriggered)
     {
         bool actionTriggered = false;
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
+        m_hotKeyManagerInterface->AssignWidgetToActionContext("o3de.context.test", m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {},
             [&actionTriggered]()
             {
@@ -80,7 +98,8 @@ namespace UnitTest
         // This test verifies that we correctly capture these ambiguous shortcuts in the child and
         // trigger the appropriate action.
         bool parentActionTriggered = false;
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.parent", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.parent", {});
+        m_hotKeyManagerInterface->AssignWidgetToActionContext("o3de.context.parent", m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.parent", "o3de.action.parent", {},
             [&parentActionTriggered]()
             {
@@ -93,7 +112,8 @@ namespace UnitTest
         // Setup a child of our parent widget with an action that has the same shortcut
         QWidget* childWidget = new QWidget(m_widget);
         bool childActionTriggered = false;
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.child", {}, childWidget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.child", {});
+        m_hotKeyManagerInterface->AssignWidgetToActionContext("o3de.context.child", childWidget);
         m_actionManagerInterface->RegisterAction("o3de.context.child", "o3de.action.child", {},
             [&childActionTriggered]()
             {

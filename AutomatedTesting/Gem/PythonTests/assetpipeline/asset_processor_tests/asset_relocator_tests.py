@@ -14,6 +14,7 @@ import os
 import pathlib
 import subprocess
 import shutil
+import sys
 from dataclasses import dataclass
 from dataclasses import field
 from typing import List
@@ -259,6 +260,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         # Look for expected message inside the log and verify that no move or delete occurs in the log
         utils.validate_log_output(ap_batch_output, [expected_message], [unexpected_message])
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C21968355")
     @pytest.mark.test_case_id("C21968356")
     @pytest.mark.test_case_id("C21968359")
@@ -378,6 +380,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         if expected_queries or unexpected_queries:
             utils.validate_log_output(ap_batch_output, expected_queries, unexpected_queries)
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C21968381")
     @pytest.mark.test_case_id("C21968382")
     @pytest.mark.assetpipeline
@@ -3785,6 +3788,7 @@ class TestsAssetProcessorMove_WindowsAndMac:
     # run all the tests for a test case:
     # -k C19462747
 
+    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.parametrize("test", move_a_file_tests + move_a_folder_tests)
     def test_WindowsMacPlatforms_MoveCommand_CommandResult(self, asset_processor, ap_setup_fixture, test: MoveTest, project):
         """

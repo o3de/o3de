@@ -16,7 +16,7 @@
 namespace AzToolsFramework
 {
     EditorAction::EditorAction(
-        QWidget* parentWidget,
+        QObject* parentObject,
         AZStd::string contextIdentifier,
         AZStd::string identifier,
         AZStd::string name,
@@ -37,14 +37,10 @@ namespace AzToolsFramework
         , m_toolBarVisibility(toolBarVisibility)
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
-
-        // The action needs to be explicitly added, not just parented on creation, or it won't
-        // show up in widget->actions(), and won't handle some events properly
-        parentWidget->addAction(m_action);
+        m_action = new QAction(m_icon, m_name.c_str(), parentObject);
 
         QObject::connect(
-            m_action, &QAction::triggered, parentWidget,
+            m_action, &QAction::triggered, parentObject,
             [h = AZStd::move(handler)]()
             {
                 h();
@@ -63,7 +59,7 @@ namespace AzToolsFramework
 
             // Trigger the update after the handler is called.
             QObject::connect(
-                m_action, &QAction::triggered, parentWidget,
+                m_action, &QAction::triggered, parentObject,
                 [u = AZStd::move(callbackCopy), a = m_action]()
                 {
                     a->setChecked(u());
@@ -76,6 +72,11 @@ namespace AzToolsFramework
     {
         s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(s_actionManagerInterface, "EditorAction - Could not retrieve instance of ActionManagerInterface");
+    }
+
+    const AZStd::string& EditorAction::GetActionIdentifier() const
+    {
+        return m_identifier;
     }
 
     const AZStd::string& EditorAction::GetActionContextIdentifier() const

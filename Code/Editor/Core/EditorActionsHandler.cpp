@@ -179,10 +179,34 @@ EditorActionsHandler::~EditorActionsHandler()
 
 void EditorActionsHandler::OnActionContextRegistrationHook()
 {
-    AzToolsFramework::ActionContextProperties contextProperties;
-    contextProperties.m_name = "O3DE Editor";
+    // Main Window
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor";
 
-    m_actionManagerInterface->RegisterActionContext("", EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties, m_mainWindow);
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
+
+        m_hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_mainWindow);
+    }
+
+    // Editor Asset Browser
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor - Asset Browser";
+
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, contextProperties);
+    }
+
+    // Editor Entity Property Editor (Entity Inspector)
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor - Entity Inspector";
+
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, contextProperties);
+    }
 }
 
 void EditorActionsHandler::OnActionUpdaterRegistrationHook()

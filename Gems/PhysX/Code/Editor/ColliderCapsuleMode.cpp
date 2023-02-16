@@ -22,14 +22,6 @@ namespace PhysX
         const bool allowAsymmetricalEditing = true;
         m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_capsuleViewportEdit.get(), idPair);
-        m_capsuleViewportEdit->InstallGetRotationOffset(
-            [this]()
-            {
-                AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
-                EditorColliderComponentRequestBus::EventResult(
-                    colliderRotation, m_entityComponentIdPair, &EditorColliderComponentRequests::GetColliderRotation);
-                return colliderRotation;
-            });
         m_capsuleViewportEdit->InstallGetCapsuleRadius(
             [this]()
             {
