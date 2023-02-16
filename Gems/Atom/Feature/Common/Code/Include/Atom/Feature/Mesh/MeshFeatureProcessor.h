@@ -89,6 +89,7 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+            // TODO: Pass in a pool allocator so the vectors can be cache coherent
             ModelDataInstance([[maybe_unused]] int i){ /* hack to fool the compiler */ };
             AZ_DEFAULT_COPY_MOVE(ModelDataInstance);
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }

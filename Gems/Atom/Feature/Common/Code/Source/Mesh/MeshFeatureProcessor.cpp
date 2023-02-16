@@ -624,22 +624,39 @@ namespace AZ
                                 // Submit a draw
                                 MeshInstanceData& instanceData = m_meshInstanceManager[currentInstanceGroup];
 
+                                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = nullptr;
+                                // TODO: maybe resize every instance group in parallel in ResizePerViewInstanceVectors to make the threading simpler
                                 if (instanceData.m_perViewDrawPackets.size() <= viewIndex)
                                 {
                                     AZStd::scoped_lock meshDataLock(m_meshDataMutex);
-                                    instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
-                                }
 
-                                // Cache a cloned drawpacket here
-                                if (!instanceData.m_perViewDrawPackets[viewIndex])
-                                {
                                     // Clone the draw packet
                                     RHI::DrawPacketBuilder drawPacketBuilder;
-                                    instanceData.m_perViewDrawPackets[viewIndex] =
+                                    clonedDrawPacket =
                                         const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+
+                                    instanceData.m_perViewDrawPackets.resize(viewIndex + 1);
+                                    instanceData.m_perViewDrawPackets[viewIndex] = clonedDrawPacket;
                                 }
 
-                                RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
+                                // There is an off-chance we reach this point after the previous condition in another thread re-sized
+                                // but before the previous condition assigned a valid draw packet
+                                if (!instanceData.m_perViewDrawPackets[viewIndex])
+                                {
+                                    // Take a lock to wait for the other thread running the previous condition to finish
+                                    AZStd::scoped_lock meshDataLock(m_meshDataMutex);
+
+                                    // Check again to see if the other thread made an entry for this index or for a different one
+                                    if (!instanceData.m_perViewDrawPackets[viewIndex])
+                                    {
+                                        // Clone the draw packet
+                                        RHI::DrawPacketBuilder drawPacketBuilder;
+                                        instanceData.m_perViewDrawPackets[viewIndex] = const_cast<RHI::DrawPacket*>(
+                                            drawPacketBuilder.Clone(instanceData.m_drawPacket.GetRHIDrawPacket()));
+                                    }
+                                }
+
+                                clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
 
                                 // Get the root constant layout
                                 // TODO: Verify the validity of the root constant interval elsewhere
@@ -1635,6 +1652,7 @@ namespace AZ
                     key.m_lodIndex = static_cast<uint32_t>(modelLodIndex);
                     key.m_meshIndex = static_cast<uint32_t>(meshIndex);
                     key.m_materialId = material->GetId();
+                    //TODO: force instancing off when shaders don't support it or for skinned meshes
                     key.m_forceInstancingOff = Uuid::CreateNull();
                     key.m_stencilRef = stencilRef;
                     key.m_sortKey = m_sortKey;
