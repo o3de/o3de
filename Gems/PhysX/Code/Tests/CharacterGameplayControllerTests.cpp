@@ -151,7 +151,7 @@ namespace PhysX
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         const auto startPosition = basis.m_controller->GetPosition();
-        const int timeStepCount = 10;
+        const int timeStepCount = rand() % 180 + 10;
         const float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
         float totalTime = 0.0f;
 
@@ -163,11 +163,13 @@ namespace PhysX
 
         const auto endPosition = basis.m_controller->GetPosition();
         const auto gravity = basis.m_testScene->GetGravity();
-
+        // The actual distance fallen is quadratic and the relative error is about equal to the timestep divided by the total time.
+        const auto relativeError = (1.0f / 60.0f) / (float(timeStepCount) / 60.0f);
         // calculate distance fallen (d = 0.5 * g * t^2)
-        const float distanceFell = 0.5f * gravity.GetZ() * (totalTime * totalTime);
-        
-        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + distanceFell), 0.01f));
+        const float relativeDistanceFell = 0.5f * gravity.GetZ() * (totalTime * totalTime);
+        const float calculatedDistanceFell = relativeDistanceFell - (relativeDistanceFell * relativeError);
+
+        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + calculatedDistanceFell), 0.0001f));
     }
 
 } // namespace PhysX
