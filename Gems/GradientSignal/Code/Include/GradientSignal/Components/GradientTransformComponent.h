@@ -55,6 +55,7 @@ namespace GradientSignal
 
         bool m_overrideBounds = false;
         AZ::Vector3 m_bounds = AZ::Vector3::CreateOne(); //1m sq default value chosen by design, to start small and expand as needed
+        AZ::Vector3 m_center = AZ::Vector3::CreateZero(); // to handle asymmetrical shapes such as polygon prism
 
         TransformType m_transformType = TransformType::World_ThisEntity;
         bool m_overrideTranslate = false;
@@ -129,6 +130,9 @@ namespace GradientSignal
 
         AZ::Vector3 GetBounds() const override;
         void SetBounds(AZ::Vector3 bounds) override;
+
+        AZ::Vector3 GetCenter() const override;
+        void SetCenter(AZ::Vector3 center) override;
 
         TransformType GetTransformType() const override;
         void SetTransformType(TransformType type) override;

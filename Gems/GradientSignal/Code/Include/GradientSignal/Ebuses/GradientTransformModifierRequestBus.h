@@ -51,6 +51,9 @@ namespace GradientSignal
         virtual AZ::Vector3 GetBounds() const = 0;
         virtual void SetBounds(AZ::Vector3 bounds) = 0;
 
+        virtual AZ::Vector3 GetCenter() const = 0;
+        virtual void SetCenter(AZ::Vector3 center) = 0;
+
         virtual TransformType GetTransformType() const = 0;
         virtual void SetTransformType(TransformType type) = 0;
 
