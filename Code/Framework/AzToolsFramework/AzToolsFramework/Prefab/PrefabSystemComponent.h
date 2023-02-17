@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -53,6 +54,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler
         {
         public:
 
@@ -78,6 +80,10 @@ namespace AzToolsFramework
 
             // SystemTickBus...
             void OnSystemTick() override;
+
+            // AssetBrowserSourceActionNotificationBus...
+            void OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
+            void OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation

@@ -51,9 +51,6 @@ ly_add_target(
             .
             ${pal_dir}
             ${common_dir}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            O3DE_STACK_CAPTURE_DEPTH=${O3DE_STACK_CAPTURE_DEPTH}
 )
 
 ly_add_target(
@@ -94,6 +91,18 @@ ly_add_source_properties(
         AzCore/Component/ComponentApplication.cpp
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG}
+)
+
+# Add the O3DE_STACK_CAPTURE_DEPTH define only to the cpp files for the following allocators
+# This reduces re-compile time when the cache variable value changes.
+set(O3DE_STACK_CAPTURE_DEPTH_DEFINE $<$<NOT:$<STREQUAL:"${O3DE_STACK_CAPTURE_DEPTH}","">>:O3DE_STACK_CAPTURE_DEPTH=${O3DE_STACK_CAPTURE_DEPTH}>)
+ly_add_source_properties(
+    SOURCES
+        AzCore/Memory/OSAllocator.cpp
+        AzCore/Memory/PoolAllocator.cpp
+        AzCore/Memory/SystemAllocator.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${O3DE_STACK_CAPTURE_DEPTH_DEFINE}
 )
 
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
