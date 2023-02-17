@@ -511,29 +511,6 @@ namespace AZ::Internal
 
         return engineRoot;
     }
-
-    enum class InjectLocation : bool
-    {
-        Front,
-        Back
-    };
-
-    void InjectSettingToCommandLine(AZ::SettingsRegistryInterface& settingsRegistry,
-        AZStd::string_view path, AZStd::string_view value,
-        InjectLocation injectLocation = InjectLocation::Front)
-    {
-        AZ::CommandLine commandLine;
-        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
-        AZ::CommandLine::ParamContainer paramContainer;
-        commandLine.Dump(paramContainer);
-
-        auto projectPathOverride = AZStd::string::format(R"(--regset="%.*s=%.*s")",
-            aznumeric_cast<int>(path.size()), path.data(), aznumeric_cast<int>(value.size()), value.data());
-        auto emplaceIter = injectLocation == InjectLocation::Front ? paramContainer.begin() : paramContainer.end();
-        paramContainer.emplace(emplaceIter, AZStd::move(projectPathOverride));
-        commandLine.Parse(paramContainer);
-        AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
-    }
 } // namespace AZ::Internal
 
 namespace AZ::SettingsRegistryMergeUtils
