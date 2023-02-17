@@ -954,7 +954,7 @@ namespace AzToolsFramework
                 }
             }
         }
-        else if (attributeName == AZ_CRC("ValueText", 0x251534d1))
+        else if (attributeName == AZ::Edit::Attributes::ValueText)
         {
             m_defaultValueString.clear();
             reader.Read<AZStd::string>(m_defaultValueString);

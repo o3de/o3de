@@ -16,9 +16,9 @@
 
 // --- Vertex + Pixel Shader ---
 #if MULTI_VIEW_FORWARD
-#include <Atom/Features/Pipeline/Forward/MultiViewForwardPassVertexAndPixel.azsli>
+#include <../Materials/Pipelines/MultiView/MultiViewForwardPassVertexAndPixel.azsli>
 #elif LOW_END_FORWARD
-#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
+#include <../Materials/Pipelines/LowEndPipeline/LowEndForwardPassVertexAndPixel.azsli>
 #else
-#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+#include <../Materials/Pipelines/MainPipeline/ForwardPassVertexAndPixel.azsli>
 #endif

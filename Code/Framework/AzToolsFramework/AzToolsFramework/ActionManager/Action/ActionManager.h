@@ -18,6 +18,22 @@
 
 namespace AzToolsFramework
 {
+    //! This class is used to install an event filter on each widget assigned to an action context
+    //! to properly handle ambiguous shorcuts.
+    class ActionContextWidgetWatcher : public QObject
+    {
+    public:
+        explicit ActionContextWidgetWatcher(EditorActionContext* editorActionContext);
+
+        bool eventFilter(QObject* watched, QEvent* event) override;
+
+    private:
+        static bool TriggerActiveActionsWithShortcut(
+            const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
+
+        EditorActionContext* m_editorActionContext = nullptr;
+    };
+
     //! Action Manager class definition.
     //! Handles Editor Actions and allows registration and access across tools.
     class ActionManager final
@@ -31,10 +47,8 @@ namespace AzToolsFramework
     private:
         // ActionManagerInterface overrides ...
         ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& parentContextIdentifier,
             const AZStd::string& contextIdentifier,
-            const ActionContextProperties& properties,
-            QWidget* widget
+            const ActionContextProperties& properties
         ) override;
         bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const override;
         ActionManagerOperationResult RegisterAction(
@@ -91,14 +105,16 @@ namespace AzToolsFramework
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) const override;
         EditorAction* GetEditorAction(const AZStd::string& actionIdentifier) override;
         const EditorAction* GetEditorActionConst(const AZStd::string& actionIdentifier) const override;
+        ActionContextWidgetWatcher* GetActionContextWidgetWatcher(const AZStd::string& actionContextIdentifier) override;
         ActionVisibility GetActionMenuVisibility(const AZStd::string& actionIdentifier) const override;
         ActionVisibility GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const override;
         QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;
         void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) override;
 
-        void ClearActionContextMap();
+        void Clear();
 
         AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
+        AZStd::unordered_map<AZStd::string, ActionContextWidgetWatcher*> m_actionContextWidgetWatchers;
         AZStd::unordered_map<AZStd::string, EditorAction> m_actions;
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionUpdaters;
         AZStd::unordered_map<AZStd::string, EditorWidgetAction> m_widgetActions;

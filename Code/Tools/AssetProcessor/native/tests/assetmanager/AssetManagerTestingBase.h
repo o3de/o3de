@@ -114,6 +114,11 @@ namespace UnitTests
             AssetBuilderSDK::ProductOutputFlags outputFlags,
             bool outputExtraFile = false);
 
+        const char* GetJobProcessFailText();
+
+        AZ::IO::Path GetCacheDir();
+        AZ::IO::FixedMaxPath GetIntermediateAssetsDir();
+
         int m_argc = 0;
         char** m_argv{};
 

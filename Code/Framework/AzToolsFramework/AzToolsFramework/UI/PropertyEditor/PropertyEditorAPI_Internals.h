@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #ifndef PROPERTYEDITORAPI_INTERNALS_H
 #define PROPERTYEDITORAPI_INTERNALS_H
 
@@ -16,10 +17,12 @@
 // and implement that interface, then register it with the property manager.
 
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzCore/Asset/AssetSerializer.h>
@@ -265,7 +268,19 @@ namespace AzToolsFramework
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
             if (value.has_value())
             {
-                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+                if (!Prefab::IsInspectorOverrideManagementEnabled())
+                {
+                    m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+                }
+                else
+                {
+                    AZ::JsonSerializationResult::ResultCode loadResult =
+                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value());
+                    if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                    {
+                        m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+                    }
+                }
             }
 
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
@@ -503,6 +518,12 @@ namespace AzToolsFramework
 
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
         {
+            // Can bail out here if there's no class metadata (e.g. if the node is a UIElement instead of a DataElement)
+            if (!node->GetClassMetadata())
+            {
+                return;
+            }
+
             WidgetType* wid = static_cast<WidgetType*>(widget);
 
             const AZ::Uuid& actualUUID = node->GetClassMetadata()->m_typeId;
@@ -547,6 +568,12 @@ namespace AzToolsFramework
         virtual void ReadValuesIntoGUI_Internal(QWidget* widget, InstanceDataNode* node) override
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            // Can bail out here if there's no class metadata (e.g. if the node is a UIElement instead of a DataElement)
+            if (!node->GetClassMetadata())
+            {
+                return;
+            }
 
             WidgetType* wid = static_cast<WidgetType*>(widget);
 
