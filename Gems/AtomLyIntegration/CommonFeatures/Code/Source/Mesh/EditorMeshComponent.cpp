@@ -254,6 +254,7 @@ namespace AZ
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
 
+            MaterialComponentRequestBus::Event(GetEntityId(), &MaterialComponentRequestBus::Events::ClearMaterialsOnInvalidSlots);
         }
 
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()
