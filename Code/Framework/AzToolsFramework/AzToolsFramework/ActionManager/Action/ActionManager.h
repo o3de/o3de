@@ -56,19 +56,23 @@ namespace AzToolsFramework
     private:
         // ActionManagerInterface overrides ...
         ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& contextIdentifier, const ActionContextProperties& properties) override;
+            const AZStd::string& contextIdentifier,
+            const ActionContextProperties& properties
+        ) override;
         bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const override;
         ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& actionIdentifier,
             const ActionProperties& properties,
-            AZStd::function<void()> handler) override;
+            AZStd::function<void()> handler
+        ) override;
         ActionManagerOperationResult RegisterCheckableAction(
             const AZStd::string& contextIdentifier,
             const AZStd::string& actionIdentifier,
             const ActionProperties& properties,
             AZStd::function<void()> handler,
-            AZStd::function<bool()> checkStateCallback) override;
+            AZStd::function<bool()> checkStateCallback
+        ) override;
         bool IsActionRegistered(const AZStd::string& actionIdentifier) const override;
         ActionManagerGetterResult GetActionName(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult SetActionName(const AZStd::string& actionIdentifier, const AZStd::string& name) override;
@@ -80,17 +84,16 @@ namespace AzToolsFramework
         ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) override;
         ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) const override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
-        ActionManagerOperationResult InstallEnabledStateCallback(
-            const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback) override;
+        ActionManagerOperationResult InstallEnabledStateCallback(const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback) override;
         ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier) override;
-        ActionManagerOperationResult AddActionToUpdater(
-            const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier) override;
+        ActionManagerOperationResult AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier) override;
         ActionManagerOperationResult RegisterWidgetAction(
             const AZStd::string& widgetActionIdentifier,
             const WidgetActionProperties& properties,
-            AZStd::function<QWidget*()> generator) override;
+            AZStd::function<QWidget*()> generator
+        ) override;
         bool IsWidgetActionRegistered(const AZStd::string& widgetActionIdentifier) const override;
         ActionManagerGetterResult GetWidgetActionName(const AZStd::string& widgetActionIdentifier) override;
         ActionManagerOperationResult SetWidgetActionName(const AZStd::string& widgetActionIdentifier, const AZStd::string& name) override;

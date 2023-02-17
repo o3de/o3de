@@ -7,8 +7,8 @@
  */
 
 #include <QApplication>
-#include <QShortcutEvent>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QShortcutEvent>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -22,22 +22,22 @@ namespace AzToolsFramework
         switch (event->type())
         {
         case QEvent::ShortcutOverride:
-            {
-                shortcutWasTriggered = false;
-            }
+        {
+            shortcutWasTriggered = false;
+        }
         case QEvent::KeyPress:
+        {
+            if (shortcutWasTriggered)
             {
-                if (shortcutWasTriggered)
-                {
-                    // Whenever a shortcut is triggered, the Action Manager system also accepts its ShortcutOverride
-                    // which results in a corresponding KeyPress event to be sent. We eat it at the application level
-                    // to prevent user interactions from triggering both shortcuts and keypresses in one go.
-                    shortcutWasTriggered = false;
-                    return true;
-                }
-
-                break;
+                // Whenever a shortcut is triggered, the Action Manager system also accepts its ShortcutOverride
+                // which results in a corresponding KeyPress event to be sent. We eat it at the application level
+                // to prevent user interactions from triggering both shortcuts and keypresses in one go.
+                shortcutWasTriggered = false;
+                return true;
             }
+
+            break;
+        }
         default:
             break;
         }
@@ -49,54 +49,54 @@ namespace AzToolsFramework
         : m_editorActionContext(editorActionContext)
     {
     }
-
+    
     bool ActionContextWidgetWatcher::eventFilter(QObject* watched, QEvent* event)
     {
         switch (event->type())
         {
         case QEvent::ShortcutOverride:
+        {
+            // QActions default "autoRepeat" to true, which is not an ideal user experience.
+            // We globally disable that behavior here - in the unlikely event a shortcut needs to
+            // replicate it, its owner can instead implement a keyEvent handler
+            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
             {
-                // QActions default "autoRepeat" to true, which is not an ideal user experience.
-                // We globally disable that behavior here - in the unlikely event a shortcut needs to
-                // replicate it, its owner can instead implement a keyEvent handler
-                if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
-                {
-                    return false;
-                }
-
-                auto keyEvent = static_cast<QKeyEvent*>(event);
-                int keyCode = keyEvent->key();
-                Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
-                if (modifiers & Qt::ShiftModifier)
-                {
-                    keyCode += Qt::SHIFT;
-                }
-                if (modifiers & Qt::ControlModifier)
-                {
-                    keyCode += Qt::CTRL;
-                }
-                if (modifiers & Qt::AltModifier)
-                {
-                    keyCode += Qt::ALT;
-                }
-                if (modifiers & Qt::MetaModifier)
-                {
-                    keyCode += Qt::META;
-                }
-
-                QKeySequence keySequence(keyCode);
-                QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-
-                if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
-                {
-                    // Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
-                    ApplicationWatcher::shortcutWasTriggered = true;
-                    event->accept();
-                    return true;
-                }
-
-                break;
+                return false;
             }
+
+            auto keyEvent = static_cast<QKeyEvent*>(event);
+            int keyCode = keyEvent->key();
+            Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+            if (modifiers & Qt::ShiftModifier)
+            {
+                keyCode += Qt::SHIFT;
+            }
+            if (modifiers & Qt::ControlModifier)
+            {
+                keyCode += Qt::CTRL;
+            }
+            if (modifiers & Qt::AltModifier)
+            {
+                keyCode += Qt::ALT;
+            }
+            if (modifiers & Qt::MetaModifier)
+            {
+                keyCode += Qt::META;
+            }
+            
+            QKeySequence keySequence(keyCode);
+            QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+
+            if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
+            {
+                // Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
+                ApplicationWatcher::shortcutWasTriggered = true;
+                event->accept();
+                return true;
+            }
+            
+            break;
+        }
         default:
             break;
         }
@@ -154,19 +154,29 @@ namespace AzToolsFramework
     }
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(
-        const AZStd::string& contextIdentifier, const ActionContextProperties& properties)
+        const AZStd::string& contextIdentifier,
+        const ActionContextProperties& properties)
     {
         if (m_actionContexts.contains(contextIdentifier))
         {
-            return AZ::Failure(
-                AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", contextIdentifier.c_str()));
+            return AZ::Failure(AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", contextIdentifier.c_str()));
         }
 
         EditorActionContext* editorActionContext = new EditorActionContext(contextIdentifier, properties.m_name);
 
-        m_actionContexts.insert({ contextIdentifier, editorActionContext });
+        m_actionContexts.insert(
+            {
+                contextIdentifier,
+                editorActionContext
+            }
+        );
 
-        m_actionContextWidgetWatchers.insert({ contextIdentifier, new ActionContextWidgetWatcher(editorActionContext) });
+        m_actionContextWidgetWatchers.insert(
+            {
+                contextIdentifier,
+                new ActionContextWidgetWatcher(editorActionContext)
+            }
+        );
 
         return AZ::Success();
     }
@@ -187,28 +197,36 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                actionIdentifier.c_str(),
-                contextIdentifier.c_str()));
+                actionIdentifier.c_str(), 
+                contextIdentifier.c_str()
+            ));
         }
 
         if (m_actions.contains(actionIdentifier))
         {
-            return AZ::Failure(
-                AZStd::string::format("Action Manager - Could not register action \"%.s\" twice.", actionIdentifier.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action \"%.s\" twice.",
+                actionIdentifier.c_str()
+            ));
         }
 
-        m_actions.insert({ actionIdentifier,
-                           EditorAction(
-                               actionContextIterator->second,
-                               actionContextIterator->first,
-                               actionIdentifier,
-                               properties.m_name,
-                               properties.m_description,
-                               properties.m_category,
-                               properties.m_iconPath,
-                               properties.m_menuVisibility,
-                               properties.m_toolBarVisibility,
-                               handler) });
+        m_actions.insert(
+            {
+                actionIdentifier,
+                EditorAction(
+                    actionContextIterator->second,
+                    actionContextIterator->first,
+                    actionIdentifier,
+                    properties.m_name,
+                    properties.m_description,
+                    properties.m_category,
+                    properties.m_iconPath,
+                    properties.m_menuVisibility,
+                    properties.m_toolBarVisibility,
+                    handler
+                )
+            }
+        );
         actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
 
         return AZ::Success();
@@ -226,29 +244,37 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                actionIdentifier.c_str(),
-                contextIdentifier.c_str()));
+                actionIdentifier.c_str(), 
+                contextIdentifier.c_str()
+            ));
         }
 
         if (m_actions.contains(actionIdentifier))
         {
-            return AZ::Failure(
-                AZStd::string::format("Action Manager - Could not register action \"%.s\" twice.", actionIdentifier.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action \"%.s\" twice.",
+                actionIdentifier.c_str()
+            ));
         }
 
-        m_actions.insert({ actionIdentifier,
-                           EditorAction(
-                               actionContextIterator->second,
-                               actionContextIterator->first,
-                               actionIdentifier,
-                               properties.m_name,
-                               properties.m_description,
-                               properties.m_category,
-                               properties.m_iconPath,
-                               properties.m_menuVisibility,
-                               properties.m_toolBarVisibility,
-                               handler,
-                               checkStateCallback) });
+        m_actions.insert(
+            {
+                actionIdentifier,
+                EditorAction(
+                    actionContextIterator->second,
+                    actionContextIterator->first,
+                    actionIdentifier,
+                    properties.m_name,
+                    properties.m_description,
+                    properties.m_category,
+                    properties.m_iconPath,
+                    properties.m_menuVisibility,
+                    properties.m_toolBarVisibility,
+                    handler,
+                    checkStateCallback
+                )
+            }
+        );
         actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
 
         return AZ::Success();
@@ -258,7 +284,7 @@ namespace AzToolsFramework
     {
         return m_actions.contains(actionIdentifier);
     }
-
+    
     ActionManagerGetterResult ActionManager::GetActionName(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -299,8 +325,7 @@ namespace AzToolsFramework
         return AZ::Success(actionIterator->second.GetDescription());
     }
 
-    ActionManagerOperationResult ActionManager::SetActionDescription(
-        const AZStd::string& actionIdentifier, const AZStd::string& description)
+    ActionManagerOperationResult ActionManager::SetActionDescription(const AZStd::string& actionIdentifier, const AZStd::string& description)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
@@ -363,7 +388,7 @@ namespace AzToolsFramework
                 "Action Manager - Could not set icon path of action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
-
+        
         actionIterator->second.SetIconPath(iconPath);
         return AZ::Success();
     }
@@ -402,15 +427,14 @@ namespace AzToolsFramework
         if (actionIterator == m_actions.end())
         {
             return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not install enabled state callback on action \"%s\" as no action with that identifier was "
-                "registered.",
+                "Action Manager - Could not install enabled state callback on action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
 
         actionIterator->second.AddEnabledStateCallback(AZStd::move(enabledStateCallback));
         return AZ::Success();
     }
-
+    
     ActionManagerOperationResult ActionManager::UpdateAction(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -420,26 +444,27 @@ namespace AzToolsFramework
                 "Action Manager - Could not update action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
-
+        
         actionIterator->second.Update();
 
         return AZ::Success();
     }
-
+    
     ActionManagerOperationResult ActionManager::RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier)
     {
         if (m_actionUpdaters.contains(actionUpdaterIdentifier))
         {
-            return AZ::Failure(
-                AZStd::string::format("Action Manager - Could not register action updater \"%s\" twice.", actionUpdaterIdentifier.c_str()));
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not register action updater \"%s\" twice.",
+                actionUpdaterIdentifier.c_str()
+            ));
         }
 
         m_actionUpdaters.insert({ actionUpdaterIdentifier, {} });
         return AZ::Success();
     }
 
-    ActionManagerOperationResult ActionManager::AddActionToUpdater(
-        const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier)
+    ActionManagerOperationResult ActionManager::AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier)
     {
         auto actionUpdaterIterator = m_actionUpdaters.find(actionUpdaterIdentifier);
         if (actionUpdaterIterator == m_actionUpdaters.end())
@@ -447,15 +472,17 @@ namespace AzToolsFramework
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not add action \"%s\" to action updater \"%s\" - action updater has not been registered.",
                 actionIdentifier.c_str(),
-                actionUpdaterIdentifier.c_str()));
+                actionUpdaterIdentifier.c_str()
+            ));
         }
-
+        
         if (!m_actions.contains(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "ToolBar Manager - Could not add action \"%s\" to action updater \"%s\" - action could not be found.",
                 actionIdentifier.c_str(),
-                actionUpdaterIdentifier.c_str()));
+                actionUpdaterIdentifier.c_str()
+            ));
         }
 
         if (actionUpdaterIterator->second.contains(actionIdentifier))
@@ -463,7 +490,8 @@ namespace AzToolsFramework
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not add action \"%s\" to action updater \"%s\" twice.",
                 actionIdentifier.c_str(),
-                actionUpdaterIdentifier.c_str()));
+                actionUpdaterIdentifier.c_str()
+            ));
         }
 
         actionUpdaterIterator->second.insert(actionIdentifier);
@@ -477,7 +505,8 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not trigger updates for action updater \"%s\" - action updater has not been registered.",
-                actionUpdaterIdentifier.c_str()));
+                actionUpdaterIdentifier.c_str()
+            ));
         }
 
         for (const AZStd::string& actionIdentifier : actionUpdaterIterator->second)
@@ -511,8 +540,16 @@ namespace AzToolsFramework
         }
 
         m_widgetActions.insert(
-            { widgetActionIdentifier,
-              EditorWidgetAction(widgetActionIdentifier, properties.m_name, properties.m_category, AZStd::move(generator)) });
+            {
+                widgetActionIdentifier,
+                EditorWidgetAction(
+                  widgetActionIdentifier,
+                  properties.m_name,
+                  properties.m_category,
+                  AZStd::move(generator)
+                )
+            }
+        );
 
         return AZ::Success();
     }
@@ -535,7 +572,8 @@ namespace AzToolsFramework
         return AZ::Success(widgetActionIterator->second.GetName());
     }
 
-    ActionManagerOperationResult ActionManager::SetWidgetActionName(const AZStd::string& widgetActionIdentifier, const AZStd::string& name)
+    ActionManagerOperationResult ActionManager::SetWidgetActionName(
+        const AZStd::string& widgetActionIdentifier, const AZStd::string& name)
     {
         auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
         if (widgetActionIterator == m_widgetActions.end())
@@ -570,7 +608,8 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not set category of widget action \"%s\" as no widget action with that identifier was registered.",
-                widgetActionIdentifier.c_str()));
+                widgetActionIdentifier.c_str())
+            );
         }
 
         widgetActionIterator->second.SetCategory(category);
@@ -583,18 +622,24 @@ namespace AzToolsFramework
         auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register mode \"%s\" for action context \"%s\" as this context has not been registered.",
-                modeIdentifier.c_str(),
-                actionContextIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not register mode \"%s\" for action context \"%s\" as this context has not been registered.",
+                    modeIdentifier.c_str(),
+                    actionContextIdentifier.c_str()
+                )
+            );
         }
 
         if (actionContextIterator->second->HasMode(modeIdentifier))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register mode \"%s\" for action context \"%s\" - mode with the same identifier already exists.",
-                modeIdentifier.c_str(),
-                actionContextIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not register mode \"%s\" for action context \"%s\" - mode with the same identifier already exists.",
+                    modeIdentifier.c_str(),
+                    actionContextIdentifier.c_str()
+                )
+            );
         }
 
         actionContextIterator->second->AddMode(modeIdentifier);
@@ -607,19 +652,25 @@ namespace AzToolsFramework
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not set mode \"%s\" to action \"%s\" as no action with that identifier was registered.",
-                modeIdentifier.c_str(),
-                actionIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set mode \"%s\" to action \"%s\" as no action with that identifier was registered.",
+                    modeIdentifier.c_str(),
+                    actionIdentifier.c_str()
+                )
+            );
         }
 
         auto actionContextIterator = m_actionContexts.find(actionIterator->second.GetActionContextIdentifier());
         if (!actionContextIterator->second->HasMode(modeIdentifier))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not set mode \"%s\" to action \"%s\" as no mode with that identifier was registered.",
-                modeIdentifier.c_str(),
-                actionIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set mode \"%s\" to action \"%s\" as no mode with that identifier was registered.",
+                    modeIdentifier.c_str(),
+                    actionIdentifier.c_str()
+                )
+            );
         }
 
         actionIterator->second.AssignToMode(modeIdentifier);
@@ -631,10 +682,12 @@ namespace AzToolsFramework
         auto actionIterator = m_actions.find(actionIdentifier);
         if (actionIterator == m_actions.end())
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not retrieve whether action \"%s\" is active in current mode as no action with that identifier was "
-                "registered.",
-                actionIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not retrieve whether action \"%s\" is active in current mode as no action with that identifier was registered.",
+                    actionIdentifier.c_str()
+                )
+            );
         }
 
         return AZ::Success(actionIterator->second.IsActiveInCurrentMode());
@@ -646,19 +699,24 @@ namespace AzToolsFramework
         auto actionContextIterator = m_actionContexts.find(actionContextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the action context has not been "
-                "registered.",
-                actionContextIdentifier.c_str(),
-                modeIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the action context has not been registered.",
+                    actionContextIdentifier.c_str(),
+                    modeIdentifier.c_str()
+                )
+            );
         }
 
         if (!actionContextIterator->second->HasMode(modeIdentifier))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the mode has not been registered.",
-                actionContextIdentifier.c_str(),
-                modeIdentifier.c_str()));
+            return AZ::Failure(
+                AZStd::string::format(
+                    "Action Manager - Could not set active mode for action context \"%s\" to \"%s\" as the mode has not been registered.",
+                    actionContextIdentifier.c_str(),
+                    modeIdentifier.c_str()
+                )
+            );
         }
 
         if (actionContextIterator->second->SetActiveMode(modeIdentifier))
@@ -726,7 +784,8 @@ namespace AzToolsFramework
         return &actionIterator->second;
     }
 
-    ActionContextWidgetWatcher* ActionManager::GetActionContextWidgetWatcher(const AZStd::string& actionContextIdentifier)
+    ActionContextWidgetWatcher* ActionManager::GetActionContextWidgetWatcher(
+        const AZStd::string& actionContextIdentifier)
     {
         auto actionContextWidgetWatcherIterator = m_actionContextWidgetWatchers.find(actionContextIdentifier);
         if (actionContextWidgetWatcherIterator == m_actionContextWidgetWatchers.end())
@@ -785,7 +844,8 @@ namespace AzToolsFramework
             {
                 UpdateAction(actionIdentifier);
                 return true;
-            });
+            }
+        );
     }
 
 } // namespace AzToolsFramework
