@@ -44,5 +44,3 @@ class TestAutomation(EditorTestSuite):
 
     class test_Multiplayer_BasicConnectivity_Connects_ClientServer(EditorSingleTest):
         from .tests import Multiplayer_BasicConnectivity_Connects_ClientServer as test_module
-        
-
