@@ -23,4 +23,13 @@ execute_process(
     OUTPUT_FILE ${assertion_file}
 )
 
-set(CPACK_EXTERNAL_BUILT_PACKAGES "${snap_file}" "${assertion_file}")
+# Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
+# which is too late to be uploaded.
+file(COPY_FILE
+                ${snap_file}
+                "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap"
+            )
+file(COPY_FILE
+                ${assertion_file}
+                "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap.assert"
+            )
