@@ -16,8 +16,8 @@ execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
-set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap")
-set(assertion_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap.assert")
+set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_amd64.snap")
+set(assertion_file "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_${CPACK_PACKAGE_VERSION}_amd64.snap.assert")
 execute_process(
     COMMAND snapcraft sign-build ${snap_file}
     OUTPUT_FILE ${assertion_file}
