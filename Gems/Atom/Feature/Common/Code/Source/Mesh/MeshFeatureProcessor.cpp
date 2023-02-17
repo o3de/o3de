@@ -1092,7 +1092,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     m_modelData.GetData<ModelDataIndex::Instance>(meshHandle).m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;

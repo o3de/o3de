@@ -29,4 +29,6 @@ class PixelGeometryData_Eye
 
     // Eye
     float3 localPosition;
+    float4x4 objectToWorld;
+    float3x3 objectToWorldIT;
 };

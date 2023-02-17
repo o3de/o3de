@@ -15,6 +15,10 @@
 #define VsInput         VsInput_BasePBR
 #endif
 
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_BasePBR
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_BasePBR
 #endif
@@ -31,6 +35,11 @@ struct VsInput_BasePBR
     // Extended fields (only referenced in this azsl file)...
     float2 uv0 : UV0;
     float2 uv1 : UV1;
+};
+
+struct VsSystemValues_BasePBR
+{
+    uint instanceId;
 };
 
 struct VsOutput_BasePBR

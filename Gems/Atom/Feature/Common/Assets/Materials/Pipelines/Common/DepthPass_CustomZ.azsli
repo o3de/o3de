@@ -13,10 +13,11 @@
 #include MATERIAL_TYPE_AZSLI_FILE_PATH
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
 VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN, instanceId);
+    VsSystemValues SV;
+    SV.instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 
@@ -27,8 +28,7 @@ struct PsOutput
 
 PsOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
-    uint instanceId = IN.m_instanceId;
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, instanceId);
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
 
     // Pixel clipping can be done here
     EvaluateSurface(geoData);

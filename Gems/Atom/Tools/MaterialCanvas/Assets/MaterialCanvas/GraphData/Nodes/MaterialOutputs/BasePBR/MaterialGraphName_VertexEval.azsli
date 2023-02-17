@@ -12,7 +12,7 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_MaterialGraphName(IN)
+#define EvaluateVertexGeometry(IN, SV)      EvaluateVertexGeometry_MaterialGraphName(IN, SV)
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
@@ -22,9 +22,10 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 normal,
     float4 tangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     float3 bitangent = cross(normal, (float3)tangent);
 
@@ -53,15 +54,21 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.uvs[1] = uv1;
     output.normal = normal;
     output.tangent = tangent;
+
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.instanceId);
 }

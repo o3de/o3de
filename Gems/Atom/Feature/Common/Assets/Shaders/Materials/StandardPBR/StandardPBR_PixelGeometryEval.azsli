@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace, instanceId)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace, instanceId)
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace)
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
@@ -28,7 +28,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     float3 bitangent,
     float2 uvs[UvSetCount],
     bool isFrontFace,
-    uint instanceId)
+    float4x4 objectToWorld)
 {
     PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
@@ -39,17 +39,16 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uvs, isFrontFace, positionSV.z, positionSV.w, instanceId, geoData.isDisplacementClipped);
+                      geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace, uint instanceId)
+PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
 {
-    // TODO: SetPixelDepth is duplicating this fetch of the world matrix
-    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
-    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(instanceId);
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
@@ -62,5 +61,5 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFr
         vertexBitangent,
         IN.uvs,
         isFrontFace,
-        instanceId);
+        objectToWorld);
 }

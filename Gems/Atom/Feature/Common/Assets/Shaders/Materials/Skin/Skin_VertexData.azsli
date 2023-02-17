@@ -15,6 +15,10 @@
 #define VsInput         VsInput_Skin
 #endif
 
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_Skin
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_Skin
 #endif
@@ -37,6 +41,11 @@ struct VsInput_Skin
     // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
     // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
     float4 m_optional_blendMask : COLOR0;
+};
+
+struct VsSystemValues_Skin
+{
+    uint instanceId;
 };
 
 struct VsOutput_Skin

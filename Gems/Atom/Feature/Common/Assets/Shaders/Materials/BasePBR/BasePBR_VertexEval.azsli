@@ -12,7 +12,7 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN, instanceId)      EvaluateVertexGeometry_BasePBR(IN, instanceId)
+#define EvaluateVertexGeometry(IN, SV)      EvaluateVertexGeometry_BasePBR(IN, SV)
 #endif
 
 #include <viewsrg.srgi>
@@ -27,7 +27,7 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     uint instanceId)
 {
     VsOutput output;
-    output.m_instanceId = instanceId;
+
     float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
@@ -40,10 +40,14 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     output.normal = normal;
     output.tangent = tangent;
 
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, uint instanceId)
+VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_BasePBR(
         IN.position,
@@ -51,5 +55,5 @@ VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, uint instanceId)
         IN.tangent,
         IN.uv0,
         IN.uv1,
-        instanceId);
+        SV.instanceId);
 }

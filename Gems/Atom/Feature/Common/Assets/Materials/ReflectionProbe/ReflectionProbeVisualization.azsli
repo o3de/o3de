@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-    
+
+#include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/VertexUtility.azsli>
@@ -20,6 +21,13 @@
         float3 normal : NORMAL;
     };
 
+    // Even though this is unused, we still need to define it so the shared ForwardPassVertexAndPixel.azsli
+    // file has a way to set the instanceId
+    struct VsSystemValues
+    {
+        uint instanceId;
+    };
+
     struct VsOutput
     {
         precise linear centroid float4 position : SV_Position;
@@ -27,10 +35,10 @@
         float3 worldPosition : UV0;
     };
     
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
     {        
         VsOutput output;
-        output.worldPosition = LocalSpaceToWorldSpace(IN.position);
+        output.worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.position, 1.0)).xyz;
         output.position = WorldSpaceToClipSpace(output.worldPosition);
         output.normal = IN.normal;
         return output;

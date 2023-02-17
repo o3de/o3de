@@ -19,9 +19,9 @@
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     float4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
-     uint instanceId,
      out bool isClipped)
 {
     float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
@@ -37,7 +37,7 @@
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         parallaxOverallFactor, parallaxOverallOffset, 
-        DrawSrg::GetWorldMatrix(instanceId), uvMatrix, uvMatrixInverse,
+        objectToWorld, uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
 }
 
@@ -49,12 +49,12 @@
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     uint instanceId,
+     float4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
     float depthCS = 1.0;
     bool isClipped;
     
-    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, instanceId, isClipped);
+    MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }

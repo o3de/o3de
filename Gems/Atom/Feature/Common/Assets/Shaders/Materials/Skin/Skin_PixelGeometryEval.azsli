@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace, instanceId)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_Skin(IN, isFrontFace)
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
@@ -39,8 +39,8 @@ PixelGeometryData EvaluatePixelGeometry_Skin(
 
 PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);

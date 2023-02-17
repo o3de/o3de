@@ -12,10 +12,11 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 
 // --- Vertex Shader ---
-
 VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN, instanceId);
+    VsSystemValues SV;
+    SV.instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 
@@ -28,9 +29,7 @@ VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     // ------- Geometry -> Surface -> Lighting -------
-
-    uint instanceId = IN.m_instanceId;
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace, instanceId);
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
 
     Surface surface = EvaluateSurface(geoData);
 
