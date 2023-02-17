@@ -158,7 +158,7 @@ namespace AzFramework
 
     void TransformComponent::Deactivate()
     {
-        EBUS_EVENT_ID(m_parentId, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+        AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
         auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
         if (parentTransform)
         {
@@ -435,7 +435,7 @@ namespace AzFramework
     AZStd::vector<AZ::EntityId> TransformComponent::GetChildren()
     {
         AZStd::vector<AZ::EntityId> children;
-        EBUS_EVENT_ID(GetEntityId(), AZ::TransformHierarchyInformationBus, GatherChildren, children);
+        AZ::TransformHierarchyInformationBus::Event(GetEntityId(), &AZ::TransformHierarchyInformationBus::Events::GatherChildren, children);
         return children;
     }
 
@@ -444,7 +444,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> descendants = GetChildren();
         for (size_t i = 0; i < descendants.size(); ++i)
         {
-            EBUS_EVENT_ID(descendants[i], AZ::TransformHierarchyInformationBus, GatherChildren, descendants);
+            AZ::TransformHierarchyInformationBus::Event(
+                descendants[i], &AZ::TransformHierarchyInformationBus::Events::GatherChildren, descendants);
         }
         return descendants;
     }
@@ -454,7 +455,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> descendants = { GetEntityId() };
         for (size_t i = 0; i < descendants.size(); ++i)
         {
-            EBUS_EVENT_ID(descendants[i], AZ::TransformHierarchyInformationBus, GatherChildren, descendants);
+            AZ::TransformHierarchyInformationBus::Event(
+                descendants[i], &AZ::TransformHierarchyInformationBus::Events::GatherChildren, descendants);
         }
         return descendants;
     }
@@ -577,17 +579,18 @@ namespace AzFramework
 
             if (oldParent.IsValid())
             {
-                EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+                AZ::TransformNotificationBus::Event(
+                    m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
                 m_transformChangedEvent.Signal(m_localTM, m_worldTM);
             }
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnParentChanged, oldParent, parentId);
+        AZ::TransformNotificationBus::Event(m_notificationBus, &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
         if (oldParent.IsValid() && oldParent != parentId) // Don't send removal notification while activating.
         {
-            EBUS_EVENT_ID(oldParent, AZ::TransformNotificationBus, OnChildRemoved, GetEntityId());
+            AZ::TransformNotificationBus::Event(oldParent, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
             auto oldParentTransform = AZ::TransformBus::FindFirstHandler(oldParent);
             if (oldParentTransform)
             {
@@ -595,7 +598,7 @@ namespace AzFramework
             }
         }
 
-        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+        AZ::TransformNotificationBus::Event(parentId, &AZ::TransformNotificationBus::Events::OnChildAdded, GetEntityId());
         auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
         if (newParentTransform)
         {
@@ -622,7 +625,8 @@ namespace AzFramework
         if (m_parentTM)
         {
             m_worldTM = parentWorldTM * m_localTM;
-            EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+            AZ::TransformNotificationBus::Event(
+                m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
             m_transformChangedEvent.Signal(m_localTM, m_worldTM);
         }
     }
@@ -638,7 +642,8 @@ namespace AzFramework
             m_localTM = m_worldTM;
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        AZ::TransformNotificationBus::Event(
+            m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
 
         AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
@@ -659,7 +664,8 @@ namespace AzFramework
             m_worldTM = m_localTM;
         }
 
-        EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
+        AZ::TransformNotificationBus::Event(
+            m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
     }
 

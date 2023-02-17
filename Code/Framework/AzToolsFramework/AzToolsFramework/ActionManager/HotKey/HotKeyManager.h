@@ -15,6 +15,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+class QWidget;
+
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
@@ -23,7 +25,7 @@ namespace AzToolsFramework
 
     //! HotKey Manager class definition.
     //! Handles Editor HotKeys and allows access across tools.
-    class HotKeyManager
+    class HotKeyManager final
         : public HotKeyManagerInterface
     {
     public:
@@ -31,6 +33,8 @@ namespace AzToolsFramework
         virtual ~HotKeyManager();
 
         // HotKeyManagerInterface overrides ...
+        HotKeyManagerOperationResult AssignWidgetToActionContext(const AZStd::string& contextIdentifier, QWidget* widget) override;
+        HotKeyManagerOperationResult RemoveWidgetFromActionContext(const AZStd::string& contextIdentifier, QWidget* widget) override;
         HotKeyManagerOperationResult SetActionHotKey(const AZStd::string& actionIdentifier, const AZStd::string& hotKey) override;
 
     private:

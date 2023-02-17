@@ -69,7 +69,7 @@ namespace PhysX
 
     CharacterControllerComponent::~CharacterControllerComponent()
     {
-        DisableController();
+        DestroyController();
     }
 
     // AZ::Component
@@ -97,23 +97,26 @@ namespace PhysX
         AZ::EntityBus::Handler::BusConnect(GetEntityId());
     }
 
-    void CharacterControllerComponent::OnEntityActivated(const AZ::EntityId& entityId)
+    void CharacterControllerComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         AZ::EntityBus::Handler::BusDisconnect();
 
         CreateController();
-
-        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-        Physics::CharacterRequestBus::Handler::BusConnect(entityId);
-        Physics::CollisionFilteringRequestBus::Handler::BusConnect(entityId);
-        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
 
     void CharacterControllerComponent::Deactivate()
     {
-        DisableController();
+        DestroyController();
 
         AZ::EntityBus::Handler::BusDisconnect();
+
+        // The following buses cannot be disconnected inside DestroyController
+        // because while the character is disabled (which internally is the same
+        // as being destroyed in character controllers) the buses need to keep
+        // being responsive (to fake they are created but disabled), for example
+        // to respond false to IsPhysicsEnabled or IsPresent.
+        // These buses' implementation in this class are protected to handle
+        // the body being invalid.
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -249,7 +252,7 @@ namespace PhysX
 
     void CharacterControllerComponent::DisablePhysics()
     {
-        DisableController();
+        DestroyController();
     }
 
     bool CharacterControllerComponent::IsPhysicsEnabled() const
@@ -586,30 +589,39 @@ namespace PhysX
                 sceneInterface->RegisterSceneSimulationStartHandler(m_attachedSceneHandle, m_sceneSimulationStartHandler);
             }
         }
+
+        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+        Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
+        Physics::CollisionFilteringRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+
+        Physics::CharacterNotificationBus::Event(
+            GetEntityId(), &Physics::CharacterNotificationBus::Events::OnCharacterActivated, GetEntityId());
     }
 
-    void CharacterControllerComponent::DisableController()
+    void CharacterControllerComponent::DestroyController()
     {
         if (auto* controller = GetController())
         {
+            Physics::CharacterNotificationBus::Event(
+                GetEntityId(), &Physics::CharacterNotificationBus::Events::OnCharacterDeactivated, GetEntityId());
+
             controller->DisablePhysics();
+
+            // Needs to be disconnected before calling RemoveSimulatedBody otherwise
+            // it will end up re-entring into this same function.
+            m_onSimulatedBodyRemovedHandler.Disconnect(); 
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, controller->m_bodyHandle);
             }
 
-            DestroyController();
+            m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+            m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+            m_sceneSimulationStartHandler.Disconnect();
+            m_postSimulateHandler.Disconnect();
+            CharacterControllerRequestBus::Handler::BusDisconnect();
         }
-    }
-
-    void CharacterControllerComponent::DestroyController()
-    {
-        m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-        m_sceneSimulationStartHandler.Disconnect();
-        m_postSimulateHandler.Disconnect();
-        m_onSimulatedBodyRemovedHandler.Disconnect();
-        CharacterControllerRequestBus::Handler::BusDisconnect();
     }
 } // namespace PhysX

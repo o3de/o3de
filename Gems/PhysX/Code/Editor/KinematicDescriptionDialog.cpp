@@ -8,9 +8,7 @@
 
 #include <Editor/KinematicDescriptionDialog.h>
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <Editor/ui_KinematicDescriptionDialog.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 static constexpr const char* const SimulatedDescription = "With <b>Simulated</b> rigid bodies, you can use physics forces "
                                                   "(gravity, collision, etc.) to control the movement and "
@@ -88,7 +86,6 @@ namespace PhysX
 
             UpdateDialogText();
         }
-
 
         void KinematicDescriptionDialog::UpdateDialogText()
         {

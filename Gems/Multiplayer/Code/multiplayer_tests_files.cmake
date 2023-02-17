@@ -23,6 +23,7 @@ set(FILES
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/LocalPredictionPlayerInputTests.cpp
+    Tests/MultiplayerComponentTests.cpp
     Tests/MultiplayerSystemTests.cpp
     Tests/NetworkCharacterTests.cpp
     Tests/NetworkEntityTests.cpp

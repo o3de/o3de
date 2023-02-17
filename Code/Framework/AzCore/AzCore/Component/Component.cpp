@@ -159,6 +159,15 @@ namespace AZ
         }
     }
 
+    AZStd::string Component::GetSerializedIdentifier() const
+    {
+        return AZStd::string();
+    }
+
+    void Component::SetSerializedIdentifier(AZStd::string)
+    {
+    }
+
     //=========================================================================
     // ReflectInternal
     //=========================================================================
