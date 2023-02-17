@@ -89,7 +89,8 @@ namespace AzToolsFramework
 
             if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
             {
-                // Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
+                // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
+                // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
                 ApplicationWatcher::shortcutWasTriggered = true;
                 event->accept();
                 return true;
