@@ -225,6 +225,12 @@ namespace AZ
             }
 
             m_dx12Device = dx12Device.Get();
+            Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+            if (!SUCCEEDED(m_dx12Device->QueryInterface(dxgiDevice.GetAddressOf()))
+            {
+                AZ_Assert(false, "Failed to get the DXGI Device");
+            }
+            m_dxgiDevice = dxgiDevice.Get();
             m_dxgiFactory = physicalDevice.GetFactory();
             m_dxgiAdapter = physicalDevice.GetAdapter();
             

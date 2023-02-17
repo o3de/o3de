@@ -461,6 +461,21 @@ namespace AZ
             AssertSuccess(m_dx12Device->CreateCommittedResource(
                 &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
 
+            if (m_dxgiDevice && heapType == D3D12_HEAP_TYPE_DEFAULT) // requesting device memory
+            {
+                Microsoft::WRL::ComPtr<IDXGIResource> dxgiResource;
+                if (SUCCEEDED(resource->QueryInterface(dxgiResource.GetAddressOf())))
+                )
+                {
+                    DXGI_RESIDENCY actualResidency;
+                    if (SUCCEEDED(m_dxgiDevice->QueryResourceResidency(&dxgiResource, &actualResidency, 1)))
+                    {
+                        AZ_Assert(actualResidency == DXGI_RESIDENCY_FULLY_RESIDENT, "Resource requested device memory and got host");
+                    }
+                }
+            }
+
+
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             allocationInfo.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
             allocationInfo.SizeInBytes = RHI::AlignUp(resourceDesc.Width, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);

@@ -178,6 +178,7 @@ namespace AZ
             void InitFeatures();
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
+            RHI::Ptr<IDXGIDevice> m_dxgiDevice;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
 
