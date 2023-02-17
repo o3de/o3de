@@ -44,6 +44,20 @@ namespace AZ::IO::Internal
         return HasDrivePrefix(prefix.begin(), prefix.end());
     }
 
+    // Returns whether the path prefix models a Windows UNC Path
+    // https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats#unc-paths
+    static constexpr bool IsUncPath(AZStd::string_view path, const char preferredSeparator)
+    {
+        // Posix paths are never a Windows UNC path
+        if (preferredSeparator == PosixPathSeparator)
+        {
+            return false;
+        }
+
+        // A windows network drive has the form of \\<text> such as "\\server"
+        return path.size() >= 3 && IsSeparator(path[0]) && IsSeparator(path[1]) && !IsSeparator(path[2]);
+    }
+
     //! Returns an iterator past the end of the consumed root name
     //! Windows root names can have include drive letter within them
     template <typename InputIt>
@@ -119,7 +133,7 @@ namespace AZ::IO::Internal
                 }
             }
 
-            if (path.size() >= 3 && Internal::IsSeparator(path[1]) && !Internal::IsSeparator(path[2]))
+            if (IsUncPath(path, preferredSeparator))
             {
                 // Find the next path separator for network paths that have the form of \\server\share
                 constexpr AZStd::string_view PathSeparators = { "/\\" };

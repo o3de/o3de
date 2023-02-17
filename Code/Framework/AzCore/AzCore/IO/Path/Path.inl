@@ -13,6 +13,14 @@
 
 #include <AzCore/IO/Path/PathIterable.inl>
 
+namespace AZ::IO::Internal
+{
+    // Helper function for url quoting a relative path string
+    // Only implemented in Path.cpp for AZStd::string and AZStd::fixed_string<MaxPathLength>
+    template <class StringType>
+    extern constexpr StringType AsUri(const PathView& pathView) noexcept;
+}
+
 //! PathView implementation
 namespace AZ::IO
 {
@@ -216,6 +224,18 @@ namespace AZ::IO
         return resultPath;
     }
 
+    // as_uri
+    // Encodes the path suitable for using in a URI
+    constexpr AZStd::fixed_string<MaxPathLength> PathView::AsUri() const noexcept
+    {
+        return FixedMaxPathStringAsUri();
+    }
+
+    constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsUri() const noexcept
+    {
+        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
+    }
+
     // decomposition
     constexpr auto PathView::RootName() const -> PathView
     {
@@ -261,6 +281,11 @@ namespace AZ::IO
     [[nodiscard]] constexpr bool PathView::empty() const noexcept
     {
         return m_path.empty();
+    }
+
+    constexpr const char PathView::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
     }
 
     [[nodiscard]] constexpr bool PathView::HasRootName() const
@@ -1029,6 +1054,25 @@ namespace AZ::IO
         return resultPath;
     }
 
+    // as_uri
+    // Encodes the path suitable for using in a URI
+    template <typename StringType>
+    constexpr auto BasicPath<StringType>::AsUri() const -> string_type
+    {
+        return Internal::AsUri<string_type>(*this);
+    }
+    template <typename StringType>
+    AZStd::string BasicPath<StringType>::StringAsUri() const
+    {
+        return Internal::AsUri<AZStd::string>(*this);
+    }
+
+    template <typename StringType>
+    constexpr AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsUri() const noexcept
+    {
+        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
+    }
+
     template <typename StringType>
     constexpr void BasicPath<StringType>::swap(BasicPath& rhs) noexcept
     {
@@ -1153,6 +1197,12 @@ namespace AZ::IO
     [[nodiscard]] constexpr bool BasicPath<StringType>::empty() const noexcept
     {
         return m_path.empty();
+    }
+
+    template <typename StringType>
+    constexpr const char BasicPath<StringType>::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
     }
 
     template <typename StringType>
