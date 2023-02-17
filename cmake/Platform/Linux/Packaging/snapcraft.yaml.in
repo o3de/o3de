@@ -1,4 +1,4 @@
-name: ${CPACK_PACKAGE_NAME}
+name: o3de
 version: '${CPACK_PACKAGE_VERSION}'
 summary: O3DE Engine
 description: |
