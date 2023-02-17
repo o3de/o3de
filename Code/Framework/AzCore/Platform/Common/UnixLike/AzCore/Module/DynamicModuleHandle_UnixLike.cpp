@@ -21,7 +21,7 @@ namespace AZ
     namespace Platform
     {
         AZ::IO::FixedMaxPath GetModulePath();
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen);
+        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
         void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     }
 
