@@ -13,10 +13,6 @@ include(${CPACK_CODESIGN_SCRIPT})
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
     set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_NAME}_amd64.snap")
     set(assertion_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert")
-    add_custom_command(OUTPUT ${assertion_file}
-        COMMAND snapcraft sign-build ${snap_file} > ${assertion_file}
-        VERBATIM
-    )
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     set(deb_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb")
     set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256")
@@ -76,9 +72,9 @@ if(CPACK_UPLOAD_URL)
 
             # Generate a assert file for latest and upload it
             set(latest_assertion_file ${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest_amd64.snap.assert)
-            add_custom_command(OUTPUT ${latest_assertion_file}
-                COMMAND snapcraft sign-build ${latest_snap_file} > ${latest_assertion_file}
-                VERBATIM
+            file(COPY_FILE
+                ${assertion_file}
+                ${latest_assertion_file}
             )
             ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_assertion_file}")
         elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")

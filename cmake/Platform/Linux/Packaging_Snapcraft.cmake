@@ -13,6 +13,14 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
 
 # build snap
 execute_process (COMMAND snapcraft --verbose
-                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY})
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
+)
 
-set(CPACK_EXTERNAL_BUILT_PACKAGES "${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
+set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_NAME}_amd64.snap")
+set(assertion_file "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert")
+execute_process(
+    COMMAND snapcraft sign-build ${snap_file}
+    OUTPUT_FILE ${assertion_file}
+)
+
+set(CPACK_EXTERNAL_BUILT_PACKAGES "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap" "${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert")
