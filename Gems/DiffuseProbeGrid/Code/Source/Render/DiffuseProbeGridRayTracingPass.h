@@ -63,8 +63,10 @@ namespace AZ
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
+
+            RHI::ShaderInputNameIndex m_maxRecursionDepthNameIndex = "m_maxRecursionDepth";
+            static const uint32_t MaxRecursionDepth = 16;
 
             bool m_initialized = false;
         };
