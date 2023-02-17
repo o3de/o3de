@@ -84,7 +84,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_bounds, "Bounds", "Local (untransformed) bounds of a box used to remap, clamp, wrap, scale incoming coordinates")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
-                    ->DataElement(0, &GradientTransformConfig::m_bounds, "Center", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates")
+                    ->DataElement(0, &GradientTransformConfig::m_center, "Center", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
 
                     ->DataElement(0, &GradientTransformConfig::m_overrideTranslate, "Override Translate", "Allow manual override of the associated parameter")
@@ -444,8 +444,7 @@ namespace GradientSignal
 
         //rebuild bounds from parameters
         m_configuration.m_bounds = m_configuration.m_bounds.GetAbs();
-        shapeBounds = AZ::Aabb::CreateFromMinMax(
-            m_configuration.m_center - m_configuration.m_bounds * 0.5f, m_configuration.m_center + m_configuration.m_bounds * 0.5f);
+        shapeBounds = AZ::Aabb::CreateCenterHalfExtents(m_configuration.m_center, 0.5f * m_configuration.m_bounds);
 
         //rebuild transform from parameters
         AZ::Matrix3x4 shapeTransformFinal;
