@@ -21,11 +21,13 @@ class TestMetricsXMLtoCSV(unittest.TestCase):
         mock_date.month = 1
         mock_date.day = 2
         mock_date.year = "xxxx"
+        mock_date.hour = 3
+        mock_date.minute = 4
         mock_datetime.now.return_value = mock_date
 
         under_test = ctest_metrics_xml_to_csv._get_default_csv_filename()
 
-        assert under_test == "xxxx_01_02.csv"
+        assert under_test == "xxxx_01_02_03_04.csv"
 
     @mock.patch("ctest_metrics_xml_to_csv.datetime.datetime")
     def test_GetDefaultCSVFilename_DoubleDigit_NoZeroes(self, mock_datetime):
@@ -33,11 +35,13 @@ class TestMetricsXMLtoCSV(unittest.TestCase):
         mock_date.month = 11
         mock_date.day = 12
         mock_date.year = "xxxx"
+        mock_date.hour = 13
+        mock_date.minute = 14
         mock_datetime.now.return_value = mock_date
 
         under_test = ctest_metrics_xml_to_csv._get_default_csv_filename()
 
-        assert under_test == "xxxx_11_12.csv"
+        assert under_test == "xxxx_11_12_13_14.csv"
 
     @mock.patch('os.path.exists', mock.MagicMock(side_effect=[True, True]))
     @mock.patch('builtins.open')

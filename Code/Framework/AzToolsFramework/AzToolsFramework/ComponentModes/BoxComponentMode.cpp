@@ -32,7 +32,6 @@ namespace AzToolsFramework
         {
             BoxManipulatorRequestBus::Event(entityComponentIdPair, &BoxManipulatorRequestBus::Events::SetDimensions, boxDimensions);
         };
-        boxViewportEdit->InstallGetLocalTransform(AZStd::move(getLocalTransform));
         boxViewportEdit->InstallGetBoxDimensions(AZStd::move(getBoxDimensions));
         boxViewportEdit->InstallSetBoxDimensions(AZStd::move(setBoxDimensions));
     }
