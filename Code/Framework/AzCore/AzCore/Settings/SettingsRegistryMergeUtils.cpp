@@ -1006,10 +1006,6 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         else
         {
-            AZ_TracePrintf("SettingsRegistryMergeUtils",
-                R"(Project path isn't set in the Settings Registry at "%.*s".)"
-                " Project-related filepaths will be set relative to the executable directory\n",
-                AZ_STRING_ARG(projectPathKey));
             projectPath = exePath;
             registry.Set(FilePathKey_ProjectPath, exePath.Native());
         }
