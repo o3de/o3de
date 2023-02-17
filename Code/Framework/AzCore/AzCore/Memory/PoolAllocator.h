@@ -143,7 +143,7 @@ namespace AZ
             using size_type = typename Base::size_type;
             using difference_type = typename Base::difference_type;
 
-            AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base)
+            AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base);
 
             PoolAllocatorHelper()
             {
@@ -154,15 +154,6 @@ namespace AZ
             ~PoolAllocatorHelper() override
             {
                 this->PreDestroy();
-            }
-
-            AllocatorDebugConfig GetDebugConfig() override
-            {
-                return AllocatorDebugConfig()
-                    .ExcludeFromDebugging(false)
-                    .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
-                    .MarksUnallocatedMemory(false)
-                    .UsesMemoryGuards(false);
             }
 
             //////////////////////////////////////////////////////////////////////////
@@ -199,7 +190,9 @@ namespace AZ
 
         using Base = Internal::PoolAllocatorHelper<PoolSchema>;
 
-        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base)
+        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base);
+
+        AllocatorDebugConfig GetDebugConfig() override;
     };
 
     template<class Allocator>
@@ -217,6 +210,8 @@ namespace AZ
 
         using Base = ThreadPoolBase<ThreadPoolAllocator>;
 
-        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base)
+        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base);
+
+        AllocatorDebugConfig GetDebugConfig() override;
     };
 } // namespace AZ
