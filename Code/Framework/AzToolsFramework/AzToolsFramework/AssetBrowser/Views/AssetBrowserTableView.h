@@ -44,6 +44,9 @@ namespace AzToolsFramework
             void SetIsAssetBrowserMainView();
             bool GetIsAssetBrowserMainView();
 
+            void DuplicateEntries();
+            void MoveEntries();
+            void DeleteEntries();
             void RenameEntry();
             void AfterRename(QString newVal);
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;

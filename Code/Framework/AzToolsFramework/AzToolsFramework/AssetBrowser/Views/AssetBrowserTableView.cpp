@@ -108,6 +108,26 @@ namespace AzToolsFramework
             return GetName() == TableViewMainViewName;
         }
 
+        void AssetBrowserTableView::DeleteEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot delete product files.
+
+            AssetBrowserViewUtils::DeleteEntries(entries, this);
+        }
+
+        void AssetBrowserTableView::MoveEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot move product files.
+
+            AssetBrowserViewUtils::MoveEntries(entries, this);
+        }
+
+        void AssetBrowserTableView::DuplicateEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            AssetBrowserViewUtils::DuplicateEntries(entries);
+        }
+
         void AssetBrowserTableView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.

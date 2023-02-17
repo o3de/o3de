@@ -56,8 +56,8 @@ namespace AzToolsFramework
             void SetName(const QString& name);
             QString& GetName(){ return m_name; }
 
-            void SetIsMainView();
-            bool GetIsMainView();
+            void SetIsAssetBrowserMainView();
+            bool GetIsAssetBrowserMainView();
 
             // O3DE_DEPRECATED
             void LoadState(const QString& name);
@@ -155,8 +155,6 @@ namespace AzToolsFramework
             }
             return nullptr;
         }
-
-        void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
