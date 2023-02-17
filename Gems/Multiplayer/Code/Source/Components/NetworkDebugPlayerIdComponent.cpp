@@ -10,6 +10,7 @@
 #include <Multiplayer/ConnectionData/IConnectionData.h>
 
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzNetworking/Framework/INetworking.h>
