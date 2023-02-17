@@ -517,7 +517,7 @@ namespace GradientSignal
         return m_configuration.m_bounds;
     }
     
-    void GradientTransformComponent::SetBounds(AZ::Vector3 bounds)
+    void GradientTransformComponent::SetBounds(const AZ::Vector3& bounds)
     {
         m_configuration.m_bounds = bounds;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -528,7 +528,7 @@ namespace GradientSignal
         return m_configuration.m_center;
     }
 
-    void GradientTransformComponent::SetCenter(AZ::Vector3 center)
+    void GradientTransformComponent::SetCenter(const AZ::Vector3& center)
     {
         m_configuration.m_center = center;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -561,7 +561,7 @@ namespace GradientSignal
         return m_configuration.m_translate;
     }
     
-    void GradientTransformComponent::SetTranslate(AZ::Vector3 translate)
+    void GradientTransformComponent::SetTranslate(const AZ::Vector3& translate)
     {
         m_configuration.m_translate = translate;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -583,7 +583,7 @@ namespace GradientSignal
         return m_configuration.m_rotate;
     }
     
-    void GradientTransformComponent::SetRotate(AZ::Vector3 rotate)
+    void GradientTransformComponent::SetRotate(const AZ::Vector3& rotate)
     {
         m_configuration.m_rotate = rotate;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -605,7 +605,7 @@ namespace GradientSignal
         return m_configuration.m_scale;
     }
     
-    void GradientTransformComponent::SetScale(AZ::Vector3 scale)
+    void GradientTransformComponent::SetScale(const AZ::Vector3& scale)
     {
         m_configuration.m_scale = scale;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);

@@ -129,10 +129,10 @@ namespace GradientSignal
         void SetOverrideBounds(bool value) override;
 
         AZ::Vector3 GetBounds() const override;
-        void SetBounds(AZ::Vector3 bounds) override;
+        void SetBounds(const AZ::Vector3& bounds) override;
 
         AZ::Vector3 GetCenter() const override;
-        void SetCenter(AZ::Vector3 center) override;
+        void SetCenter(const AZ::Vector3& center) override;
 
         TransformType GetTransformType() const override;
         void SetTransformType(TransformType type) override;
@@ -141,19 +141,19 @@ namespace GradientSignal
         void SetOverrideTranslate(bool value) override;
 
         AZ::Vector3 GetTranslate() const override;
-        void SetTranslate(AZ::Vector3 translate) override;
+        void SetTranslate(const AZ::Vector3& translate) override;
 
         bool GetOverrideRotate() const override;
         void SetOverrideRotate(bool value) override;
 
         AZ::Vector3 GetRotate() const override;
-        void SetRotate(AZ::Vector3 rotate) override;
+        void SetRotate(const AZ::Vector3& rotate) override;
 
         bool GetOverrideScale() const override;
         void SetOverrideScale(bool value) override;
 
         AZ::Vector3 GetScale() const override;
-        void SetScale(AZ::Vector3 scale) override;
+        void SetScale(const AZ::Vector3& scale) override;
 
         float GetFrequencyZoom() const override;
         void SetFrequencyZoom(float frequencyZoom) override;
