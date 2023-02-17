@@ -14,7 +14,7 @@ import logging
 import os
 import pathlib
 
-from o3de import validation, utils, repo
+from o3de import validation, utils, repo, compatibility
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.manifest')
@@ -307,16 +307,25 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
                         project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
     return []
 
-def get_project_engine_path(project_path: pathlib.Path) -> pathlib.Path or None:
-    # first check if the project has an engine field in project.json that
-    # refers to a registered engine
-    project_object = get_project_json_data(project_path=project_path)
-    if project_object:
-        engine_name = project_object.get('engine', '')
-        if engine_name:
-            engine_path = get_registered(engine_name=engine_name)
-            if engine_path:
-                return engine_path
+def get_project_engine_path(project_path: pathlib.Path, 
+                            project_json_data: dict = None, 
+                            user_project_json_data: dict = None, 
+                            engines_json_data: dict = None) -> pathlib.Path or None:
+    """
+    Returns the most compatible engine path for a project based on the project's 
+    'engine' field and taking into account <project_path>/user/project.json overrides
+    or the engine the project is registered with.
+    :param project_path: Path to the project
+    :param project_json_data: Optional json data to use to avoid reloading project.json  
+    :param user_project_json_data: Optional json data to use to avoid reloading <project_path>/user/project.json  
+    :param engines_json_data: Optional engines json data to use for engines to avoid reloading all engine.json files
+    """
+    engine_path = compatibility.get_most_compatible_project_engine_path(project_path, 
+                                                                        project_json_data, 
+                                                                        user_project_json_data, 
+                                                                        engines_json_data)
+    if engine_path:
+        return engine_path
 
     # check if the project is registered in an engine.json
     # in a parent folder
@@ -753,6 +762,7 @@ def get_registered(engine_name: str = None,
     # check global first then this engine
     if isinstance(engine_name, str):
         engines = get_manifest_engines()
+        matching_engine_paths = []
         for engine in engines:
             if isinstance(engine, dict):
                 engine_path = pathlib.Path(engine['path']).resolve()
@@ -771,7 +781,14 @@ def get_registered(engine_name: str = None,
                     else:
                         this_engines_name = engine_json_data.get('engine_name','')
                         if this_engines_name == engine_name:
-                            return engine_path
+                            matching_engine_paths.append(engine_path)
+        if matching_engine_paths:
+            engine_path = matching_engine_paths[0]
+            if len(matching_engine_paths) > 1:
+                engines = "\n".join(map(str,matching_engine_paths))
+                logger.warning(f"Multiple engines were found that match: '{engine_name}'\n{engines}\nSelecting first engine: '{engine_path}'")
+            return engine_path
+        
 
     elif isinstance(project_name, str):
         projects = get_all_projects()

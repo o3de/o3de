@@ -436,43 +436,81 @@ class TestManifestProjects:
     def samefile(self, otherFile ):
         return self.as_posix() == otherFile.as_posix()
 
-    @pytest.mark.parametrize("project_path, project_engine_name, engines, expected_engine_path", [
-            pytest.param(pathlib.Path('C:/project1'),
-                'engine1',
-                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+    @pytest.mark.parametrize("project_path, project_engine, user_project_json, engines, engines_json_data, \
+                expected_engine_path", [
+            pytest.param(pathlib.Path('C:/project1'), 'engine1', None,
+                [pathlib.Path('C:/engine1'),pathlib.Path('D:/engine2')],
+                [{'engine_name':'engine1'},{'engine_name':'engine2'}],
                 pathlib.Path('C:/engine1')),
-            pytest.param(pathlib.Path('C:/project1'),
-                'engine2',
-                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+            pytest.param(pathlib.Path('C:/project1'), 'engine2', {},
+                [pathlib.Path('C:/engine1'),pathlib.Path('D:/engine2')],
+                [{'engine_name':'engine1'},{'engine_name':'engine2'}],
                 pathlib.Path('D:/engine2')),
-            pytest.param(pathlib.Path('C:/engine1/project1'),
-                '',
-                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+            pytest.param(pathlib.Path('C:/engine1/project1'), '', {},
+                [pathlib.Path('C:/engine1'),pathlib.Path('D:/engine2')],
+                [{'engine_name':'engine1'},{'engine_name':'engine2'}],
                 pathlib.Path('C:/engine1')),
-            pytest.param(pathlib.Path('C:/project1'),
-                '',
-                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+            pytest.param(pathlib.Path('C:/project1'), '', {},
+                [pathlib.Path('C:/engine1'),pathlib.Path('D:/engine2')],
+                [{'engine_name':'engine1'},{'engine_name':'engine2'}],
+                None),
+            # When multiple engines with the same name and version exist, the first is
+            # chosen
+            pytest.param(pathlib.Path('C:/project1'), 'o3de', {},
+                [pathlib.Path('C:/o3de1'),pathlib.Path('D:/o3de2')],
+                [{'engine_name':'o3de','version':'1.0.0'},{'engine_name':'o3de','version':'1.0.0'}],
+                pathlib.Path('C:/o3de1')),
+            # When multiple engines with the same name and version exist, and the user
+            # sets a local engine_path, the engine is chosen based on engine_path
+            pytest.param(pathlib.Path('C:/project1'), 'o3de', {'engine_path':pathlib.Path('D:/o3de2')},
+                [pathlib.Path('C:/o3de1'),pathlib.Path('D:/o3de2')],
+                [{'engine_name':'o3de','version':'1.0.0'},{'engine_name':'o3de','version':'1.0.0'}],
+                pathlib.Path('D:/o3de2')),
+            # When multiple engines with the same name and different versions exist, 
+            # the engine with the highest compatible version is chosen
+            pytest.param(pathlib.Path('C:/project1'), 'o3de', {},
+                [pathlib.Path('C:/o3de1'),pathlib.Path('D:/o3de2')],
+                [{'engine_name':'o3de','version':'1.0.0'},{'engine_name':'o3de','version':'2.0.0'}],
+                pathlib.Path('D:/o3de2')),
+            # When no engines with the same name and compatible versions exists, 
+            # no engine path is returned
+            pytest.param(pathlib.Path('C:/project1'), 'o3de==1.5.0', {},
+                [pathlib.Path('C:/o3de1'),pathlib.Path('D:/o3de2')],
+                [{'engine_name':'o3de','version':'1.0.0'},{'engine_name':'o3de','version':'2.0.0'}],
                 None),
         ]
     )
-    def test_get_project_engines(self, project_path, project_engine_name,
-                                    engines, expected_engine_path):
+    def test_get_project_engines(self, project_path, project_engine, user_project_json,
+                                    engines, engines_json_data, expected_engine_path):
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+            for i in range(len(engines)):
+                if engines[i] == engine_path:
+                    engine_payload.update(engines_json_data[i])
+            return engine_payload
+
         def get_project_json_data(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
                                 user: bool = False) -> dict or None:
             project_json = json.loads(TEST_PROJECT_JSON_PAYLOAD)
-            project_json['engine'] = project_engine_name
+            project_json['engine'] = project_engine
             return project_json
+
+        def get_json_data_file(object_json: pathlib.Path,
+                            object_typename: str,
+                            object_validator: callable) -> dict or None:
+            return user_project_json 
 
         def get_registered(engine_name: str):
             return engines[engine_name]
 
         def get_manifest_engines():
-            return list(engines.values())
+            return engines
 
         def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
                                             max_scan_up_range: int=0) -> pathlib.Path or None:
-            for engine_path in engines.values():
+            for engine_path in engines:
                 if engine_path in start_path.parents:
                     return engine_path
             return None
@@ -480,11 +518,17 @@ class TestManifestProjects:
         def get_engine_projects(engine_path:pathlib.Path = None) -> list:
             return [project_path] if engine_path in project_path.parents else []
 
+        def is_file(path : pathlib.Path) -> bool:
+            return True if user_project_json else False
+
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _1, \
+            patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch, \
+            patch('o3de.manifest.get_json_data_file', side_effect=get_json_data_file) as get_json_data_file_patch, \
             patch('o3de.manifest.get_registered', side_effect=get_registered) as _2, \
             patch('o3de.manifest.get_manifest_engines', side_effect=get_manifest_engines) as _3, \
             patch('o3de.manifest.get_engine_projects', side_effect=get_engine_projects) as _4, \
             patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir_containing_file) as _5, \
+            patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_mock,\
             patch('pathlib.Path.resolve', self.resolve) as _6, \
             patch('pathlib.Path.samefile', self.samefile) as _7:
 
