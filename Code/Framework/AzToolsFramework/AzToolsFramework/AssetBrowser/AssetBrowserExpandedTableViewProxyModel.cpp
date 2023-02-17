@@ -54,13 +54,21 @@ namespace AzToolsFramework
                             }
                         }
                     case 2:
-                        if(assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                            return assetBrowserEntry->GetDiskSize();
+                        if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
+                        }
                         return "";
                     default:
                         return "No data";
                     }
                 }
+            case Qt::TextAlignmentRole:
+                if (index.column() == 2)
+                {
+                    return Qt::AlignRight;
+                }
+                break;
             case Qt::UserRole:
                 return QString(assetBrowserEntry->GetFullPath().c_str());
             case Qt::UserRole + 1:

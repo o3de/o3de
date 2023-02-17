@@ -61,7 +61,7 @@ namespace AzToolsFramework
             "Class ID",
             "Display Name",
             "Type",
-            "Disk Size",
+            "Disk Size (KiB)",
             "Vertices",
             "Approximate Size",
             "Source Control Status"

@@ -268,7 +268,7 @@ namespace AzToolsFramework
                     return SourceFileDetails("Icons/AssetBrowser/UICanvas.svg");
                 }
 
-                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png" };
+                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr" };
 
                 for (unsigned int sourceImageFormatIndex = 0, numSources = AZ_ARRAY_SIZE(sourceFormats); sourceImageFormatIndex < numSources; ++sourceImageFormatIndex)
                 {

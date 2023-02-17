@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
 
@@ -22,6 +23,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
 #include <QtWidgets/QApplication>
+#include <QHeaderView>
 #endif
 
 namespace AzToolsFramework
@@ -40,6 +42,10 @@ namespace AzToolsFramework
             m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
             m_expandedTableViewWidget->setModel(m_expandedTableViewProxyModel);
             m_expandedTableViewWidget->setItemDelegateForColumn(0, new ExpandedTableViewDelegate(m_expandedTableViewWidget));
+            for (int i = 0; i < m_expandedTableViewWidget->header()->count(); ++i)
+            {
+                m_expandedTableViewWidget->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+            }
 
             connect(
                 m_expandedTableViewWidget,
@@ -208,8 +214,7 @@ namespace AzToolsFramework
 
         {
         }
-#pragma optimize("",off)
-        // Prefab :/Entity/prefab_edit.svg
+
         void ExpandedTableViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             const QVariant text = index.data(Qt::DisplayRole);
@@ -271,13 +276,19 @@ namespace AzToolsFramework
                     }
                 }
 
-                AZ_Warning("JJS", false, "%s", iconPathToUse.toUtf8().constData());
+                if (iconPathToUse.isEmpty())
+                {
+                    static constexpr const char* DefaultFileIconPath = "Assets/Editor/Icons/AssetBrowser/Default_16.svg";
+                    AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+                    AZ_Assert(!engineRoot.empty(), "Engine Root not initialized");
+                    iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
+                }
 
                 QIcon icon;
                 icon.addFile(iconPathToUse, QSize(), QIcon::Normal, QIcon::Off);
                 int height = options.rect.height();
                 QRect iconRect(0, options.rect.y() + 5, height - 10, height - 10);
-                QSize iconSize = icon.actualSize(iconRect.size());
+                QSize iconSize = iconRect.size();
                 QStyle* style = options.widget ? options.widget->style() : qApp->style();
                 style->drawItemPixmap(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter, icon.pixmap(iconSize));
                 QRect textRect{options.rect};
@@ -286,6 +297,6 @@ namespace AzToolsFramework
                     painter, options.rect, Qt::AlignLeft | Qt::AlignVCenter, options.palette, options.state & QStyle::State_Enabled, text.toString());
             }
         }
-#pragma optimize("", on)
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
