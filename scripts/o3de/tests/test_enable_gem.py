@@ -179,8 +179,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
@@ -362,8 +367,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
