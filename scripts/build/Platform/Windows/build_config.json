@@ -5,16 +5,25 @@
     ],
     "steps": [
       "test_cpu_profile_internal_metrics",
-      "generate_metrics",
+      "generate_ctest_metrics",
+      "generate_pytest_metrics",
       "upload_metrics"
     ]
   },
-  "generate_metrics": {
+  "generate_ctest_metrics": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts\\metrics\\ctest_metrics_xml_to_csv.py",
       "SCRIPT_PARAMETERS": "build\\windows --output-directory build\\windows\\Testing\\csv --branch %BRANCH_NAME% -w"
+    }
+  },
+  "generate_pytest_metrics": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts\\metrics\\pytest_metrics_xml_to_csv.py",
+      "SCRIPT_PARAMETERS": "build\\windows\\Testing\\Pytest --output-directory build\\windows\\Testing\\csv --branch %BRANCH_NAME% -w"
     }
   },
   "upload_metrics": {

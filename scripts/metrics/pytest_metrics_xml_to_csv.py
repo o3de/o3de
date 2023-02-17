@@ -136,30 +136,27 @@ def parse_pytest_xmls_to_csv(full_xml_path, writer):
     xml_root = xmlElementTree.parse(full_xml_path).getroot()
     test_data_dict = {}
     # Each PyTest test module will have a Test entry
-    try:
-        for test in xml_root.findall('./testsuite/testcase'):
-            # There are some testcase fields that are not tests. They do not have 'name' attributes are skipped
-            if 'name' not in test.attrib:
-                logger.debug(f'We found a testcase where it did not have a test field. Printing attribs:\n'
-                             f'{test.attrib}')
-                continue
+    for test in xml_root.findall('./testsuite/testcase'):
+        try:
             test_data_dict['test_name'] = test.attrib['name']
             test_data_dict['duration_seconds'] = float(test.attrib['time'])
             # using 'status' to keep it consistent with CTest xml schema
             test_data_dict['status'] = _determine_test_result(test)
             # replace slashes to match codeowners file
             test_file_path = test.attrib['file'].replace("\\", "/")
-            try:
-                sig_owner = SIG_OWNER_CACHE[test_file_path]
-            except KeyError:
-                # Index 1 is the sig owner
-                sig_owner = codeowners_hint.get_codeowners(test_file_path)[1]
-                SIG_OWNER_CACHE[test_file_path] = sig_owner
-            test_data_dict['sig_owner'] = sig_owner if sig_owner else "N/A"
+        except KeyError as exc:
+            logger.exception(f"KeyError when parsing xml file: {full_xml_path}. Check xml keys for changes. Printing"
+                             f"attribs:\n{test.attrib}", exc)
+            continue
+        if sig_owner in SIG_OWNER_CACHE:
+            sig_owner = SIG_OWNER_CACHE[test_file_path]
+        else:
+            # Index 1 is the sig owner
+            _, sig_owner, _ = codeowners_hint.get_codeowners(test_file_path)
+            SIG_OWNER_CACHE[test_file_path] = sig_owner
+        test_data_dict['sig_owner'] = sig_owner if sig_owner else "N/A"
 
-            writer.writerow(test_data_dict)
-    except KeyError as exc:
-        logger.exception(f"KeyError when parsing xml file: {full_xml_path}. Check xml keys for changes.", exc)
+        writer.writerow(test_data_dict)
 
 
 if __name__ == "__main__":
