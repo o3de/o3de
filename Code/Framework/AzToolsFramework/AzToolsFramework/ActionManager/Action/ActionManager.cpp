@@ -15,7 +15,10 @@
 
 namespace AzToolsFramework
 {
-    bool ApplicationWatcher::shortcutWasTriggered = false;
+    void ApplicationWatcher::SetShortcutTriggeredFlag()
+    {
+        m_shortcutWasTriggered = true;
+    }
 
     bool ApplicationWatcher::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
     {
@@ -23,16 +26,17 @@ namespace AzToolsFramework
         {
         case QEvent::ShortcutOverride:
         {
-            shortcutWasTriggered = false;
+            m_shortcutWasTriggered = false;
+            break;
         }
         case QEvent::KeyPress:
         {
-            if (shortcutWasTriggered)
+            if (m_shortcutWasTriggered)
             {
                 // Whenever a shortcut is triggered, the Action Manager system also accepts its ShortcutOverride
                 // which results in a corresponding KeyPress event to be sent. We eat it at the application level
                 // to prevent user interactions from triggering both shortcuts and keypresses in one go.
-                shortcutWasTriggered = false;
+                m_shortcutWasTriggered = false;
                 return true;
             }
 
@@ -45,8 +49,9 @@ namespace AzToolsFramework
         return false;
     }
 
-    ActionContextWidgetWatcher::ActionContextWidgetWatcher(EditorActionContext* editorActionContext)
-        : m_editorActionContext(editorActionContext)
+    ActionContextWidgetWatcher::ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext)
+        : m_applicationWatcher(applicationWatcher)
+        , m_editorActionContext(editorActionContext)
     {
     }
     
@@ -91,7 +96,7 @@ namespace AzToolsFramework
             {
                 // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
                 // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
-                ApplicationWatcher::shortcutWasTriggered = true;
+                m_applicationWatcher->SetShortcutTriggeredFlag();
                 event->accept();
                 return true;
             }
@@ -175,7 +180,7 @@ namespace AzToolsFramework
         m_actionContextWidgetWatchers.insert(
             {
                 contextIdentifier,
-                new ActionContextWidgetWatcher(editorActionContext)
+                new ActionContextWidgetWatcher(&m_applicationWatcher, editorActionContext)
             }
         );
 

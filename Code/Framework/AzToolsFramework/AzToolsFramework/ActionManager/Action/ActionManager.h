@@ -22,9 +22,11 @@ namespace AzToolsFramework
     class ApplicationWatcher : public QObject
     {
     public:
+        void SetShortcutTriggeredFlag();
+
         bool eventFilter(QObject* watched, QEvent* event) override;
 
-        static bool shortcutWasTriggered;
+        bool m_shortcutWasTriggered = false;
     };
 
     //! This class is used to install an event filter on each widget assigned to an action context
@@ -32,7 +34,7 @@ namespace AzToolsFramework
     class ActionContextWidgetWatcher : public QObject
     {
     public:
-        explicit ActionContextWidgetWatcher(EditorActionContext* editorActionContext);
+        explicit ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext);
 
         bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -40,6 +42,7 @@ namespace AzToolsFramework
         static bool TriggerActiveActionsWithShortcut(
             const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
 
+        ApplicationWatcher* m_applicationWatcher = nullptr;
         EditorActionContext* m_editorActionContext = nullptr;
     };
 
