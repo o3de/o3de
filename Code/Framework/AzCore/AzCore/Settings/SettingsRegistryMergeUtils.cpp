@@ -133,7 +133,6 @@ namespace AZ::Internal
         //  Parse Command Line
         auto VisitCommandLineOptions = [&optionPath, optionName](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
-            //constexpr AZStd::string_view EnginePathOptionName = "engine-path";
             // Lookup the "/O3DE/Runtime/CommandLine/%u/Option" for each command line parameter to
             // see if the key and value are available, and if they are, retrieve the value.
             auto cmdPathKey = FixedValueString::format("%.*s/Option", AZ_STRING_ARG(visitArgs.m_jsonKeyPath));
@@ -186,7 +185,7 @@ namespace AZ::Internal
         using Type = SettingsRegistryInterface::Type;
         if (settingsRegistry.GetType(key) == Type::NoType)
         {
-            // We can scan up from exe directory to find engine.json, use that for engine root if it exists.
+            // We can scan up from exe directory to find fileLocator file, use that for the root if it exists.
             AZ::IO::FixedMaxPath rootPath = Internal::ScanUpRootLocator(fileLocator);
             if (!rootPath.empty() && rootPath.IsRelative())
             {
