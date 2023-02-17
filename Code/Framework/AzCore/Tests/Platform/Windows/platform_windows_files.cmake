@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ../Common/WinAPI/Tests/Process/ProcessInfoTests_WinAPI.cpp
     ../Common/WinAPI/Tests/UtilsTests_WinAPI.cpp
     Tests/IO/Streamer/StorageDriveTests_Windows.cpp
     Tests/Memory/AllocatorBenchmarks_Windows.cpp
