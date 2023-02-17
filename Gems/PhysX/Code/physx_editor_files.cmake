@@ -93,6 +93,8 @@ set(FILES
     Editor/ColliderSphereMode.cpp
     Editor/ColliderCapsuleMode.h
     Editor/ColliderCapsuleMode.cpp
+    Editor/ColliderCylinderMode.h
+    Editor/ColliderCylinderMode.cpp
     Editor/ColliderAssetScaleMode.h
     Editor/ColliderAssetScaleMode.cpp
     Editor/DebugDraw.cpp

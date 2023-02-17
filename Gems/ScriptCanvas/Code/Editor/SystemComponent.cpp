@@ -15,6 +15,7 @@
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
@@ -130,6 +131,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
         auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
@@ -160,6 +162,7 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         m_nodeReplacementSystem.UnloadReplacementMetadata();
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -381,6 +384,20 @@ namespace ScriptCanvasEditor
             { "scriptcanvas", "scriptcanvas_compiled" },
             { "scriptcanvas_fn", "scriptcanvas_fn_compiled" }
         };
+    }
+
+    void SystemComponent::OnActionContextRegistrationHook()
+    {
+        static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
+
+        if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Script Canvas";
+
+            // Register a custom action context to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext(ScriptCanvasActionContextIdentifier, contextProperties);
+        }
     }
 
 }

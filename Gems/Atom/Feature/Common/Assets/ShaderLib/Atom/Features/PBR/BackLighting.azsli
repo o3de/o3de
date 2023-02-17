@@ -88,7 +88,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Use scattering color to weight thin object transmission color
                 const float3 invScattering = rcp(max(transmission.scatterDistance, float(0.00001)));
                 
-#ifndef USE_HUMAN_SKIN_PROFILE
+#if !USE_HUMAN_SKIN_PROFILE
                 // Generic profile based on scatter color
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();
 #else // USE_HUMAN_SKIN_PROFILE
