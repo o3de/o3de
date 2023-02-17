@@ -57,6 +57,45 @@ namespace AzToolsFramework
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+            QAction* deleteAction = new QAction("Delete Action", this);
+            deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                deleteAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DeleteEntries();
+                });
+            addAction(deleteAction);
+
+            QAction* renameAction = new QAction("Rename Action", this);
+            renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                renameAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    RenameEntry();
+                });
+            addAction(renameAction);
+
+            QAction* duplicateAction = new QAction("Duplicate Action", this);
+            duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                duplicateAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DuplicateEntries();
+                });
+            addAction(duplicateAction);
         }
 
         AssetBrowserTableView::~AssetBrowserTableView()
