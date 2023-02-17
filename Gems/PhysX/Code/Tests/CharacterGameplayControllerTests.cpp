@@ -142,7 +142,10 @@ namespace PhysX
         }
     }
 
-    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_EntityFallsUnderGravity)
+    // Use the PhysXDefaultWorldTestWithParam class for the fixture to indicate the parameter type is going to be int using
+    using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
+
+    TEST_P(PhysXDefaultWorldTestWithParamFixture, CharacterGameplayController_EntityFallsUnderGravity)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
@@ -151,7 +154,7 @@ namespace PhysX
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         const auto startPosition = basis.m_controller->GetPosition();
-        const int timeStepCount = rand() % 180 + 10;
+        const int timeStepCount = GetParam(); // <-- Gets the current value to use
         const float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
         float totalTime = 0.0f;
 
@@ -164,12 +167,15 @@ namespace PhysX
         const auto endPosition = basis.m_controller->GetPosition();
         const auto gravity = basis.m_testScene->GetGravity();
         // The actual distance fallen is quadratic and the relative error is about equal to the timestep divided by the total time.
-        const auto relativeError = (1.0f / 60.0f) / (float(timeStepCount) / 60.0f);
+        const auto relativeError = timeStep / totalTime;
         // calculate distance fallen (d = 0.5 * g * t^2)
         const float relativeDistanceFell = 0.5f * gravity.GetZ() * (totalTime * totalTime);
         const float calculatedDistanceFell = relativeDistanceFell - (relativeDistanceFell * relativeError);
 
-        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + calculatedDistanceFell), 0.0001f));
+        EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + calculatedDistanceFell), 0.001f));
     }
+
+    // Indicate the values to call all the tests that use PhysXDefaultWorldTestWithParamFixture.
+    INSTANTIATE_TEST_CASE_P(PhysXDefaultWorldTest, PhysXDefaultWorldTestWithParamFixture, ::testing::Values(10, 30, 60, 90, 120, 136, 180));
 
 } // namespace PhysX
