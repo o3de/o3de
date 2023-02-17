@@ -158,11 +158,9 @@ namespace UnitTest
                 m_registry.Set(projectPathKey, (AZ::IO::FixedMaxPath(m_tempDir.GetDirectory()) / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
 
-                // Set the engine root to the temporary directory via command line because the bootstrap settings key
-                // is not used if an engine.json is found in the current hierarchy 
-                AZ::CommandLine commandLine;
-                commandLine.Parse({ "--engine-path", m_tempDir.GetDirectory() });
-                AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(m_registry, commandLine);
+                // Set the engine root scan up path to the temporary directory  
+                constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Runtime/Internal/engine_root_scan_up_path" };
+                m_registry.Set(InternalScanUpEngineRootKey, m_tempDir.GetDirectory());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }
         }
