@@ -1370,9 +1370,7 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_EmptyPath_ReturnsFalse)
     {
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile("", AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
     }
 
@@ -1392,9 +1390,7 @@ namespace SettingsRegistryTests
         constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, '1');
         const AZStd::string_view subPath(path);
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile(subPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
@@ -1404,9 +1400,7 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_InvalidPath_ReturnsFalse)
     {
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile("InvalidPath", AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
@@ -1418,9 +1412,7 @@ namespace SettingsRegistryTests
     {
         auto path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "$", nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
@@ -1432,9 +1424,7 @@ namespace SettingsRegistryTests
     {
         auto path = CreateTestFile("test.setreg", "{ Test: 1 }");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
@@ -1446,9 +1436,7 @@ namespace SettingsRegistryTests
     {
         auto path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
@@ -1462,9 +1450,7 @@ namespace SettingsRegistryTests
         // it is safe to merge the .setreg file with a boolean element at the root
         auto path = CreateTestFile("test.setreg", R"("BooleanValue": false)");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_FALSE(m_registry->MergeSettingsFile(path.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "/Test"));
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         // There should be an error message about attempting to serialize a root json value that is not a Json Object
         // to the settings registry
 

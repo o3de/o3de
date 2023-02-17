@@ -760,6 +760,7 @@ tags=tools,renderer,metal)"
         const char* m_projectManifestJson{ "" };
         const char* m_userProjectManifestJson{ "" };
         const int m_expectedEnginePathIndex; // negative means not found
+        const char* m_scanUpEngineRoot{ "" };
     };
 
     static auto MakeFindEngineRootTestingValues()
@@ -779,7 +780,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                0 // expect o3de1
+                0, // expect o3de1
+                ""
             },
 
             // Selects engine with highest version when multiple of same name found 
@@ -796,7 +798,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                1 // expect second engine with higher version number
+                1, // expect second engine with higher version number
+                ""
             },
 
             // Fails to find engine with name that isn't registered
@@ -813,7 +816,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                -1 // not found
+                -1, // not found
+                ""
             },
 
             // Fails to find engine with version that isn't registered 
@@ -830,7 +834,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                -1 // not found
+                -1, // not found
+                ""
             },
 
             // Selects engine that has a legacy version field
@@ -847,7 +852,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                0 // o3de 
+                0, // o3de 
+                ""
             },
 
             // Selects first engine when multiple engines found with ambiguous project engine
@@ -864,7 +870,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                0 // first engine
+                0, // first engine
+                ""
             },
 
             // Selects correct engine when a version specifier is used
@@ -881,7 +888,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                1 // o3de2
+                1, // o3de2
+                ""
             },
 
             // Selects the engine specified by name in project/user/project.json
@@ -898,7 +906,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({ "engine":"o3de1==1.2.3" })",
 
-                0 // o3de1
+                0, // o3de1
+                ""
             },
 
             // Selects the engine specified by path in project/user/project.json
@@ -915,7 +924,8 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({ "engine_path":"<engine_path1>" })",
 
-                1 // 2nd engine, even though both have same name & version
+                1, // 2nd engine, even though both have same name & version
+                ""
             },
 
             // Fails if invalid engine specified in project/user/project.json
@@ -932,7 +942,26 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({ "engine_path":"c:/path/not/found" })",
 
-                -1 // engine used by shared project.json 
+                -1, // not found 
+                ""
+            },
+
+            // Uses scan up engine if all other methods fail 
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de-other", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de-blah"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                -1,  
+                "c:/scan/up/engine"
             },
 
         };
@@ -945,8 +974,7 @@ tags=tools,renderer,metal)"
     public:
         void SetUp() override
         {
-            using namespace rapidjson;
-
+            constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Runtime/Internal/engine_root_scan_up_path" };
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
 
             // Create the manifest json files
@@ -972,6 +1000,7 @@ tags=tools,renderer,metal)"
                 projectPath.Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath,
                 projectUserPath.Native());
+            m_registry->Set(InternalScanUpEngineRootKey, params.m_scanUpEngineRoot);
 
 
             const char* o3deManifest = R"({ "o3de_manifest_name": "testmanifest", "engines":["<engine_path0>","<engine_path1>"] })";
@@ -1010,7 +1039,11 @@ tags=tools,renderer,metal)"
         const auto& params = GetParam();
         const AZ::IO::FixedMaxPath engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_registry).Native();
 
-        if (params.m_expectedEnginePathIndex < 0 || params.m_expectedEnginePathIndex >= m_enginePaths.size())
+        if (!AZStd::string_view(params.m_scanUpEngineRoot).empty())
+        {
+            EXPECT_EQ(engineRoot, AZ::IO::FixedMaxPath{params.m_scanUpEngineRoot});
+        }
+        else if (params.m_expectedEnginePathIndex < 0 || params.m_expectedEnginePathIndex >= m_enginePaths.size())
         {
             EXPECT_TRUE(engineRoot.empty());
         }
