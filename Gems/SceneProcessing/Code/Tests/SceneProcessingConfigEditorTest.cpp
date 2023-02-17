@@ -7,5 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
