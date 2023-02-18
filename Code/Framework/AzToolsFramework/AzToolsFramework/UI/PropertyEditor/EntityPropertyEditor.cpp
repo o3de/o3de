@@ -52,6 +52,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
@@ -502,6 +503,11 @@ namespace AzToolsFramework
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
         initEntityPropertyEditorResources();
+
+        if (Prefab::IsInspectorOverrideManagementEnabled())
+        {
+            m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
+        }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
