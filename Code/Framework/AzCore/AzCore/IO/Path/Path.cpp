@@ -132,7 +132,7 @@ namespace AZ::IO::Internal
     }
 
     template <class StringType>
-    constexpr StringType AsUri(const PathView& pathView) noexcept
+    StringType AsUri(const PathView& pathView) noexcept
     {
         StringType resultUri;
         // The syntax for the "file:" URI scheme is documented at https://www.rfc-editor.org/rfc/rfc8089#page-3

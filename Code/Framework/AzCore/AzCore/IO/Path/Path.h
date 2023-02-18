@@ -188,9 +188,9 @@ namespace AZ::IO
         // as_uri
         //! Models the Python pathlib as_uri method
         //! Percent encodes the path and appends file: to the front
-        constexpr AZStd::fixed_string<MaxPathLength> AsUri() const noexcept;
+        AZStd::fixed_string<MaxPathLength> AsUri() const noexcept;
         AZStd::string StringAsUri() const;
-        constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
 
         // decomposition
         //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
@@ -582,9 +582,9 @@ namespace AZ::IO
         // as_uri
         //! Models the Python pathlib as_uri method
         //! Percent encodes the path and appends file: to the front
-        constexpr string_type AsUri() const;
+        string_type AsUri() const;
         AZStd::string StringAsUri() const;
-        constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
 
         // compare
         //! Performs a compare of each of the path parts for equivalence

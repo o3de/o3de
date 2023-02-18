@@ -205,14 +205,14 @@ namespace AZ::IO
             // Conversion function to allow interoperability with PathView class
             ->Method("ToPurePathView", &PathType::operator PathView)
             ->Method("__truediv__", [](const PathType* thisPtr, const AZ::IO::PathView& src) -> PathType { return *thisPtr / src; })
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Div)
+            ->Method("__div", [](const PathType* thisPtr, const AZ::IO::PathView& src) -> PathType { return *thisPtr / src; }) // Lua operator /
             ->Method("__hash__", [](const PathType* thisPtr) -> AZ::u64 { return static_cast<AZ::u64>(AZ::IO::hash_value(*thisPtr)); })
             ->Method("__str__", &PathType::String)
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
             ->Method("__eq__", [](const PathType& left, const PathView& right) -> bool { return left == right; })
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
+            ->Method("__eq", [](const PathType& left, const PathView& right) -> bool { return left == right; }) // Lua operator==
             ->Method("__lt__", [](const PathType& left, const PathView& right) -> bool { return left < right; })
-                ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::LessThan)
+            ->Method("__lt", [](const PathType& left, const PathView& right) -> bool { return left < right; }) // Lua operator <
             ->Method("__ne__", [](const PathType& left, const PathView& right) -> bool { return left != right; })
             ->Method("__gt__", [](const PathType& left, const PathView& right) -> bool { return left > right; })
             ->Method("__le__", [](const PathType& left, const PathView& right) -> bool { return left <= right; })

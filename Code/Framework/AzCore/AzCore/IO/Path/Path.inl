@@ -18,7 +18,7 @@ namespace AZ::IO::Internal
     // Helper function for url quoting a relative path string
     // Only implemented in Path.cpp for AZStd::string and AZStd::fixed_string<MaxPathLength>
     template <class StringType>
-    extern constexpr StringType AsUri(const PathView& pathView) noexcept;
+    StringType AsUri(const PathView& pathView) noexcept;
 }
 
 //! PathView implementation
@@ -226,12 +226,12 @@ namespace AZ::IO
 
     // as_uri
     // Encodes the path suitable for using in a URI
-    constexpr AZStd::fixed_string<MaxPathLength> PathView::AsUri() const noexcept
+    AZStd::fixed_string<MaxPathLength> PathView::AsUri() const noexcept
     {
         return FixedMaxPathStringAsUri();
     }
 
-    constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsUri() const noexcept
+    AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsUri() const noexcept
     {
         return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
     }
@@ -1057,7 +1057,7 @@ namespace AZ::IO
     // as_uri
     // Encodes the path suitable for using in a URI
     template <typename StringType>
-    constexpr auto BasicPath<StringType>::AsUri() const -> string_type
+    auto BasicPath<StringType>::AsUri() const -> string_type
     {
         return Internal::AsUri<string_type>(*this);
     }
@@ -1068,7 +1068,7 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    constexpr AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsUri() const noexcept
+    AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsUri() const noexcept
     {
         return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
     }
