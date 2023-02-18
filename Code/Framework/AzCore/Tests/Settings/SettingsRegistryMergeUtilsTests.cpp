@@ -961,7 +961,7 @@ tags=tools,renderer,metal)"
                 R"({})",
 
                 -1,  
-                "c:/scan/up/engine"
+                "engine"
             },
 
         };
@@ -1000,8 +1000,18 @@ tags=tools,renderer,metal)"
                 projectPath.Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath,
                 projectUserPath.Native());
-            m_registry->Set(InternalScanUpEngineRootKey, params.m_scanUpEngineRoot);
 
+            if(!AZStd::string_view(params.m_scanUpEngineRoot).empty())
+            {
+                // use an absolute path because that is what should be returned from FindEngineRoot
+                AZ::IO::FixedMaxPath scanUpEngineRootPath = tempRootFolder / params.m_scanUpEngineRoot;
+                m_registry->Set(InternalScanUpEngineRootKey, scanUpEngineRootPath.Native());
+            }
+            else
+            {
+                // set to an empty value to simulate no scan up engine root found
+                m_registry->Set(InternalScanUpEngineRootKey, "");
+            }
 
             const char* o3deManifest = R"({ "o3de_manifest_name": "testmanifest", "engines":["<engine_path0>","<engine_path1>"] })";
             ASSERT_TRUE(CreateTestFileWithSubstitutions(o3deManifestFilePath, o3deManifest));
@@ -1041,7 +1051,9 @@ tags=tools,renderer,metal)"
 
         if (!AZStd::string_view(params.m_scanUpEngineRoot).empty())
         {
-            EXPECT_EQ(engineRoot, AZ::IO::FixedMaxPath{params.m_scanUpEngineRoot});
+            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+            AZ::IO::FixedMaxPath scanUpEngineRootPath = tempRootFolder / params.m_scanUpEngineRoot;
+            EXPECT_EQ(engineRoot, scanUpEngineRootPath);
         }
         else if (params.m_expectedEnginePathIndex < 0 || params.m_expectedEnginePathIndex >= m_enginePaths.size())
         {
