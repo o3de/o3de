@@ -403,6 +403,14 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetEngine(const EngineInfo& engine)
     {
         m_engineInfo = engine;
+
+        if (m_engineInfo.m_name.isEmpty() && !m_projectInfo.m_engineName.isEmpty())
+        {
+            // this project wants to use an engine that wasn't found, display the qualifier
+            m_engineInfo.m_name = m_projectInfo.m_engineName;
+            m_engineInfo.m_version = "";
+        }
+
         m_engineNameLabel->SetText(m_engineInfo.m_name + " " + m_engineInfo.m_version);
         m_engineNameLabel->update();
         m_engineNameLabel->setObjectName(m_engineInfo.m_thisEngine ? "thisEngineLabel" : "otherEngineLabel");
