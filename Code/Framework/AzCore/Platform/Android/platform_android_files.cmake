@@ -27,6 +27,7 @@ set(FILES
     ../Common/Unimplemented/AzCore/PlatformIncl_Unimplemented.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
+    ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
     ../Common/Unimplemented/AzCore/Debug/StackTracer_Unimplemented.cpp
     ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp
     AzCore/Debug/Trace_Android.cpp

@@ -1380,31 +1380,31 @@ namespace Multiplayer
         // Spawn the default player for this host since the host is also a player (not a dedicated server)
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
+            MultiplayerAgentDatum datum;
+            datum.m_agentType = MultiplayerAgentType::ClientServer;
+            datum.m_id = InvalidConnectionId; //< no network connection: the client is hosting itself.
+            constexpr uint64_t userId = 0; //< user id 0: the client hosting in client-server is always the first player.
+
+            NetworkEntityHandle controlledEntity;
             if (IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get())
             {
                 // Route to spawner implementation
-                MultiplayerAgentDatum datum;
-                datum.m_agentType = MultiplayerAgentType::ClientServer;
-                datum.m_id = InvalidConnectionId;
-                constexpr uint64_t userId = 0;
+                controlledEntity = spawner->OnPlayerJoin(userId, datum);
+            }
 
-                NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
-                if (controlledEntity.Exists())
-                {
-                    // A controlled player entity likely doesn't exist at this time.
-                    // Unless IMultiplayerSpawner has a way to return a player without being inside a level, the client-server's player won't be spawned until the next level is loaded.
-                    EnableAutonomousControl(controlledEntity, InvalidConnectionId);
-                }
-                else
-                {
-                    // If there wasn't any player entity, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr );
-                }
+            // A controlled player entity likely doesn't exist at this time.
+            // Unless IMultiplayerSpawner has a way to return a player without being inside a level (for example using a system component), the client-server's player won't be
+            // spawned until the level is loaded.
+            if (controlledEntity.Exists())
+            {
+                EnableAutonomousControl(controlledEntity, InvalidConnectionId);
             }
             else
             {
-                AZLOG_ERROR("No IMultiplayerSpawner found for host's default player. Ensure one is registered.");
+                // If there wasn't any player entity, wait until a level loads and check again
+                m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
             }
+
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
 
