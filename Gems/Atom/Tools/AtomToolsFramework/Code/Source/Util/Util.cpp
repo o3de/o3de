@@ -361,7 +361,7 @@ namespace AtomToolsFramework
             }
         }
 
-        // This expression so the selection model only matches files that match any of the valid extensions.
+        // Build an expression that tells the selection model to only show files with matching extensions.
         const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
         const QRegExp filter(expression, Qt::CaseInsensitive);
 

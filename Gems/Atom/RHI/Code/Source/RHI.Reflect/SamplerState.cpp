@@ -75,6 +75,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyMax, "Anisotropy Max", "")
                             ->Attribute(AZ::Edit::Attributes::Min, 1)
+                            ->Attribute(AZ::Edit::Attributes::Max, 16)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_anisotropyEnable, "Anisotropy Enable", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SamplerState::m_filterMin, "Filter Min", "")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FilterMode>())
