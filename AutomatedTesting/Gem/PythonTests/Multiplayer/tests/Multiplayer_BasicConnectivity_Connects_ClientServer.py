@@ -17,7 +17,7 @@ class TestConstants:
 # fmt: on
 
 
-def Multiplayer_BasicConnectivity_Connects():
+def Multiplayer_BasicConnectivity_Connects_ClientServer():
     r"""
     Summary:
     Runs a test to make sure that a networked player can be spawned
@@ -43,10 +43,11 @@ def Multiplayer_BasicConnectivity_Connects():
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
-    general.set_cvar_integer('editorsv_port', 33454)
+    general.set_cvar_integer('editorsv_port', 33455)
+
 
     # 2) Enter game mode
-    helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode, helper.EditorServerMode.DEDICATED_SERVER)
+    helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode, helper.EditorServerMode.CLIENT_SERVER)
 
     # 3) Make sure the network player was spawned
     player_id = general.find_game_entity("Player")
@@ -58,5 +59,5 @@ def Multiplayer_BasicConnectivity_Connects():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Multiplayer_BasicConnectivity_Connects)
+    Report.start_test(Multiplayer_BasicConnectivity_Connects_ClientServer)
     
