@@ -627,16 +627,16 @@ namespace Terrain
         numRows = m_heightfieldRegion.m_numPointsY;
     }
 
-    size_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
+    AZ::u64 TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        return m_heightfieldRegion.m_numPointsX;
+        return static_cast<AZ::u64>(m_heightfieldRegion.m_numPointsX);
     }
 
-    size_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
+    AZ::u64 TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
     {
         AZStd::shared_lock lock(m_stateMutex);
-        return m_heightfieldRegion.m_numPointsY;
+        return static_cast<AZ::u64>(m_heightfieldRegion.m_numPointsY);
     }
 
     AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> TerrainPhysicsColliderComponent::GetMaterialList() const
