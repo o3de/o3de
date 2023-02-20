@@ -142,17 +142,7 @@ def get_all_project_infos() -> list:
     project_paths = manifest.get_all_projects()
 
     # get all engine info once up front
-    engines_json_data = OrderedDict()
-    engines = manifest.get_manifest_engines()
-    for engine in engines:
-        if isinstance(engine, dict):
-            engine_path = pathlib.Path(engine['path']).resolve()
-        else:
-            engine_path = pathlib.Path(engine).resolve()
-        engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
-        if not engine_json_data:
-            continue
-        engines_json_data[engine_path] = engine_json_data
+    engines_json_data = manifest.get_engines_json_data_by_path()
 
     project_infos = []
     for project_path in project_paths:
