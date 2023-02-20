@@ -329,7 +329,7 @@ namespace PhysX
             return status;
         }
 
-        //helper to preform a shape cast
+        // helper to preform a shape cast
         bool ShapeCast(const AzPhysics::ShapeCastRequest* shapecastRequest,
             AZStd::vector<physx::PxSweepHit>& shapecastBuffer,
             physx::PxScene* physxScene,
