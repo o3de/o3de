@@ -90,6 +90,7 @@ public:
     void closeEvent(QCloseEvent* ev) override;
 
 public slots:
+    void OnClearUnsavedChangesRequested();
     void OnSceneResetRequested();
     void OnAssignScript();
     void OnOpenDocumentation();
@@ -118,6 +119,10 @@ private:
         SceneSettingsCard::Layout layout,
         SceneSettingsCard::State state);
 
+    /// Reloads the currently loaded scene.
+    /// warnUser: if true, always warns the user this operation is occuring. If false, only warn if there's a problem.
+    void ReloadCurrentScene(bool warnUser);
+
 private slots:
     void SaveClicked();
     
@@ -128,6 +133,7 @@ private slots:
     void FileChanged(QString path);
 
 private:
+
     static const AZ::Uuid s_browseTag;
     static const char* s_documentationWebAddress;
 

@@ -52,7 +52,7 @@ class GUIApplicationManager
     Q_OBJECT
 public:
     explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = 0);
-    virtual ~GUIApplicationManager();
+    ~GUIApplicationManager() override;
 
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     IniConfiguration* GetIniConfiguration() const;

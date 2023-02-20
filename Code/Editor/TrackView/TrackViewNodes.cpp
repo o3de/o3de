@@ -311,8 +311,6 @@ enum EMenuItem
     eMI_CollapseEntities = 652,
     eMI_ExpandCameras = 653,
     eMI_CollapseCameras = 654,
-    eMI_ExpandMaterials = 655,
-    eMI_CollapseMaterials = 656,
     eMI_ExpandEvents = 657,
     eMI_CollapseEvents = 658,
     eMI_Rename = 11,
@@ -321,7 +319,6 @@ enum EMenuItem
     eMI_AddDirectorNode = 501,
     eMI_AddConsoleVariable = 502,
     eMI_AddScriptVariable = 503,
-    eMI_AddMaterial = 504,
     eMI_AddEvent = 505,
     eMI_AddCurrentLayer = 506,
     eMI_AddCommentNode = 507,
@@ -402,7 +399,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
     // Populate m_componentTypeToIconMap with all component icons
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Failed to acquire serialize context.");
 
     serializeContext->EnumerateDerived<AZ::Component>([this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
@@ -579,10 +576,6 @@ int CTrackViewNodesCtrl::GetIconIndexForNode(AnimNodeType type) const
     else if (type == AnimNodeType::ScriptVar)
     {
         nImage = 14;
-    }
-    else if (type == AnimNodeType::Material)
-    {
-        nImage = 16;
     }
     else if (type == AnimNodeType::Event)
     {
@@ -767,7 +760,6 @@ void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pT
 void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNode* animNode)
 {
     const QColor TextColorForMissingEntity(226, 52, 43);        // LY palette for 'Error/Failure'
-    const QColor TextColorForInvalidMaterial(226, 52, 43);      // LY palette for 'Error/Failure'
     const QColor BackColorForActiveDirector(243, 81, 29);       // LY palette for 'Primary'
     const QColor BackColorForInactiveDirector(22, 23, 27);      // LY palette for 'Background (In Focus)'
     const QColor BackColorForGroupNodes(42, 84, 244);           // LY palette for 'Secondary'
@@ -826,10 +818,6 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
         }
-    }
-    else if (nodeType == AnimNodeType::Material)
-    {
-        record->setForeground(0, TextColorForInvalidMaterial);
     }
 
     // Mark the active director and other directors properly.
@@ -1212,7 +1200,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddConsoleVariable)
             {
-                StringDlg dlg(tr("Console Variable Name"));
+                StringDlg dlg(tr("Console Variable Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
@@ -1223,7 +1211,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddScriptVariable)
             {
-                StringDlg dlg(tr("Script Variable Name"));
+                StringDlg dlg(tr("Script Variable Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
@@ -1232,22 +1220,9 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
                 }
             }
-            else if (cmd == eMI_AddMaterial)
-            {
-                StringDlg dlg(tr("Material Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
-                {
-                    if (groupNode->GetAnimNodesByName(dlg.GetString().toUtf8().data()).GetCount() == 0)
-                    {
-                        AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Material Node");
-                        groupNode->CreateSubNode(dlg.GetString(), AnimNodeType::Material);
-                        undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-                    }
-                }
-            }
             else if (cmd == eMI_AddEvent)
             {
-                StringDlg dlg(tr("Track Event Name"));
+                StringDlg dlg(tr("Track Event Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Event Node");
@@ -1303,18 +1278,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::Camera).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-            else if (cmd == eMI_ExpandMaterials)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View materials");
-                groupNode->GetAnimNodesByType(AnimNodeType::Material).ExpandAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_CollapseMaterials)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Collapse Track View materials");
-                groupNode->GetAnimNodesByType(AnimNodeType::Material).CollapseAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
             else if (cmd == eMI_ExpandEvents)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View events");
@@ -1341,7 +1304,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             CTrackViewAnimNode* animNode2 = static_cast<CTrackViewAnimNode*>(pNode);
             QString oldName = QString::fromUtf8(animNode2->GetName().c_str());
 
-            StringDlg dlg(tr("Rename Node"));
+            StringDlg dlg(tr("Rename Node"), this);
             dlg.SetString(oldName);
 
             // add check for duplicate entity names if this is bound to an Object node
@@ -1796,7 +1759,7 @@ void CTrackViewNodesCtrl::EditEvents()
 void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
 {
     // Change Group of the node.
-    StringDlg dlg(tr("Enter Folder Name"));
+    StringDlg dlg(tr("Enter Folder Name"), this);
     if (dlg.exec() == QDialog::Accepted)
     {
         QString name = dlg.GetString();
@@ -1889,7 +1852,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
     contextMenu.main.addAction("Add Console Variable Node")->setData(eMI_AddConsoleVariable);
     contextMenu.main.addAction("Add Script Variable Node")->setData(eMI_AddScriptVariable);
-    contextMenu.main.addAction("Add Material Node")->setData(eMI_AddMaterial);
     contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
 }
 
@@ -2074,8 +2036,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             contextMenu.collapseSub.addAction("Collapse Entities")->setData(eMI_CollapseEntities);
             contextMenu.expandSub.addAction("Expand Cameras")->setData(eMI_ExpandCameras);
             contextMenu.collapseSub.addAction("Collapse Cameras")->setData(eMI_CollapseCameras);
-            contextMenu.expandSub.addAction("Expand Materials")->setData(eMI_ExpandMaterials);
-            contextMenu.collapseSub.addAction("Collapse Materials")->setData(eMI_CollapseMaterials);
             contextMenu.expandSub.addAction("Expand Events")->setData(eMI_ExpandEvents);
             contextMenu.collapseSub.addAction("Collapse Events")->setData(eMI_CollapseEvents);
         }

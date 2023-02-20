@@ -36,6 +36,9 @@ namespace AzPhysics
         void SetMassComputeFlags(MassComputeFlags flags);
 
         bool IsCcdEnabled() const;
+        bool CcdReadOnly() const;
+        AZStd::string_view GetCcdTooltip() const;
+        AZStd::string_view GetKinematicTooltip() const;
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();

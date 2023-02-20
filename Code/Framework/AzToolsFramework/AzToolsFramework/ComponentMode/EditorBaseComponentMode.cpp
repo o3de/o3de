@@ -11,6 +11,9 @@
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)
+
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
@@ -32,12 +35,12 @@ namespace AzToolsFramework
             }
 
             ComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
-            ToolsApplicationNotificationBus::Handler::BusConnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         }
 
         EditorBaseComponentMode::~EditorBaseComponentMode()
         {
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
             ComponentModeRequestBus::Handler::BusDisconnect();
         }
 
@@ -49,7 +52,7 @@ namespace AzToolsFramework
             }
         }
 
-        void EditorBaseComponentMode::AfterUndoRedo()
+        void EditorBaseComponentMode::OnPrefabInstancePropagationEnd()
         {
             Refresh();
         }

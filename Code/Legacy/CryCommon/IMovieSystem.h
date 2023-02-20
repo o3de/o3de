@@ -32,7 +32,6 @@ struct IMovieSystem;
 struct IKey;
 class XmlNodeRef;
 struct ISplineInterpolator;
-struct ILightAnimWrapper;
 
 namespace AZ
 {
@@ -1064,6 +1063,7 @@ struct IAnimSequence
         eSeqFlags_EarlyMovieUpdate    = BIT(15), //!< Turn the 'sys_earlyMovieUpdate' on during the sequence.
         eSeqFlags_LightAnimationSet   = BIT(16), //!< A special unique sequence for light animations
         eSeqFlags_NoMPSyncingNeeded   = BIT(17), //!< this sequence doesn't require MP net syncing
+        eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };
 
     virtual ~IAnimSequence() {};

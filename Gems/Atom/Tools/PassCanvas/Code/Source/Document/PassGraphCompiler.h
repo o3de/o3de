@@ -25,11 +25,11 @@ namespace PassCanvas
         static void Reflect(AZ::ReflectContext* context);
 
         PassGraphCompiler() = default;
-        PassGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId);
+        PassGraphCompiler(const AZ::Crc32& toolId);
         virtual ~PassGraphCompiler();
 
         // AtomToolsFramework::GraphCompiler overrides...
         AZStd::string GetGraphPath() const;
-        bool CompileGraph() override;
+        bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath) override;
     };
 } // namespace PassCanvas

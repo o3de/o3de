@@ -24,7 +24,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            m_unsignedLong = GetParam();
+            m_unsignedLong = static_cast<AZ::u32>(GetParam());
             m_bitset = AZStd::bitset<32>(m_unsignedLong);
         }
 

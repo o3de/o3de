@@ -123,8 +123,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
 
             // create the asset database
             {
@@ -155,8 +153,6 @@ namespace UnitTest
 
             InstanceDatabase<TestInstanceA>::Destroy();
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
     };

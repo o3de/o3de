@@ -73,7 +73,7 @@ namespace AZ
 
             void BuildPipelineColorBlendStateCreateInfo(const RHI::BlendState& blendState, const uint32_t colorAttachmentCount);
 
-            void BuildPipelineDynamicStateCreateInfo(const RHI::MultisampleState& multisampleState);
+            void BuildPipelineDynamicStateCreateInfo();
 
             AZStd::vector<VkPipelineShaderStageCreateInfo> m_pipelineShaderStageCreateInfos;
 

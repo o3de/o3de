@@ -58,7 +58,7 @@ namespace Platform
 #define Py_To_Int(obj) obj.cast<int>()
 #define Py_To_Int_Optional(dict, key, default_int) dict.contains(key) ? Py_To_Int(dict[key]) : default_int
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
-#define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
+#define QString_To_Py_Path(value) value.isEmpty() ? pybind11::none() : m_pathlib.attr("Path")(value.toStdString())
 
 pybind11::list QStringList_To_Py_List(const QStringList& values)
 {
@@ -399,7 +399,18 @@ namespace O3DE::ProjectManager
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
             if (pybind11::isinstance<pybind11::dict>(engineData))
             {
-                engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0.0");
+                if (engineData.contains("version"))
+                {
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "version", "0.0.0");
+                    engineInfo.m_displayVersion = Py_To_String_Optional(engineData, "display_version", "0.0.0");
+                }
+                else
+                {
+                    // maintain for backwards compatibility with older file formats
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0");
+                    engineInfo.m_displayVersion = engineInfo.m_version;
+                }
+
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
 

@@ -407,3 +407,5 @@ namespace GraphCanvas
 
     using SlotLayoutRequestBus = AZ::EBus<SlotLayoutRequests>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::SlotRequests);

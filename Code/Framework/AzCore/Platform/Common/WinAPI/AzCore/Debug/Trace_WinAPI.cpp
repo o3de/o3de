@@ -207,7 +207,7 @@ namespace AZ::Debug
         Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
 
         bool result = false;
-        EBUS_EVENT_RESULT(result, Debug::TraceMessageBus, OnException, message);
+        Debug::TraceMessageBus::BroadcastResult(result, &Debug::TraceMessageBus::Events::OnException, message);
         if (result)
         {
             Debug::Trace::Instance().Output(nullptr, "==================================================================\n");

@@ -67,7 +67,7 @@ namespace O3DE::ProjectManager
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
         connect(m_gemModel, &GemModel::dependencyGemStatusChanged, this, &GemCatalogScreen::OnDependencyGemStatusChanged);
-        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
+        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemCatalogScreen::ShowInspector);
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
@@ -75,23 +75,7 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        m_screensControl = qobject_cast<ScreensCtrl*>(parent);
-        if (m_screensControl)
-        {
-            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
-            if (createGemScreen)
-            {
-                CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
-                connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
-            }
-
-            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
-            if (editGemScreen)
-            {
-                EditGem* editGem = static_cast<EditGem*>(editGemScreen);
-                connect(editGem, &EditGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
-            }
-        }
+        SetUpScreensControl(parent);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -102,7 +86,13 @@ namespace O3DE::ProjectManager
 
         m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
 
-        connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
+        connect(
+            m_gemInspector,
+            &GemInspector::TagClicked,
+            [=](const Tag& tag)
+            {
+                SelectGem(tag.id);
+            });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
         connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
@@ -120,20 +110,16 @@ namespace O3DE::ProjectManager
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Status") },
-            QVector<int>{
-                GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
-                -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
-                0, // Section is set to stretch to fit
-                GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
-            },
+            QVector<int>{ GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
+                          -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
+                          0, // Section is set to stretch to fit
+                          GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth +
+                              GemItemDelegate::s_contentMargins.right() },
             minHeaderSectionWidth,
-            QVector<QHeaderView::ResizeMode>
-            {
-                QHeaderView::ResizeMode::Fixed,
-                QHeaderView::ResizeMode::Interactive,
-                QHeaderView::ResizeMode::Stretch,
-                QHeaderView::ResizeMode::Fixed
-            },
+            QVector<QHeaderView::ResizeMode>{ QHeaderView::ResizeMode::Fixed,
+                                              QHeaderView::ResizeMode::Interactive,
+                                              QHeaderView::ResizeMode::Stretch,
+                                              QHeaderView::ResizeMode::Fixed },
             this);
 
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, m_readOnly, this);
@@ -161,6 +147,27 @@ namespace O3DE::ProjectManager
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
+    }
+
+    void GemCatalogScreen::SetUpScreensControl(QWidget* parent)
+    {
+        m_screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (m_screensControl)
+        {
+            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            if (createGemScreen)
+            {
+                CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
+                connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+            }
+
+            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            if (editGemScreen)
+            {
+                EditGem* editGem = static_cast<EditGem*>(editGemScreen);
+                connect(editGem, &EditGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
+            }
+        }
     }
 
     void GemCatalogScreen::NotifyCurrentScreen()

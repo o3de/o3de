@@ -18,8 +18,7 @@ namespace AzFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PaintBrushSettings>()
-                ->Version(6)
-                ->Field("BrushMode", &PaintBrushSettings::m_brushMode)
+                ->Version(7)
                 ->Field("Size", &PaintBrushSettings::m_size)
                 ->Field("SmoothMode", &PaintBrushSettings::m_smoothMode)
                 ->Field("SmoothingRadius", &PaintBrushSettings::m_smoothingRadius)
@@ -58,51 +57,51 @@ namespace AzFramework
 
     bool PaintBrushSettings::GetSizeVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool PaintBrushSettings::GetHardnessVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool PaintBrushSettings::GetFlowVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool PaintBrushSettings::GetDistanceVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool PaintBrushSettings::GetBlendModeVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     // The following settings are only visible in Smooth mode
 
     bool PaintBrushSettings::GetSmoothingRadiusVisibility() const
     {
-        return (m_brushMode == PaintBrushMode::Smooth);
+        return true;
     }
 
     bool PaintBrushSettings::GetSmoothModeVisibility() const
     {
-        return (m_brushMode == PaintBrushMode::Smooth);
+        return true;
     }
 
     // The color / intensity settings have their visibility controlled by both the color mode and the brush mode.
 
     bool PaintBrushSettings::GetColorVisibility() const
     {
-        return (m_colorMode != PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+        return true;
     }
 
     bool PaintBrushSettings::GetIntensityVisibility() const
     {
-        return (m_colorMode == PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+        return true;
     }
 
     // Opacity is always visible, regardless of brush mode or color mode.
@@ -141,22 +140,6 @@ namespace AzFramework
         m_size = AZStd::clamp(m_size, m_sizeMin, m_sizeMax);
 
         OnSizeRangeChanged();
-        OnSettingsChanged();
-    }
-
-    void PaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
-    {
-        m_brushMode = brushMode;
-
-        OnBrushModeChanged();
-        OnSettingsChanged();
-    }
-
-    void PaintBrushSettings::SetColorMode(PaintBrushColorMode colorMode)
-    {
-        m_colorMode = colorMode;
-
-        OnColorModeChanged();
         OnSettingsChanged();
     }
 
@@ -222,8 +205,9 @@ namespace AzFramework
 
     AZ::u32 PaintBrushSettings::OnColorChanged()
     {
-        // Keep our editable intensity in sync with the brush color.
+        // Keep our editable intensity and opacity in sync with the brush color.
         m_intensityPercent = m_brushColor.GetR() * 100.0f;
+        m_opacityPercent = m_brushColor.GetA() * 100.0f;
 
         return OnSettingsChanged();
     }
@@ -244,14 +228,6 @@ namespace AzFramework
     // Notification functions for editing changes that aren't used for anything in PaintBrushSettings but can be overridden.
 
     void PaintBrushSettings::OnSizeRangeChanged()
-    {
-    }
-
-    void PaintBrushSettings::OnBrushModeChanged()
-    {
-    }
-
-    void PaintBrushSettings::OnColorModeChanged()
     {
     }
 

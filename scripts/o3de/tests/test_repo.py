@@ -6,10 +6,8 @@
 #
 #
 
-import argparse
 import copy
 import json
-import logging
 import pytest
 import pathlib
 import urllib.request
@@ -32,8 +30,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "templates": [],
     "restricted": [],
     "repos": [],
-    "engines": [],
-    "engines_path": {}
+    "engines": []
 }
 '''
 

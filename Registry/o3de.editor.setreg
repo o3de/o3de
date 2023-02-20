@@ -1,0 +1,11 @@
+{
+    "O3DE": {
+        "Autoexec": {
+            "ConsoleCommands": {
+                "sys_PakWarnOnPakAccessFailures": 0,
+                "cl_assetLoadWarningEnable": true,
+                "cl_assetLoadWarningMsThreshold": 100
+            }
+        }
+    }
+}

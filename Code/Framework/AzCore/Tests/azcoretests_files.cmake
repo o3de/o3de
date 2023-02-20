@@ -159,7 +159,6 @@ set(FILES
     Math/Vector4PerformanceTests.cpp
     Math/Vector4Tests.cpp
     Memory/AllocatorBenchmarks.cpp
-    Memory/AllocatorManager.cpp
     Memory/HphaAllocator.cpp
     Memory/HphaAllocatorErrorDetection.cpp
     Memory/LeakDetection.cpp
@@ -178,6 +177,7 @@ set(FILES
     OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
+    RTTI/IsTypeofBenchmarks.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Rtti.cpp
     Script.cpp

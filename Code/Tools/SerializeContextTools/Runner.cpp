@@ -187,7 +187,7 @@ namespace SerializeContextTools
             AZ_Printf("SerializeContextTools", "Processing didn't complete fully as problems were encountered.\n");
         }
 
-        application.Destroy();
+        application.Stop();
 
         // Write out any stdout to stderr at this point
 

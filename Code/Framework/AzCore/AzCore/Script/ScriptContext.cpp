@@ -887,7 +887,7 @@ namespace AZ
                     lua_pushvalue(l, -4); // copy the value for set
                     lua_call(l, 2, 0);
 
-                   //EBUS_EVENT_ID(thisPtr, BehaviorObjectSignals, OnMemberMethodCalled, method);
+                    //BehaviorObjectSignals::Event(thisPtr, &BehaviorObjectSignals::Events::OnMemberMethodCalled, method);
                 }
             }
 

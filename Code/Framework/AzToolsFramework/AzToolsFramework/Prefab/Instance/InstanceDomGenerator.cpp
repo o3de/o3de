@@ -54,15 +54,15 @@ namespace AzToolsFramework
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
-        void InstanceDomGenerator::GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const
+        void InstanceDomGenerator::GetInstanceDomFromTemplate(PrefabDom& instanceDom, const Instance& instance) const
         {
-            AZ_Assert(instanceDom.IsNull(), "GenerateInstanceDom must be called with an empty instance to generate into.");
+            AZ_Assert(instanceDom.IsNull(), "GetInstanceDomFromTemplate must be called with an empty instance to generate into.");
 
             // Retrieves the focused instance.
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (!prefabFocusInterface)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "PrefabFocusInterface could not be found.");
                 return;
             }
@@ -70,7 +70,7 @@ namespace AzToolsFramework
             InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
             if (!focusedInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the focused instance. It should not be null.");
                 return;
             }
@@ -80,7 +80,7 @@ namespace AzToolsFramework
             const Instance* focusedOrRootInstance = climbUpResult.m_reachedInstance;
             if (!focusedOrRootInstance)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the focused or root instance. It should not be null.");
                 return;
             }
@@ -94,7 +94,7 @@ namespace AzToolsFramework
             {
                 AZ_Assert(
                     false,
-                    "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                    "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the instance DOM stored in the focused or root template DOM.");
                 return;
             }
@@ -114,12 +114,22 @@ namespace AzToolsFramework
             // in focused instance DOM with the one seen by the root.
             else if (PrefabInstanceUtils::IsDescendantInstance(focusedInstance->get(), instance))
             {
+                TemplateReference focusedTemplate = m_prefabSystemComponentInterface->FindTemplate(focusedInstance->get().GetTemplateId());
+
+                if (!focusedTemplate.has_value())
+                {
+                    AZ_Assert(
+                        false,
+                        "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - A focused instance was found but there is no "
+                        "corresponding prefab template associated with it.");
+                    return;
+                }
+                
                 // use instanceDom's allocator, because ultimately we will be setting this data back into
                 // instanceDom with move semantics.
                 PrefabDom focusedTemplateDomCopy(&instanceDom.GetAllocator());
 
-                focusedTemplateDomCopy.CopyFrom(
-                    m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()), instanceDom.GetAllocator());
+                focusedTemplateDomCopy.CopyFrom(focusedTemplate->get().GetPrefabDom(), instanceDom.GetAllocator());
 
                 UpdateContainerEntityInDomFromHighestAncestor(focusedTemplateDomCopy, focusedInstance->get());
 
@@ -134,14 +144,14 @@ namespace AzToolsFramework
             // the focused instance has no hierarchy relation with the given instance.
         }
 
-        void InstanceDomGenerator::GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const
+        void InstanceDomGenerator::GetEntityDomFromTemplate(PrefabDom& entityDom, const AZ::Entity& entity) const
         {
-            AZ_Assert(entityDom.IsNull(), "GenerateEntityDom must be called with an empty entityDom to fill.");
+            AZ_Assert(entityDom.IsNull(), "GetEntityDomFromTemplate must be called with an empty entityDom to fill.");
             // Retrieves the focused instance.
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (!prefabFocusInterface)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "PrefabFocusInterface could not be found.");
                 return;
             }
@@ -149,7 +159,7 @@ namespace AzToolsFramework
             InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
             if (!focusedInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the focused instance. It should not be null.");
                 return;
             }
@@ -158,7 +168,7 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the owning instance for the given entity id.");
                 return;
             }
@@ -169,7 +179,7 @@ namespace AzToolsFramework
             const Instance* focusedOrRootInstance = climbUpResult.m_reachedInstance;
             if (!focusedOrRootInstance)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the focused or root instance from climb-up. It should not be null.");
                 return;
             }
@@ -195,7 +205,7 @@ namespace AzToolsFramework
                     AZ_Warning(
                         "Prefab",
                         false,
-                        "InstanceDomGenerator::GenerateEntityDom - "
+                        "InstanceDomGenerator::GetEntityDomFromTemplate - "
                         "The entity DOM cannot be found in the template DOM. Output DOM will be null.");
                     return;
                 }

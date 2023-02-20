@@ -8,12 +8,14 @@
 
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 
 #include <QAction>
 #include <QKeySequence>
+#include <QWidget>
 
 namespace AzToolsFramework
 {
@@ -31,6 +33,36 @@ namespace AzToolsFramework
     HotKeyManager::~HotKeyManager()
     {
         AZ::Interface<HotKeyManagerInterface>::Unregister(this);
+    }
+
+    HotKeyManagerOperationResult HotKeyManager::AssignWidgetToActionContext(
+        const AZStd::string& contextIdentifier, QWidget* widget)
+    {
+        auto widgetWatcher = m_actionManagerInternalInterface->GetActionContextWidgetWatcher(contextIdentifier);
+        if (widgetWatcher == nullptr)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "HotKey Manager - Could not assign widget to action context \"%s\" - action context widget watcher could not be found.",
+                contextIdentifier.c_str()));
+        }
+
+        widget->installEventFilter(widgetWatcher);
+        return AZ::Success();
+    }
+
+    HotKeyManagerOperationResult HotKeyManager::RemoveWidgetFromActionContext(
+        const AZStd::string& contextIdentifier, QWidget* widget)
+    {
+        auto widgetWatcher = m_actionManagerInternalInterface->GetActionContextWidgetWatcher(contextIdentifier);
+        if (widgetWatcher == nullptr)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "HotKey Manager - Could not remove widget from action context \"%s\" - action context widget watcher could not be found.",
+                contextIdentifier.c_str()));
+        }
+
+        widget->removeEventFilter(widgetWatcher);
+        return AZ::Success();
     }
 
     HotKeyManagerOperationResult HotKeyManager::SetActionHotKey(const AZStd::string& actionIdentifier, const AZStd::string& hotKey)

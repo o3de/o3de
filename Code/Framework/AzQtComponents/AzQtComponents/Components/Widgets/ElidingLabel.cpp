@@ -85,16 +85,16 @@ namespace AzQtComponents
         {
             // If RichText tags are elided using fontMetrics.elidedText(), they will break.
             // A TextDocument is used to produce elided text that takes this into account.
-            const QString ellipsis("...");
+            static const QString ellipsis(QStringLiteral("..."));
             const int maxLineWidth = TextRect().width();
 
-            QTextDocument doc;
+            static QTextDocument doc;
             doc.setHtml(m_text);
             doc.setDefaultFont(font());
             doc.setDocumentMargin(0.0);
 
             // Turn off wrapping so the document uses a single line.
-            QTextOption option = doc.defaultTextOption();
+            static QTextOption option = doc.defaultTextOption();
             option.setWrapMode(QTextOption::WrapMode::NoWrap);
             doc.setDefaultTextOption(option);
             doc.adjustSize();

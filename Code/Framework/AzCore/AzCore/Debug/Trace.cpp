@@ -336,7 +336,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreAssert, fileName, line, funcName, message);
 
         if (GetAlwaysPrintCallstack())
         {
@@ -359,7 +359,7 @@ namespace AZ::Debug
             azstrcat(message, g_maxMessageLength, "\n");
             Output(g_dbgSystemWnd, message);
 
-            EBUS_EVENT_RESULT(result, TraceMessageBus, OnAssert, message);
+            TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnAssert, message);
             if (result.m_value)
             {
                 Output(g_dbgSystemWnd, "==================================================================\n");
@@ -403,7 +403,8 @@ namespace AZ::Debug
             else if (currentLevel == assertLevel_nativeUI)
             {
                 AZ::NativeUI::AssertAction buttonResult;
-                EBUS_EVENT_RESULT(buttonResult, AZ::NativeUI::NativeUIRequestBus, DisplayAssertDialog, dialogBoxText);
+                AZ::NativeUI::NativeUIRequestBus::BroadcastResult(
+                    buttonResult, &AZ::NativeUI::NativeUIRequestBus::Events::DisplayAssertDialog, dialogBoxText);
                 switch (buttonResult)
                 {
                 case AZ::NativeUI::AssertAction::BREAK:
@@ -468,7 +469,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreError, window, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreError, window, fileName, line, funcName, message);
         if (result.m_value)
         {
             g_alreadyHandlingAssertOrFatal = false;
@@ -481,7 +482,7 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnError, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnError, window, message);
         Output(window, "==================================================================\n");
         if (result.m_value)
         {
@@ -512,7 +513,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreWarning, window, fileName, line, funcName, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPreWarning, window, fileName, line, funcName, message);
         if (result.m_value)
         {
             return;
@@ -524,7 +525,7 @@ namespace AZ::Debug
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnWarning, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnWarning, window, message);
         Output(window, "==================================================================\n");
     }
 
@@ -548,7 +549,7 @@ namespace AZ::Debug
         va_end(mark);
 
         TraceMessageResult result;
-        EBUS_EVENT_RESULT(result, TraceMessageBus, OnPrintf, window, message);
+        TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnPrintf, window, message);
         if (result.m_value)
         {
             return;
@@ -576,7 +577,7 @@ namespace AZ::Debug
             // would likely just lead to even more exceptions.
 
             TraceMessageResult result;
-            EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
+            TraceMessageBus::BroadcastResult(result, &TraceMessageBus::Events::OnOutput, window, message);
             if (result.m_value)
             {
                 return;

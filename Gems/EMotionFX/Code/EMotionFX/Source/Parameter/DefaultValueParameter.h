@@ -11,6 +11,7 @@
 #include "ValueParameter.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <EMotionFX/Source/Allocators.h>
 
 namespace EMotionFX
 {
@@ -20,6 +21,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI((DefaultValueParameter, "{AE70C43D-6BAE-4EDF-A1CF-FC18B9F92ABB}", ValueType, Derived), ValueParameter);
+        AZ_CLASS_ALLOCATOR(DefaultValueParameter, AnimGraphAllocator)
 
         explicit DefaultValueParameter(const ValueType& defaultValue, AZStd::string name = {}, AZStd::string description = {})
             : ValueParameter(AZStd::move(name), AZStd::move(description))

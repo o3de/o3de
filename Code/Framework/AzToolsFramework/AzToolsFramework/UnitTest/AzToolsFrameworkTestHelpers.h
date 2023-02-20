@@ -20,14 +20,19 @@
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -36,11 +41,14 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
+#include <QMainWindow>
 #endif // !defined(Q_MOC_RUN)
 
 #include <ostream>
 
-AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // warning suppressed: constant used in conditional expression
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
 #include <QtTest/QtTest>
 AZ_POP_DISABLE_WARNING
 
@@ -58,6 +66,35 @@ AZ_POP_DISABLE_WARNING
             return;                                         \
         }                                                   \
     }
+
+// Helper unit test hook for any tools unit tests that rely on a QApplication being created (e.g. any tests that need to create a QWidget)
+#define AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV)                                                           \
+    AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)                                     \
+    {                                                                                                   \
+        ::testing::InitGoogleMock(&argc, argv);                                                         \
+        AzQtComponents::PrepareQtPaths();                                                               \
+        QApplication app(argc, argv);                                                                   \
+        if (AZ_TRAIT_AZTEST_ATTACH_RESULT_LISTENER)                                                     \
+        {                                                                                               \
+            ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
+            listeners.Append(new AZ::Test::OutputEventListener);                                        \
+        }                                                                                               \
+        AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
+        AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
+        AZ::Test::addTestEnvironments({TEST_ENV});                                                      \
+        int result = RUN_ALL_TESTS();                                                                   \
+        if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)                               \
+        {                                                                                               \
+            std::cerr << "No tests were found for last suite ran!" << std::endl;                        \
+            result = 1;                                                                                 \
+        }                                                                                               \
+        return result;                                                                                  \
+    }
+
+#define AZ_TOOLS_UNIT_TEST_HOOK(TEST_ENV) \
+    AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV) \
+    AZ_BENCHMARK_HOOK() \
+    IMPLEMENT_TEST_EXECUTABLE_MAIN()
 
 namespace UnitTest
 {
@@ -267,6 +304,27 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
                 viewportHandlerBuilder);
 
+            // If the new action manager is enabled, we need to register the MainWindowActionContextIdentifier action context to a dummy QMainWindow
+            // so that any actions/shortcuts registered to it from tools will work. This is typically only initialized in the Editor itself,
+            // so it doesn't get registered in the ToolsApplicationFixture, but some tools we are testing rely on it (e.g. viewport interactions).
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                m_defaultMainWindow = new QMainWindow();
+
+                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+                AzToolsFramework::ActionContextProperties contextProperties;
+                contextProperties.m_name = "O3DE Editor";
+
+                actionManagerInterface->RegisterActionContext(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
+
+                hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, m_defaultMainWindow);
+            }
+
             SetUpEditorFixtureImpl();
         }
 
@@ -280,6 +338,13 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
 
             TearDownEditorFixtureImpl();
+
+            if (m_defaultMainWindow)
+            {
+                delete m_defaultMainWindow;
+                m_defaultMainWindow = nullptr;
+            }
+
             m_editorActions.Disconnect();
 
             // Stop & delete the Application created by this fixture, hence not using GetApplication() here
@@ -291,6 +356,8 @@ namespace UnitTest
 
             Base::TearDown();
         }
+
+        QMainWindow* m_defaultMainWindow = nullptr;
 
         virtual void SetUpEditorFixtureImpl() {}
         virtual void TearDownEditorFixtureImpl() {}

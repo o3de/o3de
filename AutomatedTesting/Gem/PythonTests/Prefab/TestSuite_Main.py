@@ -37,6 +37,9 @@ class TestAutomation(EditorTestSuite):
     class test_CreatePrefab_ComponentConfigurationRetained(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
 
+    class test_CreatePrefab_CreationFailsWithDifferentRootEntities(EditorBatchedTest):
+        from .tests.create_prefab import CreatePrefab_CreationFailsWithDifferentRootEntities as test_module
+
     class test_CreatePrefab_UnderAnEntity(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnEntity as test_module
 
@@ -147,6 +150,21 @@ class TestAutomationOverrides(EditorTestSuite):
     EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=true")
 
     # Overrides Tests
+
+    class test_AddEntity_UnderUnfocusedInstanceAsOverride(EditorBatchedTest):
+        from .tests.overrides import AddEntity_UnderUnfocusedInstanceAsOverride as test_module
+
+    class test_DeleteEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderImmediateInstance as test_module
+
+    class test_DeleteEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderNestedInstance as test_module
+
+    class test_DeletePrefab_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderImmediateInstance as test_module
+
+    class test_DeletePrefab_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderNestedInstance as test_module
 
     class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
         from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
