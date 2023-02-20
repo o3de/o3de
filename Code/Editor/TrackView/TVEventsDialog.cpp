@@ -259,10 +259,10 @@ void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 void CTVEventsDialog::OnBnClickedButtonRenameEvent()
 {
     const QModelIndex index = m_ui->m_List->currentIndex();
-
+    QString oldName = m_ui->m_List->model()->index(index.row(), 0).data().toString();
     if (index.isValid())
     {
-        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString());
+        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString(), QLineEdit::Normal, oldName);
         if (!newName.isEmpty())
         {
             m_ui->m_List->model()->setData(index.sibling(index.row(), 0), newName);
