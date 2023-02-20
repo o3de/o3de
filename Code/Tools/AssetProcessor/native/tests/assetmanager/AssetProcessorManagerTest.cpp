@@ -713,19 +713,10 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     // This is a regression test for this situation:
     // 1. A source asset would emit one of two different jobs from CreateJobs, based on data in the source asset itself. One of these emits intermediate assets, but not the other.
     // 2. The AssetProcessor would run once, and the source asset would run with the job that emits intermediate assets.
-    // 3. An intermediate asset dependency would change that will cause the intermediate asset to fail the next time it processes.
-    // 4. At the same time as the previous step, the source asset was changed so that it no longer emits the job that creates the intermediate asset, it emits a different job with different products.
-    // 5. The Asset Processor is run again.
-    //
-    // There is a separate issue with processing order, where intermediate asset can process before the source asset processes, so this test does not
-    // setup the intermediate asset to fail.
-    //
-    // When the bug this regression test was written for occurred:
-    //  The intermediate asset would process again, even though it should be cleaned up because the source asset no longer emits it as a product.
-    //
-    // When the bug was fixed:
-    //  The intermediate asset is cleaned up and removed (eventually - due to another issue it might still exist and process at least briefly, failing once).
-    //  So when the AssetProcessor finishes processing, there is no failure for this intermediate asset (even if it failed before it was cleaned up).
+    // 3. The source asset was changed so that it no longer emits the job that creates the intermediate asset, it emits a different job with different products.
+    // 4. The Asset Processor is run again.
+    // Expected, and what this test verifies: The intermediate asset is removed, because it is no longer a product of the source asset.
+    // Before the regression fix: The intermediate asset was not being removed.
     
     using namespace AssetBuilderSDK;
 
@@ -803,9 +794,6 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     // Mark the source asset to no longer emit the intermediate product asset
     outputIntermediateProduct = false;
 
-    // Then:
-    // Asset processing completes and the intermediate asset is deleted, because it's no longer a product of this source asset.
-
     // Call AssessModifiedFile on the source asset.
     QMetaObject::invokeMethod(
         m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, QString(m_testFilePath.c_str())));
@@ -826,8 +814,9 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     m_assetProcessorManager->CheckActiveFiles(0);
     m_assetProcessorManager->CheckJobEntries(0);
 
-    // Process the file, which triggers CheckMissingJobs to be called, whcih actually deletes the no longer emitted file.
+    // Process the file, which triggers CheckMissingJobs to be called, which actually deletes the no longer emitted file.
     // This doesn't call ProcessSingleStep because the files to examine and active files won't match what ProcessSingleStep expects.
+
     // m_jobDetailsList lets this test verify the job ran that was expected to run.
     m_jobDetailsList.clear();
     m_fileCompiled = false;
@@ -840,6 +829,10 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     ProcessJob(*m_rc, m_jobDetailsList[0]);
     ASSERT_TRUE(m_fileCompiled);
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
+
+
+    // Then:
+    // Asset processing completes and the intermediate asset is deleted, because it's no longer a product of this source asset.
 
     // Make sure nothing is left to process
     m_assetProcessorManager->CheckFilesToExamine(0);
