@@ -31,9 +31,6 @@
 
 namespace Multiplayer
 {
-    using namespace testing;
-    using namespace ::UnitTest;
-
     class MultiplayerNetworkEntityTests : public NetworkEntityTests
     {
     public:

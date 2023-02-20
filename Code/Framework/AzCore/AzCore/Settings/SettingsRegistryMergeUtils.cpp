@@ -29,6 +29,35 @@
 
 namespace AZ::Internal
 {
+    //! References the settings key to set the project path via *.setreg(patch) file
+    //! Lowest Priority: Will be overridden by the Project Scan Up Key value
+    //! This setting shouldn't be used be at all
+    //! Reason: The path to the project is needed to determine where the project is located,
+    //! which engine the project is using as well as which gems the project is using.
+    //! Therefore this setting would need to be set within a registry file(.setreg)
+    //! that is available without knowing the project root at all.
+    //! The only location registry files can be reliably found while the project path is not
+    //! available is in the `<userhome>/.o3de/Registry` folder
+    //! This is C:\Users\<username>\.o3de\Registry on Windows = %USERPROFILE%
+    //! This is /home/<username>/.o3de/Registry on Linux = $HOME
+    //! This is /Users/<username>/.o3de/Registry on MacOS = $HOME
+    static constexpr AZStd::string_view SetregFileProjectRootKey{ "/Amazon/AzCore/Bootstrap/project_path" };
+
+    //! Represents the settings key storing the value of locating the project path by scanning upwards
+    //! Middle Priority: Overrides any project path set via .setreg(patch) file
+    //!
+    //! This setting is used when running in a project-centric workflow to locate the project root directory
+    //! without the need to specify the --project-path argument.
+    static constexpr AZStd::string_view ScanUpProjectRootKey{ "/O3DE/Runtime/Internal/project_root_scan_up_path" };
+
+    //! References the settings key where the command line value for the --project-path option would be stored
+    //! Highest Priority: Overrides any project paths specified in the "/Amazon/AzCore/Bootstrap/project_path" key
+    //! or found via scanning upwards from the nearest executable directory to locate a project.json file
+    //!
+    //! This setting should be used when using running an O3DE application from a location where a project.json file
+    //! cannot be found by scanning upwards.
+    static constexpr AZStd::string_view CommandLineProjectRootKey{ "/O3DE/Runtime/CommandLine" };
+
     static constexpr AZStd::string_view EngineJsonFilename = "engine.json";
     static constexpr AZStd::string_view GemJsonFilename = "gem.json";
     static constexpr AZStd::string_view ProjectJsonFilename = "project.json";
@@ -360,58 +389,82 @@ namespace AZ::SettingsRegistryMergeUtils
 
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
     {
-        static constexpr AZStd::string_view InternalScanUpProjectRootKey{ "/O3DE/Runtime/Internal/project_root_scan_up_path" };
         using FixedValueString = SettingsRegistryInterface::FixedValueString;
         using Type = SettingsRegistryInterface::Type;
 
-        AZ::IO::FixedMaxPath projectRoot;
-        constexpr auto projectRootKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
+        // Run the scan upwards logic one time only for the supplied Settings Registry instance
+        // to find the location of the closest ancestor project.json
+        // Once this step is run the {SetregFileProjectRootKey} is set in the Settings Registry
+        // and this logic will not run again for this Settings Registry instance
 
-        // Step 1 Run the scan upwards logic once to find the location of the closest ancestor project.json
-        // Once this step is run the {InternalScanUpProjectRootKey} is set in the Settings Registry
-        // to have this scan logic only run once for the supplied registry
         // SettingsRegistryInterface::GetType is used to check if a key is set
-        if (settingsRegistry.GetType(InternalScanUpProjectRootKey) == Type::NoType)
+        if (settingsRegistry.GetType(Internal::SetregFileProjectRootKey) == Type::NoType)
         {
-            projectRoot = Internal::ScanUpRootLocator(Internal::ProjectJsonFilename);
+            AZ::IO::FixedMaxPath scanUpProjectRoot = Internal::ScanUpRootLocator(Internal::ProjectJsonFilename);
             // Convert the path to an absolute path before adding it as a setting to the
             // InternalScanUpProjectRootKey
-            if (!projectRoot.empty())
+            if (!scanUpProjectRoot.empty())
             {
-                if (projectRoot.IsRelative())
+                if (scanUpProjectRoot.IsRelative())
                 {
-                    if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                    if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(scanUpProjectRoot.Native());
                         projectAbsPath.has_value())
                     {
-                        projectRoot = AZStd::move(*projectAbsPath);
+                        scanUpProjectRoot = AZStd::move(*projectAbsPath);
                     }
                 }
             }
 
-            // Set the {InternalScanUpProjectRootKey} to make sure this code path isn't called again for this settings registry
-            settingsRegistry.Set(InternalScanUpProjectRootKey, projectRoot.Native());
-            if (!projectRoot.empty())
-            {
-                settingsRegistry.Set(projectRootKey, projectRoot.c_str());
-                // Inject the project root at to the front of the command line settings
-                Internal::InjectSettingToCommandLine(settingsRegistry, projectRootKey, projectRoot.Native());
-
-                return projectRoot;
-            }
+            // Set the {SetregFileProjectRootKey} to make sure this code path isn't called again for this instance
+            settingsRegistry.Set(Internal::ScanUpProjectRootKey, scanUpProjectRoot.Native());
         }
 
-        // Step 2 Check the project-path key
-        // This is the project path root key, as passed from command-line or *.setreg files.
-        settingsRegistry.Get(projectRoot.Native(), projectRootKey);
-        if (!projectRoot.empty())
+        // Check for the project path to used in priority of
+        // 1. command-line
+        // 2. First project.json found by scanning upwards from the current executable directory
+        // 3. "/Amazon/AzCore/Bootstrap/project_path" key set in .setreg file
+
+        AZ::IO::FixedMaxPath projectRoot;
+
+        // 1. Parse Command Line
+        auto VisitCommandLineOptions = [&projectRoot](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
-            if (projectRoot.IsRelative())
+            constexpr AZStd::string_view ProjectPathOptionName = "project-path";
+            // Lookup the "/O3DE/Runtime/CommandLine/%u/Option" for each command line parameter to see if
+            // the project-path key is available
+            // Check if the option value --project-path has been found key has been found
+            auto cmdProjectPathKey = FixedValueString::format("%.*s/Option", AZ_STRING_ARG(visitArgs.m_jsonKeyPath));
+            if (FixedValueString optionName;
+                visitArgs.m_registry.Get(optionName, cmdProjectPathKey) && optionName == ProjectPathOptionName)
             {
-                if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
-                    projectAbsPath.has_value())
-                {
-                    projectRoot = AZStd::move(*projectAbsPath);
-                }
+                // Updated the existing cmdProjectPathKey to read the value from the command line
+                cmdProjectPathKey = FixedValueString::format("%.*s/Value", AZ_STRING_ARG(visitArgs.m_jsonKeyPath));
+                visitArgs.m_registry.Get(projectRoot.Native(), cmdProjectPathKey);
+            }
+
+            // Continue to visit command line parmaetes, in case there is a second --project-path option
+            return AZ::SettingsRegistryInterface::VisitResponse::Skip;
+        };
+        SettingsRegistryVisitorUtils::VisitArray(settingsRegistry, VisitCommandLineOptions, Internal::CommandLineProjectRootKey);
+
+        if (projectRoot.empty())
+        {
+            // 2. Check result of Scanning upwards for project.json
+            settingsRegistry.Get(projectRoot.Native(), Internal::ScanUpProjectRootKey);
+        }
+        if (projectRoot.empty())
+        {
+            // 3. Check "/Amazon/AzCore/Bootstrap/project_path" key set from .setreg(patch) file
+            settingsRegistry.Get(projectRoot.Native(), Internal::SetregFileProjectRootKey);
+        }
+
+        // Make the project root an absolute path if it is not empty
+        if (!projectRoot.empty() && projectRoot.IsRelative())
+        {
+            if (auto projectAbsPath = AZ::Utils::ConvertToAbsolutePath(projectRoot.Native());
+                projectAbsPath.has_value())
+            {
+                projectRoot = AZStd::move(*projectAbsPath);
             }
         }
 
@@ -1131,12 +1184,18 @@ namespace AZ::SettingsRegistryMergeUtils
             AZStd::string m_regsetKey;
         };
 
-        // Provide overrides for the engine root, the project root and the project cache root
+        // Provide mappings for the engine root directroy, project product directory(<project-root>/Cache/<asset-platform>),
+        // project user directory (<project-root>/user), project log directory (<project-root>/user/log)
+        // command line options to regset options
+        // 
+        // A mapping for the project-build-path option which represents the CMake binary directory
+        // supplied during configure is also available to be mapped to a regset setting
+        //
+        // The o3de-manifest-path option maps to a regset option that allows users to override
+        // the directory containing their o3de_manifest.json file.
         AZStd::array commandOptions = {
             OptionKeyToRegsetKey{
                 "engine-path", AZStd::string::format("%s/engine_path", BootstrapSettingsRootKey)},
-            OptionKeyToRegsetKey{
-                "project-path", AZStd::string::format("%s/project_path", BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-cache-path",
                 AZStd::string::format("%s/project_cache_path", BootstrapSettingsRootKey)},
