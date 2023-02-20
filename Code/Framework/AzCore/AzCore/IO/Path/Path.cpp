@@ -9,9 +9,70 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+namespace AZ::IO::Internal
+{
+    // Helper function for url quoting a relative path string
+    // Only implemented in Path.cpp for AZStd::string and AZStd::fixed_string<MaxPathLength>
+    template <class StringType>
+    StringType AsUri(const PathView& pathView) noexcept;
+}
+
+
 // Explicit instantations of our support Path classes
 namespace AZ::IO
 {
+        // string conversion
+    AZStd::string PathView::String() const
+    {
+        return AZStd::string(m_path);
+    }
+
+    // as_posix
+    AZStd::string PathView::StringAsPosix() const
+    {
+        AZStd::string resultPath(m_path);
+        AZStd::replace(resultPath.begin(), resultPath.end(), AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
+        return resultPath;
+    }
+
+    // as_uri
+    AZStd::string PathView::StringAsUri() const
+    {
+        return Internal::AsUri<AZStd::string>(*this);
+    }
+
+    // as_uri
+    // Encodes the path suitable for using in a URI
+    AZStd::fixed_string<MaxPathLength> PathView::AsUri() const noexcept
+    {
+        return FixedMaxPathStringAsUri();
+    }
+
+    AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsUri() const noexcept
+    {
+        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
+    }
+
+
+    // as_uri
+    // Encodes the path suitable for using in a URI
+    template <typename StringType>
+    auto BasicPath<StringType>::AsUri() const -> string_type
+    {
+        return Internal::AsUri<string_type>(*this);
+    }
+    template <typename StringType>
+    AZStd::string BasicPath<StringType>::StringAsUri() const
+    {
+        return Internal::AsUri<AZStd::string>(*this);
+    }
+
+    template <typename StringType>
+    AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsUri() const noexcept
+    {
+        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
+    }
+    
     // Class template instantations
     template class BasicPath<AZStd::string>;
     template class BasicPath<FixedMaxPathString>;
@@ -50,26 +111,6 @@ namespace AZ::IO
         const PathIterator<const Path>& rhs);
     template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
-
-    // string conversion
-    AZStd::string PathView::String() const
-    {
-        return AZStd::string(m_path);
-    }
-
-    // as_posix
-    AZStd::string PathView::StringAsPosix() const
-    {
-        AZStd::string resultPath(m_path);
-        AZStd::replace(resultPath.begin(), resultPath.end(), AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
-        return resultPath;
-    }
-
-    // as_uri
-    AZStd::string PathView::StringAsUri() const
-    {
-        return Internal::AsUri<AZStd::string>(*this);
-    }
 }
 
 namespace AZ::IO::Internal

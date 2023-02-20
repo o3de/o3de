@@ -13,14 +13,6 @@
 
 #include <AzCore/IO/Path/PathIterable.inl>
 
-namespace AZ::IO::Internal
-{
-    // Helper function for url quoting a relative path string
-    // Only implemented in Path.cpp for AZStd::string and AZStd::fixed_string<MaxPathLength>
-    template <class StringType>
-    StringType AsUri(const PathView& pathView) noexcept;
-}
-
 //! PathView implementation
 namespace AZ::IO
 {
@@ -222,18 +214,6 @@ namespace AZ::IO
         AZStd::fixed_string<MaxPathLength> resultPath(m_path.begin(), m_path.end());
         AZStd::replace(resultPath.begin(), resultPath.end(), AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
         return resultPath;
-    }
-
-    // as_uri
-    // Encodes the path suitable for using in a URI
-    AZStd::fixed_string<MaxPathLength> PathView::AsUri() const noexcept
-    {
-        return FixedMaxPathStringAsUri();
-    }
-
-    AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsUri() const noexcept
-    {
-        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
     }
 
     // decomposition
@@ -1052,25 +1032,6 @@ namespace AZ::IO
         AZStd::fixed_string<MaxPathLength> resultPath(m_path.begin(), m_path.end());
         AZStd::replace(resultPath.begin(), resultPath.end(), WindowsPathSeparator, PosixPathSeparator);
         return resultPath;
-    }
-
-    // as_uri
-    // Encodes the path suitable for using in a URI
-    template <typename StringType>
-    auto BasicPath<StringType>::AsUri() const -> string_type
-    {
-        return Internal::AsUri<string_type>(*this);
-    }
-    template <typename StringType>
-    AZStd::string BasicPath<StringType>::StringAsUri() const
-    {
-        return Internal::AsUri<AZStd::string>(*this);
-    }
-
-    template <typename StringType>
-    AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsUri() const noexcept
-    {
-        return Internal::AsUri<AZStd::fixed_string<MaxPathLength>>(*this);
     }
 
     template <typename StringType>
