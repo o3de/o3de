@@ -742,15 +742,13 @@ namespace AzQtComponents
 
         // check that the preview on one of the top level items was clicked
         // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
+        auto idx = indexAtPos(p);
+        if (idx.isValid())
         {
-            auto idx = indexAtPos(p);
-
-            if (idx.isValid())
-            {
-                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-                emit clicked(idx);
-                return;
-            }
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit clicked(idx);
+            update();
+            return;
         }
 
         // check the collapse button on one of the child frames was clicked
@@ -771,6 +769,14 @@ namespace AzQtComponents
                     return;
                 }
             }
+        }
+
+        // If empty space in the view is clicked, clear the current selection and update the view
+        if (!idx.isValid())
+        {
+            selectionModel()->clear();
+            update();
+            return;
         }
 
         QAbstractItemView::mousePressEvent(event);
