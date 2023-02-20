@@ -238,11 +238,10 @@ namespace AZ::Render
         {
             PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
             uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
+
             for (uint32_t i = 0; i < clippedCount; ++i)
             {
-                pointArray.at(i).x = vertices[i].GetX();
-                pointArray.at(i).y = vertices[i].GetY();
-                pointArray.at(i).z = vertices[i].GetZ();
+                vertices[i].StoreToFloat4(&pointArray.at(i).x); // StoreToFloat4 is faster and w is ignored by the shader.
             }
             data.SetEndIndex(data.GetStartIndex() + clippedCount);
             direction.StoreToFloat3(data.m_direction.data());
