@@ -11,13 +11,12 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Dependency/Version.h>
 
-#include <AzFramework/Dependency/Version.h>
-
-namespace AzFramework
+namespace AZ 
 {
     /**
-     * Specifies a particular Gem instance (by ID and version).
+     * Specifies a particular object instance by UUID and version.
      */
     template <size_t N>
     struct Specifier
@@ -30,7 +29,7 @@ namespace AzFramework
     };
 
     /**
-     * Defines a Gem's dependency upon another Gem.
+     * Defines a dependency upon another versioned object.
      */
     template <size_t N>
     class Dependency
@@ -49,7 +48,7 @@ namespace AzFramework
                 GreaterThan = 1 << 0,
                 LessThan = 1 << 1,
                 EqualTo = 1 << 2,
-                // Special operators
+                // Special operators ~> and ~=
                 TwiddleWakka = 1 << 3
             };
 
@@ -110,18 +109,32 @@ namespace AzFramework
         ~Dependency() = default;
 
         /**
-         * Gets the ID of the Gem depended on.
+         * Gets the ID of the object depended on.
          *
-         * \returns             The ID of the Gem depended on.
+         * \returns             The ID of the object depended on.
          */
         const AZ::Uuid& GetID() const;
 
         /**
-         * Set the ID of the Gem depended on.
+         * Set the ID of the object depended on.
          *
          * \params[in] id       The ID of the dependency
          */
         void SetID(const AZ::Uuid& id);
+
+        /**
+         * Gets the name of the object depended on.
+         *
+         * \returns             The name of the object depended on.
+         */
+        const AZStd::string& GetName() const;
+
+        /**
+         * Set the name of the object depended on.
+         *
+         * \params[in] name       The name of the dependency
+         */
+        void SetName(const AZStd::string& name);
 
         /**
          * Gets the bounds that the dependence's version must fulfill.
@@ -146,8 +159,8 @@ namespace AzFramework
          * Parses version bounds from a list of strings.
          *
          * Each string should fit the pattern [OPERATOR][VERSION],
-         * where [OPERATOR] is >, >=, <, <=, ==, or ~>,
-         * and [VERSION] is a valid version string, parsable by Gems::Version<N>.
+         * where [OPERATOR] is >, >=, <, <=, ==, ~> or ~=,
+         * and [VERSION] is a valid version string, parsable by AZ::Version<N>.
          *
          * \params[in] deps     The list of bound strings to parse.
          *
@@ -156,6 +169,7 @@ namespace AzFramework
         AZ::Outcome<void, AZStd::string> ParseVersions(const AZStd::vector<AZStd::string>& deps);
 
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
+        AZStd::string m_name;
         AZStd::vector<Bound> m_bounds;
 
     private:
@@ -163,6 +177,7 @@ namespace AzFramework
         AZ::Outcome<AZ::u8> ParseVersion(AZStd::string str, Version<N>& ver);
 
         AZStd::regex m_dependencyRegex;
+        AZStd::regex m_namedDependencyRegex;
         AZStd::regex m_versionRegex;
     };
 
@@ -176,11 +191,11 @@ namespace AzFramework
     inline Ty operator~(Ty left)                { return ((Ty) ~(int)left); }
 
     BITMASK_OPS(Dependency< Version<4>::parts_count>::Bound::Comparison)
-        BITMASK_OPS(Dependency<SemanticVersion::parts_count>::Bound::Comparison)
+    BITMASK_OPS(Dependency<SemanticVersion::parts_count>::Bound::Comparison)
 
 #undef BITMASK_OPS
 
 
 } // namespace AzFramework
 
-#include <AzFramework/Dependency/Dependency.inl>
+#include <AzCore/Dependency/Dependency.inl>

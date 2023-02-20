@@ -98,6 +98,9 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
     Docs.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h

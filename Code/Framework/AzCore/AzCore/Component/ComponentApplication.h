@@ -314,6 +314,8 @@ namespace AZ
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
 
+        void ReportBadEngineRoot();
+
         /**
          * This is the function that will be called instantly after the memory
          * manager is created. This is where we should register all core component

@@ -94,7 +94,7 @@ namespace AZ::Utils
             }
         }
 
-        // If the O3DEManifest key isn't set in teh settings registry
+        // If the O3DEManifest key isn't set in the settings registry
         // fallback to use the user's home directory with the .o3de folder appended to it
         AZ::IO::FixedMaxPath path = GetHomeDirectory(settingsRegistry);
         path /= ".o3de";
