@@ -108,8 +108,8 @@ namespace AtomToolsFramework
         bool m_nodeNudgingEnabled = true;
 
         // Settings related to how lines are rendered between connections
-        GraphCanvas::Styling::ConnectionCurveType m_connectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
-        GraphCanvas::Styling::ConnectionCurveType m_dataConnectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
+        GraphCanvas::Styling::ConnectionCurveType m_connectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Straight;
+        GraphCanvas::Styling::ConnectionCurveType m_dataConnectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Straight;
 
         // Other miscellaneous settings
         bool m_groupDoubleClickCollapseEnabled = true;
