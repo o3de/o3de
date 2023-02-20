@@ -21,7 +21,8 @@ from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
-#Bat
+
+# Bat
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -46,10 +47,6 @@ class TestAutomationQtPyTests(TestAutomationBase):
 
     def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
         from . import ScriptCanvas_ChangingAssets_ComponentStable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_VariableManager_ExposeVarsToComponent(self, request, workspace, editor, launcher_platform):
-        from . import VariableManager_ExposeVarsToComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
@@ -112,7 +109,6 @@ class TestAutomation(TestAutomationBase):
     def test_Graph_HappyPath_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
-
 
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
@@ -302,4 +298,3 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-

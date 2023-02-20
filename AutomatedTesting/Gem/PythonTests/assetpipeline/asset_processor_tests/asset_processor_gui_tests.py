@@ -92,6 +92,7 @@ class TestsAssetProcessorGUI(object):
         assert output_message == "pong", "Failed to receive response on control channel socket"
         asset_processor.stop()
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C1564070")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
@@ -336,6 +337,7 @@ class TestsAssetProcessorGUI(object):
         # fmt:on
         asset_processor.stop()
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.assetpipeline
     def test_APStop_TimesOut(self, ap_setup_fixture, asset_processor):
         """

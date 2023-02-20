@@ -26,6 +26,11 @@ namespace AzToolsFramework
         m_getTranslationOffset = AZStd::move(getTranslationOffset);
     }
 
+    void BaseShapeViewportEdit::InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset)
+    {
+        m_getRotationOffset = AZStd::move(getRotationOffset);
+    }
+
     void BaseShapeViewportEdit::InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset)
     {
         m_setTranslationOffset = AZStd::move(setTranslationOffset);
@@ -71,6 +76,16 @@ namespace AzToolsFramework
         return AZ::Vector3::CreateZero();
     }
 
+    AZ::Quaternion BaseShapeViewportEdit::GetRotationOffset() const
+    {
+        if (m_getRotationOffset)
+        {
+            return m_getRotationOffset();
+        }
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetRotationOffset");
+        return AZ::Quaternion::CreateIdentity();
+    }
+
     void BaseShapeViewportEdit::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
         if (m_setTranslationOffset)
@@ -81,6 +96,11 @@ namespace AzToolsFramework
         {
             AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
         }
+    }
+
+    AZ::Transform BaseShapeViewportEdit::GetLocalTransform() const
+    {
+        return AZ::Transform::CreateFromQuaternionAndTranslation(GetRotationOffset(), GetTranslationOffset());
     }
 
     void BaseShapeViewportEdit::BeginEditing()

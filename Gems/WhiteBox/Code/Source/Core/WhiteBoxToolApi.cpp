@@ -1950,19 +1950,19 @@ namespace WhiteBox
         // each face/vertex removal. If garbage_collection is deferred, the faces()/vertices()/halfedges()
         // range must be used to count iterations via skipping iterator to ignore deleted faces
 
-        size_t MeshFaceCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshFaceCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_faces();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_faces());
         }
 
-        size_t MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshHalfedgeCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_halfedges();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_halfedges());
         }
 
-        size_t MeshVertexCount(const WhiteBoxMesh& whiteBox)
+        AZ::u64 MeshVertexCount(const WhiteBoxMesh& whiteBox)
         {
-            return whiteBox.mesh.n_vertices();
+            return static_cast<AZ::u64>(whiteBox.mesh.n_vertices());
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

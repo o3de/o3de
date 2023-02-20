@@ -15,23 +15,133 @@
 
 namespace AzToolsFramework
 {
-    //! This class is used to install an event filter on each widget that the action contexts are registered to in order to properly handle
-    //! ambiguous shorcuts.
-    class ActionContextWidgetWatcher : public QObject
+    void ApplicationWatcher::SetShortcutTriggeredFlag()
     {
-    public:
-        explicit ActionContextWidgetWatcher(QObject* parent)
-            : QObject(parent)
+        m_shortcutWasTriggered = true;
+    }
+
+    bool ApplicationWatcher::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
+    {
+        switch (event->type())
         {
+        case QEvent::ShortcutOverride:
+        {
+            m_shortcutWasTriggered = false;
+            break;
+        }
+        case QEvent::KeyPress:
+        {
+            if (m_shortcutWasTriggered)
+            {
+                // Whenever a shortcut is triggered, the Action Manager system also accepts its ShortcutOverride
+                // which results in a corresponding KeyPress event to be sent. We eat it at the application level
+                // to prevent user interactions from triggering both shortcuts and keypresses in one go.
+                m_shortcutWasTriggered = false;
+                return true;
+            }
+
+            break;
+        }
+        default:
+            break;
         }
 
-        static bool TriggerActiveActionsWithShortcut(const QList<QAction*>& actions, const QKeySequence& shortcutKeySequence)
-        {
-            // Note: Triggering an action may change the enabled state of other actions.
-            // As such, we first collect the actions that should be triggered, then trigger them in sequence.
+        return false;
+    }
 
-            // Collect all actions that are enabled and match with the shortcut.
-            QList<QAction*> matchingActions;
+    ActionContextWidgetWatcher::ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext)
+        : m_applicationWatcher(applicationWatcher)
+        , m_editorActionContext(editorActionContext)
+    {
+    }
+    
+    bool ActionContextWidgetWatcher::eventFilter(QObject* watched, QEvent* event)
+    {
+        switch (event->type())
+        {
+        case QEvent::ShortcutOverride:
+        {
+            // QActions default "autoRepeat" to true, which is not an ideal user experience.
+            // We globally disable that behavior here - in the unlikely event a shortcut needs to
+            // replicate it, its owner can instead implement a keyEvent handler
+            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
+            {
+                return false;
+            }
+
+            auto keyEvent = static_cast<QKeyEvent*>(event);
+            int keyCode = keyEvent->key();
+            Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
+            if (modifiers & Qt::ShiftModifier)
+            {
+                keyCode += Qt::SHIFT;
+            }
+            if (modifiers & Qt::ControlModifier)
+            {
+                keyCode += Qt::CTRL;
+            }
+            if (modifiers & Qt::AltModifier)
+            {
+                keyCode += Qt::ALT;
+            }
+            if (modifiers & Qt::MetaModifier)
+            {
+                keyCode += Qt::META;
+            }
+            
+            QKeySequence keySequence(keyCode);
+            QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+
+            if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
+            {
+                // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
+                // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
+                m_applicationWatcher->SetShortcutTriggeredFlag();
+                event->accept();
+                return true;
+            }
+            
+            break;
+        }
+        case QEvent::Shortcut:
+        {
+            // QActions default "autoRepeat" to true, which is not an ideal user experience.
+            // We globally disable that behavior here - in the unlikely event a shortcut needs to
+            // replicate it, its owner can instead implement a keyEvent handler
+            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
+            {
+                event->accept();
+                return true;
+            }
+
+            if (auto shortcutEvent = static_cast<QShortcutEvent*>(event))
+            {
+                QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+
+                if (TriggerActiveActionsWithShortcut(
+                        m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
+                {
+                    return true;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool ActionContextWidgetWatcher::TriggerActiveActionsWithShortcut(
+        const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence)
+    {
+        // Note: Triggering an action may change the enabled state of other actions.
+        // As such, we first collect the actions that should be triggered, then trigger them in sequence.
+
+        // Collect all actions that are enabled and match with the shortcut.
+        QList<QAction*> matchingActions;
+        auto CollectMatchingActions = [&matchingActions, shortcutKeySequence](const QList<QAction*>& actions)
+        {
             for (QAction* action : actions)
             {
                 if (action->isEnabled() && action->shortcut() == shortcutKeySequence)
@@ -39,90 +149,20 @@ namespace AzToolsFramework
                     matchingActions.append(action);
                 }
             }
+        };
 
-            // Trigger all matching actions.
-            for (QAction* action : matchingActions)
-            {
-                action->trigger();
-            }
+        CollectMatchingActions(contextActions);
+        CollectMatchingActions(widgetActions);
 
-            // Return whether any action was triggered.
-            return !matchingActions.isEmpty();
-        }
-
-        bool eventFilter(QObject* watched, QEvent* event) override
+        // Trigger all matching actions.
+        for (QAction* action : matchingActions)
         {
-            switch (event->type())
-            {
-            case QEvent::ShortcutOverride:
-            {
-                // QActions default "autoRepeat" to true, which is not an ideal user experience.
-                // We globally disable that behavior here - in the unlikely event a shortcut needs to
-                // replicate it, its owner can instead implement a keyEvent handler
-                if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
-                {
-                    event->accept();
-                    return true;
-                }
-
-                auto keyEvent = static_cast<QKeyEvent*>(event);
-                int keyCode = keyEvent->key();
-                Qt::KeyboardModifiers modifiers = keyEvent->modifiers();
-                if (modifiers & Qt::ShiftModifier)
-                {
-                    keyCode += Qt::SHIFT;
-                }
-                if (modifiers & Qt::ControlModifier)
-                {
-                    keyCode += Qt::CTRL;
-                }
-                if (modifiers & Qt::AltModifier)
-                {
-                    keyCode += Qt::ALT;
-                }
-                if (modifiers & Qt::MetaModifier)
-                {
-                    keyCode += Qt::META;
-                }
-
-                QKeySequence keySequence(keyCode);
-
-                auto globalShortcutMap = &QGuiApplicationPrivate::instance()->shortcutMap;
-                bool isAmbiguous = globalShortcutMap->hasShortcutForKeySequence(keySequence);
-                if (isAmbiguous)
-                {
-                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-
-                    if (TriggerActiveActionsWithShortcut(watchedWidget->actions(), keySequence))
-                    {
-                        // We need to accept the event in addition to return true on this event filter
-                        // to ensure the event doesn't get propagated to any parent widgets.
-                        event->accept();
-                        return true;
-                    }
-                }
-                break;
-            }
-            case QEvent::Shortcut:
-            {
-                auto shortcutEvent = static_cast<QShortcutEvent*>(event);
-                if (shortcutEvent->isAmbiguous())
-                {
-                    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
-
-                    if (TriggerActiveActionsWithShortcut(watchedWidget->actions(), shortcutEvent->key()))
-                    {
-                        return true;
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-            }
-            return false;
+            action->trigger();
         }
-    };
+
+        // Return whether any action was triggered.
+        return !matchingActions.isEmpty();
+    }
 
     ActionManager::ActionManager()
     {
@@ -130,6 +170,8 @@ namespace AzToolsFramework
         AZ::Interface<ActionManagerInternalInterface>::Register(this);
 
         EditorAction::Initialize();
+
+        qApp->installEventFilter(&m_applicationWatcher);
     }
 
     ActionManager::~ActionManager()
@@ -137,35 +179,33 @@ namespace AzToolsFramework
         AZ::Interface<ActionManagerInternalInterface>::Unregister(this);
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
-        ClearActionContextMap();
+        Clear();
     }
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(
-        const AZStd::string& parentContextIdentifier,
         const AZStd::string& contextIdentifier,
-        const ActionContextProperties& properties,
-        QWidget* widget)
+        const ActionContextProperties& properties)
     {
-        if (!widget)
-        {
-            return AZ::Failure(AZStd::string::format(
-                "Action Manager - Could not register action context \"%s\" to a null widget.", contextIdentifier.c_str())
-            );
-        }
-
         if (m_actionContexts.contains(contextIdentifier))
         {
             return AZ::Failure(AZStd::string::format("Action Manager - Could not register action context \"%.s\" twice.", contextIdentifier.c_str()));
         }
 
+        EditorActionContext* editorActionContext = new EditorActionContext(contextIdentifier, properties.m_name);
+
         m_actionContexts.insert(
             {
                 contextIdentifier,
-                new EditorActionContext(contextIdentifier, properties.m_name, parentContextIdentifier, widget)
+                editorActionContext
             }
         );
 
-        widget->installEventFilter(new ActionContextWidgetWatcher(widget));
+        m_actionContextWidgetWatchers.insert(
+            {
+                contextIdentifier,
+                new ActionContextWidgetWatcher(&m_applicationWatcher, editorActionContext)
+            }
+        );
 
         return AZ::Success();
     }
@@ -203,7 +243,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    actionContextIterator->second->GetWidget(),
+                    actionContextIterator->second,
                     actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
@@ -216,7 +256,7 @@ namespace AzToolsFramework
                 )
             }
         );
-        actionContextIterator->second->AddAction(actionIdentifier);
+        actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
 
         return AZ::Success();
     }
@@ -250,7 +290,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    actionContextIterator->second->GetWidget(),
+                    actionContextIterator->second,
                     actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
@@ -264,7 +304,7 @@ namespace AzToolsFramework
                 )
             }
         );
-        actionContextIterator->second->AddAction(actionIdentifier);
+        actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
 
         return AZ::Success();
     }
@@ -506,9 +546,14 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    void ActionManager::ClearActionContextMap()
+    void ActionManager::Clear()
     {
         for (auto elem : m_actionContexts)
+        {
+            delete elem.second;
+        }
+
+        for (auto elem : m_actionContextWidgetWatchers)
         {
             delete elem.second;
         }
@@ -766,6 +811,18 @@ namespace AzToolsFramework
         }
 
         return &actionIterator->second;
+    }
+
+    ActionContextWidgetWatcher* ActionManager::GetActionContextWidgetWatcher(
+        const AZStd::string& actionContextIdentifier)
+    {
+        auto actionContextWidgetWatcherIterator = m_actionContextWidgetWatchers.find(actionContextIdentifier);
+        if (actionContextWidgetWatcherIterator == m_actionContextWidgetWatchers.end())
+        {
+            return nullptr;
+        }
+
+        return actionContextWidgetWatcherIterator->second;
     }
 
     ActionVisibility ActionManager::GetActionMenuVisibility(const AZStd::string& actionIdentifier) const

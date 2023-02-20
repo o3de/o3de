@@ -523,8 +523,8 @@ public:
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
             {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythonTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
-            {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
-            {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
+            {{"rhi", "Command-line argument to force which rhi to use", "rhi"}, dummyString },
+            {{"rhi-device-validation", "Command-line argument to configure rhi validation", "rhi-device-validation"}, dummyString },
             {{"exec_line", "command to run on startup, used for systems like automation", "exec_line"}, m_execLineCmd},
             {{"regset", "Command-line argument to override settings registry values", "regset"}, dummyString},
             {{"regremove", "Deletes a value within the global settings registry at the JSON pointer path @key", "regremove"}, dummyString},
@@ -2652,7 +2652,9 @@ void CCryEditApp::OnEditLevelData()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnFileEditLogFile()
 {
-    CFileUtil::EditTextFile(CLogFile::GetLogFileName(), 0, IFileUtil::FILE_TYPE_SCRIPT);
+    QString file = CLogFile::GetLogFileName();
+    QString fullPathName = Path::GamePathToFullPath(file);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fullPathName));
 }
 
 #ifdef ENABLE_SLICE_EDITOR

@@ -780,13 +780,19 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/DocumentPropertyEditor/OverridePropertyHandler.h
+    Prefab/DocumentPropertyEditor/OverridePropertyHandler.cpp
+    Prefab/DocumentPropertyEditor/PrefabAdapter.h
+    Prefab/DocumentPropertyEditor/PrefabAdapter.cpp
+    Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h
+    Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
     Prefab/EditorPrefabComponent.h
     Prefab/EditorPrefabComponent.cpp
+    Prefab/PrefabEditorPreferences.h
+    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
-    Prefab/PrefabEditorPreferences.h
-    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h

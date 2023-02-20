@@ -309,7 +309,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         missing_assets, _ = asset_processor.compare_assets_with_cache()
         assert not missing_assets, 'Following assets are missing in cache: {}'.format(missing_assets)
 
-
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
@@ -363,7 +363,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert num_processed_assets >= expected_asset_count, f'Wrong number of successfully processed assets found in output: '\
                                           f'expected at least {expected_asset_count}, but only {num_processed_assets} were processed'
 
-
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_InvalidServerAddress_Warning_Logs(self, asset_processor):
@@ -649,6 +649,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):

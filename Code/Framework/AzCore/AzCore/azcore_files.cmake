@@ -98,6 +98,9 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
     Docs.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
@@ -469,6 +472,7 @@ set(FILES
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
+    Process/ProcessInfo.h
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
