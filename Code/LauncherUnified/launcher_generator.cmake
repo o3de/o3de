@@ -257,6 +257,29 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         # Associate the Unified Gem Variant with each projects UnfiedLauncher
         ly_set_gem_variant_to_load(TARGETS ${project_name}.UnifiedLauncher VARIANTS Unified)
     endif()
+
+    ################################################################################
+    # EditorWithServer
+    ################################################################################
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+            add_custom_target(${project_name}.EditorWithServer
+            )
+            ly_add_dependencies(${project_name}.EditorWithServer Editor)
+            ly_add_dependencies(${project_name}.EditorWithServer ${project_name}.ServerLauncher)
+
+            set_target_properties(${project_name}.EditorWithServer
+                PROPERTIES 
+                    EXCLUDE_FROM_ALL TRUE
+                    FOLDER ${project_name}
+                    VS_DEBUGGER_COMMAND $<GENEX_EVAL:$<TARGET_FILE:Editor>>
+                    VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\""
+            )
+        endif()
+    endif()
+
+
+
 endforeach()
 
 #! Defer generation of the StaticModules.inl file needed in monolithic builds until after all the CMake targets are known
