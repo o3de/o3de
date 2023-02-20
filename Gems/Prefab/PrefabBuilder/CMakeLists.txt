@@ -59,6 +59,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzToolsFrameworkTestCommon
                 Gem::PrefabBuilder.Static
     )
     ly_add_googletest(

@@ -49,8 +49,9 @@ def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
     assert root.exists(), "Failed to create entity"
     # Add PhysX Collider component
     collider_component = root.add_component("PhysX Collider")
-    assert root.has_component("PhysX Collider") and collider_component.is_enabled(), \
-        "Failed to add/activate PhysX Collider component"
+    static_rigid_body_component = root.add_component("PhysX Static Rigid Body")
+    assert root.has_component("PhysX Collider") and collider_component.is_enabled() and \
+           static_rigid_body_component.is_enabled(), "Failed to add/activate PhysX Collider component"
     # Set the Collider's Shape Configuration field to PhysicsAsset, and assign the specified PhysX Mesh asset
     collider_component.set_component_property_value("Shape Configuration|Shape", 7)
     assert collider_component.get_component_property_value("Shape Configuration|Shape") == 7, \

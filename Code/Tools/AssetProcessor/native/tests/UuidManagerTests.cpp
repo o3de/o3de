@@ -38,6 +38,8 @@ namespace UnitTests
 
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
 
+            AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
+            AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
             AssetProcessor::UuidManager::Reflect(m_serializeContext.get());
 
             m_uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
@@ -62,6 +64,7 @@ namespace UnitTests
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
 
         MockFileStateCache m_fileStateCache;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
         MockPathConversion m_pathConversion;
@@ -365,6 +368,46 @@ namespace UnitTests
         errorChecker.Begin();
         auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
         errorChecker.End(2);
+
+        EXPECT_TRUE(uuidRetry.IsNull());
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_IncompleteMetadataFile_ReturnsAndUpdates)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        MakeFile(TestFile);
+
+        static constexpr AZ::Uuid testUuid{ "{2EE0C7C2-F21E-4254-A180-174992819254}" };
+        AZStd::string contents = AZStd::string::format("{\"UUID\": {\"uuid\": \"%s\"}}", testUuid.ToFixedString().c_str());
+
+        AZ::Utils::WriteFile(contents, MetadataFile.Native());
+
+        auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        EXPECT_EQ(uuidRetry, testUuid);
+
+        auto legacyIds = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
+
+        EXPECT_EQ(legacyIds.size(), 1);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_MetadataFileNoUuid_Fails)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        MakeFile(TestFile);
+
+        AZStd::string contents = AZStd::string::format("{\"UUID\": {\"originalPath\": \" " AZ_STRING_FORMAT " \"}}", AZ_STRING_ARG(TestFile.Filename().Native()));
+
+        AZ::Utils::WriteFile(contents, MetadataFile.Native());
+
+        TraceBusErrorChecker errorChecker;
+        errorChecker.Begin();
+        auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+        errorChecker.End(1);
 
         EXPECT_TRUE(uuidRetry.IsNull());
     }

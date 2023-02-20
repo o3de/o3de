@@ -12,8 +12,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
-#include <Editor/ComboBoxEditButtonPair.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx>
+
 #endif
 
 namespace PhysX
@@ -22,7 +23,7 @@ namespace PhysX
     {
         class CollisionGroupWidget
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionGroups::Id, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<AzPhysics::CollisionGroups::Id, AzToolsFramework::PropertyStringComboBoxCtrl>
         {
             Q_OBJECT
 

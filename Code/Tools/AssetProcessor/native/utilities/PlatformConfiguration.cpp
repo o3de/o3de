@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 
 
 namespace AssetProcessor
@@ -1306,6 +1307,8 @@ namespace AssetProcessor
             visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
         }
 
+        AddMetaDataType(AzToolsFramework::MetadataManager::MetadataFileExtensionNoDot, "");
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),
@@ -1344,7 +1347,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch).IsSuccess();
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;

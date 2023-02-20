@@ -1390,7 +1390,10 @@ namespace AZ
     } \
     static constexpr AZ::TypeId TYPEINFO_Uuid() \
     { \
-        return AZ::TypeId(_ClassUuid) + AZ::Internal::AggregateTypes<__VA_ARGS__>::Uuid(); \
+        /* using a local constexpr variable ensures that the TypeId's string is
+         * parsed at compile time */ \
+        constexpr auto typeId = AZ::TypeId(_ClassUuid) + AZ::Internal::AggregateTypes<__VA_ARGS__>::Uuid(); \
+        return typeId; \
     }
 
 // Template class type info

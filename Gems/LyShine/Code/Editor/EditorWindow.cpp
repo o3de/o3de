@@ -733,8 +733,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
             QString(),
             dir,
             "*." UICANVASEDITOR_CANVAS_EXTENSION,
-            nullptr,
-            QFileDialog::DontConfirmOverwrite);
+            nullptr);
         if (filename.isEmpty())
         {
             return false;

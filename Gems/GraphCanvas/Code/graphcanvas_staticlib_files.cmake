@@ -35,13 +35,17 @@ set(FILES
     StaticLib/GraphCanvas/Components/MimeDataHandlerBus.h
     StaticLib/GraphCanvas/Components/PersistentIdBus.h
     StaticLib/GraphCanvas/Components/SceneBus.h
+    StaticLib/GraphCanvas/Components/SceneBus.cpp
     StaticLib/GraphCanvas/Components/StyleBus.h
+    StaticLib/GraphCanvas/Components/StyleBus.cpp
     StaticLib/GraphCanvas/Components/ViewBus.h
     StaticLib/GraphCanvas/Components/VisualBus.h
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.cpp
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.h
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.cpp
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.cpp
     StaticLib/GraphCanvas/GraphicsItems/GraphicsEffect.h
     StaticLib/GraphCanvas/GraphicsItems/Occluder.cpp
     StaticLib/GraphCanvas/GraphicsItems/Occluder.h
@@ -73,6 +77,7 @@ set(FILES
     StaticLib/GraphCanvas/Components/Nodes/Group/NodeGroupBus.h
     StaticLib/GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h
     StaticLib/GraphCanvas/Components/Slots/SlotBus.h
+    StaticLib/GraphCanvas/Components/Slots/SlotBus.cpp
     StaticLib/GraphCanvas/Components/Slots/Data/DataSlotBus.h
     StaticLib/GraphCanvas/Components/Slots/Property/PropertySlotBus.h
     StaticLib/GraphCanvas/Editor/AssetEditorBus.h
@@ -82,6 +87,7 @@ set(FILES
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h
     StaticLib/GraphCanvas/Editor/GraphModelBus.h
+    StaticLib/GraphCanvas/Editor/GraphModelBus.cpp
     StaticLib/GraphCanvas/Styling/definitions.h
     StaticLib/GraphCanvas/Styling/PseudoElement.cpp
     StaticLib/GraphCanvas/Styling/PseudoElement.h

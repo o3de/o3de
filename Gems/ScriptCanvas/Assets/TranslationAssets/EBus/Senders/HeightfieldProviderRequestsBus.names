@@ -132,7 +132,7 @@
                     ],
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{D6597933-47CD-4fc8-B911-63F3E2B0993A}",
                             "details": {
                                 "name": "Heightfield Grid Columns",
                                 "tooltip": "The size of the heightfield grid in the x direction"
@@ -231,7 +231,7 @@
                     ],
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{D6597933-47CD-4fc8-B911-63F3E2B0993A}",
                             "details": {
                                 "name": "Heightfield Grid Rows",
                                 "tooltip": "The size of the heightfield grid in the y direction"

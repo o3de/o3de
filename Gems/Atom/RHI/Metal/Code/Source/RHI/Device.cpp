@@ -344,7 +344,7 @@ namespace AZ
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
             m_features.m_dualSourceBlending = true;
-            m_features.m_customResolvePositions = m_metalDevice.programmableSamplePositionsSupported;
+            m_features.m_customSamplePositions = m_metalDevice.programmableSamplePositionsSupported;
             m_features.m_indirectDrawSupport = false;
             
             //Metal drivers save and load serialized PipelineLibrary internally

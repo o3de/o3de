@@ -320,7 +320,7 @@ void CXmlNode::setAttr(const char* key, int64 value)
 //////////////////////////////////////////////////////////////////////////
 void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
 {
-    char str[32];
+    char str[32] = { 0 };
     if (useHexFormat)
     {
         sprintf_s(str, "%" PRIX64, value);
@@ -411,7 +411,7 @@ bool CXmlNode::getAttr(const char* key, uint64& value, bool useHexFormat) const
     const char* svalue = GetValue(key);
     if (svalue)
     {
-        value = strtoull(key, nullptr, useHexFormat ? 16 : 10);
+        value = strtoull(svalue, nullptr, useHexFormat ? 16 : 10);
         return true;
     }
     return false;

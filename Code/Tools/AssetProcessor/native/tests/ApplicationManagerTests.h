@@ -46,6 +46,7 @@ namespace UnitTests
         AZStd::unique_ptr<MockAssetProcessorManager> m_mockAPM;
 
         MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
 
         // These are just aliases, no need to manage/delete them

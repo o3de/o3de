@@ -118,6 +118,16 @@ namespace AZ
          */
         void SetId(const ComponentId& id)   { m_id = id; }
 
+        //! Sets the provided string as the serialized identifier for the component. This should be done only for editor components
+        //! since those are the only ones that'll be written to disk.
+        //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+        virtual void SetSerializedIdentifier(AZStd::string serializedIdentifer);
+
+        //! Gets the serialzied identifier of this component within an entity. This will be a non-empty string for components that
+        //! inherit from EditorComponentBase. For all others, it'll be empty.
+        //! @return The serialized identifier of this component.
+        virtual AZStd::string GetSerializedIdentifier() const;
+
         /**
         * Override to conduct per-component or per-slice validation logic during slice asset processing.
         * @param sliceEntities All entities that belong to the slice that the entity with this component is on.
