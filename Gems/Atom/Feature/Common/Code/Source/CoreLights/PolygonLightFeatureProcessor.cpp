@@ -228,26 +228,27 @@ namespace AZ::Render
     {
         AZ_Warning("PolygonLightFeatureProcessor", vertexCount <= MaxPolygonPoints, "Too many polygon points on polygon light. Only using the first %lu vertices.", MaxPolygonPoints);
         AZ_Warning("PolygonLightFeatureProcessor", vertexCount >= 2, "Polygon light must have at least three points - ignoring points.");
-        
+
+        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
         if (vertexCount < 3)
         {
-            return; // not enough points
+            data.SetEndIndex(data.GetStartIndex());
         }
-
-        PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
-        uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
-        for (uint32_t i = 0; i < clippedCount; ++i)
+        else
         {
-            pointArray.at(i).x = vertices[i].GetX();
-            pointArray.at(i).y = vertices[i].GetY();
-            pointArray.at(i).z = vertices[i].GetZ();
+            PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
+            uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
+            for (uint32_t i = 0; i < clippedCount; ++i)
+            {
+                pointArray.at(i).x = vertices[i].GetX();
+                pointArray.at(i).y = vertices[i].GetY();
+                pointArray.at(i).z = vertices[i].GetZ();
+            }
+            data.SetEndIndex(data.GetStartIndex() + clippedCount);
+            direction.StoreToFloat3(data.m_direction.data());
         }
-        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
-        data.SetEndIndex(data.GetStartIndex() + clippedCount);
-        direction.StoreToFloat3(data.m_direction.data());
 
         UpdateBounds(handle);
-
         m_deviceBufferNeedsUpdate = true;
     }
 
