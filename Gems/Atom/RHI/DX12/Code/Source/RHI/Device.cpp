@@ -123,6 +123,7 @@ namespace AZ
 
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
+            m_dxgiDevice = nullptr;
 
             ShutdownSubPlatform();
 
@@ -465,7 +466,6 @@ namespace AZ
             {
                 Microsoft::WRL::ComPtr<IDXGIResource> dxgiResource;
                 if (SUCCEEDED(resource->QueryInterface(dxgiResource.GetAddressOf())))
-                )
                 {
                     DXGI_RESIDENCY actualResidency;
                     if (SUCCEEDED(m_dxgiDevice->QueryResourceResidency(&dxgiResource, &actualResidency, 1)))
