@@ -843,6 +843,7 @@ namespace O3DE::ProjectManager
                 "project_path"_a = projectPath,
                 "project_name"_a = QString_To_Py_String(projectInfo.m_projectName),
                 "template_path"_a = QString_To_Py_Path(projectTemplatePath),
+                "version"_a = QString_To_Py_String(projectInfo.m_version),
                 "no_register"_a = !registerProject
             );
             if (createProjectResult.cast<int>() == 0)
@@ -1282,7 +1283,8 @@ namespace O3DE::ProjectManager
                     "new_summary"_a = QString_To_Py_String(projectInfo.m_summary),
                     "new_icon"_a = QString_To_Py_String(projectInfo.m_iconPath),
                     "replace_tags"_a = pybind11::list(pybind11::cast(newTags)),
-                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName)
+                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName),
+                    "new_version"_a = QString_To_Py_String(projectInfo.m_version)
                     );
                 updateProjectSucceeded = (editResult.cast<int>() == 0);
 

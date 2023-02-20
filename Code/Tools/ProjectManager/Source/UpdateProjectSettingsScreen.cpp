@@ -111,6 +111,7 @@ namespace O3DE::ProjectManager
     ProjectInfo UpdateProjectSettingsScreen::GetProjectInfo()
     {
         m_projectInfo.m_displayName = m_projectName->lineEdit()->text();
+        m_projectInfo.m_version = m_projectVersion->lineEdit()->text();
         m_projectInfo.m_path = m_projectPath->lineEdit()->text();
         m_projectInfo.m_id = m_projectId->lineEdit()->text();
 
@@ -127,6 +128,7 @@ namespace O3DE::ProjectManager
         m_projectInfo = projectInfo;
 
         m_projectName->lineEdit()->setText(projectInfo.GetProjectDisplayName());
+        m_projectVersion->lineEdit()->setText(projectInfo.m_version);
         m_projectPath->lineEdit()->setText(projectInfo.m_path);
         m_projectId->lineEdit()->setText(projectInfo.m_id);
 
