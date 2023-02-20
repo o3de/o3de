@@ -123,8 +123,7 @@ namespace PhysX
             prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
         if (!prefabSystemEnabled)
         {
-            AZ_TracePrintf("PhysXColliderConversion", "Prefabs system is not enabled. Prefabs won't be converted.\n");
-            AZ_TracePrintf("PhysXColliderConversion", "\n");
+            AZ_Warning("PhysXColliderConversion", false, "Prefabs system is not enabled. Prefabs won't be converted.\n");
             return;
         }
 
@@ -133,8 +132,10 @@ namespace PhysX
             isLevelOpen, &AzToolsFramework::EditorRequests::Bus::Events::IsLevelDocumentOpen);
         if (isLevelOpen)
         {
-            AZ_TracePrintf("PhysXColliderConversion", "There is a level currently opened in the editor. To run this command please restart the editor and run it before opening any level.\n");
-            AZ_TracePrintf("PhysXColliderConversion", "\n");
+            AZ_Warning(
+                "PhysXColliderConversion", false,
+                "There is a level currently opened in the editor. To run this command please restart the editor and run it before opening "
+                "any level.\n");
             return;
         }
 
