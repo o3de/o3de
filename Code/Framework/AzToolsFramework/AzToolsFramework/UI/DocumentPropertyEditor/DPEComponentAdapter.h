@@ -15,6 +15,8 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    class AdapterBuilder;
+
     //! ComponentAdapter is responsible to listening for signals that affect each component in the Entity Inspector
     class ComponentAdapter
         : public ReflectionAdapter
@@ -23,6 +25,7 @@ namespace AZ::DocumentPropertyEditor
         , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
     {
     public:
+
         //! Creates an uninitialized (empty) ComponentAdapter.
         ComponentAdapter();
         //! Creates a ComponentAdapter with a specific component instance, see SetComponent
@@ -46,7 +49,16 @@ namespace AZ::DocumentPropertyEditor
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
+        //! Request the PrefabAdapterInterface to add a property handler if an override is present corresponding to the path provided.
+        //! @param adapterBuilder The adapter builder to use for adding property handler
+        //! @param serializedpath The serialized path to use to check whether an override is present corresponding to it
+        void OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath) override;
+
     protected:
+
+        AZStd::string m_componentAlias;
+        AZ::EntityId m_entityId;
+
         AZ::Component* m_componentInstance = nullptr;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;

@@ -431,8 +431,7 @@ namespace AZ::Render
 
         if (enableStaticAabb)
         {
-            AZ::Aabb aabb;
-            instance->CalcStaticBasedAabb(&aabb);
+            auto& aabb = instance->GetAabb();
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);

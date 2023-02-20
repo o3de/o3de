@@ -35,6 +35,7 @@ namespace AzToolsFramework
         void InstallGetManipulatorSpace(AZStd::function<AZ::Transform()> getManipulatorSpace);
         void InstallGetNonUniformScale(AZStd::function<AZ::Vector3()> getNonUniformScale);
         void InstallGetTranslationOffset(AZStd::function<AZ::Vector3()> getTranslationOffset);
+        void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
         void InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset);
         //! @}
 
@@ -70,16 +71,20 @@ namespace AzToolsFramework
         AZ::Transform GetManipulatorSpace() const;
         AZ::Vector3 GetNonUniformScale() const;
         AZ::Vector3 GetTranslationOffset() const;
+        AZ::Quaternion GetRotationOffset() const;
         void SetTranslationOffset(const AZ::Vector3& translationOffset);
+
+        AZ::Transform GetLocalTransform() const;
+
         void BeginEditing();
         void EndEditing();
-
         void BeginUndoBatch(const char* label);
         void EndUndoBatch();
 
         AZStd::function<AZ::Transform()> m_getManipulatorSpace;
         AZStd::function<AZ::Vector3()> m_getNonUniformScale;
         AZStd::function<AZ::Vector3()> m_getTranslationOffset;
+        AZStd::function<AZ::Quaternion()> m_getRotationOffset;
         AZStd::function<void(const AZ::Vector3&)> m_setTranslationOffset;
 
         AZStd::function<void()> m_beginEditing;

@@ -301,6 +301,7 @@ namespace AssetProcessor
         // uses const + mutability since its a cache.
         void CacheIntermediateAssetsScanFolderId() const; 
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
+        void ReadMetaDataFromSettingsRegistry();
 
     protected:
 
@@ -316,7 +317,6 @@ namespace AssetProcessor
 
         void ReadEnabledPlatformsFromSettingsRegistry();
         bool ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
-        void ReadMetaDataFromSettingsRegistry();
 
         int GetProjectScanFolderOrder() const;
 

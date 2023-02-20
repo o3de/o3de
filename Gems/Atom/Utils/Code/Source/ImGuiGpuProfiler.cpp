@@ -1214,81 +1214,90 @@ namespace AZ
                 return;
             }
 
-            if (ImGui::BeginTable("PoolTable", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+            if (ImGui::CollapsingHeader("Buffer Pools", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
             {
-                ImGui::TableSetupColumn("Pool");
-                ImGui::TableSetupColumn("Heap Type");
-                ImGui::TableSetupColumn("Budget (MB)");
-                ImGui::TableSetupColumn("Allocated (MB)");
-                ImGui::TableSetupColumn("Used (MB)");
-                ImGui::TableSetupColumn("Fragmentation (%)");
-                ImGui::TableHeadersRow();
-                ImGui::TableNextColumn();
-
-                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-                if (sortSpecs && sortSpecs->SpecsDirty)
+                if (ImGui::BeginTable("PoolTable", 7, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
                 {
-                    SortPoolTable(sortSpecs);
-                }
+                    ImGui::TableSetupColumn("Pool");
+                    ImGui::TableSetupColumn("Heap Type");
+                    ImGui::TableSetupColumn("Budget (MB)");
+                    ImGui::TableSetupColumn("Allocated (MB)");
+                    ImGui::TableSetupColumn("Used (MB)");
+                    ImGui::TableSetupColumn("Fragmentation (%)");
+                    ImGui::TableSetupColumn("Unique (MB)");
+                    ImGui::TableHeadersRow();
+                    ImGui::TableNextColumn();
 
-                for (const auto& tableRow : m_poolTableRows)
-                {
-                    ImGui::Text("%s", tableRow.m_poolName.GetCStr());
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", tableRow.m_deviceHeap ? "Device" : "Host");
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_budgetBytes / GpuProfilerImGuiHelper::MB);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_allocatedBytes / GpuProfilerImGuiHelper::MB);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_usedBytes / GpuProfilerImGuiHelper::MB);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", tableRow.m_fragmentation);
-                    ImGui::TableNextColumn();
-                }
-            }
-            ImGui::EndTable();
-
-            if (ImGui::BeginTable("Table", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
-            {
-                ImGui::TableSetupColumn("Parent pool");
-                ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Size (MB)");
-                ImGui::TableSetupColumn("Fragmentation (%)");
-                ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
-                ImGui::TableHeadersRow();
-                ImGui::TableNextColumn();
-
-                ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
-                if (sortSpecs && sortSpecs->SpecsDirty)
-                {
-                    SortResourceTable(sortSpecs);
-                }
-
-                // Draw each row in the table
-                for (const auto& tableRow : m_resourceTableRows)
-                {
-                    // Don't draw the row if none of the row's text fields pass the filter
-                    if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
-                        && !m_nameFilter.PassFilter(tableRow.m_bufImgName.GetCStr())
-                        && !m_nameFilter.PassFilter(tableRow.m_bindFlags.c_str()))
+                    ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                    if (sortSpecs && sortSpecs->SpecsDirty)
                     {
-                        continue;
+                        SortPoolTable(sortSpecs);
                     }
 
-                    ImGui::Text("%s", tableRow.m_parentPoolName.GetCStr());
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", tableRow.m_bufImgName.GetCStr());
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%.4f", tableRow.m_fragmentation);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%s", tableRow.m_bindFlags.c_str());
-                    ImGui::TableNextColumn();
+                    for (const auto& tableRow : m_poolTableRows)
+                    {
+                        ImGui::Text("%s", tableRow.m_poolName.GetCStr());
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", tableRow.m_deviceHeap ? "Device" : "Host");
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", 1.0f * tableRow.m_budgetBytes / GpuProfilerImGuiHelper::MB);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", 1.0f * tableRow.m_allocatedBytes / GpuProfilerImGuiHelper::MB);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", 1.0f * tableRow.m_usedBytes / GpuProfilerImGuiHelper::MB);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", tableRow.m_fragmentation);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", 1.0f * tableRow.m_uniqueBytes / GpuProfilerImGuiHelper::MB);
+                        ImGui::TableNextColumn();
+                    }
                 }
+                ImGui::EndTable();
             }
-            ImGui::EndTable();
+
+            if (ImGui::CollapsingHeader("Allocations", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+            {
+                if (ImGui::BeginTable("Table", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable))
+                {
+                    ImGui::TableSetupColumn("Parent pool");
+                    ImGui::TableSetupColumn("Name");
+                    ImGui::TableSetupColumn("Size (MB)");
+                    ImGui::TableSetupColumn("Fragmentation (%)");
+                    ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
+                    ImGui::TableHeadersRow();
+                    ImGui::TableNextColumn();
+
+                    ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs();
+                    if (sortSpecs && sortSpecs->SpecsDirty)
+                    {
+                        SortResourceTable(sortSpecs);
+                    }
+
+                    // Draw each row in the table
+                    for (const auto& tableRow : m_resourceTableRows)
+                    {
+                        // Don't draw the row if none of the row's text fields pass the filter
+                        if (!m_nameFilter.PassFilter(tableRow.m_parentPoolName.GetCStr())
+                            && !m_nameFilter.PassFilter(tableRow.m_bufImgName.GetCStr())
+                            && !m_nameFilter.PassFilter(tableRow.m_bindFlags.c_str()))
+                        {
+                            continue;
+                        }
+
+                        ImGui::Text("%s", tableRow.m_parentPoolName.GetCStr());
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", tableRow.m_bufImgName.GetCStr());
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%.4f", tableRow.m_fragmentation);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", tableRow.m_bindFlags.c_str());
+                        ImGui::TableNextColumn();
+                    }
+                }
+                ImGui::EndTable();
+            }
         }
 
         void ImGuiGpuMemoryView::UpdateTableRows()
@@ -1302,15 +1311,15 @@ namespace AZ
                 auto& deviceHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device);
                 auto& hostHeapUsage = pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host);
 
-                if (deviceHeapUsage.m_totalResidentInBytes > 0 && deviceHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
+                if ((!m_hideEmptyBufferPools || deviceHeapUsage.m_totalResidentInBytes > 0) && deviceHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
                 {
                     m_poolTableRows.push_back({ poolName, true, deviceHeapUsage.m_budgetInBytes, deviceHeapUsage.m_totalResidentInBytes,
-                                                deviceHeapUsage.m_usedResidentInBytes, deviceHeapUsage.m_fragmentation });
+                                                deviceHeapUsage.m_usedResidentInBytes, deviceHeapUsage.m_fragmentation, deviceHeapUsage.m_uniqueAllocationBytes });
                 }
-                if (hostHeapUsage.m_totalResidentInBytes > 0 && hostHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
+                if ((!m_hideEmptyBufferPools || hostHeapUsage.m_totalResidentInBytes > 0) && hostHeapUsage.m_totalResidentInBytes < static_cast<size_t>(-1))
                 {
                     m_poolTableRows.push_back({ poolName, false, hostHeapUsage.m_budgetInBytes, hostHeapUsage.m_totalResidentInBytes,
-                                                hostHeapUsage.m_usedResidentInBytes, hostHeapUsage.m_fragmentation });
+                                                hostHeapUsage.m_usedResidentInBytes, hostHeapUsage.m_fragmentation, hostHeapUsage.m_uniqueAllocationBytes });
                 }
 
                 // Ignore transient pools
@@ -1543,7 +1552,8 @@ namespace AZ
 
                 if (ImGui::Checkbox("Show buffers", &m_includeBuffers)
                     || ImGui::Checkbox("Show images", &m_includeImages)
-                    || ImGui::Checkbox("Show transient attachments", &m_includeTransientAttachments))
+                    || ImGui::Checkbox("Show transient attachments", &m_includeTransientAttachments)
+                    || ImGui::Checkbox("Hide empty pools", &m_hideEmptyBufferPools))
                 {
                     UpdateTableRows(); 
                 }

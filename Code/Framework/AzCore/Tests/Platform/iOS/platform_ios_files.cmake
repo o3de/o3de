@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ../Common/Apple/Tests/Process/ProcessInfoTests_Apple.cpp
     ../Common/Apple/Tests/UtilsTests_Apple.cpp
     ../Common/UnixLike/Tests/UtilsTests_UnixLike.cpp
     ../Common/Apple/Tests/Memory/AllocatorBenchmarks_Apple.cpp
