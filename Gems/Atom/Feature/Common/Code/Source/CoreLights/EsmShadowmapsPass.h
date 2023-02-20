@@ -64,7 +64,7 @@ namespace AZ
 
             //! This sets the buffer of the table which enable to get shadowmap index
             //! from the coordinate in the atlas.
-            //! Note that shadowmpa index is shader light index for a spot light
+            //! Note that shadowmap index is shader light index for a spot light
             //! and it is cascade index for a directional light.
             void SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer);
 
@@ -74,15 +74,18 @@ namespace AZ
             //! This enable/disable children's computations.
             void SetEnabledComputation(bool enabled);
 
+            void SetOutputOverride(const RPI::Ptr<RPI::PassAttachment>& output);
+
         private:
             EsmShadowmapsPass() = delete;
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
-            // Pass Behaviour overrides...
+            // Pass Behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
+            void BuildInternal() override;
 
             void UpdateChildren();
-            // Parameters for both the depth exponentiation pass along with the kawase blur passes
+            // Parameters for both the depth exponentiation pass along with the Kawase blur passes
             void SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex);
             void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
@@ -90,6 +93,8 @@ namespace AZ
             Name m_lightTypeName;
             RHI::Size m_shadowmapImageSize;
             uint16_t m_shadowmapArraySize;
+
+            RPI::Ptr<RPI::PassAttachment> m_outputOverride;
 
             Data::Instance<RPI::Buffer> m_filterTableBuffer;
             AZStd::array<RHI::ShaderInputBufferIndex, EsmChildPassKindCount> m_filterTableBufferIndices;

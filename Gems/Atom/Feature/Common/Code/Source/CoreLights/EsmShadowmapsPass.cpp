@@ -88,8 +88,10 @@ namespace AZ
         void EsmShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetEnabledComputation(m_computationEnabled);
-            UpdateChildren();
-
+            if (m_computationEnabled)
+            {
+                UpdateChildren();
+            }
             Base::FrameBeginInternal(params);
         }
 
@@ -124,6 +126,12 @@ namespace AZ
             }
 
             m_computationEnabled = enabled;
+        }
+
+        void EsmShadowmapsPass::SetOutputOverride(const RPI::Ptr<RPI::PassAttachment>& output)
+        {
+            m_outputOverride = output;
+            QueueForBuildAndInitialization();
         }
 
         void EsmShadowmapsPass::UpdateChildren()
@@ -163,6 +171,27 @@ namespace AZ
             }
         }
 
+        void EsmShadowmapsPass::BuildInternal()
+        {
+            Base::BuildInternal();
+            if (m_outputOverride && GetChildren().size() > 0)
+            {
+                // Since this pass is disabled, maybe something odd is happening with the attachments.
+                // may need to put it in a state that's enabled, but the children aren't enabled.
+
+                //GetOutputBinding(0).GetAttachment()->m_
+
+                //GetOutputBinding(0).SetAttachment(m_outputOverride);
+                //m_ownedAttachments;
+                //GetOutputBinding(0).m_fallbackBinding = m_outputOverride;
+                //GetOutputBinding(0).SetOriginalAttachment(m_outputOverride);
+                //auto lastPass = GetChildren().back();
+                //auto filteredImageOutput = lastPass->FindAttachment(AZ::Name("FilteredImage"));
+                //lastPass->GetOutputCount
+                //AttachImageToSlot
+                //lastPass->GetOutputBinding(0).SetAttachment(m_outputOverride);
+            }
+        }
 
     } // namespace Render
 } // namespace AZ

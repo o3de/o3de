@@ -97,8 +97,6 @@ namespace AZ::Render
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
         void CachePasses();
-        void CacheProjectedShadowmapsPass();
-        void CacheEsmShadowmapsPass();
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();
@@ -107,6 +105,12 @@ namespace AZ::Render
         bool FilterMethodIsEsm(const ShadowData& shadowData) const;
 
         ShadowProperty& GetShadowPropertyFromShadowId(ShadowId id);
+        RPI::Ptr<ShadowmapPass> CreateShadowmapPass(size_t childIndex);
+
+        void CreateClearShadowDrawPacket();
+
+        void UpdateAtlas();
+        void UpdateShadowPasses();
 
         GpuBufferHandler m_shadowBufferHandler; // For ViewSRG m_projectedShadows
         GpuBufferHandler m_filterParamBufferHandler; // For ViewSRG m_projectedFilterParams
@@ -120,15 +124,23 @@ namespace AZ::Render
             ShadowDataIndex,
             FilterParamIndex,
             ShadowPropertyIdIndex,
+            ShadowPassIndex,
         };
 
         // Stores GPU data that is pushed to buffers in the View SRG. ShadowData corresponds to m_projectedShadows and
         // FilterParameter corresponds to m_projectedFilterParams. The uint16_t is used to reference data in
         // m_shadowProperties.
-        MultiSparseVector<ShadowData, FilterParameter, uint16_t> m_shadowData;
+        MultiSparseVector<ShadowData, FilterParameter, uint16_t, RPI::Ptr<ShadowmapPass>> m_shadowData;
+
+        ShadowmapAtlas m_atlas;
+        Data::Instance<RPI::AttachmentImage> m_atlasImage;
 
         AZStd::vector<ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
-        AZStd::vector<EsmShadowmapsPass*> m_esmShadowmapsPasses;
+        ProjectedShadowmapsPass* m_primaryProjectedShadowmapsPass = nullptr;
+        EsmShadowmapsPass* m_esmShadowmapsPass = nullptr;
+
+        Data::Instance<AZ::RPI::Shader> m_clearShadowShader;
+        RHI::ConstPtr<AZ::RHI::DrawPacket> m_clearShadowDrawPacket;
 
         RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
         RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };
