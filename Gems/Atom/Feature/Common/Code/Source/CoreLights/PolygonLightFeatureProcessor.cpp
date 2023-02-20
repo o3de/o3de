@@ -277,8 +277,12 @@ namespace AZ::Render
         AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
         float radius = LightCommon::GetRadiusFromInvRadiusSquared(abs(data.m_invAttenuationRadiusSquared));
 
-        // Emits both directions is stored in the sign of m_invAttenuationRadiusSquared.
-        if (data.m_invAttenuationRadiusSquared < 0.0f)
+        if (data.GetEndIndex() == data.GetStartIndex() || AZStd::isnan(radius))
+        {
+            // Invalid polygon light, just use an invalid variant.
+            bounds.emplace<AZStd::monostate>();
+        }
+        if (data.m_invAttenuationRadiusSquared < 0.0f) // Emits both directions is stored in the sign of m_invAttenuationRadiusSquared.
         {
             bounds.emplace<Sphere>(AZ::Sphere(position, radius));
         }

@@ -49,7 +49,7 @@ namespace AZ::Render::MeshCommon
         );
     }
 
-    using BoundsVariant = AZStd::variant<Sphere, Hemisphere, Frustum, Aabb, Capsule>;
+    using BoundsVariant = AZStd::variant<AZStd::monostate, Sphere, Hemisphere, Frustum, Aabb, Capsule>;
 
     template <typename BoundsType>
     struct EmptyFilter
