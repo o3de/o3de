@@ -16,7 +16,7 @@ if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     set(deb_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb")
     set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256")
-    file(${CPACK_PACKAGE_CHECKSUM} ${dev_file} file_checksum)
+    file(${CPACK_PACKAGE_CHECKSUM} ${deb_file} file_checksum)
     file(WRITE ${hash_file} "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
 endif()
 
