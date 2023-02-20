@@ -352,9 +352,11 @@ namespace AzToolsFramework
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
         {
             QModelIndex current;
-            for (auto token : AZStd::ranges::split_view(path, '/'))
+            bool currentlyFindingRows = false;
+            AZ::IO::Path p = path.toUtf8().constData();
+            for (auto it = p.begin(); it != p.end(); ++it)
             {
-                QStringView pathPart{ token.begin(), token.end() };
+                QString pathPart = QString::fromUtf8((*it).c_str());
                 const int rows = model()->rowCount(current);
                 bool rowFound = false;
                 for (int row=0; row < rows; ++row)
@@ -367,6 +369,7 @@ namespace AzToolsFramework
                         {
                             current = rowIdx;
                             rowFound = true;
+                            currentlyFindingRows = true;
                             break;
                         }
                     }
@@ -375,10 +378,14 @@ namespace AzToolsFramework
                         return nullptr;
                     }
                 }
-                if (!rowFound)
+                if (!rowFound && currentlyFindingRows)
                 {
                     return nullptr;
                 }
+            }
+            if (!currentlyFindingRows)
+            {
+                return nullptr;
             }
             return GetEntryFromIndex<AssetBrowserEntry>(current);
         }

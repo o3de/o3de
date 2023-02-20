@@ -278,6 +278,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         {
             // No need to select the folder ourselves, callback from Breadcrumbs will take care of that
             m_ui->m_pathBreadCrumbs->pushPath(QString::fromUtf8(folderEntry->GetVisiblePath().c_str()));
+            m_ui->m_pathBreadCrumbs->setFullPath(QString::fromUtf8(folderEntry->GetFullPath().c_str()));
         }
     });
 
@@ -624,15 +625,18 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
     using namespace AzToolsFramework::AssetBrowser;
 
     QString entryPath;
+    QString fullPath;
     if (selectedEntry)
     {
         const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
             entryPath = QString::fromUtf8(folderEntry->GetVisiblePath().c_str());
+            fullPath = QString::fromUtf8(folderEntry->GetFullPath().c_str());
         }
     }
     m_ui->m_pathBreadCrumbs->pushPath(entryPath);
+    m_ui->m_pathBreadCrumbs->setFullPath(fullPath);
 }
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)

@@ -138,6 +138,11 @@ namespace AzQtComponents
         return m_currentPath;
     }
 
+    QString BreadCrumbs::fullPath() const
+    {
+        return m_fullPath;
+    }
+
     void BreadCrumbs::setCurrentPath(const QString& newPath)
     {
         // clean up the path to use all the first separator in the list of separators
@@ -151,6 +156,11 @@ namespace AzQtComponents
 
         updateGeometry();
         fillLabel();
+    }
+
+    void BreadCrumbs::setFullPath(const QString& newFullPath)
+    {
+        m_fullPath = newFullPath;
     }
 
     void BreadCrumbs::setDefaultIcon(const QString& icon)
@@ -434,6 +444,7 @@ namespace AzQtComponents
             return;
         }
         m_labelEditStack->setCurrentWidget(m_lineEdit);
+        m_lineEdit->setText(m_fullPath);
         m_lineEdit->selectAll();
         m_lineEdit->setFocus();
     }

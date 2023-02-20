@@ -79,8 +79,12 @@ namespace AzQtComponents
 
         //! Returns a string with the current breadcrumb path.
         QString currentPath() const;
+        //! Returns the full path if the current path is not the full path.
+        QString fullPath() const;
         //! Sets the current breadcrumb path without updating the navigation stack.
         void setCurrentPath(const QString& newPath);
+        //! Sets the full path of the breadcrumb widget without updating the navigation stack.
+        void setFullPath(const QString& newFullPath);
 
         //! Sets a default icon for path elements.
         void setDefaultIcon(const QString& iconPath);
@@ -187,6 +191,7 @@ namespace AzQtComponents
         QStackedWidget* m_labelEditStack = nullptr;
 
         QString m_currentPath;
+        QString m_fullPath;
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_backPaths': class 'QStack<QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::BreadCrumbs'
         QStack<QString> m_backPaths;
         QStack<QString> m_forwardPaths;
