@@ -247,6 +247,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
+                    AZ::AzToolsFrameworkTestCommon
                     Gem::LyShine.Tools.Static
                     Gem::LyShine.Builders.Static
                     Gem::LmbrCentral.Editor
