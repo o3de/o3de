@@ -18,6 +18,11 @@
 
 namespace AzToolsFramework
 {
+    namespace BoxViewportEditConstants
+    {
+        const float MinBoxDimension = 0.001f;
+    } // namespace BoxViewportEditConstants
+
     const AZStd::array<AZ::Vector3, 6> s_boxAxes =
     { {
         AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisX(),
@@ -35,11 +40,6 @@ namespace AzToolsFramework
         m_getBoxDimensions = AZStd::move(getBoxDimensions);
     }
 
-    void BoxViewportEdit::InstallGetLocalTransform(AZStd::function<AZ::Transform()> getLocalTransform)
-    {
-        m_getLocalTransform = AZStd::move(getLocalTransform);
-    }
-
     void BoxViewportEdit::InstallSetBoxDimensions(AZStd::function<void(const AZ::Vector3&)> setBoxDimensions)
     {
         m_setBoxDimensions = AZStd::move(setBoxDimensions);
@@ -53,16 +53,6 @@ namespace AzToolsFramework
         }
         AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
         return AZ::Vector3::CreateOne();
-    }
-
-    AZ::Transform BoxViewportEdit::GetLocalTransform() const
-    {
-        if (m_getLocalTransform)
-        {
-            return m_getLocalTransform();
-        }
-        AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetLocalTransform");
-        return AZ::Transform::CreateIdentity();
     }
 
     void BoxViewportEdit::SetBoxDimensions(const AZ::Vector3& boxDimensions)
@@ -145,7 +135,8 @@ namespace AzToolsFramework
                     // factor of 2 for symmetrical editing because both ends of the box move
                     const float symmetryFactor = symmetrical ? 2.0f : 1.0f; 
 
-                    const float newAxisLength = AZ::GetMax(0.0f, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+                    const float newAxisLength = AZ::GetMax(
+                        0.5f * BoxViewportEditConstants::MinBoxDimension, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
                     const float oldAxisLength = 0.5f * symmetryFactor * boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
                     const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
 

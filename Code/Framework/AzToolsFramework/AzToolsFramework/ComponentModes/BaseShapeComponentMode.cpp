@@ -52,6 +52,13 @@ namespace AzToolsFramework
                 translationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetTranslationOffset);
             return translationOffset;
         };
+        auto getRotationOffset = [entityComponentIdPair]()
+        {
+            AZ::Quaternion rotationOffset = AZ::Quaternion::CreateIdentity();
+            ShapeManipulatorRequestBus::EventResult(
+                rotationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetRotationOffset);
+            return rotationOffset;
+        };
         auto setTranslationOffset = [entityComponentIdPair](const AZ::Vector3& translationOffset)
         {
             ShapeManipulatorRequestBus::Event(
@@ -60,6 +67,7 @@ namespace AzToolsFramework
         baseShapeViewportEdit->InstallGetManipulatorSpace(AZStd::move(getManipulatorSpace));
         baseShapeViewportEdit->InstallGetNonUniformScale(AZStd::move(getNonUniformScale));
         baseShapeViewportEdit->InstallGetTranslationOffset(AZStd::move(getTranslationOffset));
+        baseShapeViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
         baseShapeViewportEdit->InstallSetTranslationOffset(AZStd::move(setTranslationOffset));
     }
 

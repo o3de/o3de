@@ -8,7 +8,8 @@
 #pragma once
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/string/osstring.h>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Module/Environment.h>
 
 namespace AZ
@@ -51,7 +52,7 @@ namespace AZ
         virtual bool IsLoaded() const = 0;
 
         /// \return the module's name on disk.
-        const OSString& GetFilename() const { return m_fileName; }
+        const char* GetFilename() const { return m_fileName.c_str(); }
 
         /// Returns a function from the module.
         /// nullptr is returned if the function is inaccessible
@@ -85,12 +86,12 @@ namespace AZ
         virtual void*      GetFunctionAddress(const char* functionName) const = 0;
 
         /// Store the module name for future loads.
-        OSString        m_fileName;
+        AZ::IO::FixedMaxPathString m_fileName;
 
-        // whoever first creates this variable is the one who called initialize and will 
+        // whoever first creates this variable is the one who called initialize and will
         // be the one that calls uninitialize.  Note that we don't actually care what the bool value is
         // just the refcount and ownership.
-        AZ::EnvironmentVariable<bool> m_initialized;  
+        AZ::EnvironmentVariable<bool> m_initialized;
     };
 
     /**

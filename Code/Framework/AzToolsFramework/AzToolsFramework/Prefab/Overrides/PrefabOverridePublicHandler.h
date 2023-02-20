@@ -31,8 +31,10 @@ namespace AzToolsFramework
             //! Checks whether overrides are present on the given entity id. Overrides can come from any ancestor prefab but
             //! this function specifically checks for overrides from the focused prefab.
             //! @param entityId The id of the entity to check for overrides.
+            //! @param relativePathFromEntity The relative path from the entity. This can be used to query about overrides on components
+            //!        and their properties
             //! @return true if overrides are present on the given entity id from the focused prefab.
-            bool AreOverridesPresent(AZ::EntityId entityId) override;
+            bool AreOverridesPresent(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) override;
 
             //! Gets the override type on the given entity id. Overrides can come from any ancestor prefab but
             //! this function specifically checks for overrides from the focused prefab.

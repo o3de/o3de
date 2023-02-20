@@ -386,6 +386,7 @@ namespace AZ
             poolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
             poolDesc.m_budgetInBytes = m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
+            m_stagingBufferPool->SetName(AZ::Name("Device_StagingBufferPool"));
             result = m_stagingBufferPool->Init(*this, poolDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
