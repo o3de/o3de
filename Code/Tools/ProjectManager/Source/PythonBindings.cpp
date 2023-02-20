@@ -58,7 +58,7 @@ namespace Platform
 #define Py_To_Int(obj) obj.cast<int>()
 #define Py_To_Int_Optional(dict, key, default_int) dict.contains(key) ? Py_To_Int(dict[key]) : default_int
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
-#define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
+#define QString_To_Py_Path(value) value.isEmpty() ? pybind11::none() : m_pathlib.attr("Path")(value.toStdString())
 
 pybind11::list QStringList_To_Py_List(const QStringList& values)
 {
