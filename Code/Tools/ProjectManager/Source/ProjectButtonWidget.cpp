@@ -421,7 +421,14 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetProject(const ProjectInfo& project)
     {
         m_projectInfo = project;
-        m_projectNameLabel->SetText(m_projectInfo.GetProjectDisplayName());
+        if (!m_projectInfo.m_version.isEmpty())
+        {
+            m_projectNameLabel->SetText(m_projectInfo.GetProjectDisplayName() + " " + m_projectInfo.m_version);
+        }
+        else
+        {
+            m_projectNameLabel->SetText(m_projectInfo.GetProjectDisplayName());
+        }
         m_projectNameLabel->update();
         m_projectNameLabel->setToolTip(m_projectInfo.m_path);
         m_projectNameLabel->refreshStyle(); // important for styles to work correctly
