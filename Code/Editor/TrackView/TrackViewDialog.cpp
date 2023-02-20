@@ -1280,6 +1280,11 @@ void CTrackViewDialog::OnSequenceComboBox()
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
         return;
     }
+    if (sel == 0)
+    {
+        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false, true);
+        return;
+    }
 
     // Display current sequence.
     QString entityIdString = m_sequencesComboBox->currentData().toString();
