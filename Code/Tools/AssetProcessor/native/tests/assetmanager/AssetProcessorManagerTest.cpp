@@ -764,6 +764,12 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
         {
             AZ::IO::Path outputFile = request.m_sourceFile;
             AZStd::string outputExtension = "stage2";
+
+            if (!outputIntermediateProduct)
+            {
+                outputExtension = "stage2_product";
+            }
+
             outputFile.ReplaceExtension(outputExtension.c_str());
             AZ::IO::LocalFileIO::GetInstance()->Copy(
                 request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
@@ -845,7 +851,8 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
 
     // The intermediate asset should be deleted and gone, because CheckMissingJobs removed it for no longer being a product
     // of any source asset.
-    QFile sourceAsset(m_testFilePath.c_str());
+    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
+    QFile sourceAsset(expectedIntermediatePath.c_str());
     EXPECT_FALSE(sourceAsset.exists());
 
 }
