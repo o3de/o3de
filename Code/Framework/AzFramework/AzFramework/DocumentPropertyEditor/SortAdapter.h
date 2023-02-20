@@ -44,6 +44,10 @@ namespace AZ::DocumentPropertyEditor
             {
             }
 
+            virtual ~SortInfoBase()
+            {
+            }
+
             bool operator<(const SortInfoBase& rhs) const
             {
                 return m_domIndex < rhs.m_domIndex;
