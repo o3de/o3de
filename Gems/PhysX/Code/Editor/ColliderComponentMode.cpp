@@ -6,27 +6,27 @@
  *
  */
 
-#include "ColliderComponentMode.h"
-#include "ColliderAssetScaleMode.h"
-#include "ColliderBoxMode.h"
-#include "ColliderCapsuleMode.h"
-#include "ColliderOffsetMode.h"
-#include "ColliderRotationMode.h"
-#include "ColliderSphereMode.h"
-
-#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <PhysX/EditorColliderComponentRequestBus.h>
+#include <Editor/ColliderComponentMode.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <Editor/ColliderAssetScaleMode.h>
+#include <Editor/ColliderBoxMode.h>
+#include <Editor/ColliderCapsuleMode.h>
+#include <Editor/ColliderCylinderMode.h>
+#include <Editor/ColliderOffsetMode.h>
+#include <Editor/ColliderRotationMode.h>
+#include <Editor/ColliderSphereMode.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 
 namespace PhysX
 {
@@ -295,6 +295,9 @@ namespace PhysX
             break;
         case Physics::ShapeType::Capsule:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderCapsuleMode>();
+            break;
+        case Physics::ShapeType::Cylinder:
+            m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderCylinderMode>();
             break;
         case Physics::ShapeType::CookedMesh:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<NullColliderComponentMode>();

@@ -26,6 +26,11 @@ namespace AzToolsFramework
         m_getTranslationOffset = AZStd::move(getTranslationOffset);
     }
 
+    void BaseShapeViewportEdit::InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset)
+    {
+        m_getRotationOffset = AZStd::move(getRotationOffset);
+    }
+
     void BaseShapeViewportEdit::InstallSetTranslationOffset(AZStd::function<void(const AZ::Vector3&)> setTranslationOffset)
     {
         m_setTranslationOffset = AZStd::move(setTranslationOffset);
@@ -55,7 +60,7 @@ namespace AzToolsFramework
     {
         if (m_getNonUniformScale)
         {
-            return m_getNonUniformScale();
+            return m_getNonUniformScale().GetMax(AZ::Vector3(AZ::MinTransformScale));
         }
         AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetNonUniformScale");
         return AZ::Vector3::CreateOne();
@@ -71,6 +76,16 @@ namespace AzToolsFramework
         return AZ::Vector3::CreateZero();
     }
 
+    AZ::Quaternion BaseShapeViewportEdit::GetRotationOffset() const
+    {
+        if (m_getRotationOffset)
+        {
+            return m_getRotationOffset();
+        }
+        AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for GetRotationOffset");
+        return AZ::Quaternion::CreateIdentity();
+    }
+
     void BaseShapeViewportEdit::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
         if (m_setTranslationOffset)
@@ -81,6 +96,11 @@ namespace AzToolsFramework
         {
             AZ_ErrorOnce("BaseShapeViewportEdit", false, "No implementation provided for SetTranslationOffset");
         }
+    }
+
+    AZ::Transform BaseShapeViewportEdit::GetLocalTransform() const
+    {
+        return AZ::Transform::CreateFromQuaternionAndTranslation(GetRotationOffset(), GetTranslationOffset());
     }
 
     void BaseShapeViewportEdit::BeginEditing()
@@ -120,5 +140,28 @@ namespace AzToolsFramework
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
             m_undoBatch = nullptr;
         }
+    }
+
+    void BaseShapeViewportEdit::OnCameraStateChanged([[maybe_unused]] const AzFramework::CameraState& cameraState)
+    {
+    }
+
+    void BaseShapeViewportEdit::ResetValues()
+    {
+        // manipulators handle undo batches for the main viewport themselves, but this function does not work via manipulators
+        // so needs its own undo batch
+        BeginUndoBatch("ViewportEdit Reset");
+        // also provide a hook for other viewports to handle undo/redo, UI refresh, etc
+        BeginEditing();
+        ResetValuesImpl();
+        ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+        EndEditing();
+        EndUndoBatch();
+    }
+
+    void BaseShapeViewportEdit::AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        m_entityIds.insert(entityComponentIdPair.GetEntityId());
+        AddEntityComponentIdPairImpl(entityComponentIdPair);
     }
 } // namespace AzToolsFramework

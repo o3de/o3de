@@ -41,6 +41,7 @@ namespace AZ
                 bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 m_constantBufferPool = BufferPool::Create();
+                m_constantBufferPool->SetName(AZ::Name(AZStd::string::format("%s_ConstantBufferPool", GetName().GetCStr())));
                 m_constantBufferPool->Init(device, bufferPoolDescriptor);
             }
 

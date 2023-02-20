@@ -270,6 +270,11 @@ namespace AssetUtilities
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
     AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
         const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);

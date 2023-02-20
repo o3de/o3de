@@ -19,7 +19,7 @@ namespace AZ
             return {};
         }
 
-        void* OpenModule(const AZ::OSString& fileName, bool&)
+        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool&)
         {
             // Android 19 does not have RTLD_NOLOAD but it should be OK since only the Editor expects to reopen modules
             return dlopen(fileName.c_str(), RTLD_NOW);

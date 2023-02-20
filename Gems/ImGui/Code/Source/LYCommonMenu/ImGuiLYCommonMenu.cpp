@@ -437,7 +437,7 @@ namespace ImGui
                 if (ImGui::BeginMenu("Video Options"))
                 {
                     // VSync
-                    IMGUI_DRAW_CVAR_CHECKBOX("r_VSync", "VSync");
+                    IMGUI_DRAW_CVAR_CHECKBOX("vsync_interval", "VSync");
 
                     // Max Frame Rate
                     static ICVar* maxFPSCVar = gEnv->pConsole->GetCVar("sys_MaxFPS");

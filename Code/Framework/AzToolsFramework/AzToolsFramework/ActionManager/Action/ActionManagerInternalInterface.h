@@ -19,6 +19,7 @@ namespace AzToolsFramework
 {
     using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
+    class ActionContextWidgetWatcher;
     class EditorAction;
 
     //! ActionManagerInternalInterface
@@ -47,6 +48,11 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to retrieve.
         //! @return A raw const pointer to the EditorAction, or nullptr if the action could not be found.
         virtual const EditorAction* GetEditorActionConst(const AZStd::string& actionIdentifier) const = 0;
+
+        //! Retrieve an ActionContextWidgetWatcher via its action context identifier.
+        //! @param actionContextIdentifier The identifier for the action context whose ActionContextWidgetWatcher to retrieve.
+        //! @return A raw pointer to the ActionContextWidgetWatcher, or nullptr if the ActionContextWidgetWatcher could not be found.
+        virtual ActionContextWidgetWatcher* GetActionContextWidgetWatcher(const AZStd::string& actionContextIdentifier) = 0;
 
         //! Retrieve the Action's visibility property for Menus.
         //! @param actionIdentifier The identifier for the action to query.

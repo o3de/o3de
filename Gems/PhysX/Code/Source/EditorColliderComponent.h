@@ -206,6 +206,7 @@ namespace PhysX
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
@@ -265,8 +266,8 @@ namespace PhysX
         // Cylinder collider
         void UpdateCylinderCookedMesh();
 
+        void UpdateCollider();
         void CreateStaticEditorCollider();
-        void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
 
