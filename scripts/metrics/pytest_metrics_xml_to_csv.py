@@ -148,7 +148,7 @@ def parse_pytest_xmls_to_csv(full_xml_path, writer):
             logger.exception(f"KeyError when parsing xml file: {full_xml_path}. Check xml keys for changes. Printing"
                              f"attribs:\n{test.attrib}", exc)
             continue
-        if sig_owner in SIG_OWNER_CACHE:
+        if test_file_path in SIG_OWNER_CACHE:
             sig_owner = SIG_OWNER_CACHE[test_file_path]
         else:
             # Index 1 is the sig owner

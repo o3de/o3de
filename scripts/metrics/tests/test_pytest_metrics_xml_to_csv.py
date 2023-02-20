@@ -73,7 +73,7 @@ class TestMetricsXMLtoCSV(unittest.TestCase):
             mock_entry
         ]
         mock_xml.findall.return_value = mock_testcases
-        mock_get_codeowners.return_value = [None, 'mock_codeowner']
+        mock_get_codeowners.return_value = (None, 'mock_codeowner', None)
         mock_parse.return_value.getroot.return_value = mock_xml
         mock_writer = mock.MagicMock()
         mock_xml_path = mock.MagicMock()
