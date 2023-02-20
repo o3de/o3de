@@ -227,12 +227,12 @@ namespace AZ::Render
     void PolygonLightFeatureProcessor::SetPolygonPoints(LightHandle handle, const Vector3* vertices, const uint32_t vertexCount, const Vector3& direction)
     {
         AZ_Warning("PolygonLightFeatureProcessor", vertexCount <= MaxPolygonPoints, "Too many polygon points on polygon light. Only using the first %lu vertices.", MaxPolygonPoints);
-        AZ_Warning("PolygonLightFeatureProcessor", vertexCount >= 2, "Polygon light must have at least three points - ignoring points.");
+        AZ_Warning("PolygonLightFeatureProcessor", vertexCount > 2, "Polygon light must have at least three points - ignoring points.");
 
         PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
         if (vertexCount < 3)
         {
-            data.SetEndIndex(data.GetStartIndex());
+            data.SetEndIndex(data.GetStartIndex()); // Set the number of points to 0.
         }
         else
         {
