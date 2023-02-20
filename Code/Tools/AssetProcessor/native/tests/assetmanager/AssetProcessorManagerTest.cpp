@@ -582,6 +582,7 @@ protected:
         m_assetProcessorManager->CheckJobEntries(0);
 
         m_assetProcessorManager->ProcessFilesToExamineQueue();
+        QCoreApplication::processEvents();
 
         // Make sure nothing is left to process - the intermediate asset should never have had a job added
         // because the source was deleted at the same time it was modified.
@@ -784,6 +785,10 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
     ProcessFileMultiStage(2, true);
 
+    AZStd::string intermediateAssetPath = MakePath("test.stage2", true);
+    // Verify the intermediate asset exists
+    EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
+
     // When:
     // The source asset has been modified to no longer emit the intermediate asset as a product, and emit a different product.
     // This chain of assets is processed again.
@@ -795,10 +800,7 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     outputIntermediateProduct = false;
 
     // Call AssessModifiedFile on the source asset.
-    QMetaObject::invokeMethod(
-        m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, QString(m_testFilePath.c_str())));
-    
-    QCoreApplication::processEvents();
+    m_assetProcessorManager->AssessModifiedFile(m_testFilePath.c_str());
 
     // There is one active file, because it has been modified.
     m_assetProcessorManager->CheckFilesToExamine(0);
@@ -806,7 +808,6 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     m_assetProcessorManager->CheckJobEntries(0);
 
     // Assess the modified file
-    m_assetProcessorManager->AssessModifiedFile(m_testFilePath.c_str());
     QCoreApplication::processEvents();
 
     // The file has been moved from active, to the examine list, after assessing it.
@@ -821,15 +822,12 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     m_jobDetailsList.clear();
     m_fileCompiled = false;
     m_fileFailed = false;
-    QCoreApplication::processEvents();
-    m_assetProcessorManager->ProcessFilesToExamineQueue();
     QCoreApplication::processEvents(); // execute ProcessFilesToExamineQueue
     QCoreApplication::processEvents(); // execute CheckForIdle
     ASSERT_EQ(m_jobDetailsList.size(), 1);
     ProcessJob(*m_rc, m_jobDetailsList[0]);
     ASSERT_TRUE(m_fileCompiled);
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
-
 
     // Then:
     // Asset processing completes and the intermediate asset is deleted, because it's no longer a product of this source asset.
@@ -844,9 +842,7 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
 
     // The intermediate asset should be deleted and gone, because CheckMissingJobs removed it for no longer being a product
     // of any source asset.
-    auto expectedIntermediatePath = GetIntermediateAssetsDir() / AZStd::string("test.stage2");
-    QFile sourceAsset(expectedIntermediatePath.c_str());
-    EXPECT_FALSE(sourceAsset.exists());
+    EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
 
 }
 
