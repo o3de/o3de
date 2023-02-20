@@ -9,6 +9,7 @@
 #include <CommonBenchmarkSetup.h>
 #include <CommonHierarchySetup.h>
 #include <MockInterfaces.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -57,6 +58,8 @@ namespace Multiplayer
             m_transformDescriptor->Reflect(m_serializeContext.get());
             m_netBindDescriptor.reset(NetBindComponent::CreateDescriptor());
             m_netBindDescriptor->Reflect(m_serializeContext.get());
+            m_jobComponentDescriptor.reset(AZ::JobManagerComponent::CreateDescriptor());
+            m_jobComponentDescriptor->Reflect(m_serializeContext.get());
 
             m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
@@ -86,12 +89,20 @@ namespace Multiplayer
                 {
                     TestEndpointDisconnectedEvent(value);
                 });
-            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
+            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);            
             m_mpComponent->Activate();
+
+            m_systemEntity = AZStd::make_unique<AZ::Entity>();
+            m_systemEntity->CreateComponent<AZ::JobManagerComponent>(); // Needed by Job system when @sv_multithreadedConnectionUpdates is on.
+            m_systemEntity->Init();
+            m_systemEntity->Activate();
         }
 
         void TearDown() override
         {
+            m_systemEntity->Deactivate();
+            m_systemEntity.reset();
+
             m_mpComponent->Deactivate();
             delete m_mpComponent;
             delete m_netComponent;
@@ -102,6 +113,7 @@ namespace Multiplayer
             m_ComponentApplicationRequests.reset();
             AZ::NameDictionary::Destroy();
 
+            m_jobComponentDescriptor.reset();
             m_transformDescriptor.reset();
             m_netBindDescriptor.reset();
             m_serializeContext.reset();
@@ -143,8 +155,10 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netBindDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_jobComponentDescriptor;
         AZStd::unique_ptr<AZ::IConsole> m_console;
         AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
+        AZStd::unique_ptr<AZ::Entity> m_systemEntity;
 
         uint32_t m_initEventTriggerCount = 0;
         uint32_t m_shutdownEventTriggerCount = 0;
