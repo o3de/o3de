@@ -15,6 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <LyShineSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <World/UiCanvasAssetRefComponent.h>
@@ -55,7 +56,7 @@
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 using namespace AZ;
 using ::testing::NiceMock;

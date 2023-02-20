@@ -276,13 +276,16 @@ namespace O3DE::ProjectManager
             // Put currently building project in front, then queued projects, then sorts alphabetically
             AZStd::sort(projects.begin(), projects.end(), [buildProjectPath, this](const ProjectInfo& arg1, const ProjectInfo& arg2)
             {
-                if (AZ::IO::Path(arg1.m_path.toUtf8().constData()) == buildProjectPath)
+                if (!buildProjectPath.empty())
                 {
-                    return true;
-                }
-                else if (AZ::IO::Path(arg2.m_path.toUtf8().constData()) == buildProjectPath)
-                {
-                    return false;
+                    if (AZ::IO::Path(arg1.m_path.toUtf8().constData()) == buildProjectPath)
+                    {
+                        return true;
+                    }
+                    else if (AZ::IO::Path(arg2.m_path.toUtf8().constData()) == buildProjectPath)
+                    {
+                        return false;
+                    }
                 }
 
                 bool arg1InBuildQueue = BuildQueueContainsProject(arg1.m_path);
@@ -294,6 +297,11 @@ namespace O3DE::ProjectManager
                 else if (!arg1InBuildQueue && arg2InBuildQueue)
                 {
                     return false;
+                }
+                else if (arg1.m_displayName.compare(arg2.m_displayName, Qt::CaseInsensitive) == 0)
+                {
+                    // handle case where names are the same
+                    return arg1.m_path.toLower() < arg2.m_path.toLower();
                 }
                 else
                 {
