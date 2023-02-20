@@ -1089,11 +1089,7 @@ namespace AzToolsFramework
         // insert after the found index; even if nothing were found and priorIndex is -1,
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
-
-        if (isVisible())
-        {
-            columnWidget->show();
-        }
+        columnWidget->show();
     }
 
     AZ::Name DPERowWidget::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
@@ -1416,10 +1412,8 @@ namespace AzToolsFramework
                 m_layout->insertWidget(foundIndex + 1, widgetToAdd);
             }
         }
-        if (isVisible())
-        {
-            widgetToAdd->show();
-        }
+
+        widgetToAdd->show();
     }
 
     void DocumentPropertyEditor::SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName)

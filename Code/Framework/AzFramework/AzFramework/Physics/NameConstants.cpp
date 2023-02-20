@@ -45,6 +45,12 @@ namespace Physics
             return interpunct;
         }
 
+        const AZStd::string& GetBulletPoint()
+        {
+            static const AZStd::string bullet = "\xE2\x80\xA2";
+            return bullet;
+        }
+
         const AZStd::string& GetSpeedUnit()
         {
             static const AZStd::string speedUnit = AZStd::string::format("m%ss%s%s",

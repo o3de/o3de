@@ -18,12 +18,23 @@
 
 namespace AzToolsFramework
 {
+    //! This class is used to mute KeyPress events that are triggered after a shortcut has fired.
+    class ApplicationWatcher : public QObject
+    {
+    public:
+        void SetShortcutTriggeredFlag();
+
+        bool eventFilter(QObject* watched, QEvent* event) override;
+
+        bool m_shortcutWasTriggered = false;
+    };
+
     //! This class is used to install an event filter on each widget assigned to an action context
     //! to properly handle ambiguous shorcuts.
     class ActionContextWidgetWatcher : public QObject
     {
     public:
-        explicit ActionContextWidgetWatcher(EditorActionContext* editorActionContext);
+        explicit ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext);
 
         bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -31,6 +42,7 @@ namespace AzToolsFramework
         static bool TriggerActiveActionsWithShortcut(
             const QList<QAction*>& contextActions, const QList<QAction*>& widgetActions, const QKeySequence& shortcutKeySequence);
 
+        ApplicationWatcher* m_applicationWatcher = nullptr;
         EditorActionContext* m_editorActionContext = nullptr;
     };
 
@@ -114,6 +126,7 @@ namespace AzToolsFramework
         void Clear();
 
         AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
+        ApplicationWatcher m_applicationWatcher;
         AZStd::unordered_map<AZStd::string, ActionContextWidgetWatcher*> m_actionContextWidgetWatchers;
         AZStd::unordered_map<AZStd::string, EditorAction> m_actions;
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionUpdaters;

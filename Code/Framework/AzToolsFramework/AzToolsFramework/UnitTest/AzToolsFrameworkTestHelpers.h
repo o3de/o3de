@@ -20,6 +20,7 @@
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
@@ -65,6 +66,35 @@ AZ_POP_DISABLE_WARNING
             return;                                         \
         }                                                   \
     }
+
+// Helper unit test hook for any tools unit tests that rely on a QApplication being created (e.g. any tests that need to create a QWidget)
+#define AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV)                                                           \
+    AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)                                     \
+    {                                                                                                   \
+        ::testing::InitGoogleMock(&argc, argv);                                                         \
+        AzQtComponents::PrepareQtPaths();                                                               \
+        QApplication app(argc, argv);                                                                   \
+        if (AZ_TRAIT_AZTEST_ATTACH_RESULT_LISTENER)                                                     \
+        {                                                                                               \
+            ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
+            listeners.Append(new AZ::Test::OutputEventListener);                                        \
+        }                                                                                               \
+        AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
+        AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
+        AZ::Test::addTestEnvironments({TEST_ENV});                                                      \
+        int result = RUN_ALL_TESTS();                                                                   \
+        if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)                               \
+        {                                                                                               \
+            std::cerr << "No tests were found for last suite ran!" << std::endl;                        \
+            result = 1;                                                                                 \
+        }                                                                                               \
+        return result;                                                                                  \
+    }
+
+#define AZ_TOOLS_UNIT_TEST_HOOK(TEST_ENV) \
+    AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV) \
+    AZ_BENCHMARK_HOOK() \
+    IMPLEMENT_TEST_EXECUTABLE_MAIN()
 
 namespace UnitTest
 {

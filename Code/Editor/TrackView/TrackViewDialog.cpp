@@ -505,6 +505,7 @@ void CTrackViewDialog::InitToolbar()
             connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnAutoRecordStep);
             qaction->setCheckable(true);
             qaction->setChecked(i == 1);
+            m_fAutoRecordStep = 1;
             ag->addAction(qaction);
         }
     }
