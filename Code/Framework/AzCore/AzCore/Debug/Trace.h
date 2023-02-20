@@ -395,6 +395,9 @@ namespace AZ
     #define AZ_ErrorOnce(...)
     #define AZ_Warning(...)
     #define AZ_WarningOnce(...)
+    #define AZ_Info(...)
+    #define AZ_Trace(...)
+    #define AZ_TraceOnce(...)
     #define AZ_TracePrintf(...)
     #define AZ_TracePrintfOnce(...)
 
