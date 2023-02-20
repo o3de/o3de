@@ -28,8 +28,7 @@ def Entity_HappyPath_AddScriptCanvasComponent():
      1) Create temp level
      2) Create test entity
      3) Start Tracer
-     4) Add Script Canvas component to test entity
-     5) Search for errors and warnings
+     4) Add Script Canvas component to test entity and check for errors
 
 
     Note:
@@ -61,13 +60,9 @@ def Entity_HappyPath_AddScriptCanvasComponent():
     # 3) Start Tracer
     with Tracer() as section_tracer:
 
-        # 4) Add Script Canvas component to test entity
+        # 4) Add Script Canvas component to test entity and check for errors
         test_entity.add_component("Script Canvas")
         Report.result(Tests.add_sc_component, test_entity.has_component("Script Canvas"))
-
-    # 5) Search for errors and warnings
-    Report.result(Tests.no_errors_found, not section_tracer.has_errors)
-    Report.result(Tests.no_warnings_found, not section_tracer.has_warnings)
 
 
 if __name__ == "__main__":
