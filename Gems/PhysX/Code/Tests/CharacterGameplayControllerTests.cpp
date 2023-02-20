@@ -98,10 +98,9 @@ namespace PhysX
             }
         }
 
-        /**
-        * Function to delete the ground for tests where the ground can interfere with the intent of the test. 
-        */
-        void DeleteGround()
+        
+        //! Function to remove the ground for tests where the ground can interfere with the intent of the test. 
+        void RemoveGround()
         {
             m_testScene->RemoveSimulatedBody(m_floor->m_bodyHandle);
         }
@@ -142,7 +141,6 @@ namespace PhysX
         }
     }
 
-    // Use the PhysXDefaultWorldTestWithParam class for the fixture to indicate the parameter type is going to be int using
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
 
     TEST_P(PhysXDefaultWorldTestWithParamFixture, CharacterGameplayController_EntityFallsUnderGravity)
@@ -150,11 +148,11 @@ namespace PhysX
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
         // Remove the Ground so we can can test falling without worrying about accidental collisions with objects.
-        basis.DeleteGround();        
+        basis.RemoveGround();        
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         const auto startPosition = basis.m_controller->GetPosition();
-        const int timeStepCount = GetParam(); // <-- Gets the current value to use
+        const int timeStepCount = GetParam(); 
         const float timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
         float totalTime = 0.0f;
 
@@ -175,7 +173,6 @@ namespace PhysX
         EXPECT_THAT(endPosition.GetZ(), testing::FloatNear((startPosition.GetZ() + calculatedDistanceFell), 0.001f));
     }
 
-    // Indicate the values to call all the tests that use PhysXDefaultWorldTestWithParamFixture.
     INSTANTIATE_TEST_CASE_P(PhysXDefaultWorldTest, PhysXDefaultWorldTestWithParamFixture, ::testing::Values(10, 30, 60, 90, 120, 136, 180));
 
 } // namespace PhysX
