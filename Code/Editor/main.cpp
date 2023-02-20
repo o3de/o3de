@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 

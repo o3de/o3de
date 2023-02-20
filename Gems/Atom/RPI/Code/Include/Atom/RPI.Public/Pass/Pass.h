@@ -112,10 +112,6 @@ namespace AZ
 
                 RHI::FrameGraphBuilder* m_frameGraphBuilder = nullptr;
 
-                // This should include SRGs that are higher level than
-                // the Pass, like per-frame and per-scene SRGs.
-                const ShaderResourceGroupList* m_shaderResourceGroupsToBind = nullptr;
-
                 RHI::Scissor m_scissorState;
                 RHI::Viewport m_viewportState;
             };

@@ -406,10 +406,10 @@ MemoryStatusItem::~MemoryStatusItem()
 
 void MemoryStatusItem::updateStatus()
 {
-    ProcessMemInfo mi;
-    CProcessInfo::QueryMemInfo(mi);
+    AZ::ProcessMemInfo mi;
+    AZ::QueryMemInfo(mi);
 
-    uint64 nSizeMb = (uint64)(mi.WorkingSet / (1024 * 1024));
+    uint64 nSizeMb = (uint64)(mi.m_workingSet / (1024 * 1024));
 
     SetText(QString("%1 Mb").arg(nSizeMb));
 }
