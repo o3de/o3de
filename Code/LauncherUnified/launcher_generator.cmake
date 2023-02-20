@@ -259,16 +259,17 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     endif()
 
     ################################################################################
-    # EditorWithServer
+    # EditorAndServerLauncher
+    # Creates a target that builds both the Editor and the ServerLauncher to ensure
+    # they both stay in sync with each other.
     ################################################################################
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-            add_custom_target(${project_name}.EditorWithServer
-            )
-            ly_add_dependencies(${project_name}.EditorWithServer Editor)
-            ly_add_dependencies(${project_name}.EditorWithServer ${project_name}.ServerLauncher)
+            add_custom_target(${project_name}.EditorAndServerLauncher)
+            ly_add_dependencies(${project_name}.EditorAndServerLauncher Editor)
+            ly_add_dependencies(${project_name}.EditorAndServerLauncher ${project_name}.ServerLauncher)
 
-            set_target_properties(${project_name}.EditorWithServer
+            set_target_properties(${project_name}.EditorAndServerLauncher
                 PROPERTIES 
                     EXCLUDE_FROM_ALL TRUE
                     FOLDER ${project_name}
