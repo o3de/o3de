@@ -10,6 +10,7 @@
 #include <AzCore/Console/IConsole.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <EditorColliderComponent.h>
 #include <EditorShapeColliderComponent.h>
@@ -123,6 +124,16 @@ namespace PhysX
         if (!prefabSystemEnabled)
         {
             AZ_TracePrintf("PhysXColliderConversion", "Prefabs system is not enabled. Prefabs won't be converted.\n");
+            AZ_TracePrintf("PhysXColliderConversion", "\n");
+            return;
+        }
+
+        bool isLevelOpen = false;
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+            isLevelOpen, &AzToolsFramework::EditorRequests::Bus::Events::IsLevelDocumentOpen);
+        if (isLevelOpen)
+        {
+            AZ_TracePrintf("PhysXColliderConversion", "There is a level currently opened in the editor. To run this command please restart the editor and run it before opening any level.\n");
             AZ_TracePrintf("PhysXColliderConversion", "\n");
             return;
         }
