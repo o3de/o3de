@@ -119,6 +119,7 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
         , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
@@ -157,6 +158,12 @@ namespace PhysX
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
+
+        // EditorComponentSelectionRequestsBus overrides ...
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        bool SupportsEditorRayIntersect() override;
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 

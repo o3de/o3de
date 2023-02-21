@@ -38,7 +38,7 @@ namespace LmbrCentral
     /// See https://github.com/o3de/sig-simulation/issues/26 for more details.
     inline bool IsShapeComponentTranslationEnabled()
     {
-        bool isShapeComponentTranslationEnabled = false;
+        bool isShapeComponentTranslationEnabled = true;
 
         if (auto* registry = AZ::SettingsRegistry::Get())
         {

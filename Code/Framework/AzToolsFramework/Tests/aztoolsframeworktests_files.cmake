@@ -99,6 +99,9 @@ set(FILES
     Prefab/Overrides/PrefabOverridePublicInterfaceTests.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.h
+    Prefab/PrefabAssetPathChangeTestFixture.cpp
+    Prefab/PrefabAssetPathChangeTestFixture.h
+    Prefab/PrefabAssetPathChangeTests.cpp
     Prefab/PrefabCreateTests.cpp
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
@@ -185,6 +188,7 @@ set(FILES
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
+    Viewport/ViewportUiManagerTests.h
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
     Viewport/ViewBookmarkTests.cpp

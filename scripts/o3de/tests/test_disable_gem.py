@@ -100,10 +100,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -151,7 +148,9 @@ class TestDisableGemCommand:
                 return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
             return None
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return self.disable_gem.project_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -178,9 +177,13 @@ class TestDisableGemCommand:
         def get_enabled_gems(enable_gem_cmake_file: pathlib.Path) -> list:
             return project_gem_dependencies
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
 
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\

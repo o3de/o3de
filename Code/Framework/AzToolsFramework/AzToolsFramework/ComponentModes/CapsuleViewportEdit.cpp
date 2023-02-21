@@ -330,9 +330,12 @@ namespace AzToolsFramework
 
         for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
         {
-            const AZ::Transform updatedLocalTransform = GetLocalTransform();
-            heightManipulator->SetLocalTransform(
-                updatedLocalTransform * AZ::Transform::CreateTranslation(0.5f * newCapsuleHeight * heightManipulator->GetAxis()));
+            if (heightManipulator)
+            {
+                const AZ::Transform updatedLocalTransform = GetLocalTransform();
+                heightManipulator->SetLocalTransform(
+                    updatedLocalTransform * AZ::Transform::CreateTranslation(0.5f * newCapsuleHeight * heightManipulator->GetAxis()));
+            }
         }
     }
 

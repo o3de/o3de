@@ -81,6 +81,10 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
+        if (m_version != rhs.m_version)
+        {
+            return false;
+        }
 
         return true;
     }
