@@ -29,8 +29,10 @@ namespace AZ::Render
 
         static AZ::RPI::Ptr<SplashScreenPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
+        // TickBus overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
+        // Scope producer functions...
         void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
@@ -38,26 +40,30 @@ namespace AZ::Render
         SplashScreenPass(const AZ::RPI::PassDescriptor& descriptor);
         void Clear();
 
+        // Pass behavior overrides...
         void InitializeInternal() override;
         void FrameBeginInternal(FramePrepareParams params) override;
         void FrameEndInternal() override;
 
-        bool m_beginTimer = false;
-        float m_screenTime = 10.0f;
-        float m_lastRealTimeStamp; // in seconds
+        bool m_beginTimer = false;  // Flag to begin timing.
+        float m_screenTime = 10.0f; // How long the slash screen lasts. Will be initialized by setreg.
+        float m_lastRealTimeStamp;  // Time stamp in seconds, used to calculate unscaled delta time.
 
+        // Data struct passed to the shader.
         struct SplashScreenParams
         {
             float m_fadingFactor;
             uint32_t m_flags;
         };
 
+        // Shader connections
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_splashScreenImage;
         AZ::RHI::ShaderInputNameIndex m_splashScreenImageIndex = "m_splashScreenImage";
 
         SplashScreenParams m_splashScreenParams;
         AZ::RHI::ShaderInputNameIndex m_splashScreenParamsIndex = "m_splashScreenParams";
 
+        // Splash screen settings read from setreg
         SplashScreenSettings m_settings;
     };
 }

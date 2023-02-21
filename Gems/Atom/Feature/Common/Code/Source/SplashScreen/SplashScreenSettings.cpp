@@ -17,7 +17,6 @@ namespace AZ::Render
         {
             serializeContext->Class<SplashScreenSettings>()
                 ->Version(1)
-                ->Field("Enabled", &SplashScreenSettings::m_enbaled)
                 ->Field("ImagePath", &SplashScreenSettings::m_imagePath)
                 ->Field("LastingTime", &SplashScreenSettings::m_lastingTime)
                 ->Field("Fading", &SplashScreenSettings::m_fading);

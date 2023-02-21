@@ -94,7 +94,11 @@ namespace AZ::Render
         if (m_screenTime < 0.0f)
         {
             m_beginTimer = false;
+
+            // Disable the pass after life time passes.
             SetEnabled(false);
+
+            // Reset the tick scale
             if (auto* timeSystem = AZ::Interface<ITime>::Get())
             {
                 timeSystem->SetSimulationTickScale(1.0f);

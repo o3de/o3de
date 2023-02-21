@@ -45,16 +45,6 @@ struct PSOutput
     float4 m_color : SV_Target0;
 };
 
-float3 UnpackNormal(float2 packedNormal)
-{
-    float z = sqrt(1.0 - packedNormal.x * packedNormal.x - packedNormal.y * packedNormal.y);
-    return float3(packedNormal.xy, z);
-}
-
-// This VS is a slightly modified version of fullscreen pass shader.
-// It uses a single triangle but only covers a fixed area (unrelated to the viewport size)
-// at the bottom-right corner.
-// see also <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 VSOutput MainVS(VSInput vsInput)
 {
     VSOutput OUT;

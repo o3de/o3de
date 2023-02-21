@@ -23,7 +23,6 @@ namespace AZ::Render
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_enbaled = true;
         AZStd::string m_imagePath;
         float m_lastingTime = 10.0f;
         bool m_fading = true;
