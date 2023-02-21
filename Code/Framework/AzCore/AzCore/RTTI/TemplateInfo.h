@@ -85,7 +85,7 @@ namespace AZ::AzGenericTypeInfo::Internal
     // MSVC 14.34 has fixed the issue with specifying a variadic pack after auto,
     // not being able to bind non-type arguments to the auto parameter
     // As MSVC 14.33 is still supported, GetTemplateIdentity has been updated
-    // to have overload for an <class, auto> and a <class, auto, class> overload 
+    // to have overload for an <class, auto> and a <class, auto, class> overload
     // which leads to another MSVC defect ...
     // Where if a class template with a default parameter
     // is supplied as a template argument of a function overload, that accepts both the
@@ -299,10 +299,6 @@ namespace AZ::AzGenericTypeInfo
             prependSeparator = true; \
         } \
         typeName += '>'; \
-        AZ::TypeTraits typeTraits{}; \
-        typeTraits |= AZStd::is_signed_v<Type> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{}; \
-        typeTraits |= AZStd::is_unsigned_v<Type> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{}; \
-        typeTraits |= AZ::TypeTraits::is_template; \
         \
         AZ::TypeInfoObject typeInfoObject; \
         typeInfoObject.m_name = typeName; \
@@ -320,8 +316,7 @@ namespace AZ::AzGenericTypeInfo
         { \
             AZ_Assert(false, "Call to macro with template name %s, requires either a valid prefix or postfix uuid", #_DisplayName); \
         } \
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v; \
-        typeInfoObject.m_typeTraits = typeTraits; \
+        typeInfoObject.m_typeTraits = AZ::TypeTraits::is_template; \
         typeInfoObject.m_typeSize = AZ::Internal::TypeInfoSizeof<Type>; \
         return typeInfoObject; \
     }
@@ -356,8 +351,6 @@ namespace AZ::AzGenericTypeInfo
             prependSeparator = true; \
         } \
         typeName += '>'; \
-        AZ::TypeTraits typeTraits{}; \
-        typeTraits |= AZ::TypeTraits::is_template; \
         \
         AZ::TypeInfoObject typeInfoObject; \
         typeInfoObject.m_name = typeName; \
@@ -370,15 +363,19 @@ namespace AZ::AzGenericTypeInfo
         { \
             AZ_Assert(false, "Call to macro with template name %s, requires either a valid template uuid", #_DisplayName); \
         } \
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v; \
-        typeInfoObject.m_typeTraits = typeTraits; \
+        typeInfoObject.m_typeTraits = AZ::TypeTraits::is_template; \
         /* Size of Type cannot be queried inside of class definition*/ \
         /* typeInfoObject.m_typeSize = sizeof(Type); */\
         return typeInfoObject; \
     } \
-    static constexpr auto s_azTypeInfoObject = GetAzTypeInfo(AZStd::type_identity<_ClassType>{}); \
-    static constexpr auto TYPEINFO_Name() { return s_azTypeInfoObject.GetName().c_str(); } \
-    static constexpr auto TYPEINFO_Uuid() { return s_azTypeInfoObject.GetCanonicalTypeId(); }
+    static constexpr auto TYPEINFO_Name() \
+    { \
+        return AZ::AzTypeInfo<_ClassType>::Name(); \
+    } \
+    static constexpr auto TYPEINFO_Uuid() \
+    { \
+        return AZ::AzTypeInfo<_ClassType>::Uuid(); \
+    }
 
 // Allows a Class Template to opt-in to providing an overload for GetAzTemplateInfo
 // that associates a Uuid with the Class Template itself.
@@ -388,10 +385,6 @@ namespace AZ::AzGenericTypeInfo
 // NOTE: The final argument to AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID is empty for the postfix UUID parameter
 #define AZ_TEMPLATE_INFO_WITH_NAME(_TemplateName, _DisplayName, _TemplateUuid) \
     AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, #_TemplateName, _TemplateUuid,)
-
-// Template class type info
-#define AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED(_ClassName, _ClassUuid, ...) \
-    static_assert(false, "Embedded type info declaration inside templates are no longer supported. Please use 'AZ_TYPE_INFO_TEMPLATE' outside the template class instead.");
 
 // all template versions are handled by a variadic template handler
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_2 AZ_CLASS_TYPE_INFO_INTRUSIVE_TEMPLATE_WITH_NAME

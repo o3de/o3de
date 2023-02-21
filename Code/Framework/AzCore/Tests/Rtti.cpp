@@ -244,7 +244,6 @@ namespace UnitTest
         // The Uuid of a value type should result of a pointer type
         static_assert(azrtti_typeid<int>() == azrtti_typeid<int*>());
         static_assert(AZ::AzTypeInfo<int>::Uuid() == AZ::AzTypeInfo<int*>::Uuid());
-        static_assert(AZ::AzTypeInfo<int>::GetPointerTypeId() == AZ::AzTypeInfo<int*>::GetCanonicalTypeId());
         static_assert(AZ::AzTypeInfo<int>::GetCanonicalTypeId() == AZ::AzTypeInfo<int*>::GetPointeeTypeId());
 
         static_assert(AZStd::string_view{ AZ::AzTypeInfo<int>::Name() } == AZStd::string_view("int"));
@@ -292,7 +291,7 @@ namespace UnitTest
             EXPECT_EQ(AZ::Uuid("{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}"), AZ::AzGenericTypeInfo::Uuid<AZStd::function>());
             EXPECT_EQ(AZ::Uuid("{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}"), AZ::AzGenericTypeInfo::Uuid<AZStd::vector>());
         }
-        
+
         // templates
         {
             AZ::Uuid templateUuid = AZ::Uuid("{EBFE7ADF-1FCE-47F0-B417-14FE06BAF02D}") + AZ::Internal::AggregateTypes<MyClass, int>::GetCanonicalTypeId();
@@ -428,7 +427,7 @@ namespace UnitTest
     TEST_F(Rtti, IsTypeOfTest)
     {
         using TypeIdArray = AZStd::vector<AZ::Uuid>;
-    
+
         auto EnumTypes = [](const AZ::Uuid& id, void* userData)
         {
             TypeIdArray* idArray = reinterpret_cast<TypeIdArray*>(userData);
@@ -543,7 +542,7 @@ namespace UnitTest
 
     class ExampleAbstractClass
     {
-    public: 
+    public:
         AZ_RTTI(ExampleAbstractClass, "{F99EC269-3077-4984-A1B6-FA5656A65AC9}")
         virtual void AbstractFunction1() = 0;
         virtual void AbstractFunction2() = 0;
@@ -553,11 +552,11 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(ExampleFullImplementationClass, "{81B043ED-3770-414E-8B54-0F623C035926}", ExampleAbstractClass)
-        void AbstractFunction1() override {} 
+        void AbstractFunction1() override {}
         void AbstractFunction2() override {}
     };
 
-    class ExamplePartialImplementationClass1 
+    class ExamplePartialImplementationClass1
         : public ExampleAbstractClass
     {
     public:
@@ -565,7 +564,7 @@ namespace UnitTest
         void AbstractFunction1() override {}
     };
 
-    class ExampleCombined 
+    class ExampleCombined
         : public ExamplePartialImplementationClass1
     {
     public:

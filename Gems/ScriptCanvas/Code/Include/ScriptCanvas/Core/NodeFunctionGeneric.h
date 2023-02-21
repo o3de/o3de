@@ -78,15 +78,11 @@ namespace ScriptCanvas
         }
         typeName += '>';
 
-        AZ::TypeTraits typeTraits{};
-        typeTraits |= AZ::TypeTraits::is_template;
         AZ::TypeInfoObject typeInfoObject;
         typeInfoObject.m_name = typeName;
         typeInfoObject.m_templateId = templateUuid;
         typeInfoObject.m_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes<t_Func, t_Traits>::GetCanonicalTypeId();
-
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
-        typeInfoObject.m_typeTraits = typeTraits;
+        typeInfoObject.m_typeTraits |= AZ::TypeTraits::is_template;
         return typeInfoObject;
     }
 

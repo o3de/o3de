@@ -84,10 +84,6 @@ namespace AZ
         {
             return m_pointeeTypeId;
         }
-        constexpr AZ::TypeId GetPointerTypeId() const
-        {
-            return m_pointerTypeId;
-        }
         constexpr AZ::TypeId GetTemplateId() const
         {
             return m_templateId;
@@ -124,11 +120,6 @@ namespace AZ
         //!
         //! If the TypeInfo isn't a pointer, then a value of Null Uuid is the default
         AZ::TypeId m_pointeeTypeId;
-
-        //! Stores the identifier that represents the canonical type with a pointer added to it.
-        //! ex. If the Canonical TypeId represents `AZStd::vector<int*>`,
-        //! then the Pointer TypeId is `AZStd::vector<int*>*`
-        AZ::TypeId m_pointerTypeId;
 
         //! Store the identifier if the TypeInfo is a Class Template
         //! ex. `AZStd::vector`, or `AZStd::unordered_map`, etc...
@@ -178,7 +169,7 @@ namespace AZ
 
 namespace AZ
 {
-    // AzTypeInfo specialization helper for non intrusive TypeInfo
+    // AzTypeInfo specialization helper for non-intrusive TypeInfo
 #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassName, _DisplayName, _ClassUuid) \
     constexpr AZ::TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<_ClassName>) \
     { \
@@ -192,7 +183,6 @@ namespace AZ
         AZ::TypeInfoObject typeInfoObject; \
         typeInfoObject.m_name = !name_.empty() ? name_.data() : #_ClassName; \
         typeInfoObject.m_canonicalTypeId = AZ::TypeId{ _ClassUuid }; \
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v; \
         typeInfoObject.m_typeTraits = typeTraits; \
         typeInfoObject.m_typeSize = AZ::Internal::TypeInfoSizeof<ClassType>; \
         return typeInfoObject; \
@@ -333,8 +323,6 @@ namespace AZ
                 typeInfoObject.m_canonicalTypeId = pointeeTypeId + AZ::Internal::PointerId_v;
                 //! Now the pointee TypeId can be updated with the canonical TypeId for T
                 typeInfoObject.m_pointeeTypeId = pointeeTypeId;
-                //! The pointer TypeId for T* is it's canonical TypeId combined the Pointer Id constant
-                typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
 
                 // Update the type traits to indicate the type is a pointer
                 typeInfoObject.m_typeTraits |= AZ::TypeTraits::is_pointer;
@@ -402,22 +390,21 @@ namespace AZ
 
         static constexpr AZ::TypeId GetCanonicalTypeId()
         {
-            return s_typeInfoObject.GetCanonicalTypeId();
+            // As this is the most used Uuid retrieve function
+            // make sure it is calculated at compile time
+            constexpr AZ::TypeId typeId = s_typeInfoObject.GetCanonicalTypeId();
+            return typeId;
         }
 
         static constexpr AZ::TypeId GetPointeeTypeId()
         {
             return s_typeInfoObject.GetPointeeTypeId();
+
         }
 
         static constexpr AZ::TypeId GetTemplateId()
         {
             return s_typeInfoObject.GetTemplateId();
-        }
-
-        static constexpr AZ::TypeId GetPointerTypeId()
-        {
-            return s_typeInfoObject.GetPointerTypeId();
         }
 
         static constexpr const char* Name()
@@ -455,13 +442,11 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_CLASS_GETTERS(_ClassName) \
     static constexpr auto TYPEINFO_Name() \
     { \
-        constexpr const char* typeName = AZ::AzTypeInfo<_ClassName>::Name(); \
-        return typeName; \
+        return AZ::AzTypeInfo<_ClassName>::Name(); \
     } \
     static constexpr auto TYPEINFO_Uuid() \
     { \
-        constexpr AZ::TypeId typeId = AZ::AzTypeInfo<_ClassName>::Uuid(); \
-        return typeId; \
+        return AZ::AzTypeInfo<_ClassName>::Uuid(); \
     }
 
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName) static_assert(false, "A ClassName and ClassUUID must be provided")
@@ -473,7 +458,6 @@ namespace AZ
         AZ::TypeInfoObject typeInfoObject; \
         typeInfoObject.m_name = !AZStd::string_view(_DisplayName).empty() ? #_ClassName : _DisplayName; \
         typeInfoObject.m_canonicalTypeId = AZ::TypeId{ _ClassUuid }; \
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v; \
         typeInfoObject.m_typeTraits = AZ::TypeTraits{}; \
         typeInfoObject.m_typeSize = sizeof(ClassType); \
         return typeInfoObject; \

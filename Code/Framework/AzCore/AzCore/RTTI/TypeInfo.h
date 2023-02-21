@@ -363,15 +363,9 @@ namespace AZ
         typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
         typeName += ")}";
 
-        AZ::TypeTraits typeTraits{};
-        typeTraits |= AZStd::is_signed_v<R(Args...)> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{};
-        typeTraits |= AZStd::is_unsigned_v<R(Args...)> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{};
-
         AZ::TypeInfoObject typeInfoObject;
         typeInfoObject.m_name = typeName;
         typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, Args...>::GetCanonicalTypeId();
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
-        typeInfoObject.m_typeTraits = typeTraits;
         // Functions don't have a size value
         return typeInfoObject;
     }
@@ -388,13 +382,9 @@ namespace AZ
         typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
         typeName += ")}";
 
-        AZ::TypeTraits typeTraits{};
-
         AZ::TypeInfoObject typeInfoObject;
         typeInfoObject.m_name = typeName;
         typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, C, Args...>::GetCanonicalTypeId();
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
-        typeInfoObject.m_typeTraits = typeTraits;
         typeInfoObject.m_typeSize = sizeof(R(C::*)(Args...));
         return typeInfoObject;
     }
@@ -419,13 +409,9 @@ namespace AZ
         typeName + AZ::AzTypeInfo<C>::Name();
         typeName += "::*}";
 
-        AZ::TypeTraits typeTraits{};
-
         AZ::TypeInfoObject typeInfoObject;
         typeInfoObject.m_name = typeName;
         typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, C>::GetCanonicalTypeId();
-        typeInfoObject.m_pointerTypeId = typeInfoObject.m_canonicalTypeId + AZ::Internal::PointerId_v;
-        typeInfoObject.m_typeTraits = typeTraits;
         typeInfoObject.m_typeSize = sizeof(R C::*);
         return typeInfoObject;
     }
