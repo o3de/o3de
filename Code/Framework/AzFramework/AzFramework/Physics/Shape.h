@@ -85,6 +85,7 @@ namespace Physics
 
         virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
         virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
+        virtual Physics::MaterialId GetMaterialId() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;

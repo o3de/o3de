@@ -77,7 +77,7 @@ namespace AZ::Render
         template <typename T>
         static void InitializeElement(size_t index, T& container)
         {
-            container.at(index) = {};
+            new (&container.at(index)) (typename T::value_type)();
         }
 
         template <typename T>

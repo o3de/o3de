@@ -46,7 +46,7 @@ namespace AzToolsFramework
 
     void PropertyStringComboBoxCtrl::Add(const AZStd::vector<AZStd::string>& vals)
     {
-        GetComboBox()->clear();
+        ComboBoxBase::clearElements();
         for (size_t valIndex = 0; valIndex < vals.size(); valIndex++)
         {
             auto value = vals[valIndex];
