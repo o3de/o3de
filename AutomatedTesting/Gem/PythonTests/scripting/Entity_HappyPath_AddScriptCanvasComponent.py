@@ -40,29 +40,29 @@ def Entity_HappyPath_AddScriptCanvasComponent():
     """
     from utils import TestHelper as helper
     from utils import Tracer
-    from editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     import azlmbr.legacy.general as general
+    import azlmbr.math as math
 
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
+    TEST_ENTITY_NAME = "test_entity"
+
+    general.idle_enable(True)
 
     # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
+    helper.open_level("", "Base")
     general.close_pane("Error Report")
 
     # 2) Create new entity
-    test_entity = EditorEntity.create_editor_entity("test_entity")
-    Report.result(Tests.entity_created, test_entity.id.IsValid())
+    position = math.Vector3(512.0, 512.0, 32.0)
+    editor_entity = EditorEntity.create_editor_entity_at(position, TEST_ENTITY_NAME)
+    Report.result(Tests.entity_created, editor_entity.id.IsValid())
 
     # 3) Start Tracer
     with Tracer() as section_tracer:
 
         # 4) Add Script Canvas component to test entity and check for errors
-        test_entity.add_component("Script Canvas")
-        Report.result(Tests.add_sc_component, test_entity.has_component("Script Canvas"))
+        editor_entity.add_component("Script Canvas")
+        Report.result(Tests.add_sc_component, editor_entity.has_component("Script Canvas"))
 
 
 if __name__ == "__main__":
