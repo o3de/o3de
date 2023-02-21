@@ -33,7 +33,7 @@ namespace Multiplayer
         : public AZ::Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator);
         AZ_RTTI(MultiplayerComponent, "{B7F5B743-CCD3-4981-8F1A-FC2B95CE22D7}", AZ::Component);
 
         static void Reflect(AZ::ReflectContext* context);

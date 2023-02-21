@@ -74,12 +74,11 @@ namespace NvCloth
                 AZStd::vector<AZStd::string> value;
                 if (attrValue->Read<AZStd::vector<AZStd::string>>(value))
                 {
-                    QSignalBlocker signalBlocker(GUI->GetComboBox());
-                    GUI->GetComboBox()->clear();
+                    GUI->clearElements();
 
                     for (const auto& item : value)
                     {
-                        GUI->GetComboBox()->addItem(item.c_str());
+                        GUI->Add(item);
                     }
 
                     bool hasAsset = GetMeshAsset(m_entityId).Get() != nullptr;
@@ -99,8 +98,7 @@ namespace NvCloth
 
         bool MeshNodeHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->setCurrentText(instance.c_str());
+            GUI->setValue(instance);
             return true;
         }
 

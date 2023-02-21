@@ -69,7 +69,7 @@ namespace LyShine
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator);
 
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, const AZ::RHI::TargetBlendState& blendModeState);
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, const AZ::Data::Instance<AZ::RPI::Image>& maskTexture,
@@ -130,7 +130,7 @@ namespace LyShine
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(MaskRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaskRenderNode, AZ::PoolAllocator);
 
         MaskRenderNode(MaskRenderNode* parentMask, bool isMaskingEnabled, bool useAlphaTest, bool drawBehind, bool drawInFront);
         ~MaskRenderNode() override;
@@ -186,7 +186,7 @@ namespace LyShine
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(RenderTargetRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RenderTargetRenderNode, AZ::PoolAllocator);
 
         RenderTargetRenderNode(RenderTargetRenderNode* parentRenderTarget,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,

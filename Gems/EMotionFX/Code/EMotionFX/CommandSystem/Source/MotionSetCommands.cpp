@@ -26,7 +26,7 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandSystemMotionSetCallback, EMotionFX::MotionAllocator)
 
     // Custom motion set motion loading.
     EMotionFX::Motion* CommandSystemMotionSetCallback::LoadMotion(EMotionFX::MotionSet::MotionEntry* entry)

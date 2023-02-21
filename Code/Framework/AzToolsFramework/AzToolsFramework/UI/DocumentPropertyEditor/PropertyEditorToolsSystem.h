@@ -18,7 +18,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(PropertyEditorToolsSystem, "{78954B5C-D147-411F-BBDA-A28D2CA50A3A}", PropertyEditorToolsSystemInterface);
-        AZ_CLASS_ALLOCATOR(PropertyEditorToolsSystem, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEditorToolsSystem, AZ::OSAllocator);
 
         PropertyEditorToolsSystem();
         ~PropertyEditorToolsSystem() override;

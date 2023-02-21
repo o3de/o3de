@@ -42,7 +42,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RenderPass, "{9441D114-60FD-487B-B2B7-0FBBC8A96FC2}", Pass);
-            AZ_CLASS_ALLOCATOR(RenderPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderPass, SystemAllocator);
             virtual ~RenderPass();
 
             //! Build and return RenderAttachmentConfiguration of this pass from its render attachments

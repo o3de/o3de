@@ -27,7 +27,7 @@ class PropertyAnchorCtrl
 
 public:
 
-    AZ_CLASS_ALLOCATOR(PropertyAnchorCtrl, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyAnchorCtrl, AZ::SystemAllocator);
 
     PropertyAnchorCtrl(QWidget* parent = nullptr);
 
@@ -54,7 +54,7 @@ class PropertyHandlerAnchor
     : public AzToolsFramework::PropertyHandler < UiTransform2dInterface::Anchors, PropertyAnchorCtrl >
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerAnchor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerAnchor, AZ::SystemAllocator);
 
     AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Anchor", 0x6751117d); }
     bool IsDefaultHandler() const override { return true; }

@@ -22,7 +22,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::CubeMapCaptureComponentConfig, "{3DA089D0-E0D0-4F00-B76E-EC28CFE41547}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(CubeMapCaptureComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CubeMapCaptureComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             CubeMapCaptureType m_captureType = CubeMapCaptureType::Specular;
@@ -41,7 +41,7 @@ namespace AZ
         public:
             friend class EditorCubeMapCaptureComponent;
 
-            AZ_CLASS_ALLOCATOR(CubeMapCaptureComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CubeMapCaptureComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::CubeMapCaptureComponentController, "{85156008-28A0-4F7B-BC16-0311682E14D7}");
 
             static void Reflect(AZ::ReflectContext* context);

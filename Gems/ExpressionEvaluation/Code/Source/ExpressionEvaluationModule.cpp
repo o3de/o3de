@@ -18,7 +18,7 @@ namespace ExpressionEvaluation
     {
     public:
         AZ_RTTI(ExpressionEvaluationModule, "{3183322D-3AE1-4B8B-86D7-870DA60DC175}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ExpressionEvaluationModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpressionEvaluationModule, AZ::SystemAllocator);
 
         ExpressionEvaluationModule()
             : AZ::Module()

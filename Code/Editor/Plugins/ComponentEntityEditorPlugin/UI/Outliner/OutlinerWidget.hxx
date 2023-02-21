@@ -63,7 +63,7 @@ class OutlinerWidget
 {
     Q_OBJECT;
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerWidget, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(OutlinerWidget, AZ::SystemAllocator);
 
     OutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
     virtual ~OutlinerWidget();

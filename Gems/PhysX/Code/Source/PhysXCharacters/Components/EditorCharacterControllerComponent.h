@@ -21,7 +21,7 @@ namespace PhysX
     /// Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorCharacterControllerProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorCharacterControllerProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorCharacterControllerProxyShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(EditorCharacterControllerProxyShapeConfig, "{0A9F0213-E281-4424-97C5-BAD2D318F496}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -19,7 +19,7 @@ class PropertyHandlerLayoutPadding
     : public UIVectorPropertyHandlerBase<UiLayoutInterface::Padding>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerLayoutPadding, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerLayoutPadding, AZ::SystemAllocator);
 
     PropertyHandlerLayoutPadding()
         : UIVectorPropertyHandlerBase(4, 2)

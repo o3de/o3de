@@ -19,7 +19,7 @@ namespace AZ
             : public RenderPassData
         {
             AZ_RTTI(ComputePassData, "{C9ADBF8D-34A3-4406-9067-DD17D0564FD8}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(ComputePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComputePassData, SystemAllocator);
 
             ComputePassData() = default;
             virtual ~ComputePassData() = default;

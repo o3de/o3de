@@ -32,7 +32,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridClassificationPass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridClassificationPass, "{98A6477A-F31C-4390-9BEB-9DB8E30BB281}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridClassificationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridClassificationPass, SystemAllocator);
             virtual ~DiffuseProbeGridClassificationPass() = default;
 
             static RPI::Ptr<DiffuseProbeGridClassificationPass> Create(const RPI::PassDescriptor& descriptor);

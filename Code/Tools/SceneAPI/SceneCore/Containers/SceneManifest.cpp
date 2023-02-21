@@ -40,7 +40,7 @@ namespace AZ
 
             const char ErrorWindowName[] = "SceneManifest";
 
-            AZ_CLASS_ALLOCATOR_IMPL(SceneManifest, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SceneManifest, AZ::SystemAllocator)
             SceneManifest::~SceneManifest()
             {
             }

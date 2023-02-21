@@ -45,7 +45,7 @@ namespace UnitTest
         : public RHI::ScopeProducer
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator);
 
         ScopeProducer(const RHI::ScopeId& scopeId)
             : RHI::ScopeProducer(scopeId)

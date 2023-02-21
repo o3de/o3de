@@ -90,7 +90,7 @@ namespace AWSCore
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(AwsApiJobConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiJobConfig, AZ::SystemAllocator);
 
         using InitializerFunction = AZStd::function<void(AwsApiJobConfig& config)>;
 

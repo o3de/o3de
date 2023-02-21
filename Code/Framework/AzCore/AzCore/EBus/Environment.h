@@ -90,7 +90,7 @@ namespace AZ
         friend struct EBusEnvironmentStoragePolicy;
 
     public:
-        AZ_CLASS_ALLOCATOR(EBusEnvironment, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusEnvironment, AZ::OSAllocator);
 
         EBusEnvironment();
 

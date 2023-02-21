@@ -20,7 +20,7 @@ namespace UnitTest
         : public AZ::RHI::FrameGraphCompiler
     {
     public:
-        AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&) override;
@@ -35,7 +35,7 @@ namespace UnitTest
     {
         using Base = AZ::RHI::FrameGraphExecuteGroup;
     public:
-        AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator);
 
         void Init(const AZ::RHI::ScopeId& scopeId);
 
@@ -50,7 +50,7 @@ namespace UnitTest
         : public AZ::RHI::FrameGraphExecuter
     {
     public:
-        AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(const AZ::RHI::FrameGraphExecuterDescriptor&) override;

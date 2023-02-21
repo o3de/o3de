@@ -45,7 +45,7 @@ class AzAssetBrowserWindow : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator);
 
     explicit AzAssetBrowserWindow(QWidget* parent = nullptr);
     virtual ~AzAssetBrowserWindow();

@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterMaskHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterMaskHandler, EditorAllocator)
 
     AnimGraphParameterMaskHandler::AnimGraphParameterMaskHandler()
         : QObject()

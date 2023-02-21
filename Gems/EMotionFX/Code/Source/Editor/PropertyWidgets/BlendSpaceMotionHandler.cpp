@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionHandler, EditorAllocator)
 
     BlendSpaceMotionPicker::BlendSpaceMotionPicker(QWidget* parent)
         : QComboBox(parent)

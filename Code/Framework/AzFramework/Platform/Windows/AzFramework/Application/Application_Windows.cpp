@@ -20,7 +20,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationWindows, AZ::SystemAllocator);
         ApplicationWindows();
         ~ApplicationWindows() override;
 

@@ -23,7 +23,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(Console, "{CF6DCDE7-1A66-442C-BA87-01A432C13E7D}", IConsole);
-        AZ_CLASS_ALLOCATOR(Console, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Console, AZ::OSAllocator);
 
         Console();
         //! Constructor overload which registers a notifier with the Settings Registry that will execute

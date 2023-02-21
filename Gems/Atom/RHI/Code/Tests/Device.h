@@ -17,7 +17,7 @@ namespace UnitTest
         : public AZ::RHI::PhysicalDevice
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
 
         static AZ::RHI::PhysicalDeviceList Enumerate();
 
@@ -29,7 +29,7 @@ namespace UnitTest
         : public AZ::RHI::Device
     {
     public:
-        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
 
         Device();
 

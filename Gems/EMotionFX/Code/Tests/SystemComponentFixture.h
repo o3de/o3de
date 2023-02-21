@@ -41,7 +41,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI(EMotionFXTestModule, "{32567457-5341-4D8D-91A9-E48D8395DE65}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator);
 
         EMotionFXTestModule()
         {

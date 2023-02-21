@@ -26,7 +26,7 @@ namespace PhysX
     class CharacterGameplayConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterGameplayConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterGameplayConfiguration, AZ::SystemAllocator);
         AZ_TYPE_INFO(CharacterGameplayConfiguration, "{A9E559C7-9436-462A-8A5D-304ACFFC7F90}");
         static void Reflect(AZ::ReflectContext* context);
 

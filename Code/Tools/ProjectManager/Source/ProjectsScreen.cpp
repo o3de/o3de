@@ -223,7 +223,7 @@ namespace O3DE::ProjectManager
         auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
         if (remoteProjectsResult.IsSuccess() && !remoteProjectsResult.GetValue().isEmpty())
         {
-            const QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
+            const QVector<ProjectInfo>& remoteProjects{ remoteProjectsResult.TakeValue() };
             for (const ProjectInfo& remoteProject : remoteProjects)
             {
                 auto foundProject = AZStd::ranges::find_if(
@@ -309,6 +309,11 @@ namespace O3DE::ProjectManager
                 }
             });
 
+
+            // It's more efficient to update the project engine by loading engine infos once
+            // instead of loading them all each time we want to know what project an engine uses
+            auto engineInfoResult = PythonBindingsInterface::Get()->GetAllEngineInfos();
+
             // Add all project buttons, restoring buttons to default state
             for (const ProjectInfo& project : projects)
             {
@@ -317,9 +322,18 @@ namespace O3DE::ProjectManager
                 auto projectButtonIter = m_projectButtons.find(projectPath);
 
                 EngineInfo engine{};
-                if (auto result = PythonBindingsInterface::Get()->GetProjectEngine(project.m_path); result)
+                if (engineInfoResult && !project.m_enginePath.isEmpty())
                 {
-                    engine = result.GetValue<EngineInfo>();
+                    AZ::IO::FixedMaxPath projectEnginePath{ project.m_enginePath.toUtf8().constData() };
+                    for (const EngineInfo& engineInfo : engineInfoResult.GetValue())
+                    {
+                        AZ::IO::FixedMaxPath enginePath{ engineInfo.m_path.toUtf8().constData() };
+                        if (enginePath == projectEnginePath)
+                        {
+                            engine = engineInfo;
+                            break;
+                        }
+                    }
                 }
 
                 if (projectButtonIter == m_projectButtons.end())

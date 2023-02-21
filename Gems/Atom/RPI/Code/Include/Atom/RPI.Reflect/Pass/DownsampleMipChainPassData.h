@@ -19,7 +19,7 @@ namespace AZ
             : public PassData
         {
             AZ_RTTI(DownsampleMipChainPassData, "{EB240B6F-91CB-401A-A099-8F06329BDF35}", PassData);
-            AZ_CLASS_ALLOCATOR(DownsampleMipChainPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DownsampleMipChainPassData, SystemAllocator);
 
             DownsampleMipChainPassData() = default;
             virtual ~DownsampleMipChainPassData() = default;

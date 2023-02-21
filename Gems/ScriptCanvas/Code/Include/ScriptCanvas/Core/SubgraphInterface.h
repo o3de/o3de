@@ -50,7 +50,7 @@ namespace ScriptCanvas
         struct Input final
         {
             AZ_TYPE_INFO(Input, "{627448C3-D018-422E-B133-A1169BB44306}");
-            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator, 0); 
+            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator); 
         
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -64,7 +64,7 @@ namespace ScriptCanvas
         struct Output final
         {
             AZ_TYPE_INFO(Output, "{344D66C7-EE5E-45B1-809F-4108DDB65F20}");
-            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator);
 
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -78,7 +78,7 @@ namespace ScriptCanvas
         struct Out final
         {
             AZ_TYPE_INFO(Out, "{6175D897-C06D-48B5-8775-388B232D429D}");
-            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator);
 
             AZStd::string displayName;
             AZStd::string parsedName;
@@ -93,7 +93,7 @@ namespace ScriptCanvas
         struct In final
         {
             AZ_TYPE_INFO(In, "{DFDA32F7-41D2-45BB-8ADF-876679053836}");
-            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator, 0); 
+            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator); 
             
             bool isPure = false;
             AZStd::string displayName;
@@ -112,7 +112,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(SubgraphInterface, "{52B27A11-8294-4A6F-BFCF-6C1582649DB2}");
-            AZ_CLASS_ALLOCATOR(SubgraphInterface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubgraphInterface, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* refectContext);
 
@@ -307,7 +307,7 @@ namespace ScriptCanvas
         class SubgraphInterfaceSystem
         {
         public:
-            AZ_CLASS_ALLOCATOR(SubgraphInterfaceSystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubgraphInterfaceSystem, AZ::SystemAllocator);
 
             // returns an execution map for the node if it has registered one.
             // if it hasn't, the node must be considered simple, as has no need for one

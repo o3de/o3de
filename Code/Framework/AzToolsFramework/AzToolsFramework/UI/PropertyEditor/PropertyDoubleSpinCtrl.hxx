@@ -30,7 +30,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyDoubleSpinCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyDoubleSpinCtrl, AZ::SystemAllocator);
 
         PropertyDoubleSpinCtrl(QWidget* pParent = NULL);
         virtual ~PropertyDoubleSpinCtrl();
@@ -91,7 +91,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(doublePropertySpinboxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(doublePropertySpinboxHandler, AZ::SystemAllocator);
 
         // common to all double spinners
         static void ConsumeAttributeCommon(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
@@ -110,7 +110,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;

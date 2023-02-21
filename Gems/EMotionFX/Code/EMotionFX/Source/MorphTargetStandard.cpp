@@ -23,8 +23,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphTargetStandard, DeformerAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MorphTargetStandard::DeformData, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphTargetStandard, DeformerAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphTargetStandard::DeformData, DeformerAllocator)
 
     MorphTargetStandard::MorphTargetStandard(const char* name)
         : MorphTarget(name)

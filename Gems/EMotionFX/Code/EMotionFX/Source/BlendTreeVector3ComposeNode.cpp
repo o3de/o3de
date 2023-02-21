@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeVector3ComposeNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeVector3ComposeNode, AnimGraphAllocator)
 
     BlendTreeVector3ComposeNode::BlendTreeVector3ComposeNode()
         : AnimGraphNode()

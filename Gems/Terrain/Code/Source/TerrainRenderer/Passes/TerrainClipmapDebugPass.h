@@ -26,7 +26,7 @@ namespace Terrain
 
     public:
         AZ_RTTI(Terrain::TerrainClipmapDebugPass, "{BF1ED790-34BB-4E09-803B-09BF5BBFF0BD}", AZ::RPI::FullscreenTrianglePass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainClipmapDebugPass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainClipmapDebugPass, AZ::SystemAllocator);
         virtual ~TerrainClipmapDebugPass() = default;
 
         static AZ::RPI::Ptr<TerrainClipmapDebugPass> Create(const AZ::RPI::PassDescriptor& descriptor);

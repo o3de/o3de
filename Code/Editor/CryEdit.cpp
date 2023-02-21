@@ -2890,7 +2890,7 @@ class SimulationModeCommand
     : public AzToolsFramework::UndoSystem::URSequencePoint
 {
 public:
-    AZ_CLASS_ALLOCATOR(SimulationModeCommand, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(SimulationModeCommand, AZ::SystemAllocator);
     AZ_RTTI(SimulationModeCommand, "{FB9FB958-5C56-47F6-B168-B5F564F70E69}");
 
     SimulationModeCommand(const AZStd::string& friendlyName);
