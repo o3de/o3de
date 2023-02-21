@@ -10,9 +10,10 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <Runner.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV)
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV)
 
 
 namespace UnitTest

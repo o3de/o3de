@@ -505,6 +505,7 @@ void CTrackViewDialog::InitToolbar()
             connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnAutoRecordStep);
             qaction->setCheckable(true);
             qaction->setChecked(i == 1);
+            m_fAutoRecordStep = 1;
             ag->addAction(qaction);
         }
     }
@@ -1277,6 +1278,11 @@ void CTrackViewDialog::OnSequenceComboBox()
     if (sel == -1)
     {
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        return;
+    }
+    if (sel == 0)
+    {
+        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false, true);
         return;
     }
 
