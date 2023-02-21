@@ -145,10 +145,10 @@ void AssetProcessorManagerTest::SetUp()
     m_config->AddMetaDataType("assetinfo", "");
     m_config->AddIntermediateScanFolder();
 
-    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
-    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
-    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
-    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"))).GetValueOr(AZ::Uuid());
+    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"))).GetValueOr(AZ::Uuid());
+    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"))).GetValueOr(AZ::Uuid());
+    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"))).GetValueOr(AZ::Uuid());
 
     ASSERT_FALSE(m_aUuid.IsNull());
     ASSERT_FALSE(m_bUuid.IsNull());
@@ -213,9 +213,9 @@ void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelati
 
     auto uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
 
-    ASSERT_FALSE(uuid.IsNull());
+    ASSERT_TRUE(uuid);
 
-    AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
+    AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid.GetValue(), "fingerprint");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
 }
 
@@ -262,7 +262,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -877,7 +877,7 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -948,7 +948,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDFailure)
 
     QString absolutePath = m_assetRootDir.absoluteFilePath("assetProcessorManagerTestFailed.txt");
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data()));
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data())).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -973,7 +973,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
 
-    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
@@ -3412,7 +3412,7 @@ void SourceFileDependenciesTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
 
-    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt")));
+    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"))).GetValueOr(AZ::Uuid());
 
     ASSERT_FALSE(m_sourceFileUuid.IsNull());
 
@@ -3422,10 +3422,10 @@ void SourceFileDependenciesTest::SetUp()
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
 
-    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
-    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
-    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
-    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"))).GetValueOr(AZ::Uuid());
 
     // Clean up the files, different tests have different requirements for which files should exist
     QFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")).remove();
@@ -3471,7 +3471,7 @@ void SourceFileDependenciesTest::SetupData(
     // construct the dummy job to feed to the database updater function:
     job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_absPath);
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference);
+    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference).GetValueOr(AZ::Uuid());
 
     if (primeMap)
     {
@@ -3835,7 +3835,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     // now make c exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
     AssetProcessor::SourceAssetReference cAssetReference(m_watchFolderPath, "c.txt");
-    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference);
+    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference).GetValue();
 
     AssetProcessorManager::JobToProcessEntry job3;
     job3.m_sourceFileInfo.m_sourceAssetReference = cAssetReference;
@@ -4427,7 +4427,7 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
 
     // construct the dummy job to feed to the database updater function:
     AssetProcessor::SourceAssetReference sourceAsset(absPath);
-    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset);
+    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValue();
     AssetProcessorManager::JobToProcessEntry job;
     job.m_sourceFileInfo.m_sourceAssetReference = sourceAsset;
     job.m_sourceFileInfo.m_scanFolder = scanFolder;
@@ -5092,27 +5092,35 @@ void WildcardSourceDependencyTest::SetUp()
     auto bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/b.foo")));
     auto dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/folder/one/d.foo")));
 
-    ASSERT_FALSE(aUuid.IsNull());
-    ASSERT_FALSE(bUuid.IsNull());
-    ASSERT_FALSE(dUuid.IsNull());
+    ASSERT_TRUE(aUuid);
+    ASSERT_TRUE(bUuid);
+    ASSERT_TRUE(dUuid);
 
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), aUuid, PathOrUuid("%a.foo"),
+        AZ::Uuid::CreateRandom(),
+        aUuid.GetValue(),
+        PathOrUuid("%a.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Absolute path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), bUuid, PathOrUuid(m_assetRootDir.absoluteFilePath("%b.foo").toUtf8().constData()),
+        AZ::Uuid::CreateRandom(),
+        bUuid.GetValue(),
+        PathOrUuid(m_assetRootDir.absoluteFilePath("%b.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Test what happens when we have 2 dependencies on the same file
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid("%c.foo"),
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
+        PathOrUuid("%c.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid(m_assetRootDir.absoluteFilePath("%c.foo").toUtf8().constData()),
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
+        PathOrUuid(m_assetRootDir.absoluteFilePath("%c.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
 #ifdef AZ_PLATFORM_WINDOWS
@@ -5123,7 +5131,8 @@ void WildcardSourceDependencyTest::SetUp()
     // This only applies to windows because on other OSes if the dependency starts with /, then its an abs path dependency
     auto test = (m_assetRootDir.absolutePath().left(1) + "%.foo");
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid,
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
         PathOrUuid(test.toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 #endif
