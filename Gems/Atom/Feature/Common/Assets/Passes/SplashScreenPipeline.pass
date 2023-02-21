@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "MainPipeline",
+            "Name": "SplashScreenPipeline",
             "PassClass": "ParentPass",
             "Slots": [
                 {
@@ -441,19 +441,6 @@
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
                                 "Attachment": "Depth"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "SplashScreenPass",
-                    "TemplateName": "SplashScreenPassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputOutput",
-                            "AttachmentRef": {
-                                "Pass": "UIPass",
-                                "Attachment": "InputOutput"
                             }
                         }
                     ]

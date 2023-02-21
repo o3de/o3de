@@ -468,7 +468,7 @@ namespace AZ
                 return true;
             }
 
-            bool BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
+            RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, AZ::RHI::MultisampleState& multisampleState)
             {
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
@@ -507,18 +507,19 @@ namespace AZ
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
                     // Create and add render pipeline to the scene (when not added already)
-                    if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                    RPI::RenderPipelinePtr renderPipeline = scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name));
+                    if (!renderPipeline)
                     {
-                        RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
+                        renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
                             renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
                         scene->AddRenderPipeline(renderPipeline);
                     }
-                    return true;
+                    return renderPipeline;
                 }
                 else
                 {
                     AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
-                    return false;
+                    return nullptr;
                 }
             }
 

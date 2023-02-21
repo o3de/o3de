@@ -1,0 +1,16 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "RenderPipelineDescriptor",
+    "ClassData": {
+        "Name": "SplashScreenPipeline",
+        "MainViewTag": "MainCamera",
+        "RootPassTemplate": "SplashScreenPipeline",
+        "AllowModification": true,
+        "RenderSettings": {
+            "MultisampleState": {
+                "samples": 2
+            }
+        }
+    }
+}
