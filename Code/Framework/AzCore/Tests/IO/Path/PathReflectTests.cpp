@@ -145,7 +145,8 @@ namespace UnitTest
 
         AZ::IO::Path result(testParams.m_preferredSeparator);
         ASSERT_TRUE(strMethod->InvokeResult(result.Native(), pathViewPtr));
-        EXPECT_EQ(testParams.m_testPath, result);
+        AZ::IO::PathView expectedPath(testParams.m_testPath, testParams.m_preferredSeparator);
+        EXPECT_EQ(expectedPath, result);
     }
 
     TEST_P(PathScriptingParamFixture, PathClass_IsAccessibleInScripting_Succeeds)
@@ -172,7 +173,7 @@ namespace UnitTest
 
             AZ::IO::Path result(testParams.m_preferredSeparator);
             ASSERT_TRUE(strMethod->InvokeResult(result.Native(), pathPtr));
-            EXPECT_EQ(testParams.m_testPath, result);
+            EXPECT_EQ(pathView, result);
 
             // Convert back to Path View
             auto toPathViewMethod = pathClass->FindMethodByReflectedName("ToPurePathView");
@@ -203,7 +204,8 @@ namespace UnitTest
 
             AZ::IO::Path result(testParams.m_preferredSeparator);
             ASSERT_TRUE(strMethod->InvokeResult(result.Native(), pathPtr));
-            EXPECT_EQ(testParams.m_testPath, result);
+            AZ::IO::PathView pathView(testParams.m_testPath, testParams.m_preferredSeparator);
+            EXPECT_EQ(pathView, result);
 
             // Convert back to Path View
             auto toPathViewMethod = pathClass->FindMethodByReflectedName("ToPurePathView");
@@ -240,7 +242,13 @@ namespace UnitTest
 
             AZStd::vector<AZ::IO::PathView> result;
             ASSERT_TRUE(method->InvokeResult(result, &testPathView));
-            EXPECT_THAT(result, ::testing::ElementsAre(R"(C:\)", "Windows", "Very", "Long", "Path", "filename.with.many.suffixes"));
+            EXPECT_THAT(result, ::testing::ElementsAre(AZ::IO::PathView(R"(C:\)", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView("Windows", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView("Very", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView("Long", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView("Path", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView("filename.with.many.suffixes", AZ::IO::WindowsPathSeparator)
+                ));
         }
         {
             auto method = pathClass->FindGetterByReflectedName("drive");
@@ -272,9 +280,12 @@ namespace UnitTest
 
             AZStd::vector<AZ::IO::PathView> result;
             ASSERT_TRUE(method->InvokeResult(result, &testPathView));
-            EXPECT_THAT(result, ::testing::ElementsAre(R"(C:\Windows\Very\Long\Path)",
-                R"(C:\Windows\Very\Long)", R"(C:\Windows\Very)", R"(C:\Windows)",
-                R"(C:\)"));
+            EXPECT_THAT(result, ::testing::ElementsAre(
+                AZ::IO::PathView(R"(C:\Windows\Very\Long\Path)", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView(R"(C:\Windows\Very\Long)", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView(R"(C:\Windows\Very)", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView(R"(C:\Windows)", AZ::IO::WindowsPathSeparator),
+                AZ::IO::PathView(R"(C:\)", AZ::IO::WindowsPathSeparator)));
         }
         {
             auto method = pathClass->FindGetterByReflectedName("parent");
@@ -282,7 +293,7 @@ namespace UnitTest
 
             AZ::IO::PathView result;
             ASSERT_TRUE(method->InvokeResult(result, &testPathView));
-            EXPECT_EQ(R"(C:\Windows\Very\Long\Path)", result);
+            EXPECT_EQ(AZ::IO::PathView(R"(C:\Windows\Very\Long\Path)", AZ::IO::WindowsPathSeparator), result);
         }
         {
             auto method = pathClass->FindGetterByReflectedName("name");
