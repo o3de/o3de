@@ -22,8 +22,8 @@ string_manifest_data = '{}'
         pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
         # Same engine_name and path should result in valid registration
         pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
-        # Same engine_name and but different path should fail
-        pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de", False, 1),
+        # Same engine_name but different path succeeds 
+        pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de", False, 0),
         # New engine_name should result in valid registration
         pytest.param(pathlib.PurePath('D:/o3de/engine-path'), "o3de-other", False, 0),
         # Same engine_name and but different path with --force should result in valid registration
@@ -76,9 +76,14 @@ def init_manifest_data(request):
 class TestRegisterThisEngine:
     @pytest.mark.parametrize(
         "engine_path, engine_name, force, expected_result", [
+            # registering a new engine succeeds
             pytest.param(pathlib.PurePath('D:/o3de/o3de'), "o3de", False, 0),
-            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 1),
-            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", True, 0)
+            # registering an engine with the same name at a new location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 0),
+            # re-registering an engine with the same name at the same location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", False, 0),
+            # forcing re-registering an engine with the same name at the same location succeeds
+            pytest.param(pathlib.PurePath('F:/Open3DEngine'), "o3de", True, 0),
         ]
     )
     def test_register_this_engine(self, engine_path, engine_name, force, expected_result):
@@ -167,8 +172,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "templates": [],
     "restricted": [],
     "repos": [],
-    "engines": [],
-    "engines_path": {}
+    "engines": []
 }
 '''
 @pytest.fixture(scope='function')
@@ -217,7 +221,9 @@ class TestRegisterGem:
         def get_engine_json_data(engine_name:str = None, engine_path: pathlib.Path = None):
             return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
-        def get_project_json_data(project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
         def find_ancestor_dir(target_file_name: pathlib.PurePath, start_path: pathlib.Path):
@@ -335,7 +341,9 @@ class TestRegisterProject:
         def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                         project_path: pathlib.Path = None, 
                                         include_manifest_gems: bool = False,
-                                        include_engine_gems: bool = False) -> dict:
+                                        include_engine_gems: bool = False,
+                                        external_subdirectories: list = None
+                                        ) -> dict:
             all_gems_json_data = {}
             for gem_name in registered_gem_versions.keys():
                 all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
@@ -371,7 +379,9 @@ class TestRegisterProject:
 
             return engine_json_data
 
-        def get_project_json_data(project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_json_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
             # we want to allow for testing the case where these fields 

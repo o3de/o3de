@@ -22,6 +22,7 @@ namespace AZ::Data
     {
         struct AssetDataStreamPrivate
         {
+            AZ_CLASS_ALLOCATOR(AssetDataStreamPrivate, SystemAllocator);
             //! Optional data buffer that's been directly passed in through Open(), instead of reading data from a file.
             AZStd::vector<AZ::u8> m_preloadedData;
             //! The current active streamer read request - tracked in case we need to cancel it prematurely

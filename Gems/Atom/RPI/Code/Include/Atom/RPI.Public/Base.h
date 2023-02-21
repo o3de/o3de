@@ -34,8 +34,6 @@ namespace AZ
 
     namespace RPI
     {
-        using ShaderResourceGroupList = AZStd::fixed_vector<const RHI::ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
-
         class View;
         using ViewPtr = AZStd::shared_ptr<View>;
         using ConstViewPtr = AZStd::shared_ptr<const View>;

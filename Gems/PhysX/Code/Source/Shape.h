@@ -45,6 +45,7 @@ namespace PhysX
         // Physics::Shape overrides...
         void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
         AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
+        Physics::MaterialId GetMaterialId() const override;
         void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) override;
         AzPhysics::CollisionLayer GetCollisionLayer() const override;
         void SetCollisionGroup(const AzPhysics::CollisionGroup& group) override;

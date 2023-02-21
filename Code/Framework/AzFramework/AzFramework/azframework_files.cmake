@@ -11,6 +11,7 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
+    API/ApplicationAPI.cpp
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -372,7 +373,9 @@ set(FILES
     Input/Buses/Notifications/InputSystemNotificationBus.h
     Input/Buses/Notifications/InputTextNotificationBus.h
     Input/Buses/Requests/InputChannelRequestBus.h
+    Input/Buses/Requests/InputChannelRequestBus.cpp
     Input/Buses/Requests/InputDeviceRequestBus.h
+    Input/Buses/Requests/InputDeviceRequestBus.cpp
     Input/Buses/Requests/InputHapticFeedbackRequestBus.h
     Input/Buses/Requests/InputLightBarRequestBus.h
     Input/Buses/Requests/InputMotionSensorRequestBus.h
@@ -472,7 +475,4 @@ set(FILES
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
-    Dependency/Dependency.h
-    Dependency/Dependency.inl
-    Dependency/Version.h
 )

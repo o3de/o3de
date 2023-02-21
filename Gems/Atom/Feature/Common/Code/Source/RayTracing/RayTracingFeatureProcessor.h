@@ -18,6 +18,14 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingSceneSrg.azsli and RayTracingMaterialSrg.azsli
+//        shader files that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
+
 namespace AZ
 {
     namespace Render
@@ -313,25 +321,27 @@ namespace AZ
             // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
             BlasInstanceMap m_blasInstanceMap;
 
+#if !USE_BINDLESS_SRG
             // Mesh buffer and material texture resources are managed with a RayTracingResourceList, which contains an internal
             // indirection list.  This allows resource entries to be swapped inside the RayTracingResourceList when removing entries,
             // without invalidating the indices held here in the m_meshBufferIndices and m_materialTextureIndices lists.
-            //
-            // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be
-            // reused after elements are removed.
             
             // mesh buffer and material texture resource lists, accessed by the shader through an unbounded array
             RayTracingResourceList<RHI::BufferView> m_meshBuffers;
             RayTracingResourceList<const RHI::ImageView> m_materialTextures;
+#endif
 
-            // mesh buffer and material texture index lists, these are the indices into the resource lists
+            // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be
+            // reused after elements are removed.
+
+            // mesh buffer and material texture index lists, which contain the array indices of the mesh resources
             static const uint32_t NumMeshBuffersPerMesh = 6;
             RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
 
             static const uint32_t NumMaterialTexturesPerMesh = 5;
             RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
 
-            // Gpu buffers for the mesh and material resources
+            // Gpu buffers for the mesh and material index lists
             Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
             Data::Instance<RPI::Buffer> m_materialTextureIndicesGpuBuffer[BufferFrameCount];
             uint32_t m_currentIndexListFrameIndex = 0;

@@ -37,6 +37,12 @@ namespace AZ
             GpuVirtualAddress GetGpuAddress() const;
             ID3D12Resource* GetMemory() const;
 
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::BufferView
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            //////////////////////////////////////////////////////////////////////////
+
         private:
             BufferView() = default;
 

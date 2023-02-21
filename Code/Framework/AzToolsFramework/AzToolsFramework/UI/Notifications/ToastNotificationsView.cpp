@@ -17,6 +17,8 @@ namespace AzToolsFramework
     ToastNotificationsView::ToastNotificationsView(QWidget* parent, ToastRequestBusId busId)
         : QWidget(parent)
     {
+        setMaximumSize(QSize(0, 0));
+
         ToastRequestBus::Handler::BusConnect(busId);
     }
 

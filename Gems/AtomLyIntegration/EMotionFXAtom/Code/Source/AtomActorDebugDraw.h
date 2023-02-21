@@ -137,7 +137,7 @@ namespace AZ::Render
 
         Physics::CharacterPhysicsDebugDraw m_characterPhysicsDebugDraw;
         // Motion extraction paths
-        AZStd::vector<TrajectoryTracePath*> m_trajectoryTracePaths;
+        AZStd::vector<AZStd::unique_ptr<TrajectoryTracePath>> m_trajectoryTracePaths;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
