@@ -355,7 +355,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(TransformConfig, "{B3AAB26D-D075-4E2B-9653-9527EE363DF8}", ComponentConfig);
-        AZ_CLASS_ALLOCATOR(TransformConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TransformConfig, SystemAllocator);
 
         //! Behavior when a parent entity activates.
         //! A parent may activate before or after its children have activated.

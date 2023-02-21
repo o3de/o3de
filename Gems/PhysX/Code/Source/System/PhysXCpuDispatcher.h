@@ -17,7 +17,7 @@ namespace PhysX
         : public physx::PxCpuDispatcher
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXCpuDispatcher, PhysXAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXCpuDispatcher, PhysXAllocator);
 
         PhysXCpuDispatcher() = default;
         ~PhysXCpuDispatcher() = default;

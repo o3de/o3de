@@ -45,7 +45,7 @@ namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
 
-    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator)
 
     AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
         const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,

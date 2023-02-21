@@ -61,7 +61,7 @@ namespace PhysX
         , protected AZ::Data::AssetBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator);
         AZ_RTTI(PhysX::Material, "{57A9681F-4025-4D66-891B-80CBC78BDEB9}", Physics::Material);
 
         //! Function to create a material instance from an asset.

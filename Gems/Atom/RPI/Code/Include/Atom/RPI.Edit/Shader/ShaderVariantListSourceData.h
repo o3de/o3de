@@ -25,7 +25,7 @@ namespace AZ
         struct ShaderVariantListSourceData
         {
             AZ_TYPE_INFO(AZ::RPI::ShaderVariantListSourceData, "{F8679938-6D3F-47CC-A078-3D6EC0011366}");
-            AZ_CLASS_ALLOCATOR(ShaderVariantListSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderVariantListSourceData, AZ::SystemAllocator);
 
             static constexpr const char* Extension = "shadervariantlist";
 

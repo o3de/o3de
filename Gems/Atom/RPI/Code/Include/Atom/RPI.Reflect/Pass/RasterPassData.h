@@ -23,7 +23,7 @@ namespace AZ
             : public RenderPassData
         {
             AZ_RTTI(RasterPassData, "{48AAC4A1-EFD5-46E8-9376-E08243F88F54}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(RasterPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RasterPassData, SystemAllocator);
 
             RasterPassData() = default;
             virtual ~RasterPassData() = default;

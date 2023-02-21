@@ -40,7 +40,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Importer, ImporterAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Importer, ImporterAllocator)
 
 
     // constructor

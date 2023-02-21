@@ -18,8 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagSelector, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagSelector, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagHandler, EditorAllocator)
 
     AnimGraphTagSelector::AnimGraphTagSelector(QWidget* parent)
         : TagSelector(parent)

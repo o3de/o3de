@@ -55,7 +55,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();

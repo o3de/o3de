@@ -86,7 +86,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(GeneralNodeTitleComponentSaveData, "{328FF15C-C302-458F-A43D-E1794DE0904E}", SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
-        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator);
 
         GeneralNodeTitleComponentSaveData() = default;
         ~GeneralNodeTitleComponentSaveData() = default;

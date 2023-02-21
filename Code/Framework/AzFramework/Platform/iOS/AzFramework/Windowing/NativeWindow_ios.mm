@@ -18,7 +18,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Ios, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Ios, AZ::SystemAllocator);
         NativeWindowImpl_Ios() = default;
         ~NativeWindowImpl_Ios() override;
         

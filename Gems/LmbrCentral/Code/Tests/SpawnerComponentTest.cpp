@@ -34,7 +34,7 @@ class SpawnWatcher
     : public LmbrCentral::SpawnerComponentNotificationBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(SpawnWatcher, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(SpawnWatcher, AZ::SystemAllocator);
 
     SpawnWatcher(AZ::EntityId spawnerEntityId)
     {

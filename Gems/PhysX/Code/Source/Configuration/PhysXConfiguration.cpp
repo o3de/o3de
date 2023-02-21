@@ -39,8 +39,8 @@ namespace PhysX
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(WindConfiguration, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystemConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(WindConfiguration, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystemConfiguration, AZ::SystemAllocator);
 
     /*static*/ void WindConfiguration::Reflect(AZ::ReflectContext* context)
     {

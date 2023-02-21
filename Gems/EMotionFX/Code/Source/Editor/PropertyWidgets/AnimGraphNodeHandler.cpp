@@ -18,10 +18,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNodeIdHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateIdHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeIdHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNodeIdHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateIdHandler, EditorAllocator)
 
     AnimGraphNodeIdPicker::AnimGraphNodeIdPicker(QWidget* parent)
         : QWidget(parent)

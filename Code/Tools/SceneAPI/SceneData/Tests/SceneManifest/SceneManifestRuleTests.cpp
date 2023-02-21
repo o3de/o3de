@@ -79,7 +79,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MockRotationRule, "{90AECE4A-58D4-411C-9CDE-59B54C59354F}", DataTypes::IManifestObject);
-            AZ_CLASS_ALLOCATOR(MockRotationRule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MockRotationRule, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context)
             {

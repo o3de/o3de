@@ -26,7 +26,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CollisionLayerWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionLayerWidget, AZ::SystemAllocator);
 
             CollisionLayerWidget() = default;
             

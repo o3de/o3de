@@ -20,7 +20,7 @@ namespace EMotionFX::Pipeline::Rule
     struct MotionMetaData
     {
         AZ_RTTI(EMotionFX::Pipeline::Rule::MotionMetaData, "{A381A915-3CB3-4F60-82B3-70865CFA1F4F}");
-        AZ_CLASS_ALLOCATOR(MotionMetaData, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionMetaData, AZ::SystemAllocator)
 
         MotionMetaData();
         MotionMetaData(EMotionFX::EMotionExtractionFlags extractionFlags, EMotionFX::MotionEventTable* eventTable);
@@ -43,7 +43,7 @@ namespace EMotionFX::Pipeline::Rule
     {
     public:
         AZ_RTTI(EMotionFX::Pipeline::Rule::MotionMetaDataRule, "{E68D0C3D-CBFF-4536-95C1-676474B351A5}", AZ::SceneAPI::DataTypes::IRule);
-        AZ_CLASS_ALLOCATOR(MotionMetaDataRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionMetaDataRule, AZ::SystemAllocator)
 
         MotionMetaDataRule();
         MotionMetaDataRule(const AZStd::shared_ptr<MotionMetaData>& data);

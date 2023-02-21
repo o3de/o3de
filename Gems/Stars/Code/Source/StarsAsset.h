@@ -24,7 +24,7 @@ namespace AZ::Render
         static constexpr inline const size_t HeaderSize = sizeof(uint32_t) * 3;
 
         AZ_RTTI(StarsAsset, "{211938C1-C54D-417D-977A-9928D7C630B1}", AZ::Data::AssetData)
-        AZ_CLASS_ALLOCATOR(StarsAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StarsAsset, AZ::SystemAllocator);
 
         AZStd::vector<AZ::u8> m_data;
     };

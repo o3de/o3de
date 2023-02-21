@@ -38,7 +38,7 @@ namespace AzPhysics
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator);
 
     void SimulatedBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {

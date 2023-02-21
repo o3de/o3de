@@ -15,7 +15,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(DisallowReentrantExecutionContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DisallowReentrantExecutionContract, AZ::SystemAllocator);
         AZ_RTTI(DisallowReentrantExecutionContract, "{8B476D16-D11C-4274-BE61-FA9B34BF54A3}", Contract);
 
         DisallowReentrantExecutionContract() = default;

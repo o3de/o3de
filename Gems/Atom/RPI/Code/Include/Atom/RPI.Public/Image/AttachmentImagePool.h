@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(AttachmentImagePool, "{18295AA3-1098-4346-8B31-71E3A2BE0AC7}");
-            AZ_CLASS_ALLOCATOR(AttachmentImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentImagePool, AZ::SystemAllocator);
 
             //! Instantiates or returns an existing attachment image pool using a paired resource pool asset.
             static Data::Instance<AttachmentImagePool> FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset);
