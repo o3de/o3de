@@ -31,7 +31,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager(QWidget* defaultParentWidget);
+        explicit MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
         static void Reflect(AZ::ReflectContext* context);

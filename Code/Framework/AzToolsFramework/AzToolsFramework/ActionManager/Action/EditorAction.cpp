@@ -11,12 +11,12 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 #include <QAction>
+#include <QDebug>
 #include <QIcon>
 
 namespace AzToolsFramework
 {
     EditorAction::EditorAction(
-        QObject* parentObject,
         AZStd::string contextIdentifier,
         AZStd::string identifier,
         AZStd::string name,
@@ -33,17 +33,19 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
+        , m_triggerBehavior(handler)
+        , m_checkStateCallback(checkStateCallback)
         , m_menuVisibility(menuVisibility)
         , m_toolBarVisibility(toolBarVisibility)
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), parentObject);
+        m_action = new QAction(m_icon, m_name.c_str(), this);
 
         QObject::connect(
-            m_action, &QAction::triggered, parentObject,
-            [h = AZStd::move(handler)]()
+            m_action, &QAction::triggered, this,
+            [&]()
             {
-                h();
+                Trigger();
             }
         );
 
@@ -54,18 +56,20 @@ namespace AzToolsFramework
 
             // Trigger it to set the starting value correctly.
             m_action->setChecked(m_checkStateCallback());
-
-            AZStd::function<bool()> callbackCopy = m_checkStateCallback;
-
-            // Trigger the update after the handler is called.
-            QObject::connect(
-                m_action, &QAction::triggered, parentObject,
-                [u = AZStd::move(callbackCopy), a = m_action]()
-                {
-                    a->setChecked(u());
-                }
-            );
         }
+
+        qDebug() << "EDITORACTION \"" << m_identifier.c_str() << "\" CONSTRUCTOR";
+    }
+
+    EditorAction::~EditorAction()
+    {
+        m_action->disconnect();
+
+        m_triggerBehavior = nullptr;
+        m_checkStateCallback = nullptr;
+        m_enabledStateCallbacks.clear();
+
+        qDebug() << "EDITORACTION \"" << m_identifier.c_str() << "\" DESTRUCTOR";
     }
 
     void EditorAction::Initialize()
@@ -166,13 +170,15 @@ namespace AzToolsFramework
         return m_action;
     }
     
-    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
+    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> /*enabledStateCallback*/)
     {
+        /*
         if (enabledStateCallback)
         {
             m_enabledStateCallbacks.emplace_back(AZStd::move(enabledStateCallback));
             Update();
         }
+        */
     }
 
     void EditorAction::AssignToMode(AZStd::string modeIdentifier)
@@ -275,6 +281,12 @@ namespace AzToolsFramework
             m_modes.empty() ||
             (AZStd::find(m_modes.begin(), m_modes.end(), currentMode) != m_modes.end())
         );
+    }
+
+    void EditorAction::Trigger()
+    {
+        m_triggerBehavior();
+        Update();
     }
 
 } // namespace AzToolsFramework

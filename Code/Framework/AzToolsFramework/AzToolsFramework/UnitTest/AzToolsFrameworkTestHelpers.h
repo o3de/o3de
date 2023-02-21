@@ -341,6 +341,11 @@ namespace UnitTest
 
             if (m_defaultMainWindow)
             {
+                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
                 delete m_defaultMainWindow;
                 m_defaultMainWindow = nullptr;
             }

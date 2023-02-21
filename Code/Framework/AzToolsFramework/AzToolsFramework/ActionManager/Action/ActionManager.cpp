@@ -7,6 +7,7 @@
  */
 
 #include <QApplication>
+#include <QDebug>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
@@ -221,6 +222,8 @@ namespace AzToolsFramework
         const ActionProperties& properties,
         AZStd::function<void()> handler)
     {
+        qDebug() << "RegisterAction \"" << actionIdentifier.c_str() << "\"";
+
         auto actionContextIterator = m_actionContexts.find(contextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
@@ -242,8 +245,7 @@ namespace AzToolsFramework
         m_actions.insert(
             {
                 actionIdentifier,
-                EditorAction(
-                    actionContextIterator->second,
+                new EditorAction(
                     actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
@@ -256,7 +258,7 @@ namespace AzToolsFramework
                 )
             }
         );
-        actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
+        actionContextIterator->second->AddAction(m_actions[actionIdentifier]);
 
         return AZ::Success();
     }
@@ -268,6 +270,8 @@ namespace AzToolsFramework
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
     {
+        qDebug() << "RegisterCheckableAction \"" << actionIdentifier.c_str() << "\"";
+
         auto actionContextIterator = m_actionContexts.find(contextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
@@ -289,8 +293,7 @@ namespace AzToolsFramework
         m_actions.insert(
             {
                 actionIdentifier,
-                EditorAction(
-                    actionContextIterator->second,
+                new EditorAction(
                     actionContextIterator->first,
                     actionIdentifier,
                     properties.m_name,
@@ -304,7 +307,7 @@ namespace AzToolsFramework
                 )
             }
         );
-        actionContextIterator->second->AddAction(&(m_actions[actionIdentifier]));
+        actionContextIterator->second->AddAction(m_actions[actionIdentifier]);
 
         return AZ::Success();
     }
@@ -324,7 +327,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.GetName());
+        return AZ::Success(actionIterator->second->GetName());
     }
 
     ActionManagerOperationResult ActionManager::SetActionName(const AZStd::string& actionIdentifier, const AZStd::string& name)
@@ -337,7 +340,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        actionIterator->second.SetName(name);
+        actionIterator->second->SetName(name);
         return AZ::Success();
     }
 
@@ -351,7 +354,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.GetDescription());
+        return AZ::Success(actionIterator->second->GetDescription());
     }
 
     ActionManagerOperationResult ActionManager::SetActionDescription(const AZStd::string& actionIdentifier, const AZStd::string& description)
@@ -364,7 +367,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        actionIterator->second.SetDescription(description);
+        actionIterator->second->SetDescription(description);
         return AZ::Success();
     }
 
@@ -378,7 +381,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.GetCategory());
+        return AZ::Success(actionIterator->second->GetCategory());
     }
 
     ActionManagerOperationResult ActionManager::SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category)
@@ -391,7 +394,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        actionIterator->second.SetCategory(category);
+        actionIterator->second->SetCategory(category);
         return AZ::Success();
     }
 
@@ -405,7 +408,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.GetIconPath());
+        return AZ::Success(actionIterator->second->GetIconPath());
     }
 
     ActionManagerOperationResult ActionManager::SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath)
@@ -418,7 +421,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
         
-        actionIterator->second.SetIconPath(iconPath);
+        actionIterator->second->SetIconPath(iconPath);
         return AZ::Success();
     }
 
@@ -432,7 +435,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        return AZ::Success(actionIterator->second.IsEnabled());
+        return AZ::Success(actionIterator->second->IsEnabled());
     }
 
     ActionManagerOperationResult ActionManager::TriggerAction(const AZStd::string& actionIdentifier)
@@ -445,7 +448,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        actionIterator->second.GetAction()->trigger();
+        actionIterator->second->Trigger();
         return AZ::Success();
     }
 
@@ -460,7 +463,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
 
-        actionIterator->second.AddEnabledStateCallback(AZStd::move(enabledStateCallback));
+        actionIterator->second->AddEnabledStateCallback(AZStd::move(enabledStateCallback));
         return AZ::Success();
     }
     
@@ -474,7 +477,7 @@ namespace AzToolsFramework
                 actionIdentifier.c_str()));
         }
         
-        actionIterator->second.Update();
+        actionIterator->second->Update();
 
         return AZ::Success();
     }
@@ -548,6 +551,11 @@ namespace AzToolsFramework
 
     void ActionManager::Clear()
     {
+        for (auto elem : m_actions)
+        {
+            delete elem.second;
+        }
+
         for (auto elem : m_actionContexts)
         {
             delete elem.second;
@@ -571,11 +579,11 @@ namespace AzToolsFramework
         m_widgetActions.insert(
             {
                 widgetActionIdentifier,
-                EditorWidgetAction(
-                  widgetActionIdentifier,
-                  properties.m_name,
-                  properties.m_category,
-                  AZStd::move(generator)
+                new EditorWidgetAction(
+                      widgetActionIdentifier,
+                      properties.m_name,
+                      properties.m_category,
+                      AZStd::move(generator)
                 )
             }
         );
@@ -598,7 +606,7 @@ namespace AzToolsFramework
                 widgetActionIdentifier.c_str()));
         }
 
-        return AZ::Success(widgetActionIterator->second.GetName());
+        return AZ::Success(widgetActionIterator->second->GetName());
     }
 
     ActionManagerOperationResult ActionManager::SetWidgetActionName(
@@ -612,7 +620,7 @@ namespace AzToolsFramework
                 widgetActionIdentifier.c_str()));
         }
 
-        widgetActionIterator->second.SetName(name);
+        widgetActionIterator->second->SetName(name);
         return AZ::Success();
     }
 
@@ -626,7 +634,7 @@ namespace AzToolsFramework
                 widgetActionIdentifier.c_str()));
         }
 
-        return AZ::Success(widgetActionIterator->second.GetCategory());
+        return AZ::Success(widgetActionIterator->second->GetCategory());
     }
 
     ActionManagerOperationResult ActionManager::SetWidgetActionCategory(
@@ -641,7 +649,7 @@ namespace AzToolsFramework
             );
         }
 
-        widgetActionIterator->second.SetCategory(category);
+        widgetActionIterator->second->SetCategory(category);
         return AZ::Success();
     }
 
@@ -690,7 +698,7 @@ namespace AzToolsFramework
             );
         }
 
-        auto actionContextIterator = m_actionContexts.find(actionIterator->second.GetActionContextIdentifier());
+        auto actionContextIterator = m_actionContexts.find(actionIterator->second->GetActionContextIdentifier());
         if (!actionContextIterator->second->HasMode(modeIdentifier))
         {
             return AZ::Failure(
@@ -702,7 +710,7 @@ namespace AzToolsFramework
             );
         }
 
-        actionIterator->second.AssignToMode(modeIdentifier);
+        actionIterator->second->AssignToMode(modeIdentifier);
         return AZ::Success();
     }
 
@@ -719,7 +727,7 @@ namespace AzToolsFramework
             );
         }
 
-        return AZ::Success(actionIterator->second.IsActiveInCurrentMode());
+        return AZ::Success(actionIterator->second->IsActiveInCurrentMode());
     }
 
     ActionManagerOperationResult ActionManager::SetActiveActionContextMode(
@@ -777,7 +785,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return actionIterator->second.GetAction();
+        return actionIterator->second->GetAction();
     }
 
     const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier) const
@@ -788,7 +796,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return actionIterator->second.GetAction();
+        return actionIterator->second->GetAction();
     }
 
     EditorAction* ActionManager::GetEditorAction(const AZStd::string& actionIdentifier)
@@ -799,7 +807,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return &actionIterator->second;
+        return actionIterator->second;
     }
 
     const EditorAction* ActionManager::GetEditorActionConst(const AZStd::string& actionIdentifier) const
@@ -810,7 +818,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return &actionIterator->second;
+        return actionIterator->second;
     }
 
     ActionContextWidgetWatcher* ActionManager::GetActionContextWidgetWatcher(
@@ -834,7 +842,7 @@ namespace AzToolsFramework
             return ActionVisibility::HideWhenDisabled;
         }
 
-        return actionIterator->second.GetMenuVisibility();
+        return actionIterator->second->GetMenuVisibility();
     }
 
     ActionVisibility ActionManager::GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const
@@ -846,7 +854,7 @@ namespace AzToolsFramework
             return ActionVisibility::OnlyInActiveMode;
         }
 
-        return actionIterator->second.GetToolBarVisibility();
+        return actionIterator->second->GetToolBarVisibility();
     }
 
     QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier)
@@ -857,7 +865,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return widgetActionIterator->second.GenerateWidget();
+        return widgetActionIterator->second->GenerateWidget();
     }
 
     void ActionManager::UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier)
