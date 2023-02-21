@@ -19,6 +19,15 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "InputOutput",
+                    "AttachmentRef": {
+                        "Pass": "UIPass",
+                        "Attachment": "InputOutput"
+                    }
+                }
             ]
         }
     }

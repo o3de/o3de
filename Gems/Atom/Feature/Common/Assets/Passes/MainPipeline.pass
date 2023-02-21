@@ -446,19 +446,6 @@
                     ]
                 },
                 {
-                    "Name": "SplashScreenPass",
-                    "TemplateName": "SplashScreenPassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "InputOutput",
-                            "AttachmentRef": {
-                                "Pass": "UIPass",
-                                "Attachment": "InputOutput"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "CopyToSwapChain",
                     "TemplateName": "FullscreenCopyTemplate",
                     "Connections": [

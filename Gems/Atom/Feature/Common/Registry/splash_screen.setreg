@@ -2,10 +2,11 @@
     "O3DE": {
         "Atom": {
             "Feature": {
+                "SplashScreenEnable": false,
                 "SplashScreen": {
                     "$type": "AZ::Render::SplashScreenSettings",
-                    "Enable" : true,
-                    "ImagePath" : "Textures/CloudNoise_01.jpg.streamingimage",
+                    // Sample context only.
+                    //"ImagePath" : "Textures/SplashScreen.jpg.streamingimage",
                     "LastingTime" : 10.0,
                     "Fading" : true
                 }

@@ -39,10 +39,12 @@ namespace AZ::Render
         void Clear();
 
         void InitializeInternal() override;
+        void FrameBeginInternal(FramePrepareParams params) override;
         void FrameEndInternal() override;
 
         bool m_beginTimer = false;
         float m_screenTime = 10.0f;
+        float m_lastRealTimeStamp; // in seconds
 
         struct SplashScreenParams
         {

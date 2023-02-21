@@ -171,7 +171,6 @@ set(FILES
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
     Passes/SplashScreen.pass
-    Passes/SplashScreenPipeline.pass
     Passes/SsaoCompute.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass

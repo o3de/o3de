@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Time/TimeSystem.h>
 #include <SplashScreen/SplashScreenPass.h>
 
 namespace AZ::Render
@@ -23,7 +24,6 @@ namespace AZ::Render
     SplashScreenPass::SplashScreenPass(const AZ::RPI::PassDescriptor& descriptor)
         : AZ::RPI::FullscreenTrianglePass(descriptor)
     {
-        SetEnabled(false);
     }
 
     SplashScreenPass::~SplashScreenPass()
@@ -39,13 +39,6 @@ namespace AZ::Render
     void SplashScreenPass::InitializeInternal()
     {
         AZ::RPI::FullscreenTrianglePass::InitializeInternal();
-
-        AZ::ApplicationTypeQuery appType;
-        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-        if (appType.IsValid() && appType.IsEditor())
-        {
-            return;
-        }
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         static const AZStd::string setregPath = "/O3DE/Atom/Feature/SplashScreen";
@@ -66,9 +59,10 @@ namespace AZ::Render
         m_splashScreenImageIndex.Reset();
         m_splashScreenImageIndex.Reset();
 
-        AZ::TickBus::Handler::BusConnect();
+        const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        m_lastRealTimeStamp = aznumeric_cast<float>(currentTimeUs) / 1000000.0f;
 
-        SetEnabled(true);
+        AZ::TickBus::Handler::BusConnect();
     }
 
     void SplashScreenPass::Clear()
@@ -79,13 +73,32 @@ namespace AZ::Render
         m_splashScreenImageIndex.Reset();
     }
 
+    void SplashScreenPass::FrameBeginInternal([[maybe_unused]] FramePrepareParams params)
+    {
+        FullscreenTrianglePass::FrameBeginInternal(params);
+
+        if (m_beginTimer)
+        {
+            // This is not ideal to stop other systems. It may cause conflicts when multiple sources are trying to set the value.
+            if (auto* timeSystem = AZ::Interface<ITime>::Get())
+            {
+                timeSystem->SetSimulationTickScale(0.0f);
+            }
+        }
+    }
+
     void SplashScreenPass::FrameEndInternal()
     {
         FullscreenTrianglePass::FrameEndInternal();
 
         if (m_screenTime < 0.0f)
         {
+            m_beginTimer = false;
             SetEnabled(false);
+            if (auto* timeSystem = AZ::Interface<ITime>::Get())
+            {
+                timeSystem->SetSimulationTickScale(1.0f);
+            }
         }
     }
 
@@ -97,11 +110,17 @@ namespace AZ::Render
         AZ::RPI::FullscreenTrianglePass::CompileResources(context);
     }
 
-    void SplashScreenPass::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void SplashScreenPass::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        // Not using the delta time from Tick bus because it could be scaled.
+        const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+        float currentRealTimeStamp = aznumeric_cast<float>(currentTimeUs) / 1000000.0f;
+        float realDeltaTime = currentRealTimeStamp - m_lastRealTimeStamp;
+        m_lastRealTimeStamp = currentRealTimeStamp;
+
         if (m_beginTimer)
         {
-            m_screenTime -= deltaTime;
+            m_screenTime -= realDeltaTime;
         }
 
         if (m_settings.m_fading)
@@ -113,6 +132,7 @@ namespace AZ::Render
             m_splashScreenParams.m_fadingFactor = 1.0f;
         }
 
+        // Skipping the first frame for engine initialization time.
         m_beginTimer = true;
 
         if (m_screenTime < 0.0f)
