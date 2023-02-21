@@ -158,11 +158,6 @@ namespace AzQtComponents
         fillLabel();
     }
 
-    void BreadCrumbs::setFullPath(const QString& newFullPath)
-    {
-        m_fullPath = newFullPath;
-    }
-
     void BreadCrumbs::setDefaultIcon(const QString& icon)
     {
         m_defaultIcon = icon;
@@ -325,6 +320,20 @@ namespace AzQtComponents
         changePath(sanitizedPath);
 
         emitButtonSignals(buttonStates);
+    }
+
+    void BreadCrumbs::pushFullPath(const QString& newFullPath, const QString& newPath)
+    {
+        pushPath(newPath);
+
+        const QString sanitizedPath = toCommonSeparators(newFullPath);
+
+        if (sanitizedPath == m_currentPath)
+        {
+            return;
+        }
+
+        m_fullPath = sanitizedPath;
     }
 
     bool BreadCrumbs::back()

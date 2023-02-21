@@ -83,8 +83,6 @@ namespace AzQtComponents
         QString fullPath() const;
         //! Sets the current breadcrumb path without updating the navigation stack.
         void setCurrentPath(const QString& newPath);
-        //! Sets the full path of the breadcrumb widget without updating the navigation stack.
-        void setFullPath(const QString& newFullPath);
 
         //! Sets a default icon for path elements.
         void setDefaultIcon(const QString& iconPath);
@@ -129,6 +127,9 @@ namespace AzQtComponents
     public Q_SLOTS:
         //! Pushes a path to be shown in the Breadcrumbs widget.
         void pushPath(const QString& fullPath);
+        //! Pushes a new full path to be displayed in the editable breadcrumbs,
+        //! and a new path to be shown in the breadcrumbs navigation bar.
+        void pushFullPath(const QString& newFullPath, const QString& newPath);
         //! Restores the previous breadcrumb path from the navigation stack if it exists.
         bool back();
         //! Restores the next breadcrumb path from the navigation stack if it exists.

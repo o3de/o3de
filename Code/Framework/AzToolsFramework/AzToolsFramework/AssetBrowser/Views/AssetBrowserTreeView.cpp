@@ -352,40 +352,24 @@ namespace AzToolsFramework
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
         {
             QModelIndex current;
-            bool currentlyFindingRows = false;
-            AZ::IO::Path p = path.toUtf8().constData();
-            for (auto it = p.begin(); it != p.end(); ++it)
+            for (const auto token : AZStd::ranges::split_view(path, '/'))
             {
-                QString pathPart = QString::fromUtf8((*it).c_str());
-                const int rows = model()->rowCount(current);
-                bool rowFound = false;
-                for (int row=0; row < rows; ++row)
+                auto distance = static_cast<int32_t>(AZStd::distance(token.begin(), token.end()));
+                QString pathPart(token.begin(), distance);
+                QModelIndexList next = model()->match(
+                    /*start =*/model()->index(0, 0, current),
+                    /*role =*/Qt::DisplayRole,
+                    /*value =*/pathPart,
+                    /*hits =*/1,
+                    /*flags =*/Qt::MatchExactly);
+                if (next.size() == 1)
                 {
-                    QModelIndex rowIdx = model()->index(row, 0, current);
-                    auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
-                    if (rowEntry)
-                    {
-                        if (rowEntry->GetDisplayName() == pathPart)
-                        {
-                            current = rowIdx;
-                            rowFound = true;
-                            currentlyFindingRows = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        return nullptr;
-                    }
+                    current = next[0];
                 }
-                if (!rowFound && currentlyFindingRows)
+                else if (current.isValid())
                 {
                     return nullptr;
                 }
-            }
-            if (!currentlyFindingRows)
-            {
-                return nullptr;
             }
             return GetEntryFromIndex<AssetBrowserEntry>(current);
         }
