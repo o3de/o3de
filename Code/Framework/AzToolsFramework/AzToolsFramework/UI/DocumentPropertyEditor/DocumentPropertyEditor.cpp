@@ -39,6 +39,11 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental DPE-based CVar Editor");
 
+static constexpr const char* GetHandlerPropertyName()
+{
+    return "handlerId";
+}
+
 template<class T>
 void DetachAndHide(T* widget)
 {
@@ -500,12 +505,11 @@ namespace AzToolsFramework
         {
             if (childWidget)
             {
-                if (auto foundPropertIter = m_widgetToPropertyHandlerInfo.find(childWidget);
-                    foundPropertIter != m_widgetToPropertyHandlerInfo.end())
+                auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
+                if (!handlerInfo.IsNull())
                 {
                     // propertyHandlers own their widgets, so don't destroy them here. Set them free!
-                    DetachAndHide(childWidget);
-                    ReleaseHandler(foundPropertIter->second);
+                    DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
                 {
@@ -522,8 +526,6 @@ namespace AzToolsFramework
                 }
             }
         }
-
-        m_widgetToPropertyHandlerInfo.clear();
         ClearAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
@@ -606,7 +608,8 @@ namespace AzToolsFramework
             else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
             {
                 auto handlerId = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(childValue);
-                addedWidget = CreateWidgetForHandler(handlerId, childValue);
+
+                addedWidget = GetDPE()->CreateWidgetForHandler(handlerId, childValue);
             }
             else
             {
@@ -619,32 +622,43 @@ namespace AzToolsFramework
         }
     }
 
-    void DPERowWidget::RemoveChildAt(size_t childIndex)
+    void DPERowWidget::RemoveChildAt(size_t childIndex, QWidget** newOwner)
     {
-        auto dpe = GetDPE();
         const auto childIterator = m_domOrderedChildren.begin() + childIndex;
         auto childWidget = *childIterator;
         if (childWidget)
         {
+            if (newOwner)
+            {
+                // transfer ownership
+                *newOwner = childWidget;
+            }
+
+            // remove the existing child from this row and do any necessary book-keeping
             DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
             if (rowToRemove)
             {
                 // we're removing a row, remove any associated saved expander state
+                auto dpe = GetDPE();
                 dpe->RemoveExpanderStateForRow(rowToRemove->BuildDomPath());
-                DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                if (!newOwner)
+                {
+                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                }
             }
-            else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget); foundEntry != m_widgetToPropertyHandlerInfo.end())
+            else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
             {
-                ReleaseHandler(foundEntry->second);
-                m_widgetToPropertyHandlerInfo.erase(foundEntry);
                 RemoveAttributes(childIndex);
-                DetachAndHide(childWidget);
+                if (!newOwner)
+                {
+                    DocumentPropertyEditor::ReleaseHandler(handlerInfo);
+                }
             }
             else // not a row, not a PropertyHandler, must be a label
             {
                 auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
                 AZ_Assert(label, "not a label, unknown widget discovered!");
-                if (label)
+                if (label && !newOwner)
                 {
                     DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
                 }
@@ -864,7 +878,17 @@ namespace AzToolsFramework
                     if (destinationParentRow->IsExpanded() || !widgetAsRow)
                     {
                         // both endpoints already exist, this is a real widget relocation
-                        // <apm>
+                        if (widgetAsRow)
+                        {
+                            // this is a row move, change its position in the main DPE layout
+                            auto priorRowInLayout = destinationParentRow->GetPriorRowInLayout(destinationIndex);
+                            theDPE->AddAfterWidget(priorRowInLayout, sourceWidget);
+                        }
+                        else
+                        {
+                            // this is a column widget move, just add it to the correct place in the (possibly) new layout
+                            // <apm>
+                        }
                     }
                     else if (destinationParentRow)
                     {
@@ -948,6 +972,7 @@ namespace AzToolsFramework
         }
         else // not the direct owner of the entry to patch
         {
+            auto theDPE = GetDPE();
             const auto childCount = m_domOrderedChildren.size();
             // find the next widget in the path and delegate the operation to them
             auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
@@ -972,7 +997,7 @@ namespace AzToolsFramework
                 {
                     subPath.Pop();
                 }
-                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+                const auto valueAtSubPath = theDPE->GetAdapter()->GetContents()[subPath];
 
                 if (!childWidget)
                 {
@@ -988,7 +1013,7 @@ namespace AzToolsFramework
                         if (handlerId)
                         {
                             // have a proper handlerID now, see if we can make a widget from this value now
-                            auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
+                            auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
                             if (replacementWidget)
                             {
                                 AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
@@ -1005,23 +1030,18 @@ namespace AzToolsFramework
                 }
 
                 // check if it's a PropertyHandler; if it is, just set it from the DOM directly
-                auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
-                if (foundEntry != m_widgetToPropertyHandlerInfo.end())
+                if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
                 {
                     auto handlerId = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
 
                     // check if this patch has morphed the PropertyHandler into a different type
-                    if (handlerId != foundEntry->second.handlerId)
+                    if (handlerId != handlerInfo.handlerId)
                     {
-                        // CreateWidgetForHandler will add a new entry to m_widgetToPropertyHandlerInfo, kill the old entry
-                        ReleaseHandler(foundEntry->second);
-                        m_widgetToPropertyHandlerInfo.erase(foundEntry);
+                        DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                         m_columnLayout->RemoveSharePriorColumn(childIndex);
-                        childWidget->hide();
-                        m_columnLayout->removeWidget(childWidget);
 
                         // Replace the existing handler widget with one appropriate for the new type
-                        auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
+                        auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
                         AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                         m_domOrderedChildren[childIndex] = replacementWidget;
                     }
@@ -1029,7 +1049,7 @@ namespace AzToolsFramework
                     {
                         // handler is the same, set the existing handler with the new value
                         SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
-                        foundEntry->second.hanlderInterface->SetValueFromDom(valueAtSubPath);
+                        handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
                     }
                 }
                 else
@@ -1090,77 +1110,6 @@ namespace AzToolsFramework
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
         columnWidget->show();
-    }
-
-    AZ::Name DPERowWidget::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
-    {
-        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
-    }
-
-    QWidget* DPERowWidget::CreateWidgetForHandler(
-        PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue)
-    {
-        QWidget* createdWidget = nullptr;
-        // if we found a valid handler, grab its widget to add to the column layout
-        if (handlerId)
-        {
-            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = GetNameForHandlerId(handlerId);
-            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-            if (!handlerPool)
-            {
-                auto* theDPE = GetDPE();
-                AZ_Assert(theDPE, "DPERowWidget should always be able to retrieve its DPE during widget creation!");
-                if (!theDPE)
-                {
-                    return nullptr;
-                }
-                AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
-                {
-                    DetachAndHide(handler.GetWidget());
-                };
-
-                AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()
-                {
-                    auto createdHandler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
-                    auto bareHandler = createdHandler.get();
-                    createdHandler.release();
-                    return bareHandler;
-                };
-
-                handlerPool = poolManager->CreatePool<PropertyHandlerWidgetInterface>(handlerName, resetHandler, createHandler).GetValue();
-                theDPE->RegisterHandlerPool(handlerPool);
-            }
-
-            // store, then reference the unique_ptr that will manage the handler's lifetime
-            auto handler = handlerPool->GetInstance();
-            handler->SetValueFromDom(domValue);
-            createdWidget = handler->GetWidget();
-            createdWidget->setEnabled(true);
-            m_widgetToPropertyHandlerInfo[createdWidget] = { handlerId, AZStd::unique_ptr<PropertyHandlerWidgetInterface>(handler) };
-        }
-        return createdWidget;
-    }
-
-    void DPERowWidget::ReleaseHandler(HandlerInfo& handler)
-    {
-        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = GetNameForHandlerId(handler.handlerId);
-        auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-        if (handlerPool)
-        {
-            handlerPool->RecycleInstance(handler.hanlderInterface.get());
-        }
-        else
-        {
-            QTimer::singleShot(
-                0,
-                [interfacePointer = handler.hanlderInterface.get()]()
-                {
-                    delete interfacePointer;
-                });
-        }
-        handler.hanlderInterface.release();
     }
 
     DPERowWidget* DPERowWidget::GetLastDescendantInLayout()
@@ -1653,5 +1602,80 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
         m_handlerPools.push_back(handlerPool);
+    }
+
+    DocumentPropertyEditor::HandlerInfo DocumentPropertyEditor::GetInfoFromWidget(const QWidget* widget)
+    {
+        auto infoVariant = widget->property(GetHandlerPropertyName());
+        if (!infoVariant.isNull())
+        {
+            return infoVariant.value<HandlerInfo>();
+        }
+        return HandlerInfo{};
+    }
+
+    AZ::Name DocumentPropertyEditor::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
+    {
+        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
+    }
+
+    QWidget* DocumentPropertyEditor::CreateWidgetForHandler(
+        PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue)
+    {
+        QWidget* createdWidget = nullptr;
+        // if we found a valid handler, grab its widget to add to the column layout
+        if (handlerId)
+        {
+            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+            auto handlerName = GetNameForHandlerId(handlerId);
+            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+            if (!handlerPool)
+            {
+                AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
+                {
+                    DetachAndHide(handler.GetWidget());
+                };
+
+                AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()
+                {
+                    auto createdHandler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
+                    auto bareHandler = createdHandler.get();
+                    createdHandler.release();
+                    HandlerInfo handlerInfo = { handlerId, bareHandler };
+                    bareHandler->GetWidget()->setProperty(GetHandlerPropertyName(), QVariant::fromValue(handlerInfo));
+                    return bareHandler;
+                };
+
+                handlerPool = poolManager->CreatePool<PropertyHandlerWidgetInterface>(handlerName, resetHandler, createHandler).GetValue();
+                RegisterHandlerPool(handlerPool);
+            }
+
+            // store, then reference the unique_ptr that will manage the handler's lifetime
+            auto handler = handlerPool->GetInstance();
+            handler->SetValueFromDom(domValue);
+            createdWidget = handler->GetWidget();
+            createdWidget->setEnabled(true);
+        }
+        return createdWidget;
+    }
+
+    void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
+    {
+        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+        auto handlerName = GetNameForHandlerId(handler.handlerId);
+        auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+        if (handlerPool)
+        {
+            handlerPool->RecycleInstance(handler.handlerInterface);
+        }
+        else
+        {
+            QTimer::singleShot(
+                0,
+                [interfacePointer = handler.handlerInterface]()
+                {
+                    delete interfacePointer;
+                });
+        }
     }
 } // namespace AzToolsFramework
