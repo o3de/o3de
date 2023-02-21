@@ -18,7 +18,7 @@
 #include <initializer_list>
 #include <sstream>
 
-namespace AzFramework
+namespace AZ
 {
 #define VERSION_SEPARATOR_CHAR '.'
 #define VERSION_SEPARATOR_STR "."
@@ -202,4 +202,4 @@ namespace AzFramework
     inline bool operator==(const Version<N>& a, const Version<N>& b) { return Version<N>::Compare(a, b) == 0; }
     template <size_t N>
     inline bool operator!=(const Version<N>& a, const Version<N>& b) { return Version<N>::Compare(a, b) != 0; }
-} // namespace AzFramework
+} // namespace AZ
