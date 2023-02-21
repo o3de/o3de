@@ -15,7 +15,7 @@ import sys
 import subprocess
 import shutil
 import pathlib
-
+import importlib.util
 from o3de import manifest, validation, utils, repo
 
 logger = logging.getLogger('o3de.print_registration')
@@ -67,6 +67,10 @@ def package_none():
     print("It seems like packaging is not supported for your platform or use case...")
     return 0
 
+def package_hi():
+    print("We are using this function to say hi from another script file!")
+    return 0
+
 #this is a stand alone proof of concept test function, which just proves it's possible to automate building in Python
 #we will use the remainder of the code to work out the framework we would like to use to funnel building procedures
 #algorithm here is based on main documentation page for monolithic builds:
@@ -97,13 +101,14 @@ def package_none():
 # RFC will help inform my logistical questions on what needs to be split and when
 # test driven development would help
 def package_windows_standalone_monolithic(project_path: str,
-                                          engine_path:str,
                                           zipped: bool):
     result = 0
 
+    engine_path = manifest.get_project_engine_path(pathlib.Path(project_path))
+
     #packaging rules should be in a standard location with respect to the project. Note, if this is not found, we need to have reasonable defaults
     PROJECT_PATH = project_path
-    PACKAGING_RULES_PATH = os.path.join(PROJECT_PATH,  "packaging_config.packagerules")
+    PACKAGING_RULES_PATH = os.path.join(PROJECT_PATH, "packaging",  "packaging_config.packagerules")
 
     packaging_rules = None
     with open(PACKAGING_RULES_PATH, "r") as prules_file:
@@ -135,6 +140,8 @@ def package_windows_standalone_monolithic(project_path: str,
     ASSET_PROCESSOR_CMD_ARGS = [ASSET_PROCESSOR_BATCH_EXE, '--platform=pc', f'--project-path={PROJECT_PATH}']
 
     #build the asset processor batch if not done so yet
+
+    process_command(WINDOWS_PRE_ARGS + ['cmake', '-B', 'build/windows_vs2022', '-S', '.', '-G', '"Visual Studio 17 "', "-DLY_3RDPARTY_PATH=C:\workspace\o3de-package"], ENGINE_PATH)
 
     #build all relevant tools first
     ENGINE_BUILD_CMD_ARGS = ['cmake', '--build', 'build/windows_vs2022', '--target' ,'Editor', '--target', 'AssetProcessorBatch', '--config', 'profile', '--', '-m']
@@ -209,26 +216,38 @@ def _run_packaging(args: argparse) -> int:
     # key : windows.standalone.monolithic
     # key : customer.custom
 
-    if platform.system()  == "Windows":
-        if args.standalone:
-            if args.monolithic:
-                package_windows_standalone_monolithic(project_path = args.project_path,
-                                                      engine_path = args.engine_path,
-                                                      zipped=args.zipped)
-            else:
-                print("Non-monolithic projects not supported!")
-                return 1
-    else:
-        return package_none()
+    # if platform.system()  == "Windows":
+    #     if args.standalone:
+    #         if args.monolithic:
+    #             package_windows_standalone_monolithic(project_path = args.project_path,
+    #                                                   engine_path = args.engine_path,
+    #                                                   zipped=args.zipped)
+    #         else:
+    #             print("Non-monolithic projects not supported!")
+    #             return 1
+    # else:
+    #     return package_none()
+    external_script_path = args.script_file #"C:\\workspace\\projects\\NewspaperDeliveryGame\\export_rules\\test_export.py"
+    module_name = os.path.basename(external_script_path)
+
+    #works for python 3.5+
+    sys.path.insert(0, os.path.split(pathlib.Path(external_script_path))[0])
+    sys.path.insert(0, os.getcwd())
+    spec = importlib.util.spec_from_file_location(module_name, external_script_path)
+    foo = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = foo
+    foo.o3de_project_path =  args.project_path #customer facing variable name for accessible scripting
+    spec.loader.exec_module(foo)
+    return 0
 
 
 
 def add_parser_args(parser):
     #if no use case is specified, we assume standalone
     use_case_group = parser.add_mutually_exclusive_group(required=False)
-    use_case_group.add_argument('-s', '--standalone', action='store_true',
-                       default=True,
-                       help='builds as standalone.')
+    # use_case_group.add_argument('-s', '--standalone', action='store_true',
+    #                    default=True,
+    #                    help='builds as standalone.')
     
     #need to get terminology termed out - i.e. packaging.py can be extremely confusing.
     #need to get dictionary standardized, check with @stankowi on this, need steps and terms fully defined
@@ -247,16 +266,17 @@ def add_parser_args(parser):
 
     #
 
-    parser.add_argument('-m', '--monolithic', action='store_true',
-                       default=False,
-                       help='bundles as monolithic game release.')
-    parser.add_argument('-z', '--zipped', action='store_true',
-                        default=False,
-                        help='takes the packaged build and zips it')
-    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=True,
+    # parser.add_argument('-m', '--monolithic', action='store_true',
+    #                    default=False,
+    #                    help='bundles as monolithic game release.')
+    parser.add_argument('-sf', '--script-file', type=pathlib.Path, required=True, help='external script file to run')
+    # parser.add_argument('-z', '--zipped', action='store_true',
+    #                     default=False,
+    #                     help='takes the packaged build and zips it')
+    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                         help='Project to package')
-    parser.add_argument('-ep', '--engine-path', type=pathlib.Path, required=True,
-                        help='Engine for building tooling')
+    # parser.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
+    #                     help='Engine for building tooling')
     parser.set_defaults(func=_run_packaging)
     
 
