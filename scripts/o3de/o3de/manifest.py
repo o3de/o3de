@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import pathlib
-from collections import OrderedDict
 
 from o3de import validation, utils, repo, compatibility
 
@@ -406,8 +405,10 @@ def get_gem_templates(gem_path: pathlib.Path) -> list:
     return []
 
 def get_engines_json_data_by_path():
-    # use an OrderedDict to preserve the order found in the o3de manifest
-    engines_json_data = OrderedDict()
+    # dictionaries will maintain insertion order which we want
+    # because when we have engines with the same name and version
+    # we pick the first one found in the 'engines' o3de_manifest field
+    engines_json_data = {} 
     engines = get_manifest_engines()
     for engine in engines:
         if isinstance(engine, dict):
