@@ -38,7 +38,7 @@ namespace AzFramework
     //! Custom data struct to store the current state of all modifier keys
     struct ModifierKeyStates : public InputChannel::CustomData
     {
-        AZ_CLASS_ALLOCATOR(ModifierKeyStates, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModifierKeyStates, AZ::SystemAllocator);
         AZ_RTTI(ModifierKeyStates, "{999937EC-6BFD-41F4-A0F2-7990018D3589}", CustomData);
         virtual ~ModifierKeyStates() = default;
 
@@ -75,7 +75,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedModifierKeyStates, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedModifierKeyStates, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

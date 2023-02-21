@@ -17,7 +17,7 @@ class CAssetBlendTrack
     : public TAnimTrack<AZ::IAssetBlendKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAssetBlendTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAssetBlendTrack, AZ::SystemAllocator);
     AZ_RTTI(CAssetBlendTrack, "{8F606315-A8D9-4267-A1DA-8E84097F40CD}", IAnimTrack);
 
     CAssetBlendTrack()

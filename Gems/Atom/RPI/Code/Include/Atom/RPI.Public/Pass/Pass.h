@@ -117,7 +117,7 @@ namespace AZ
             };
 
             AZ_RTTI(Pass, "{EA34FF66-631D-433B-B449-71F5647E7BB5}", AZStd::intrusive_base);
-            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator);
 
             virtual ~Pass();
 

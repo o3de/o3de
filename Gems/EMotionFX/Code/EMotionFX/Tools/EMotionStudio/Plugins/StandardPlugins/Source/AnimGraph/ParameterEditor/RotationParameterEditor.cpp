@@ -23,7 +23,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RotationParameterEditor, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RotationParameterEditor, EMStudio::UIAllocator)
 
     RotationParameterEditor::RotationParameterEditor(
         EMotionFX::AnimGraph* animGraph,

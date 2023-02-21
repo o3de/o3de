@@ -18,7 +18,7 @@ namespace ScriptAutomation
     {
     public:
         AZ_RTTI(ScriptAutomationModule, "{1B94CF12-A1C3-47DC-86DD-CC44A6979F73}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptAutomationModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptAutomationModule, AZ::SystemAllocator);
 
         ScriptAutomationModule()
         {

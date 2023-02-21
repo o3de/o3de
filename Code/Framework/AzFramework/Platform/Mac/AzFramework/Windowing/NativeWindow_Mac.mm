@@ -19,7 +19,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator);
         NativeWindowImpl_Darwin() = default;
         ~NativeWindowImpl_Darwin() override;
         

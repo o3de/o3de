@@ -23,7 +23,7 @@ namespace AZ
             using Base = RHI::Object;
 
         public:
-            AZ_CLASS_ALLOCATOR(WSISurface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WSISurface, AZ::SystemAllocator);
             AZ_RTTI(WSISurface, "BFA18BB9-5BDA-46E7-AAAA-CEC9F965F1B8", Base);
 
             struct Descriptor

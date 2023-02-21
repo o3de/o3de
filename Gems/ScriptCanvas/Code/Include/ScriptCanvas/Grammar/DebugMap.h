@@ -40,7 +40,7 @@ namespace ScriptCanvas
         struct DebugDataSource
         {
             AZ_TYPE_INFO(DebugDataSource, "{0F20CB1B-7AC7-4338-99A8-718B0913D359}");
-            AZ_CLASS_ALLOCATOR(DebugDataSource, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugDataSource, AZ::SystemAllocator);
 
             DebugDataSourceType m_sourceType;
             SlotId m_slotId;
@@ -85,7 +85,7 @@ namespace ScriptCanvas
         struct DebugExecution
         {
             AZ_TYPE_INFO(DebugExecution, "{AE18AB4E-C359-4D85-9F1E-64F3A7262AE2}");
-            AZ_CLASS_ALLOCATOR(DebugExecution, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugExecution, AZ::SystemAllocator);
 
             NamedEndpoint m_namedEndpoint;
             AZStd::vector<DebugDataSource> m_data;
@@ -95,7 +95,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(DebugSymbolMap, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
-            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator);
 
             AZStd::vector<DebugExecution> m_ins;
             AZStd::vector<DebugExecution> m_outs;
@@ -108,7 +108,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(DebugSymbolMap, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
-            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator);
 
             AZStd::unordered_map<ExecutionTreeConstPtr, size_t> m_in;
             AZStd::unordered_map<ExecutionTreeConstPtr, AZStd::vector<size_t>> m_out;

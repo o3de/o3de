@@ -22,7 +22,7 @@ namespace GraphModel
     class Connection : public GraphElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator);
         AZ_RTTI(Connection, "{B4301AE1-98F4-474E-B0A1-18F27EEDB059}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
         

@@ -25,7 +25,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SkinGroup, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkinGroup, AZ::SystemAllocator)
 
             SkinGroup::SkinGroup()
                 : m_id(Uuid::CreateRandom())

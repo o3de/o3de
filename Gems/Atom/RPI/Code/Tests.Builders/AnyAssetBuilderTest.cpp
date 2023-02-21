@@ -32,7 +32,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(Test1, "{A3369968-6E98-4319-A4CA-A0E2CF9F2E7C}");
-        AZ_CLASS_ALLOCATOR(Test1, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Test1, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -56,7 +56,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(Test2Source, "{D472B405-F688-4EAF-A361-D8D1C63E303D}");
-        AZ_CLASS_ALLOCATOR(Test2Source, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Test2Source, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -84,7 +84,7 @@ namespace UnitTest
         : public Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator);
         AZ_RTTI(TestAssetData, "{A7D2C40A-2559-4DF7-A308-D52286EE16D8}", Data::AssetData);
     };
 
@@ -93,7 +93,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(TestAssetIdReference, "{87DC6B1E-4660-4AEA-AEE1-6F50EF7FA0D7}");
-        AZ_CLASS_ALLOCATOR(TestAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetIdReference, AZ::SystemAllocator);
 
         virtual ~TestAssetIdReference() = default;
 
@@ -142,7 +142,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(DerivedTestAssetIdReference, "{B5778901-A553-41B2-B411-CF8FBE2B1E10}");
-        AZ_CLASS_ALLOCATOR(DerivedTestAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DerivedTestAssetIdReference, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -160,7 +160,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(TestIndirectAssetIdReference, "{402D2672-55CD-46B9-9387-E34D6B10F88A}");
-        AZ_CLASS_ALLOCATOR(TestIndirectAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestIndirectAssetIdReference, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {

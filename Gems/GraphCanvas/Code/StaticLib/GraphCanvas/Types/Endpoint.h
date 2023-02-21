@@ -18,7 +18,7 @@ namespace GraphCanvas
     struct Endpoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(Endpoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Endpoint, AZ::SystemAllocator);
         AZ_TYPE_INFO(Endpoint, "{4AF80E61-8E0A-43F3-A560-769C925A113B}");
 
         Endpoint() = default;

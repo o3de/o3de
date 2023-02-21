@@ -61,7 +61,7 @@ namespace AZ
             friend class FeatureProcessorFactory;
             friend class RPISystem;
         public:
-            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator);
             AZ_RTTI(Scene, "{29860D3E-D57E-41D9-8624-C39604EF2973}");
 
             // Pipeline states info built from scene's render pipeline passes

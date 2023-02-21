@@ -18,12 +18,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorJointPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiWeightedJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorJointElementHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorWeightedJointElementHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorJointPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiWeightedJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorJointElementHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorWeightedJointElementHandler, EditorAllocator)
 
     ActorJointPicker::ActorJointPicker(bool singleSelection, const QString& dialogTitle, const QString& dialogDescriptionLabelText, QWidget* parent)
         : QWidget(parent)

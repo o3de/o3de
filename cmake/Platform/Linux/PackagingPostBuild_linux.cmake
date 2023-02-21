@@ -11,13 +11,13 @@ include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 include(${CPACK_CODESIGN_SCRIPT})
 
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-    add_custom_command(OUTPUT ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
-        COMMAND snapcraft sign-build ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap > ${CPACK_TOPLEVEL_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
-        VERBATIM
-    )
+    set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_NAME}_amd64.snap")
+    set(assertion_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert")
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
-    file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
-    file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
+    set(deb_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb")
+    set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256")
+    file(${CPACK_PACKAGE_CHECKSUM} ${deb_file} file_checksum)
+    file(WRITE ${hash_file} "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
 endif()
 
 if(CPACK_UPLOAD_URL)
@@ -29,9 +29,9 @@ if(CPACK_UPLOAD_URL)
 
     if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         # Sign and regenerate checksum
-        ly_sign_binaries("${CPACK_TOPLEVEL_DIRECTORY}/*.deb" "")
-        file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
-        file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
+        ly_sign_binaries("${deb_file}" "")
+        file(${CPACK_PACKAGE_CHECKSUM} ${deb_file} file_checksum)
+        file(WRITE ${hash_file} "${file_checksum}  ${deb_file}")
     endif()
 
     # Copy the artifacts intended to be uploaded to a remote server into the folder specified
@@ -59,27 +59,35 @@ if(CPACK_UPLOAD_URL)
         ".*(.deb|.gpg|.sha256|.snap|.assert|.txt|.json)$"
     )
 
-    # for auto tagged builds, we will also upload a second copy of just the boostrapper
+    # for auto tagged builds, we will also upload a second copy of the package
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
         if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-            set(latest_assertion_file "${CPACK_UPLOAD_DIRECTORY}/O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64_latest.snap.assert")
+            set(latest_snap_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_amd64_latest.snap")
             file(COPY_FILE
-                O3DE_${O3DE_INSTALL_VERSION_STRING}_amd64.snap.assert
+                ${snap_file}
+                ${latest_snap_file}
+            )
+            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_snap_package}")
+
+            # Generate a assert file for latest and upload it
+            set(latest_assertion_file ${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest_amd64.snap.assert)
+            file(COPY_FILE
+                ${assertion_file}
                 ${latest_assertion_file}
             )
             ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_assertion_file}")
-        else()
+        elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
             set(latest_deb_package "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb")
             file(COPY_FILE
                 ${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb
                 ${latest_deb_package}
             )
-            ly_upload_to_latest(${CPACK_UPLOAD_URL} ${latest_deb_package})
+            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_deb_package}")
 
             # Generate a checksum file for latest and upload it
             set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
-            file(WRITE "${latest_hash_file}" "${file_checksum}  ${CPACK_PACKAGE_NAME}_latest.deb")
+            file(WRITE "${latest_hash_file}" "${file_checksum}  ${latest_deb_package}")
             ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_hash_file}")
         endif()
     endif()

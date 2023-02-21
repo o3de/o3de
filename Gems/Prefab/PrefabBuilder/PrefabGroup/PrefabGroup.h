@@ -34,7 +34,7 @@ namespace AZ::SceneAPI::SceneData
     {
     public:
         AZ_RTTI(PrefabGroup, "{99FE3C6F-5B55-4D8B-8013-2708010EC715}", DataTypes::IPrefabGroup);
-        AZ_CLASS_ALLOCATOR(PrefabGroup, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabGroup, SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -75,7 +75,7 @@ namespace AZ::SceneAPI::SceneData
     {
     public:
         AZ_RTTI(ProceduralMeshGroupRule, "{8A224146-FBA5-414F-AA98-DA57F86738CD}", IRule);
-        AZ_CLASS_ALLOCATOR(ProceduralMeshGroupRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ProceduralMeshGroupRule, AZ::SystemAllocator)
 
         ProceduralMeshGroupRule() = default;
         ~ProceduralMeshGroupRule() override = default;

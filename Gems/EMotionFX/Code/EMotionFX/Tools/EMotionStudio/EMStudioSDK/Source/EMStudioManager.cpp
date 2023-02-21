@@ -52,7 +52,7 @@ namespace EMStudio
     //--------------------------------------------------------------------------
     // class EMStudioManager
     //--------------------------------------------------------------------------
-    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator)
 
     // constructor
     EMStudioManager::EMStudioManager(QApplication* app, [[maybe_unused]] int& argc, [[maybe_unused]] char* argv[])

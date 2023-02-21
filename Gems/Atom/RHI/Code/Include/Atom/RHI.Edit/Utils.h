@@ -22,7 +22,7 @@ namespace AZ
         struct ShaderCompilerProfiling
         {
             AZ_TYPE_INFO(ShaderCompilerProfiling, "{4DEB54A4-0EB7-4ADF-9229-E9F6724C4D60}");
-            AZ_CLASS_ALLOCATOR(ShaderCompilerProfiling, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderCompilerProfiling, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -30,7 +30,7 @@ namespace AZ
             struct Entry
             {
                 AZ_TYPE_INFO(ShaderCompilerProfilingEntry, "{DBE390C8-8A06-492A-8494-93AAE0A938E0}");
-                AZ_CLASS_ALLOCATOR(Entry, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Entry, AZ::SystemAllocator);
 
                 static void Reflect(AZ::ReflectContext* context);
 

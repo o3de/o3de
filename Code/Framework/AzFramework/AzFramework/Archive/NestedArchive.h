@@ -35,7 +35,7 @@ namespace AZ::IO
         : public INestedArchive
     {
     public:
-        AZ_CLASS_ALLOCATOR(NestedArchive, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NestedArchive, AZ::SystemAllocator);
 
         NestedArchive(IArchive* pArchive, AZStd::string_view strBindRoot, ZipDir::CachePtr pCache, uint32_t nFlags = 0);
         ~NestedArchive() override;

@@ -24,7 +24,7 @@ namespace AZ
             : public RHI::Object
         {
         public:
-            AZ_CLASS_ALLOCATOR(ReleaseContainer<T>, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReleaseContainer<T>, AZ::ThreadPoolAllocator);
             using VkDestroyFunc = AZStd::function<void(VkDevice, T, const VkAllocationCallbacks*)>;
 
             ReleaseContainer(VkDevice vkDevice, T vkObject, VkDestroyFunc vkDestroyFunc)

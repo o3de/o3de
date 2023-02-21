@@ -19,7 +19,7 @@ namespace AZ
             using Base = Pipeline;
 
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingPipeline, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPipeline, AZ::ThreadPoolAllocator);
             AZ_RTTI(RayTracingPipeline, "681BF246-D5DC-4155-9300-4B2CE5B8BDC7", Base);
 
             static RHI::Ptr<RayTracingPipeline> Create();

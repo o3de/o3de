@@ -15,10 +15,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator)
 
     SimulatedObjectColliderTagSelector::SimulatedObjectColliderTagSelector(QWidget* parent)
         : TagSelector(parent)

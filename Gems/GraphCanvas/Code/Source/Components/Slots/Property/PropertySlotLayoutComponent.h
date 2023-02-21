@@ -33,7 +33,7 @@ namespace GraphCanvas
         , public VisualNotificationBus::Handler
     {    
     public:
-        AZ_CLASS_ALLOCATOR(PropertySlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertySlotLayout, AZ::SystemAllocator);
 
         PropertySlotLayout(PropertySlotLayoutComponent& owner);
         ~PropertySlotLayout();

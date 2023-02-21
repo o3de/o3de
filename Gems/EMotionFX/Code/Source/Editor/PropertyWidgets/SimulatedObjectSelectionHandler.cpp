@@ -14,8 +14,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectPicker, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSelectionHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectPicker, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSelectionHandler, AZ::SystemAllocator)
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
     SimulatedObjectPicker::SimulatedObjectPicker(QWidget* parent)
