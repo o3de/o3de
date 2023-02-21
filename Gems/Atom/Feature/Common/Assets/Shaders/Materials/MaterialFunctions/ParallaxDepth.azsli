@@ -20,6 +20,7 @@
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     float4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
@@ -35,7 +36,7 @@
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         heightmapScale, heightmapOffset,
-        ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+        objectToWorld, uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], positionWS, depthNDC, depthCS, isClipped);
 }
 
@@ -46,13 +47,14 @@
      float3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     float4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
     float depthCS = 1.0;
     bool isClipped;
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
+    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }
 
  void SetPixelDepth(
@@ -63,6 +65,7 @@
      inout float2 uvs[UvSetCount],
      inout float2 detailUv[UvSetCount],
      bool isFrontFace,
+     float4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
@@ -72,7 +75,7 @@
     // This is the same as:   detailUv -= oldUv;   detailUv += newUv;
     detailUv[MaterialSrg::m_parallaxUvIndex] -= uvs[MaterialSrg::m_parallaxUvIndex];
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
+    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 
     // Apply second part of the offset to the detail UV (see comment above)
     detailUv[MaterialSrg::m_parallaxUvIndex] += uvs[MaterialSrg::m_parallaxUvIndex];

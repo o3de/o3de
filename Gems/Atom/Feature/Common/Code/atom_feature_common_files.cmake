@@ -47,6 +47,8 @@ set(FILES
     Include/Atom/Feature/Utils/IndexedDataVector.inl
     Include/Atom/Feature/Utils/MultiIndexedDataVector.h
     Include/Atom/Feature/Utils/MultiSparseVector.h
+    Include/Atom/Feature/Utils/PagedDataVector.h
+    Include/Atom/Feature/Utils/PagedDataVector.inl
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
     Source/CommonModule.cpp
@@ -156,6 +158,12 @@ set(FILES
     Source/Math/MathFilter.h
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
+    Source/Mesh/MeshInstanceKey.h
+    Source/Mesh/MeshInstanceKey.cpp
+    Source/Mesh/MeshInstanceList.cpp
+    Source/Mesh/MeshInstanceList.h
+    Source/Mesh/MeshInstanceManager.cpp
+    Source/Mesh/MeshInstanceManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
     Source/Mesh/ModelReloader.cpp
     Source/Mesh/ModelReloader.h

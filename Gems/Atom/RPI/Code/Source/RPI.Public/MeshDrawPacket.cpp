@@ -34,13 +34,15 @@ namespace AZ
             size_t modelLodMeshIndex,
             Data::Instance<Material> materialOverride,
             Data::Instance<ShaderResourceGroup> objectSrg,
-            const MaterialModelUvOverrideMap& materialModelUvMap
+            const MaterialModelUvOverrideMap& materialModelUvMap,
+            IAllocator* allocator
         )
             : m_modelLod(&modelLod)
             , m_modelLodMeshIndex(modelLodMeshIndex)
             , m_objectSrg(objectSrg)
             , m_material(materialOverride)
             , m_materialModelUvMap(materialModelUvMap)
+            , m_allocator(allocator)
         {
             if (!m_material)
             {
@@ -168,17 +170,20 @@ namespace AZ
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
-            drawPacketBuilder.Begin(nullptr);
+            drawPacketBuilder.Begin(m_allocator);
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
             drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
-            // We build the list of used shaders in a local list rather than m_activeShaders so that
+            // We build the list of used shaders, drawSrgs, etc. in a local list rather than m_activeShaders so that
             // if DoUpdate() fails it won't modify any member data.
             MeshDrawPacket::ShaderList shaderList;
             shaderList.reserve(m_activeShaders.size());
+            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax> drawSrgs;
+            RootConstantsLayoutList rootConstantsLayouts;
+            rootConstantsLayouts.reserve(m_rootConstantsLayouts.size());
 
             // We have to keep a list of these outside the loops that collect all the shaders because the DrawPacketBuilder
             // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
@@ -186,6 +191,7 @@ namespace AZ
             AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
             m_perDrawSrgs.clear();
+            m_rootConstantsLayouts.clear();
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
@@ -310,6 +316,10 @@ namespace AZ
                     return false;
                 }
 
+                rootConstantsLayouts.push_back(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
+                // TODO: This assumes all draw items will have the same root constant layout
+                AZStd::vector<uint8_t> constants(rootConstantsLayouts.back()->GetDataSize());
+                drawPacketBuilder.SetRootConstants(constants);
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
@@ -319,7 +329,7 @@ namespace AZ
                 if (drawSrg)
                 {
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
-                    m_perDrawSrgs.push_back(drawSrg);
+                    drawSrgs.push_back(drawSrg);
                 }
 
                 if (materialPipelineName != MaterialPipelineNone)
@@ -328,6 +338,7 @@ namespace AZ
                     AZ_Assert(pipelineTag.IsValid(), "Could not acquire pipeline filter tag '%s'.", materialPipelineName.GetCStr());
                     drawRequest.m_drawFilterMask = 1 << pipelineTag.GetIndex();
                 }
+
 
                 drawPacketBuilder.AddDrawItem(drawRequest);
                 
@@ -368,6 +379,8 @@ namespace AZ
             if (m_drawPacket)
             {
                 m_activeShaders = shaderList;
+                m_perDrawSrgs = drawSrgs;
+                m_rootConstantsLayouts = rootConstantsLayouts;
                 m_materialSrg = m_material->GetRHIShaderResourceGroup();
                 return true;
             }
@@ -380,6 +393,11 @@ namespace AZ
         const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
         {
             return m_drawPacket.get();
+        }
+
+        const MeshDrawPacket::RootConstantsLayoutList& MeshDrawPacket::GetRootConstantsLayouts() const
+        {
+            return m_rootConstantsLayouts;
         }
     } // namespace RPI
 } // namespace AZ

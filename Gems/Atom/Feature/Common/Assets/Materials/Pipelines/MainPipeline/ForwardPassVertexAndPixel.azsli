@@ -16,10 +16,11 @@
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 
 // --- Vertex Shader ---
-
-VsOutput VertexShader(VsInput IN)
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 
@@ -44,7 +45,6 @@ float GetSubsurfaceScatteringFactorAndQuality(Surface surface)
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     // ------- Geometry -> Surface -> Lighting -------
-
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
 
     Surface surface = EvaluateSurface(geoData);

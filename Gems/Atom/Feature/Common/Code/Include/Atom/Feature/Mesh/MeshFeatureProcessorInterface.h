@@ -15,7 +15,7 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/Utils/StableDynamicArray.h>
+#include <Atom/Utils/MultiIndexedStableDynamicArray.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 namespace AZ
@@ -29,6 +29,14 @@ namespace AZ
             AZ::ConsoleFunctorFlags::Null,
             "Enable allowing systems to set shader options on a per-mesh basis."
         );
+
+        AZ_CVAR(
+            bool,
+            r_enableHardwareInstancing,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Experimental Work In Progress HW instancing support. Enabling this has added overhead without the benefits of instancing, so it should be left disabled for now.");
 
         class ModelDataInstance;
         
@@ -52,7 +60,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
-            using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
+            using MeshHandle = MultiIndexedStableDynamicArrayHandle;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
 
             //! Returns the object id for a mesh handle.

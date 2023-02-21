@@ -27,7 +27,8 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     float3 tangent,
     float3 bitangent,
     float2 uvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    float4x4 objectToWorld)
 {
     PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
@@ -38,7 +39,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                      geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 
     return geoData;
@@ -46,8 +47,8 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
 
 PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
@@ -59,5 +60,6 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFr
         vertexTangent,
         vertexBitangent,
         IN.uvs,
-        isFrontFace);
+        isFrontFace,
+        objectToWorld);
 }

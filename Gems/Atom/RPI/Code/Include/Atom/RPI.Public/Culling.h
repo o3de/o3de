@@ -71,6 +71,9 @@ namespace AZ
                 //! UUID and type of the component that owns this cullable (optional)
                 AZ::Uuid m_componentUuid = AZ::Uuid::CreateNull();
                 uint32_t m_componentType = 0;
+
+                // TODO: stuffing this here for now, but need to re-think what belongs where
+                void* m_optionalMeshFeatureProcessorData = nullptr;
             };
             CullData m_cullData;
 
@@ -222,7 +225,12 @@ namespace AZ
         };
 
         //! Selects an lod (based on size-in-screen-space) and adds the appropriate DrawPackets to the view.
-        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view);
+        uint32_t AddLodDataToView(
+            const Vector3& pos,
+            const Cullable::LodData& lodData,
+            RPI::View& view,
+            AzFramework::VisibilityEntry::TypeFlags typeFlags,
+            void* userData);
 
         //! Centralized manager for culling-related processing for a given scene.
         //! There is one CullingScene owned by each Scene, so external systems (such as FeatureProcessors) should

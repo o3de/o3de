@@ -20,6 +20,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ConstantsLayout;
+    }
+
     namespace RPI
     {
         class Scene;
@@ -39,6 +44,7 @@ namespace AZ
             };
 
             using ShaderList = AZStd::vector<ShaderData>;
+            using RootConstantsLayoutList = AZStd::vector<RHI::ConstPtr<RHI::ConstantsLayout>>;
 
             MeshDrawPacket() = default;
             MeshDrawPacket(
@@ -46,7 +52,8 @@ namespace AZ
                 size_t modelLodMeshIndex,
                 Data::Instance<Material> materialOverride,
                 Data::Instance<ShaderResourceGroup> objectSrg,
-                const MaterialModelUvOverrideMap& materialModelUvMap = {});
+                const MaterialModelUvOverrideMap& materialModelUvMap = {},
+                IAllocator* allocator = nullptr);
 
             AZ_DEFAULT_COPY(MeshDrawPacket);
             AZ_DEFAULT_MOVE(MeshDrawPacket);
@@ -54,6 +61,7 @@ namespace AZ
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
             const RHI::DrawPacket* GetRHIDrawPacket() const;
+            const RootConstantsLayoutList& GetRootConstantsLayouts() const;
 
             void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
@@ -63,7 +71,15 @@ namespace AZ
 
             Data::Instance<Material> GetMaterial() const;
             const ModelLod::Mesh& GetMesh() const;
-            const ShaderList& GetActiveShaderList() const { return m_activeShaders; }
+            const ShaderList& GetActiveShaderList() const
+            {
+                return m_activeShaders;
+            }
+
+            AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax>& GetDrawSrgs()
+            {
+                return m_perDrawSrgs;
+            }
 
         private:
             bool DoUpdate(const Scene& parentScene);
@@ -76,6 +92,8 @@ namespace AZ
 
             // Maintains references to the shader instances to keep their PSO caches resident (see Shader::Shutdown())
             ShaderList m_activeShaders;
+
+            RootConstantsLayoutList m_rootConstantsLayouts;
 
             // The model that contains the mesh being represented by the DrawPacket
             Data::Instance<ModelLod> m_modelLod;
@@ -111,10 +129,11 @@ namespace AZ
             typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
             typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
             ShaderOptionVector m_shaderOptions;
+            IAllocator* m_allocator;
         };
         
         using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
+        using MeshDrawPacketLods = AZStd::vector<MeshDrawPacketList>;
 
     } // namespace RPI
 } // namespace AZ

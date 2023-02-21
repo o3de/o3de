@@ -47,6 +47,8 @@ namespace AZ
                 //! We use a mask because the same item could be reused in multiple pipelines. For example, a simple
                 //! depth pre-pass could be present in multiple pipelines.
                 DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
+
+
             };
 
             // NOTE: This is configurable; just used to control the amount of memory held by the builder.
@@ -73,6 +75,8 @@ namespace AZ
             void AddDrawItem(const DrawRequest& request);
 
             const DrawPacket* End();
+
+            const DrawPacket* Clone(const DrawPacket* original);
 
         private:
             void ClearData();

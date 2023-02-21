@@ -46,12 +46,14 @@ struct VSOutput
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
+    uint m_instanceId : SV_InstanceID;
 };
 
-VSOutput MainVS(VSInput IN)
+VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
-    VSOutput OUT;    
-    OUT.m_worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    VSOutput OUT;
+    OUT.m_instanceId = instanceId;
+    OUT.m_worldPosition = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
 
     // Only UV0 is supported
@@ -99,8 +101,8 @@ float3 OffsetColor(float3 color)
 
 PixelOutput MainPS(VSOutput IN)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 vertexNormal, vertexTangent, vertexBitangent;
     ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);

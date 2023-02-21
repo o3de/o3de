@@ -63,6 +63,11 @@ namespace AZ
             return m_guid != AZ::Uuid::CreateNull();
         }
 
+        bool InstanceId::operator<(const InstanceId& rhs) const
+        {
+            return AZStd::tie(m_guid, m_subId, m_versionId) < AZStd::tie(rhs.m_guid, rhs.m_subId, rhs.m_versionId);
+        }
+
         bool InstanceId::operator==(const InstanceId& rhs) const
         {
             return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_versionId == rhs.m_versionId;

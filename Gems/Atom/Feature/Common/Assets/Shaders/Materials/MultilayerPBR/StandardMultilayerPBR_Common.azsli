@@ -9,6 +9,10 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
+
+// TODO: Since we already compose these includes from multiple inputs, can we just include them directly in DefaultDrawSrg.azsli?
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/RPI/Math.azsli>
