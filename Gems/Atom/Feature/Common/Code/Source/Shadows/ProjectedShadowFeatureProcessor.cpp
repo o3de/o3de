@@ -400,14 +400,6 @@ namespace AZ::Render
                     return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 }
             );
-
-            if (m_esmShadowmapsPass && esmOutputBinding)
-            {
-                for (EsmShadowmapsPass* otherEsmPass : esmPasses)
-                {
-                    otherEsmPass->SetOutputOverride(esmOutputBinding->GetAttachment());
-                }
-            }
         }
 
         if (m_primaryProjectedShadowmapsPass && !m_clearShadowDrawPacket)

@@ -74,15 +74,12 @@ namespace AZ
             //! This enable/disable children's computations.
             void SetEnabledComputation(bool enabled);
 
-            void SetOutputOverride(const RPI::Ptr<RPI::PassAttachment>& output);
-
         private:
             EsmShadowmapsPass() = delete;
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
-            void BuildInternal() override;
 
             void UpdateChildren();
             // Parameters for both the depth exponentiation pass along with the Kawase blur passes
