@@ -5996,7 +5996,7 @@ namespace AssetProcessor
                 auto* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
                 AZ_Assert(fileStateCache, "Programmer Error - IFileStateRequests is not available.");
 
-                AssessFileInternal(file.c_str(), fileStateCache->Exists(file.c_str()));
+                AssessFileInternal(file.c_str(), !fileStateCache->Exists(file.c_str()));
             }
             else
             {
