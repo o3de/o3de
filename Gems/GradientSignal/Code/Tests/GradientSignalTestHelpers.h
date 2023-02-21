@@ -122,25 +122,21 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 1024 })                                                  \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 2048 })                                                  \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUE, 4096 })                                                  \
         ->ArgNames({ "EbusGetValue", "size" })                                                                                            \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 1024 })                                                 \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 2048 })                                                 \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::EBUS_GET_VALUES, 4096 })                                                 \
         ->ArgNames({ "EbusGetValues", "size" })                                                                                           \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 1024 })                                               \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 2048 })                                               \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUE, 4096 })                                               \
         ->ArgNames({ "SamplerGetValue", "size" })                                                                                         \
         ->Unit(::benchmark::kMillisecond);                                                                                                \
     BENCHMARK_REGISTER_F(Fixture, Func)                                                                                                   \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 1024 })                                              \
         ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 2048 })                                              \
-        ->Args({ GradientSignalTestHelpers::GetValuePermutation::SAMPLER_GET_VALUES, 4096 })                                              \
         ->ArgNames({ "SamplerGetValues", "size" })                                                                                        \
         ->Unit(::benchmark::kMillisecond);
 #endif

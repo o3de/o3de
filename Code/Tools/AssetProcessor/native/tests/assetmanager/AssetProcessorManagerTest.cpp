@@ -549,6 +549,7 @@ class AssetProcessorIntermediateAssetTests
     : public UnitTests::AssetManagerTestingBase
 {
 protected:
+
     void DeleteSourceAndValidateNoAdditionalJobs(QString expectedIntermediatePath)
     {
         // Delete the originating source for the intermediate asset
@@ -581,6 +582,7 @@ protected:
         m_assetProcessorManager->CheckJobEntries(0);
 
         m_assetProcessorManager->ProcessFilesToExamineQueue();
+        QCoreApplication::processEvents();
 
         // Make sure nothing is left to process - the intermediate asset should never have had a job added
         // because the source was deleted at the same time it was modified.
@@ -704,6 +706,144 @@ TEST_F(AssetProcessorIntermediateAssetTests, NestedIntermediateAsset_SourceDelet
     // When: The source is deleted.
     // Then: No additional jobs are created for the modified intermediate asset, and no jobs fail.
     DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
+}
+
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmitsJobIntermediateWouldFailToProcess_NoFailure)
+{
+    // This is a regression test for this situation:
+    // 1. A source asset would emit one of two different jobs from CreateJobs, based on data in the source asset itself. One of these emits intermediate assets, but not the other.
+    // 2. The AssetProcessor would run once, and the source asset would run with the job that emits intermediate assets.
+    // 3. The source asset was changed so that it no longer emits the job that creates the intermediate asset, it emits a different job with different products.
+    // 4. The Asset Processor is run again.
+    // Expected, and what this test verifies: The intermediate asset is removed, because it is no longer a product of the source asset.
+    // Before the regression fix: The intermediate asset was not being removed.
+    
+    using namespace AssetBuilderSDK;
+
+    // Given:
+    // Asset builder that emits different jobs based on information in the source asset.
+    // A source asset that initially is marked to emit an intermediate asset product.
+    // This chain of assets (source and intermediate) processed without error or issue.
+
+    bool outputIntermediateProduct = true;
+
+    m_builderInfoHandler.CreateBuilderDesc(
+        "stage1",
+        AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+        { AssetBuilderPattern{ "*.stage1", AssetBuilderPattern::Wildcard } },
+        [&outputIntermediateProduct]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+        {
+            // The first time this job is run - create an intermediate asset job.
+            if (outputIntermediateProduct)
+            {
+                response.m_createJobOutputs.push_back(JobDescriptor{ "fingerprint", "stage1 - Intermediate", CommonPlatformName });
+            }
+            // The second time this job is run - Create a non-intermediate asset, just regular product job.
+            else
+            {
+                for (const auto& platform : request.m_enabledPlatforms)
+                {
+                    response.m_createJobOutputs.push_back(JobDescriptor{
+                        "fingerprint",
+                        "stage1 - Product",
+                        platform.m_identifier.c_str() });
+                }
+            }
+            response.m_result = CreateJobsResultCode::Success;
+        },
+        [&outputIntermediateProduct](const ProcessJobRequest& request, ProcessJobResponse& response)
+        {
+            AZ::IO::Path outputFile = request.m_sourceFile;
+            AZStd::string outputExtension = "stage2";
+
+            if (!outputIntermediateProduct)
+            {
+                outputExtension = "stage2_product";
+            }
+
+            outputFile.ReplaceExtension(outputExtension.c_str());
+            AZ::IO::LocalFileIO::GetInstance()->Copy(
+                request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
+            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
+
+            if (outputIntermediateProduct)
+            {
+                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
+            }
+            else
+            {
+                product.m_outputFlags = ProductOutputFlags::ProductAsset;
+            }
+
+            product.m_dependenciesHandled = true;
+            response.m_outputProducts.push_back(product);
+            response.m_resultCode = ProcessJobResult_Success;
+        },
+        "fingerprint");
+
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    AZStd::string intermediateAssetPath = MakePath("test.stage2", true);
+    // Verify the intermediate asset exists
+    EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
+
+    // When:
+    // The source asset has been modified to no longer emit the intermediate asset as a product, and emit a different product.
+    // This chain of assets is processed again.
+
+    // Modify the source asset, so it shows up as needing to be reprocessed.
+    EXPECT_TRUE(AZ::Utils::WriteFile("Arbitrary text to mark this file as modified.", m_testFilePath.c_str()).IsSuccess());
+
+    // Mark the source asset to no longer emit the intermediate product asset
+    outputIntermediateProduct = false;
+
+    // Call AssessModifiedFile on the source asset.
+    m_assetProcessorManager->AssessModifiedFile(m_testFilePath.c_str());
+
+    // There is one active file, because it has been modified.
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(1);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Assess the modified file
+    QCoreApplication::processEvents();
+
+    // The file has been moved from active, to the examine list, after assessing it.
+    m_assetProcessorManager->CheckFilesToExamine(1);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Process the file, which triggers CheckMissingJobs to be called, which actually deletes the no longer emitted file.
+    // This doesn't call ProcessSingleStep because the files to examine and active files won't match what ProcessSingleStep expects.
+
+    // m_jobDetailsList lets this test verify the job ran that was expected to run.
+    m_jobDetailsList.clear();
+    m_fileCompiled = false;
+    m_fileFailed = false;
+    QCoreApplication::processEvents(); // execute ProcessFilesToExamineQueue
+    QCoreApplication::processEvents(); // execute CheckForIdle
+    ASSERT_EQ(m_jobDetailsList.size(), 1);
+    ProcessJob(*m_rc, m_jobDetailsList[0]);
+    ASSERT_TRUE(m_fileCompiled);
+    m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
+
+    // Then:
+    // Asset processing completes and the intermediate asset is deleted, because it's no longer a product of this source asset.
+
+    // Make sure nothing is left to process
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Nothing should have failed to process.
+    EXPECT_FALSE(m_fileFailed);
+
+    // The intermediate asset should be deleted and gone, because CheckMissingJobs removed it for no longer being a product
+    // of any source asset.
+    EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
+
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
