@@ -10,10 +10,8 @@ Contains functions for the project manager to call that gather data from o3de sc
 """
 
 import logging
-import pathlib
-from collections import OrderedDict
 
-from o3de import cmake, disable_gem, download, enable_gem, engine_properties, engine_template, manifest, project_properties, register, repo, compatibility, utils
+from o3de import manifest, utils
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
