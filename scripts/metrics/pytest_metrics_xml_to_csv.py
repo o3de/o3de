@@ -21,8 +21,12 @@ TESTING_DIR = 'Testing'
 
 
 def _get_default_csv_filename():
+    """
+    Returns a default filename to be saved in the format of YYYY_MM_DD_HH_mm_pytest.csv
+    :return: The filename as a string
+    """
     # Format default file name based off of date
-    now = datetime.datetime.now()
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
     return f"{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}_pytest.csv"
 
 
@@ -41,6 +45,12 @@ SIG_OWNER_CACHE = {}
 
 
 def main():
+    """
+    Creates the folder structure for metrics to be saved to S3 and converts Pytest xml's into csv format. This script
+    does not handle uploading of metrics.
+
+    :return: None
+    """
     # Parse args
     args = parse_args()
 
@@ -55,9 +65,9 @@ def main():
     full_path = os.path.join(full_path, args.csv_file)
     if os.path.exists(full_path):
         logger.warning(f"The file {full_path} already exists. It will be overridden.")
-    if not os.path.exists(os.path.split(full_path)[0]):
+    if not os.path.exists(os.path.dirname(full_path)):
         # Create directory if it doesn't exist
-        os.makedirs(os.path.split(full_path)[0])
+        os.makedirs(os.path.dirname(full_path))
 
     # Create csv file
     if os.path.exists(args.csv_file):
@@ -68,7 +78,7 @@ def main():
 
         # Parse Pytest xml's and write to csv file
         for filename in os.listdir(args.xml_folder):
-            if os.path.splitext(filename)[-1] == '.xml':
+            if filename.endswith('.xml'):
                 parse_pytest_xmls_to_csv(os.path.join(args.xml_folder, filename), writer)
 
 
@@ -82,10 +92,10 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD_hh_mm_pytest)."
+        help=f"The file name for the csv to be saved."
     )
     parser.add_argument(
-        "-o", "--output-directory", action="store", default="",
+        "-o", "--output-directory", action="store", default=os.getcwd(),
         help=f"The directory where the csv to be saved. Prepends the --csv-file arg."
     )
     parser.add_argument(
