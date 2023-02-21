@@ -38,6 +38,7 @@ parts:
      - libcurl4
      - libfontconfig1
      - libunwind-dev
+     - libssl3
     stage-snaps:
      - cmake
 
