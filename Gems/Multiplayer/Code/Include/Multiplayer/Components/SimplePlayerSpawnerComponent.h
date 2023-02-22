@@ -28,6 +28,10 @@ namespace Multiplayer
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
+        /*
+         * Returns the location of the next player spawn point.
+         * Visiting will increment the spawning index. Once all spawn point are visited, the index will reset to the first index in a round-robin fashion.
+         */
         AZ::Transform VisitNextPlayerSpawnPoint();
 
     protected:
