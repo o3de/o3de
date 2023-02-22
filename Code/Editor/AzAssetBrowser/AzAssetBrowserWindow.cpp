@@ -638,8 +638,8 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
         const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
-            entryPath = FromStdString(folderEntry->GetVisiblePath().c_str());
-            fullPath = FromStdString(folderEntry->GetFullPath().c_str());
+            entryPath = FromStdString(folderEntry->GetVisiblePath());
+            fullPath = FromStdString(folderEntry->GetFullPath());
         }
     }
     m_ui->m_pathBreadCrumbs->pushFullPath(fullPath, entryPath);

@@ -353,10 +353,10 @@ namespace AzToolsFramework
         {
             QModelIndex current;
             const QByteArray byteArray = path.toUtf8();
-            const AZ::IO::Path azpath{ AZStd::string_view{ byteArray.constData(), static_cast<size_t>(byteArray.size()) } };
+            const AZ::IO::PathView azpath{ AZStd::string_view{ byteArray.constData(), static_cast<size_t>(byteArray.size()) } };
             for (const auto& pathPart : azpath)
             {
-                QModelIndexList next = model()->match(
+                const QModelIndexList next = model()->match(
                     /*start =*/model()->index(0, 0, current),
                     /*role =*/Qt::DisplayRole,
                     /*value =*/QString::fromUtf8(pathPart.Native().data(), static_cast<int32_t>(pathPart.Native().size())),
