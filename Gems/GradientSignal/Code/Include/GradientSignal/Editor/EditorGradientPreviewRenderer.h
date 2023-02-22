@@ -55,7 +55,7 @@ namespace GradientSignal
         : public AZ::Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorGradientPreviewUpdateJob, AZ::ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorGradientPreviewUpdateJob, AZ::ThreadPoolAllocator);
 
         using SampleFilterFunc = AZStd::function<float(float, const GradientSampleParams&)>;
 

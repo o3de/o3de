@@ -29,7 +29,7 @@ namespace ImageProcessingAtom
     {
     public:
         AZ_TYPE_INFO(TextureSettings, "{980132FF-C450-425D-8AE0-BD96A8486177}");
-        AZ_CLASS_ALLOCATOR(TextureSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureSettings, AZ::SystemAllocator);
 
         TextureSettings();
 

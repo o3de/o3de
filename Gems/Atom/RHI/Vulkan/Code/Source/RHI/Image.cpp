@@ -20,6 +20,7 @@
 #include <RHI/ReleaseContainer.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/SwapChain.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -795,7 +796,8 @@ namespace AZ
 
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
 
             if (result == VkResult::VK_SUCCESS)
             {
@@ -805,7 +807,7 @@ namespace AZ
                 device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &memoryRequirements);
                 if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
                 {
-                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, nullptr);
+                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, VkSystemAllocator::Get());
                     m_vkImage = VK_NULL_HANDLE;
                     return RHI::ResultCode::Fail;
                 }
@@ -867,7 +869,8 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
             AssertSuccess(result);
 
             return ConvertResult(result);

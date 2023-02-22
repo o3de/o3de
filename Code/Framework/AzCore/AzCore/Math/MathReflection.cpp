@@ -232,7 +232,7 @@ namespace AZ
     {
     public:
         AZ_TYPE_INFO(MathGlobals, "{35D44724-7470-42F2-A0E3-4E4349793B98}");
-        AZ_CLASS_ALLOCATOR(MathGlobals, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MathGlobals, SystemAllocator);
 
         MathGlobals() = default;
         ~MathGlobals() = default;

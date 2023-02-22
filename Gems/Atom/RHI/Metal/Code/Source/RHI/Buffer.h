@@ -23,7 +23,7 @@ namespace AZ
         {
             using Base = RHI::Buffer;
         public:
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator);
             AZ_RTTI(Buffer, "{50D79542-AD49-46C8-8660-583A84802105}", Base);
             ~Buffer() = default;
             

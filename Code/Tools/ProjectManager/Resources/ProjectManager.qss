@@ -710,7 +710,7 @@ QTabBar::tab:focus {
 }
 
 #projectButton QLabel#otherEngineLabel {
-    color: #dd0;
+    color: #ddd;
 }
 
 #labelButton QPushButton {

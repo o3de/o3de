@@ -165,9 +165,10 @@ namespace UnitTest
 
     TEST_F(UuidUtilTests, CreateSourceUuid_Random_ReturnsRandomUuid)
     {
-        auto uuid = m_utilInterface->CreateSourceUuid("mockfile");
+        auto result = m_utilInterface->CreateSourceUuid("mockfile");
 
-        EXPECT_FALSE(uuid.IsNull());
+        ASSERT_TRUE(result);
+        EXPECT_FALSE(result.GetValue().IsNull());
     }
 
     TEST_F(UuidUtilTests, CreateSourceUuid_SpecifyUuid_ReturnsTrue)
@@ -179,9 +180,9 @@ namespace UnitTest
     TEST_F(UuidUtilTests, CreateSourceUuidRandom_AlreadyAssigned_Fails)
     {
         m_utilInterface->CreateSourceUuid("mockfile");
-        auto uuid = m_utilInterface->CreateSourceUuid("mockfile");
+        auto result = m_utilInterface->CreateSourceUuid("mockfile");
 
-        EXPECT_TRUE(uuid.IsNull());
+        EXPECT_FALSE(result);
     }
 
     TEST_F(UuidUtilTests, CreateSourceUuid_AlreadyAssigned_Fails)

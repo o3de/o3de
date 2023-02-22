@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSimpleStateAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSimpleStateAction, AnimGraphAllocator)
 
     AnimGraphSimpleStateAction::AnimGraphSimpleStateAction(AnimGraph* animGraph)
         : AnimGraphSimpleStateAction()

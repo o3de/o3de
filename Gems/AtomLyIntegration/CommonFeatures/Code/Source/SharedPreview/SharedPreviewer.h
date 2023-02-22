@@ -44,7 +44,7 @@ namespace AZ
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(SharedPreviewer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewer, AZ::SystemAllocator);
 
             explicit SharedPreviewer(QWidget* parent = nullptr);
             ~SharedPreviewer();

@@ -24,7 +24,7 @@ namespace ScriptCanvas
 
         public:
             AZ_TYPE_INFO(PerformanceTracker, "{D40DFC8B-D4EA-4D6A-A0CA-3FDD00604553}");
-            AZ_CLASS_ALLOCATOR(PerformanceTracker, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceTracker, AZ::SystemAllocator);
 
             PerformanceTracker();
 
@@ -69,7 +69,7 @@ namespace ScriptCanvas
             struct AssetTimer
             {
                 AZ_TYPE_INFO(AssetTimer, "{80860A85-C6B7-4544-8C30-62C76C657427}");
-                AZ_CLASS_ALLOCATOR(AssetTimer, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(AssetTimer, AZ::SystemAllocator);
 
                 PerformanceTimer timer;
                 AZ::u32 assetActivationCount = 0;

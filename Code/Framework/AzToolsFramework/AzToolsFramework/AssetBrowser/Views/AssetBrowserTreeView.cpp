@@ -17,6 +17,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
@@ -28,6 +29,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -80,6 +83,16 @@ namespace AzToolsFramework
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
 
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                {
+                    // Assign this widget to the Editor Asset Browser Action Context.
+                    hotKeyManagerInterface->AssignWidgetToActionContext(
+                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                }
+            }
+
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
             deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -113,6 +126,15 @@ namespace AzToolsFramework
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
         {
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                {
+                    hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                }
+            }
+
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
@@ -773,6 +795,24 @@ namespace AzToolsFramework
             AssetChangeReportResponse moveResponse;
             if (SendRequest(moveRequest, moveResponse))
             {
+                // Send notification for listeners to update any in-memory states
+                if (isFolder)
+                {
+                    AZStd::string_view fromPathNoWildcard(fromPath.ParentPath().Native());
+                    AZStd::string_view toPathNoWildcard(toPath.ParentPath().Native());
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
+                        fromPathNoWildcard,
+                        toPathNoWildcard);
+                }
+                else
+                {
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+                        fromPath.c_str(),
+                        toPath.c_str());
+                }
+
                 if (!moveResponse.m_lines.empty())
                 {
                     AZStd::string message;
@@ -949,6 +989,25 @@ namespace AzToolsFramework
                     AssetChangeReportResponse moveResponse;
                     if (SendRequest(moveRequest, moveResponse))
                     {
+                        // Send notification for listeners to update any in-memory states
+                        if (isFolder)
+                        {
+                            // Remove the wildcard characters from the end of the paths
+                            AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
+                            AZStd::string toPathNoWildcard(toPath.substr(0, toPath.size() - 2));
+                            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFolderPathNameChanged,
+                                fromPathNoWildcard.c_str(),
+                                toPathNoWildcard.c_str());
+                        }
+                        else
+                        {
+                            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Broadcast(
+                                &AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Events::OnSourceFilePathNameChanged,
+                                fromPath,
+                                toPath);
+                        }
+
                         if (!response.m_lines.empty())
                         {
                             AZStd::string moveMessage;
@@ -968,7 +1027,12 @@ namespace AzToolsFramework
                     }
                     if (isFolder)
                     {
-                        AZ::IO::SystemFile::DeleteDir(fromPath.substr(0, fromPath.size() - 2).data());
+                        // Remove the wildcard characters from the end of the path
+                        AZStd::string fromPathNoWildcard(fromPath.substr(0, fromPath.size() - 2));
+                        if (!AZ::IO::SystemFile::DeleteDir(fromPathNoWildcard.c_str()))
+                        {
+                            AZ_Warning("AssetBrowser", false, "Failed to delete empty directory %s.", fromPathNoWildcard.c_str());
+                        }
                     }
                 }
             }

@@ -67,7 +67,7 @@ namespace GraphCanvas
 
         const int IS_EVENT_HANDLER_ONLY = 100;
 
-        AZ_CLASS_ALLOCATOR(GraphCanvasGraphicsView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasGraphicsView, AZ::SystemAllocator);
 
         GraphCanvasGraphicsView(QWidget* parent = nullptr, bool registerShortcuts = true);
         ~GraphCanvasGraphicsView();

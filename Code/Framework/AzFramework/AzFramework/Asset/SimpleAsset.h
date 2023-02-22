@@ -64,7 +64,7 @@ namespace AzFramework
 
         virtual ~SimpleAssetReferenceBase() { }
 
-        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator);
         AZ_RTTI(SimpleAssetReferenceBase, "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}");
 
         const AZStd::string& GetAssetPath() const { return m_assetPath; }
@@ -98,7 +98,7 @@ namespace AzFramework
         : public SimpleAssetReferenceBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator);
         AZ_RTTI((SimpleAssetReference, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
 
         static void Register(AZ::SerializeContext& context)

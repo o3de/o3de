@@ -536,7 +536,7 @@ namespace {{ Component.attrib['Namespace'] }}
         friend class {{ ControllerBaseName }};
     public:
 {% if ComponentDerived %}
-        AZ_CLASS_ALLOCATOR({{ ComponentBaseName }}, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR({{ ComponentBaseName }}, AZ::SystemAllocator);
         AZ_RTTI({{ ComponentBaseName }}, "{{ (ComponentBaseName) | createHashGuid }}", Multiplayer::MultiplayerComponent);
 {% else %}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, Multiplayer::MultiplayerComponent);

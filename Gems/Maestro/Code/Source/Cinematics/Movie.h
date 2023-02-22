@@ -45,7 +45,7 @@ class CMovieSystem
     typedef std::vector<PlayingSequence> PlayingSequences;
 
 public:
-    AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator);
     AZ_RTTI(CMovieSystem, "{760D45C1-08F2-4C70-A506-BD2E69085A48}", IMovieSystem);
 
     CMovieSystem(ISystem* system);

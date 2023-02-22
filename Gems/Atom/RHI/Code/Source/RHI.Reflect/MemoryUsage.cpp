@@ -33,6 +33,7 @@ namespace AZ
             m_budgetInBytes = rhs.m_budgetInBytes;
             m_totalResidentInBytes = rhs.m_totalResidentInBytes.load();
             m_usedResidentInBytes = rhs.m_usedResidentInBytes.load();
+            m_uniqueAllocationBytes = rhs.m_uniqueAllocationBytes.load();
             m_fragmentation = rhs.m_fragmentation;
             return *this;
         }

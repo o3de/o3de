@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -314,6 +315,15 @@ namespace AzToolsFramework
 
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
+        // GameApplications can run without an engine, but ToolsApplications need an engine
+        // NOTE: we do not check 'FilePathKey_EngineRootFolder' because that might have been
+        // set to the project's path which is not enough for ToolsApplications
+        if (AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).empty())
+        {
+            ReportBadEngineRoot();
+            return;
+        }
+
         Application::Start(descriptor, startupParameters);
         if (!m_isStarted)
         {

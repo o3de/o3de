@@ -25,7 +25,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(GraphSerialization, "{DB95F1F9-BEEA-499F-A6AD-1492435768F8}");
-        AZ_CLASS_ALLOCATOR(GraphSerialization, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphSerialization, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

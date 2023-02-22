@@ -316,8 +316,11 @@ namespace Multiplayer
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         // Launch the Server
-        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
+        const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs
+            ? AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT
+            : AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE;
+
+        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, communicationType);
 
         if (outProcess)
         {

@@ -48,7 +48,7 @@ namespace UnitTest
             : public AzToolsFramework::ToolsApplication
         {
         public:
-            AZ_CLASS_ALLOCATOR(TestbedApplication, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TestbedApplication, AZ::SystemAllocator);
 
             TestbedApplication(EntityTestbed& testbed)
                 : m_testbed(testbed) {}

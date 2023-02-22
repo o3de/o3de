@@ -20,6 +20,9 @@ namespace AZ
     struct StableDynamicArrayMetrics;
 
     template<typename ValueType>
+    class StableDynamicArrayWeakHandle;
+
+    template<typename ValueType>
     class StableDynamicArrayHandle;
 
     /**
@@ -56,6 +59,7 @@ namespace AZ
     public:
 
         using Handle = StableDynamicArrayHandle<T>;
+        using WeakHandle = StableDynamicArrayWeakHandle<T>;
 
         StableDynamicArray() = default;
         explicit StableDynamicArray(allocator_type allocator);
@@ -264,6 +268,36 @@ namespace AZ
     };
 
     /**
+    * A weak reference to the data allocated in the array. It can be copied, and will not auto-release the data
+    * when it goes out of scope. There is no guarantee that a weak handle is not dangling, so it should only be used
+    * in cases where it is known that the owning handle has not gone out of scope. This could potentially be augmented in the future
+    * to have a salt/generationId that could be used to determine if it is a dangling reference.
+    */
+    template<typename ValueType>
+    class StableDynamicArrayWeakHandle
+    {
+    public:
+        StableDynamicArrayWeakHandle() = default;
+
+        /// Returns true if this Handle currently holds a valid value.
+        bool IsValid() const;
+
+        /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
+        bool IsNull() const;
+
+        ValueType& operator*() const;
+        ValueType* operator->() const;
+        
+    private:
+        StableDynamicArrayWeakHandle(ValueType* data);
+
+        ValueType* m_data = nullptr;
+
+        template<typename T>
+        friend class StableDynamicArrayHandle;
+    };
+
+    /**
     * Handle to the data allocated in the array. This stores extra data internally so that an item can be
     * quickly marked as free later. Since there is no ref counting, copy is not allowed, only move. When
     * a handle is used to free it's associated data it is marked as invalid.
@@ -309,6 +343,9 @@ namespace AZ
 
         ValueType& operator*() const;
         ValueType* operator->() const;
+
+        /// Returns a non-owning weak handle to the data
+        StableDynamicArrayWeakHandle<ValueType> GetWeakHandle() const;
 
     private:
 

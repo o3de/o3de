@@ -21,7 +21,7 @@ namespace MaterialCanvas
     {
     public:
         AZ_RTTI(MaterialGraphCompiler, "{570E3923-48C4-4B91-BC44-3145BE771E9B}", AtomToolsFramework::GraphCompiler);
-        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(MaterialGraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);

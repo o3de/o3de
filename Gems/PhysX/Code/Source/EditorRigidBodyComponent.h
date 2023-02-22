@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
@@ -29,7 +30,7 @@ namespace PhysX
     struct EditorRigidBodyConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
-        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator);
         AZ_RTTI(PhysX::EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -47,6 +48,7 @@ namespace PhysX
         , private Physics::ColliderComponentEventBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::BoundsRequestBus::Handler
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRigidBodyComponent, "{F2478E6B-001A-4006-9D7E-DCB5A6B041DD}", AzToolsFramework::Components::EditorComponentBase);
@@ -118,6 +120,12 @@ namespace PhysX
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
+
+        // EditorComponentSelectionRequestsBus overrides ...
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        bool SupportsEditorRayIntersect() override;
 
         void CreateEditorWorldRigidBody();
         void UpdateDebugDrawSettings(const Debug::DebugDisplayData& data);

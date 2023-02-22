@@ -27,7 +27,7 @@ namespace AZ
         {
             using Base = RHI::Image;
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator);
             AZ_RTTI(Image, "{F9F25704-F885-4CBD-BC96-D8D1E89F95EA}", Base);
             ~Image() = default;
             

@@ -20,8 +20,8 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonDoubleSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonFloatSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonDoubleSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonFloatSerializer, SystemAllocator);
 
     namespace SerializerFloatingPointInternal
     {

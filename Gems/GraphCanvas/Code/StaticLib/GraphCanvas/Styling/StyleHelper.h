@@ -44,7 +44,7 @@ namespace GraphCanvas
             : public StyleManagerNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(StyleHelper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyleHelper, AZ::SystemAllocator);
 
             StyleHelper() = default;
             StyleHelper(const AZ::EntityId& styledEntity);

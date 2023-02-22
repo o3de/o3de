@@ -40,7 +40,7 @@ namespace PhysX
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(EditorWindow, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorWindow, AZ::SystemAllocator);
             static void RegisterViewClass();
 
             explicit EditorWindow(QWidget* parent = nullptr);

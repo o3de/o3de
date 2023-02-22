@@ -25,6 +25,7 @@
 #include <RHI/RenderPass.h>
 #include <RHI/SwapChain.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -514,7 +515,7 @@ namespace AZ
             createInfo.oldSwapchain = m_oldNativeSwapChain;
 
             const VkResult result =
-                device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
+                device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -584,7 +585,7 @@ namespace AZ
                 device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
                 if (m_nativeSwapChain != VK_NULL_HANDLE)
                 {
-                    device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
+                    device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, VkSystemAllocator::Get());
                     m_nativeSwapChain = VK_NULL_HANDLE;
                 }
             };

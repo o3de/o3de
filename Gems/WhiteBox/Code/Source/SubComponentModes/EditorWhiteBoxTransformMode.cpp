@@ -33,7 +33,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator)
 
     static const AZ::Crc32 SwitchTranslationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_translation");
     static const AZ::Crc32 SwitchRotationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_rotation");
