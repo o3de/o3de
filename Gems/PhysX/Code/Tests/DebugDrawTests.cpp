@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/IntersectSegment.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <EditorTestUtilities.h>
 #include <EditorColliderComponent.h>

@@ -10,10 +10,11 @@
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <EditorColliderComponent.h>
+#include <EditorMeshColliderComponent.h>
+#include <EditorShapeColliderComponent.h>
 #include <EditorForceRegionComponent.h>
 #include <EditorRigidBodyComponent.h>
 #include <EditorStaticRigidBodyComponent.h>
-#include <EditorShapeColliderComponent.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CompoundShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
@@ -115,7 +116,7 @@ namespace PhysXEditorTests
 
         // the shape collider component should be compatible with multiple collider components
         entity->CreateComponent<PhysX::EditorColliderComponent>();
-        entity->CreateComponent<PhysX::EditorColliderComponent>();
+        entity->CreateComponent<PhysX::EditorMeshColliderComponent>();
 
         // the entity should be in a valid state because the shape component requirement is satisfied
         AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
@@ -161,9 +162,12 @@ namespace PhysXEditorTests
 
         // there should be a single shape on the rigid body and it should be a box
         EXPECT_EQ(pxRigidStatic->getNbShapes(), 1);
-        physx::PxShape* shape = nullptr;
-        pxRigidStatic->getShapes(&shape, 1, 0);
-        EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+        if (pxRigidStatic->getNbShapes() > 0)
+        {
+            physx::PxShape* shape = nullptr;
+            pxRigidStatic->getShapes(&shape, 1, 0);
+            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+        }
 
         // the bounding box of the rigid body should reflect the dimensions of the box set above
         AZ::Aabb aabb = staticBody->GetAabb();
@@ -499,9 +503,12 @@ namespace PhysXEditorTests
         
         // there should be a single shape on the rigid body and it should be a convex mesh
         EXPECT_EQ(pxRigidStatic->getNbShapes(), 1);
-        physx::PxShape* shape = nullptr;
-        pxRigidStatic->getShapes(&shape, 1, 0);
-        EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+        if (pxRigidStatic->getNbShapes() > 0)
+        {
+            physx::PxShape* shape = nullptr;
+            pxRigidStatic->getShapes(&shape, 1, 0);
+            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+        }
         
         // the bounding box of the rigid body should reflect the dimensions of the cylinder set above
         AZ::Aabb aabb = staticBody->GetAabb();
@@ -623,9 +630,12 @@ namespace PhysXEditorTests
 
         // there should be a single shape on the rigid body and it should be a box
         EXPECT_EQ(pxRigidDynamic->getNbShapes(), 1);
-        physx::PxShape* shape = nullptr;
-        pxRigidDynamic->getShapes(&shape, 1, 0);
-        EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+        if (pxRigidDynamic->getNbShapes() > 0)
+        {
+            physx::PxShape* shape = nullptr;
+            pxRigidDynamic->getShapes(&shape, 1, 0);
+            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+        }
 
         // the bounding box of the rigid body should reflect the dimensions of the box set above
         AZ::Aabb aabb = rigidBody->GetAabb();
