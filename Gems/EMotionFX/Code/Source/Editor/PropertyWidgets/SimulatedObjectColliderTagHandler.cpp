@@ -25,7 +25,8 @@ namespace EMotionFX
     {
         connect(this, &SimulatedObjectColliderTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }
@@ -123,7 +124,8 @@ namespace EMotionFX
     {
         connect(this, &SimulatedJointColliderExclusionTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }

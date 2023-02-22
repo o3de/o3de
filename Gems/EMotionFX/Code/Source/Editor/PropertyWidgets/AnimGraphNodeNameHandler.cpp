@@ -65,7 +65,8 @@ namespace EMotionFX
 
         connect(lineEdit, &AnimGraphNodeNameLineEdit::TextEditingFinished, this, [lineEdit]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, lineEdit);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, lineEdit);
         });
 
         return lineEdit;
