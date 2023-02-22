@@ -8,14 +8,6 @@ confinement: classic
 base: core22
 
 parts:
-  gnome:
-    plugin: nil
-    build-packages:
-      - software-properties-common
-    override-pull: |
-      add-apt-repository -y ppa:ubuntu-desktop/gnome-sdk
-      apt -y update
-
   o3de:
     after:
       - gnome
@@ -49,6 +41,7 @@ parts:
      - libfontconfig1
      - libunwind-dev
      - libssl3
+     - libstdc++6
     stage-snaps:
      - cmake
 
