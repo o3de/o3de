@@ -163,15 +163,13 @@ namespace AzToolsFramework
         return m_action;
     }
     
-    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> /*enabledStateCallback*/)
+    void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
-        /*
         if (enabledStateCallback)
         {
             m_enabledStateCallbacks.emplace_back(AZStd::move(enabledStateCallback));
             Update();
         }
-        */
     }
 
     void EditorAction::AssignToMode(AZStd::string modeIdentifier)
