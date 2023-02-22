@@ -19,17 +19,6 @@ from common import logging, exception
 
 TESTING_DIR = 'Testing'
 
-
-def _get_default_csv_filename():
-    """
-    Returns a default filename to be saved in the format of YYYY_MM_DD_HH_mm_pytest.csv
-    :return: The filename as a string
-    """
-    # Format default file name based off of date
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
-    return f"{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}_pytest.csv"
-
-
 # Setup logging.
 logger = logging.get_logger("test_metrics")
 logging.setup_logger(logger)
@@ -42,6 +31,16 @@ PYTEST_FIELDS_HEADER = [
     'sig_owner'
 ]
 SIG_OWNER_CACHE = {}
+
+
+def _get_default_csv_filename():
+    """
+    Returns a default filename to be saved in the format of YYYY_MM_DDTHH_mm_SS_pytest.csv
+    :return: The filename as a string
+    """
+    # Format default file name based off of date
+    now = datetime.datetime.isoformat(datetime.datetime.now(tz=datetime.timezone.utc), timespec='seconds')
+    return f"{now.replace('+00:00', 'Z').replace('-', '_').replace('.', '_').replace(':', '_')}_pytest.csv"
 
 
 def main():
@@ -59,9 +58,8 @@ def main():
 
     # Create csv file
     full_path = os.path.join(args.output_directory, args.branch)
-    if args.weeks:
-        week = datetime.datetime.now().isocalendar().week
-        full_path = os.path.join(full_path, f"Week{week:02d}")
+    week = datetime.datetime.now().isocalendar().week
+    full_path = os.path.join(full_path, f"Week{week:02d}")
     full_path = os.path.join(full_path, args.csv_file)
     if os.path.exists(full_path):
         logger.warning(f"The file {full_path} already exists. It will be overridden.")
@@ -92,19 +90,16 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The file name for the csv to be saved."
+        help=f"The file name for the csv to be saved. O3DE metrics pipeline will use default value."
     )
     parser.add_argument(
         "-o", "--output-directory", action="store", default=os.getcwd(),
-        help=f"The directory where the csv to be saved. Prepends the --csv-file arg."
+        help=f"The directory where the csv to be saved. Prepends the --csv-file arg. O3DE metrics pipeline will use "
+             f"default value."
     )
     parser.add_argument(
-        "-b", "--branch", action="store", default="",
-        help="The branch the metrics were generated on. Used for directory saving."
-    )
-    parser.add_argument(
-        "-w", "--weeks", action="store_true",
-        help="Boolean whether to include the week number in the created csv path."
+        "-b", "--branch", action="store", default="UnknownBranch",
+        help="The branch the metrics were generated on. O3DE metrics pipeline requires the branch name to be specified."
     )
     args = parser.parse_args()
     return args

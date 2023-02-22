@@ -19,13 +19,6 @@ DEFAULT_CTEST_LOG_FILENAME = 'Test.xml'
 TAG_FILE = 'TAG'
 TESTING_DIR = 'Testing'
 
-
-def _get_default_csv_filename():
-    # Format default file name based off of date
-    now = datetime.datetime.now()
-    return f"{now.year}_{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}.csv"
-
-
 # Setup logging.
 logger = logging.get_logger("test_metrics")
 logging.setup_logger(logger)
@@ -38,6 +31,12 @@ CTEST_FIELDS_HEADER = [
 ]
 
 
+def _get_default_csv_filename():
+    # Format default file name based off of date
+    now = datetime.datetime.isoformat(datetime.datetime.now(tz=datetime.timezone.utc), timespec='seconds')
+    return f"{now.replace('+00:00', 'Z').replace('-', '_').replace('.', '_').replace(':', '_')}.csv"
+
+
 def main():
     # Parse args
     args = parse_args()
@@ -47,9 +46,8 @@ def main():
 
     # Create csv file
     full_path = os.path.join(args.output_directory, args.branch)
-    if args.weeks:
-        week = datetime.datetime.now().isocalendar().week
-        full_path = os.path.join(full_path, f"Week{week:02d}")
+    week = datetime.datetime.now().isocalendar().week
+    full_path = os.path.join(full_path, f"Week{week:02d}")
     full_path = os.path.join(full_path, args.csv_file)
     if os.path.exists(full_path):
         logger.warning(f"The file {full_path} already exists. It will be overridden.")
@@ -82,16 +80,12 @@ def parse_args():
         help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD_HH_mm)."
     )
     parser.add_argument(
-        "-o", "--output-directory", action="store", default="",
+        "-o", "--output-directory", action="store", default=os.getcwd(),
         help=f"The directory where the csv to be saved. Prepends the --csv-file arg."
     )
     parser.add_argument(
-        "-b", "--branch", action="store", default="",
+        "-b", "--branch", action="store", default="UnknownBranch",
         help="The branch the metrics were generated on. Used for directory saving."
-    )
-    parser.add_argument(
-        "-w", "--weeks", action="store_true",
-        help="Boolean whether to include the week number in the created csv path."
     )
 
     args = parser.parse_args()
