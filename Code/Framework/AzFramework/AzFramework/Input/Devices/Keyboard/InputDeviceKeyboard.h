@@ -360,7 +360,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboard, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboard, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info
@@ -448,7 +448,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function

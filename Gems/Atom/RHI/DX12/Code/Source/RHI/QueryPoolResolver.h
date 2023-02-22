@@ -28,7 +28,7 @@ namespace AZ
             using Base = ResourcePoolResolver;
         public:
             AZ_RTTI(QueryPoolResolver, "{90CD6495-0758-4ED2-8B95-D5C5DE80CEBC}", Base);
-            AZ_CLASS_ALLOCATOR(QueryPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPoolResolver, AZ::SystemAllocator);
 
             /// Request for a resolving part of the QueryPool into a buffer.
             struct ResolveRequest

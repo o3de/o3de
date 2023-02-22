@@ -360,7 +360,8 @@ namespace AZ
                 const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
                 const ShaderResourceGroupCompiledData& compiledData = srg->GetCompiledData();
 
-                if (binding.m_resourceTable.IsValid())
+                if (binding.m_resourceTable.IsValid()
+                    && compiledData.m_gpuViewsDescriptorHandle.ptr)
                 {
                     GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                 }
@@ -379,6 +380,18 @@ namespace AZ
                 if (binding.m_constantBuffer.IsValid())
                 {
                     GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
+                }
+            }
+
+            // set the bindless descriptor table if required by the shader
+            for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout.GetRootParameterBindingCount(); ++bindingIndex)
+            {
+                RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(bindingIndex);
+                if (binding.m_bindlessTable.IsValid())
+                {
+                    GetCommandList()->SetComputeRootDescriptorTable(
+                        binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                    break;
                 }
             }
 

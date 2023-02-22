@@ -110,6 +110,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
     , m_ui(new Ui::SequenceBatchRenderDialog)
     , m_renderListModel(new QStringListModel(this))
     , CV_TrackViewRenderOutputCapturing(0)
+    , m_editorIdleProcessingEnabled(true)
     , m_prefixValidator(new CPrefixValidator(this))
 {
     m_ui->setupUi(this);

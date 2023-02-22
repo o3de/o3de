@@ -27,7 +27,7 @@ namespace Ui
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator);
        
         explicit AssetEditorHeader(QWidget* parent = nullptr);
 

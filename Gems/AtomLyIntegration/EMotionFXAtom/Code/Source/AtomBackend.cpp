@@ -17,7 +17,7 @@ namespace AZ
     {
         class ActorAsset;
 
-        AZ_CLASS_ALLOCATOR_IMPL(AtomBackend, EMotionFX::Integration::EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(AtomBackend, EMotionFX::Integration::EMotionFXAllocator);
 
         EMotionFX::Integration::RenderActor* AtomBackend::CreateActor(EMotionFX::Integration::ActorAsset* asset)
         {

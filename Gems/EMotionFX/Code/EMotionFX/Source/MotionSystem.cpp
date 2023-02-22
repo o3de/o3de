@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSystem, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSystem, MotionAllocator)
 
 
     // constructor

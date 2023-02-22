@@ -71,7 +71,7 @@ namespace BusImplementation
         : public Bus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(HandlerCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HandlerCommon, AZ::SystemAllocator);
 
         unsigned int m_eventCalls = 0;
         unsigned int m_expectedOrder = 0;
@@ -127,7 +127,7 @@ namespace BusImplementation
         : public Bus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultiHandlerCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiHandlerCommon, AZ::SystemAllocator);
 
         MultiHandlerCommon() = default;
 
@@ -220,7 +220,7 @@ class Handler
     : public BusImplementation::HandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator);
 
     Handler(int id, bool connectOnConstruct)
     {
@@ -276,7 +276,7 @@ class Handler<Bus, AZ::EBusAddressPolicy::Single>
     : public BusImplementation::HandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator);
 
     Handler(int, bool connectOnConstruct)
     {
@@ -323,7 +323,7 @@ class MultiHandlerById
     : public BusImplementation::MultiHandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(MultiHandlerById, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(MultiHandlerById, AZ::SystemAllocator);
 
     MultiHandlerById(std::initializer_list<int> busIdList)
     {

@@ -32,7 +32,7 @@ namespace GraphCanvas
         , public StyleNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExtenderSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExtenderSlotLayout, AZ::SystemAllocator);
 
         ExtenderSlotLayout(ExtenderSlotLayoutComponent& owner);
         ~ExtenderSlotLayout();

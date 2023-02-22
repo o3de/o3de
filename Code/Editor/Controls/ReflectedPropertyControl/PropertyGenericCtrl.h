@@ -29,7 +29,7 @@ class GenericPopupPropertyEditor
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(GenericPopupPropertyEditor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GenericPopupPropertyEditor, AZ::SystemAllocator);
     GenericPopupPropertyEditor(QWidget* pParent = nullptr, bool showTwoButtons = false);
 
     void SetValue(const QString& value, bool notify = true);
@@ -56,7 +56,7 @@ class GenericPopupWidgetHandler
     , public AzToolsFramework::PropertyHandler < CReflectedVarGenericProperty, GenericPopupPropertyEditor >
 {
 public:
-    AZ_CLASS_ALLOCATOR(GenericPopupWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GenericPopupWidgetHandler, AZ::SystemAllocator);
     virtual bool IsDefaultHandler() const override { return false; }
 
     virtual AZ::u32 GetHandlerName(void) const override  { return CRC; }
@@ -157,7 +157,7 @@ class ListEditWidget : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(ListEditWidget, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ListEditWidget, AZ::SystemAllocator);
     ListEditWidget(QWidget *pParent = nullptr);
 
     void SetValue(const QString &value, bool notify = true);
@@ -184,7 +184,7 @@ template <class T, AZ::u32 CRC>
 class ListEditWidgetHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarGenericProperty, ListEditWidget >
 {
 public:
-    AZ_CLASS_ALLOCATOR(ListEditWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ListEditWidgetHandler, AZ::SystemAllocator);
     virtual bool IsDefaultHandler() const override { return false; }
 
     virtual AZ::u32 GetHandlerName(void) const override  { return CRC; }

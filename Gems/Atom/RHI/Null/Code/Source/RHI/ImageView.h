@@ -21,7 +21,7 @@ namespace AZ
         {
             using Base = RHI::ImageView;
         public:
-            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
             AZ_RTTI(ImageView, "{4960F7E4-1B2D-4F35-97B3-7B21A5E1C516}", Base);
 
             static RHI::Ptr<ImageView> Create();

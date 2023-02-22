@@ -16,7 +16,7 @@ namespace RemoteTools
     {
     public:
         AZ_RTTI(RemoteToolsModule, "{86ed333f-1f40-497f-ac31-9de31dee9371}", RemoteToolsModuleInterface);
-        AZ_CLASS_ALLOCATOR(RemoteToolsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsModule, AZ::SystemAllocator);
     };
 }// namespace RemoteTools
 

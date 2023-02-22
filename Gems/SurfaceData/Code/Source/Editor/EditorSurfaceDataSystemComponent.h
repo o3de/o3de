@@ -26,7 +26,7 @@ namespace SurfaceData
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorSurfaceDataSystemConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorSurfaceDataSystemConfig, AZ::SystemAllocator);
         AZ_RTTI(EditorSurfaceDataSystemConfig, "{13B511DF-B649-474C-AC32-1E1026DBB303}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
     };

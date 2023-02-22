@@ -55,7 +55,7 @@ static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3d
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator)
 
     AZ_CVAR(
         float,

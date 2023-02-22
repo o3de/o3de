@@ -46,7 +46,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator);
 
             static const char* DisplayName;
             static const char* Group;

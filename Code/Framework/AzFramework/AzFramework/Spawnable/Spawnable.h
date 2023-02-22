@@ -27,7 +27,7 @@ namespace AzFramework
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(Spawnable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Spawnable, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::Spawnable, "{855E3021-D305-4845-B284-20C3F7FDF16B}", AZ::Data::AssetData);
 
         // The order is important for sorting in the SpawnableAssetHandler.
@@ -51,7 +51,7 @@ namespace AzFramework
         //! An entity alias redirects the spawning of an entity to another entity, possibly in another spawnable.
         struct EntityAlias
         {
-            AZ_CLASS_ALLOCATOR(EntityAlias, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EntityAlias, AZ::SystemAllocator);
             AZ_TYPE_INFO(AzFramework::Spawnable::EntityAlias, "{C8D0C5BC-1F0B-4572-98C1-73B2CA8C9356}");
 
             bool HasLowerIndex(const EntityAlias& other) const;

@@ -35,7 +35,7 @@ namespace ScriptCanvas
         struct Output final
         {
             AZ_TYPE_INFO(Output, "{61EA2FF0-3112-40DF-BA45-CF4BE680DC52}");
-            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Output, AZ::SystemAllocator);
 
             SlotId slotId;
             VariableId interfaceSourceId;
@@ -52,7 +52,7 @@ namespace ScriptCanvas
         struct Input final
         {
             AZ_TYPE_INFO(Input, "{4E52A04D-C9FC-477F-8065-35F96A972CD6}");
-            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Input, AZ::SystemAllocator);
 
             SlotId slotId;
             VariableId interfaceSourceId;
@@ -68,7 +68,7 @@ namespace ScriptCanvas
         struct Return final
         {
             AZ_TYPE_INFO(Return, "{8CD09346-BF99-4B34-91EA-C553549F7639}");
-            AZ_CLASS_ALLOCATOR(Return, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Return, AZ::SystemAllocator);
 
             Inputs values;
         };
@@ -76,7 +76,7 @@ namespace ScriptCanvas
         struct Out final
         {
             AZ_TYPE_INFO(Out, "{DD3D2547-868C-40DF-A37C-F60BE06FFFBA}");
-            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Out, AZ::SystemAllocator);
 
             SlotId slotId;
             AZStd::string name;
@@ -89,7 +89,7 @@ namespace ScriptCanvas
         struct In final
         {
             AZ_TYPE_INFO(In, "{4AAAEB0B-6367-46E5-B05D-E76EF884E16F}");
-            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(In, AZ::SystemAllocator);
 
             SlotId slotId;
             Inputs inputs;
@@ -108,7 +108,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(Map, "{BAA81EAF-E35A-4F19-B73A-699B91DB113C}");
-            AZ_CLASS_ALLOCATOR(Map, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Map, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* refectContext);
 

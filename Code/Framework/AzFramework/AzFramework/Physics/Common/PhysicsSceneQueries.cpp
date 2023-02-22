@@ -23,12 +23,12 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RayCastRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(ShapeCastRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(OverlapRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHit, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHits, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RayCastRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(ShapeCastRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(OverlapRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHit, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHits, AZ::SystemAllocator);
 
     namespace Internal
     {
@@ -73,7 +73,7 @@ namespace AzPhysics
     {
     public:
         AZ_TYPE_INFO(SceneQueries, "{4EFA3DA5-C0E3-4753-8C55-202228CA527E}");
-        AZ_CLASS_ALLOCATOR(SceneQueries, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneQueries, AZ::SystemAllocator);
 
         SceneQueries() = default;
         ~SceneQueries() = default;

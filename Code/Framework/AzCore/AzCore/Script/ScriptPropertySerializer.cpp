@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ScriptPropertySerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ScriptPropertySerializer, SystemAllocator);
 
     JsonSerializationResult::Result ScriptPropertySerializer::Load
         ( void* outputValue

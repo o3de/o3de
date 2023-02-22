@@ -33,7 +33,7 @@ namespace GraphCanvas
         : public GraphicsEffect<QGraphicsWidget>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Occluder, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Occluder, AZ::SystemAllocator);
         
         Occluder(const OccluderConfiguration& occluderConfiguration);
         ~Occluder() = default;

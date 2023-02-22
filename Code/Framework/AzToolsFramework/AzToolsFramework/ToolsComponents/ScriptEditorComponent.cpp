@@ -35,7 +35,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AttributeDynamicScriptValue, "{46803928-11c9-4176-b2fe-2f0aed99bfeb}", Attribute); 
-            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator)
 
             AttributeDynamicScriptValue(const DynamicSerializableField& value)
                 : m_value(value) {}

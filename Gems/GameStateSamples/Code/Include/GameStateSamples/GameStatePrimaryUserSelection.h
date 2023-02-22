@@ -22,7 +22,7 @@ namespace GameStateSamples
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(GameStatePrimaryUserSelection, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStatePrimaryUserSelection, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

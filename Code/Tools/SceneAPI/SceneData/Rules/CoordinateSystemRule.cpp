@@ -17,7 +17,7 @@
 
 namespace AZ::SceneAPI::SceneData
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CoordinateSystemRule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CoordinateSystemRule, AZ::SystemAllocator)
 
     CoordinateSystemRule::CoordinateSystemRule()
         : m_targetCoordinateSystem(ZUpPositiveYForward)

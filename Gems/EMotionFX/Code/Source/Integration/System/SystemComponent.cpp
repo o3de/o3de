@@ -104,7 +104,7 @@ namespace EMotionFX
             : public EMotionFX::EventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator);
 
             const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
@@ -748,7 +748,7 @@ namespace EMotionFX
             if (rootPath)
             {
                 AZStd::string mediaRootPath = rootPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mediaRootPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, mediaRootPath);
                 EMotionFX::GetEMotionFX().SetMediaRootFolder(mediaRootPath.c_str());
             }
             else

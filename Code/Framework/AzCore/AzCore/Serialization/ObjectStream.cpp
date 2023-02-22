@@ -105,7 +105,7 @@ namespace AZ
                 ST_BINARYFLAG_ELEMENT_END       = 0
             };
 
-            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator);
 
             ObjectStreamImpl(IO::GenericStream* stream, SerializeContext* sc, const ClassReadyCB& readyCB, const CompletionCB& doneCB, const FilterDescriptor& filterDesc = FilterDescriptor(), int flags = 0, const InplaceLoadRootInfoCB& inplaceLoadInfoCB = InplaceLoadRootInfoCB())
                 : ObjectStream(sc)

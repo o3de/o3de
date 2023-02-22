@@ -25,7 +25,7 @@ namespace JsonSerializationTests
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator);
         AZ_RTTI(TestAssetData, "{90BCCF83-D453-4A70-973D-57C2ACD04661}", AZ::Data::AssetData);
 
         TestAssetData() = default;

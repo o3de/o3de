@@ -26,7 +26,7 @@ namespace AtomToolsFramework
     //! Contains all of the settings for an individual input or output slot on a DynamicNode
     struct DynamicNodeSlotConfig final
     {
-        AZ_CLASS_ALLOCATOR(DynamicNodeSlotConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNodeSlotConfig, AZ::SystemAllocator);
         AZ_RTTI(DynamicNodeSlotConfig, "{F2C95A99-41FD-4077-B9A7-B0BF8F76C2CE}");
         static void Reflect(AZ::ReflectContext* context);
 
