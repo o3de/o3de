@@ -578,8 +578,8 @@ void CLayoutViewPane::OnMenuBindingHook()
 
     // Helpers
     {
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
     }
 

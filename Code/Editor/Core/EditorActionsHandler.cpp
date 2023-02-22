@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
@@ -1175,37 +1176,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // View Bookmarks
     InitializeViewBookmarkActions();
 
-    // Show Helpers
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleHelpers";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Helpers";
-        actionProperties.m_description = "Show/Hide Helpers.";
-        actionProperties.m_category = "View";
-        actionProperties.m_iconPath = ":/Menu/helpers.svg";
-
-        m_actionManagerInterface->RegisterCheckableAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            []
-            {
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
-            },
-            []
-            {
-                return AzToolsFramework::HelpersVisible();
-            }
-        );
-
-        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
-
-        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Shift+Space");
-    }
-
     // Show Icons
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleIcons";
@@ -1224,24 +1194,64 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             },
             []
             {
                 return AzToolsFramework::IconsVisible();
-            }
-        );
+            });
 
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier, actionIdentifier);
 
         m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Space");
     }
 
+    // Show Helpers
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleHelpers";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Show Helpers for all entities";
+        actionProperties.m_description = "Show/Hide Helpers.";
+        actionProperties.m_category = "View";
+        actionProperties.m_iconPath = ":/Menu/helpers.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    AzToolsFramework::HelpersVisible());
+
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    !AzToolsFramework::HelpersVisible());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            },
+            []
+            {
+                return AzToolsFramework::HelpersVisible();
+            }
+        );
+
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
+
+        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Shift+Space");
+    }
+
     // Only Show Helpers for Selected Entities
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleSelectedEntityHelpers";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Helpers for Selected Entities Only";
-        actionProperties.m_description = "If enabled, shows Helpers for selected entities only. By default, shows Helpers for all entities.";
+        actionProperties.m_name = "Show Helpers for selected entities";
+        actionProperties.m_description = "If enabled, shows Helpers for selected entities only.";
         actionProperties.m_category = "View";
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -1254,6 +1264,14 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
                     AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    !AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             },
             []
             {
@@ -1819,8 +1837,8 @@ void EditorActionsHandler::OnMenuBindingHook()
                 }
             }
             m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 500);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 600);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 700);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 800);
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);

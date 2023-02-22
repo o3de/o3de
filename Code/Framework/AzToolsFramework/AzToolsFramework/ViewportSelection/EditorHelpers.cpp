@@ -295,7 +295,7 @@ namespace AzToolsFramework
         const bool helpersVisible = HelpersVisible(viewportInfo.m_viewportId);
         const bool onlyDrawSelectedEntities = OnlyShowHelpersForSelectedEntities(viewportInfo.m_viewportId);
 
-        if (helpersVisible)
+        if (helpersVisible || onlyDrawSelectedEntities)
         {
             for (size_t entityCacheIndex = 0, visibleEntityCount = m_entityDataCache->VisibleEntityDataCount();
                  entityCacheIndex < visibleEntityCount;

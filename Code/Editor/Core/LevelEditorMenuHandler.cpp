@@ -734,8 +734,8 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
 
     // Refresh Style
