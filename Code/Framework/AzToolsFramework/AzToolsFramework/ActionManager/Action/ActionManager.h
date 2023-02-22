@@ -122,11 +122,11 @@ namespace AzToolsFramework
         ActionVisibility GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const override;
         QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;
         void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) override;
+        void Reset();
 
-        void Clear();
+        ApplicationWatcher m_applicationWatcher;
 
         AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
-        ApplicationWatcher m_applicationWatcher;
         AZStd::unordered_map<AZStd::string, ActionContextWidgetWatcher*> m_actionContextWidgetWatchers;
         AZStd::unordered_map<AZStd::string, EditorAction*> m_actions;
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionUpdaters;

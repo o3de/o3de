@@ -7,7 +7,6 @@
  */
 
 #include <QApplication>
-#include <QDebug>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
@@ -180,7 +179,7 @@ namespace AzToolsFramework
         AZ::Interface<ActionManagerInternalInterface>::Unregister(this);
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
-        Clear();
+        Reset();
     }
 
     ActionManagerOperationResult ActionManager::RegisterActionContext(
@@ -222,8 +221,6 @@ namespace AzToolsFramework
         const ActionProperties& properties,
         AZStd::function<void()> handler)
     {
-        qDebug() << "RegisterAction \"" << actionIdentifier.c_str() << "\"";
-
         auto actionContextIterator = m_actionContexts.find(contextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
@@ -270,8 +267,6 @@ namespace AzToolsFramework
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
     {
-        qDebug() << "RegisterCheckableAction \"" << actionIdentifier.c_str() << "\"";
-
         auto actionContextIterator = m_actionContexts.find(contextIdentifier);
         if (actionContextIterator == m_actionContexts.end())
         {
@@ -549,22 +544,34 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    void ActionManager::Clear()
+    void ActionManager::Reset()
     {
-        for (auto elem : m_actions)
-        {
-            delete elem.second;
-        }
-
+        // Reset all stored values that are registered by the environment after initialization.
         for (auto elem : m_actionContexts)
         {
             delete elem.second;
         }
+        m_actionContexts.clear();
 
         for (auto elem : m_actionContextWidgetWatchers)
         {
             delete elem.second;
         }
+        m_actionContextWidgetWatchers.clear();
+
+        for (auto elem : m_actions)
+        {
+            delete elem.second;
+        }
+        m_actions.clear();
+
+        m_actionUpdaters.clear();
+
+        for (auto elem : m_widgetActions)
+        {
+            delete elem.second;
+        }
+        m_widgetActions.clear();
     }
 
     ActionManagerOperationResult ActionManager::RegisterWidgetAction(

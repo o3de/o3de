@@ -77,6 +77,7 @@ namespace AzToolsFramework
         void RefreshMenuBars() override;
         MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
+        void Reset() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

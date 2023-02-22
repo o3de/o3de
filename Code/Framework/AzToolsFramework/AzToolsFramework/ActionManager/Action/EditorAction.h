@@ -43,7 +43,7 @@ namespace AzToolsFramework
             AZStd::function<void()> handler,
             AZStd::function<bool()> checkStateCallback = nullptr
         );
-        ~EditorAction();
+        virtual ~EditorAction();
 
         static void Initialize();
 

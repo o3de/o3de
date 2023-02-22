@@ -11,7 +11,6 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 #include <QAction>
-#include <QDebug>
 #include <QIcon>
 
 namespace AzToolsFramework
@@ -57,19 +56,13 @@ namespace AzToolsFramework
             // Trigger it to set the starting value correctly.
             m_action->setChecked(m_checkStateCallback());
         }
-
-        qDebug() << "EDITORACTION \"" << m_identifier.c_str() << "\" CONSTRUCTOR";
     }
 
     EditorAction::~EditorAction()
     {
-        m_action->disconnect();
-
         m_triggerBehavior = nullptr;
         m_checkStateCallback = nullptr;
         m_enabledStateCallbacks.clear();
-
-        qDebug() << "EDITORACTION \"" << m_identifier.c_str() << "\" DESTRUCTOR";
     }
 
     void EditorAction::Initialize()
