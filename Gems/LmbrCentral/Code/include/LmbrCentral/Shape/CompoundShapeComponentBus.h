@@ -23,7 +23,7 @@ namespace LmbrCentral
     class CompoundShapeConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CompoundShapeConfiguration, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(CompoundShapeConfiguration, AZ::SystemAllocator)
         AZ_RTTI(CompoundShapeConfiguration, "{4CEB4E5C-4CBD-4A84-88BA-87B23C103F3F}")
 
         static void Reflect(AZ::ReflectContext* context)

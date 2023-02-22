@@ -27,7 +27,7 @@ namespace AZ
             using Base = Pipeline;
 
         public:
-            AZ_CLASS_ALLOCATOR(GraphicsPipeline, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GraphicsPipeline, AZ::SystemAllocator);
             AZ_RTTI(GraphicsPipeline, "C1152822-AAC0-427B-9200-6370EE8D4545", Base);
 
             ~GraphicsPipeline() = default;

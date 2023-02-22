@@ -129,6 +129,16 @@ namespace PhysX
         return nullptr;
     }
 
+    Physics::MaterialId Shape::GetMaterialId() const
+    {
+        if (!m_materials.empty())
+        {
+            return m_materials[0]->GetId();
+        }
+
+        return {};
+    }
+
     void Shape::SetPhysXMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
     {
         m_materials = materials;

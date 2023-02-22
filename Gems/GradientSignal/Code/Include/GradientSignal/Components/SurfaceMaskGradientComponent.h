@@ -31,7 +31,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskGradientConfig, "{E59D0A4C-BA3D-4288-B409-A00B7D5566AA}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         SurfaceData::SurfaceTagVector m_surfaceTagList;

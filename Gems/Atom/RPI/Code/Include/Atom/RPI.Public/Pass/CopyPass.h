@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_RTTI(CopyPass, "{7387500D-B1BA-4916-B38C-24F5C8DAF839}", RenderPass);
-            AZ_CLASS_ALLOCATOR(CopyPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CopyPass, SystemAllocator);
             virtual ~CopyPass() = default;
 
             static Ptr<CopyPass> Create(const PassDescriptor& descriptor);

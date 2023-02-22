@@ -23,7 +23,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoUpdateLink, "{9D2488FA-E0C4-408A-9494-4E0624E95820}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLink, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLink, AZ::SystemAllocator);
 
             explicit PrefabUndoUpdateLink(const AZStd::string& undoOperationName);
 

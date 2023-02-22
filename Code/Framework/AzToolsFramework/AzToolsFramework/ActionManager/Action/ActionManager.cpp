@@ -15,8 +15,43 @@
 
 namespace AzToolsFramework
 {
-    ActionContextWidgetWatcher::ActionContextWidgetWatcher(EditorActionContext* editorActionContext)
-        : m_editorActionContext(editorActionContext)
+    void ApplicationWatcher::SetShortcutTriggeredFlag()
+    {
+        m_shortcutWasTriggered = true;
+    }
+
+    bool ApplicationWatcher::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
+    {
+        switch (event->type())
+        {
+        case QEvent::ShortcutOverride:
+        {
+            m_shortcutWasTriggered = false;
+            break;
+        }
+        case QEvent::KeyPress:
+        {
+            if (m_shortcutWasTriggered)
+            {
+                // Whenever a shortcut is triggered, the Action Manager system also accepts its ShortcutOverride
+                // which results in a corresponding KeyPress event to be sent. We eat it at the application level
+                // to prevent user interactions from triggering both shortcuts and keypresses in one go.
+                m_shortcutWasTriggered = false;
+                return true;
+            }
+
+            break;
+        }
+        default:
+            break;
+        }
+
+        return false;
+    }
+
+    ActionContextWidgetWatcher::ActionContextWidgetWatcher(ApplicationWatcher* applicationWatcher, EditorActionContext* editorActionContext)
+        : m_applicationWatcher(applicationWatcher)
+        , m_editorActionContext(editorActionContext)
     {
     }
     
@@ -31,8 +66,7 @@ namespace AzToolsFramework
             // replicate it, its owner can instead implement a keyEvent handler
             if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
             {
-                event->accept();
-                return true;
+                return false;
             }
 
             auto keyEvent = static_cast<QKeyEvent*>(event);
@@ -60,8 +94,9 @@ namespace AzToolsFramework
 
             if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), keySequence))
             {
-                // We need to accept the event in addition to return true on this event filter
-                // to ensure the event doesn't get propagated to any parent widgets.
+                // We need to accept the event in addition to return true on this event filter to ensure the event doesn't get propagated
+                // to any parent widgets. Signal the application eventFilter to eat the KeyPress that will be spawned by accepting the event.
+                m_applicationWatcher->SetShortcutTriggeredFlag();
                 event->accept();
                 return true;
             }
@@ -69,21 +104,22 @@ namespace AzToolsFramework
             break;
         }
         case QEvent::Shortcut:
+        {
+            // QActions default "autoRepeat" to true, which is not an ideal user experience.
+            // We globally disable that behavior here - in the unlikely event a shortcut needs to
+            // replicate it, its owner can instead implement a keyEvent handler
+            if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
             {
-                // QActions default "autoRepeat" to true, which is not an ideal user experience.
-                // We globally disable that behavior here - in the unlikely event a shortcut needs to
-                // replicate it, its owner can instead implement a keyEvent handler
-                if (static_cast<QKeyEvent*>(event)->isAutoRepeat())
-                {
-                    event->accept();
-                    return true;
-                }
+                event->accept();
+                return true;
+            }
 
             if (auto shortcutEvent = static_cast<QShortcutEvent*>(event))
             {
                 QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
 
-                if (TriggerActiveActionsWithShortcut(m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
+                if (TriggerActiveActionsWithShortcut(
+                        m_editorActionContext->GetActions(), watchedWidget->actions(), shortcutEvent->key()))
                 {
                     return true;
                 }
@@ -134,6 +170,8 @@ namespace AzToolsFramework
         AZ::Interface<ActionManagerInternalInterface>::Register(this);
 
         EditorAction::Initialize();
+
+        qApp->installEventFilter(&m_applicationWatcher);
     }
 
     ActionManager::~ActionManager()
@@ -165,7 +203,7 @@ namespace AzToolsFramework
         m_actionContextWidgetWatchers.insert(
             {
                 contextIdentifier,
-                new ActionContextWidgetWatcher(editorActionContext)
+                new ActionContextWidgetWatcher(&m_applicationWatcher, editorActionContext)
             }
         );
 

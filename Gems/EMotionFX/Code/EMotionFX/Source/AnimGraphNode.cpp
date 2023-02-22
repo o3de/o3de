@@ -45,8 +45,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator)
 
     AnimGraphNode::AnimGraphNode()
         : AnimGraphObject(nullptr)

@@ -42,7 +42,7 @@ namespace PhysX
     class BaseForce
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseForce, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseForce, AZ::SystemAllocator);
         AZ_RTTI(BaseForce, "{0D1DFFE1-16C1-425B-972B-DC70FDC61B56}");
         static void Reflect(AZ::SerializeContext& context);
 
@@ -76,7 +76,7 @@ namespace PhysX
         , private ForceWorldSpaceRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceWorldSpace, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceWorldSpace, AZ::SystemAllocator);
         AZ_RTTI(ForceWorldSpace, "{A6C17DD3-7A09-4BC7-8ACC-C0BD04EA8F7C}", BaseForce);
         ForceWorldSpace() = default;
         ForceWorldSpace(const AZ::Vector3& direction, float magnitude);
@@ -112,7 +112,7 @@ namespace PhysX
         , private ForceLocalSpaceRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceLocalSpace, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceLocalSpace, AZ::SystemAllocator);
         AZ_RTTI(ForceLocalSpace, "{F0EAFB7C-1BC7-4497-99AE-ECBF7169AB81}", BaseForce);
         ForceLocalSpace() = default;
         ForceLocalSpace(const AZ::Vector3& direction, float magnitude);
@@ -149,7 +149,7 @@ namespace PhysX
         , private ForcePointRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForcePoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForcePoint, AZ::SystemAllocator);
         AZ_RTTI(ForcePoint, "{3F8ABEAC-6972-4845-A131-EA9831029E68}", BaseForce);
         ForcePoint() = default;
         explicit ForcePoint(float magnitude);
@@ -183,7 +183,7 @@ namespace PhysX
         , private ForceSplineFollowRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceSplineFollow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceSplineFollow, AZ::SystemAllocator);
         AZ_RTTI(ForceSplineFollow, "{AB397D4C-62DA-43F0-8CF1-9BD9013129BB}", BaseForce);
         ForceSplineFollow() = default;
         ForceSplineFollow(float dampingRatio
@@ -225,7 +225,7 @@ namespace PhysX
         , private ForceSimpleDragRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceSimpleDrag, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceSimpleDrag, AZ::SystemAllocator);
         AZ_RTTI(ForceSimpleDrag, "{56A4E393-4724-4486-B4C0-E02C4EF1534C}", BaseForce);
         ForceSimpleDrag() = default;
         ForceSimpleDrag(float dragCoefficient, float volumeDensity);
@@ -260,7 +260,7 @@ namespace PhysX
         , private ForceLinearDampingRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceLinearDamping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceLinearDamping, AZ::SystemAllocator);
         AZ_RTTI(ForceLinearDamping, "{7EECFBD7-0942-4960-A54A-7582159CFFA3}", BaseForce);
         ForceLinearDamping() = default;
         explicit ForceLinearDamping(float damping);

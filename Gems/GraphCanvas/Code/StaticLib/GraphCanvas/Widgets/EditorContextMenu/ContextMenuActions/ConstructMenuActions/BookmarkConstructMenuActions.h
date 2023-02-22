@@ -15,7 +15,7 @@ namespace GraphCanvas
         : public ConstructContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddBookmarkMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddBookmarkMenuAction, AZ::SystemAllocator);
 
         AddBookmarkMenuAction(QObject* parent);
         virtual ~AddBookmarkMenuAction() = default;

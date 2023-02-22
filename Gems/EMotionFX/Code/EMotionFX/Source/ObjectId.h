@@ -23,7 +23,7 @@ namespace EMotionFX
     {
     public:
         AZ_TYPE_INFO(ObjectId, "{B7DCAC0C-0F48-4350-B169-0387C2602328}")
-        AZ_CLASS_ALLOCATOR(ObjectId, EMotionFX::AnimGraphAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ObjectId, EMotionFX::AnimGraphAllocator)
 
         static const ObjectId InvalidId;
 

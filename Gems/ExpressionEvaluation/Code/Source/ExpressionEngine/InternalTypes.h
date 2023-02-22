@@ -32,7 +32,7 @@ namespace ExpressionEvaluation
         : public AZStd::stack<ExpressionResult>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExpressionResultStack, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpressionResultStack, AZ::SystemAllocator);
 
         ExpressionResult PopAndReturn()
         {

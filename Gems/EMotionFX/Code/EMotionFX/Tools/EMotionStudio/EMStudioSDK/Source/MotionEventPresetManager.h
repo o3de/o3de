@@ -25,7 +25,7 @@ namespace EMStudio
     {
     public:
         AZ_RTTI(EMStudio::MotionEventPreset, "{EDE6662A-32C4-4DE1-9EC5-19C9F506ACAE}")
-        AZ_CLASS_ALLOCATOR(MotionEventPreset, EMStudio::UIAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionEventPreset, EMStudio::UIAllocator)
 
         MotionEventPreset() = default;
         MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color, const AZStd::string& comment);

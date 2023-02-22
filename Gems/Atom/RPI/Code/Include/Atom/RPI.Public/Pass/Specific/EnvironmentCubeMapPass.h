@@ -28,7 +28,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EnvironmentCubeMapPass, "{B7EA8010-FB24-451C-890B-6E40B94546B9}", ParentPass);
-            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPass, SystemAllocator);
 
             static Ptr<EnvironmentCubeMapPass> Create(const PassDescriptor& passDescriptor);
             virtual ~EnvironmentCubeMapPass();

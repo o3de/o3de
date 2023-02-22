@@ -30,7 +30,7 @@ namespace Audio
     class MicrophoneSystemComponentWindows : public MicrophoneSystemComponent::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentWindows, AZ::SystemAllocator);
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         bool InitializeDevice() override

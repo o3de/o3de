@@ -43,7 +43,7 @@ namespace AZ
 
             public:
                 AZ_RTTI(HairSkinningComputePass, "{DC8D323E-41FF-4FED-89C6-A254FD6809FC}", RPI::ComputePass);
-                AZ_CLASS_ALLOCATOR(HairSkinningComputePass, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairSkinningComputePass, SystemAllocator);
                 ~HairSkinningComputePass() = default;
 
                 // Creates a HairSkinningComputePass

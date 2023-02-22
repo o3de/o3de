@@ -6,65 +6,42 @@
  *
  */
 
-#include "TestColliderComponent.h"
+#include <PhysXColliderComponentModeTests.h>
 
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
-#include <AZTestShared/Math/MathTestHelpers.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
-#include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Viewport/ViewportSettings.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
-#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <Tests/Viewport/ViewportUiManagerTests.cpp>
 #include <EditorColliderComponent.h>
 #include <EditorStaticRigidBodyComponent.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
 namespace UnitTest
 {
-    class PhysXColliderComponentModeTest
-        : public ToolsApplicationFixture<false>
+    AZ::Entity* PhysXColliderComponentModeTest::CreateColliderComponent()
     {
-    protected:
-        using EntityPtr = AZ::Entity*;
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
-        AZ::ComponentId m_colliderComponentId;
+        entity->Deactivate();
 
-        EntityPtr CreateColliderComponent()
-        {
-            AZ::Entity* entity = nullptr;
-            AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+        // Add placeholder component which implements component mode.
+        auto colliderComponent = entity->CreateComponent<TestColliderComponentMode>();
 
-            entity->Deactivate();
+        m_colliderComponentId = colliderComponent->GetId();
 
-            // Add placeholder component which implements component mode.
-            auto colliderComponent = entity->CreateComponent<TestColliderComponentMode>();
+        entity->Activate();
 
-            m_colliderComponentId = colliderComponent->GetId();
+        AzToolsFramework::SelectEntity(entityId);
 
-            entity->Activate();
+        return entity;
+    }
 
-            AzToolsFramework::SelectEntity(entityId);
+    void PhysXColliderComponentModeTest::SetUpEditorFixtureImpl()
+    {
+        m_viewportManagerWrapper.Create();
+    }
 
-            return entity;
-        }
-
-        // Needed to support ViewportUi request calls.
-        ViewportManagerWrapper m_viewportManagerWrapper;
-
-        void SetUpEditorFixtureImpl() override
-        {
-            m_viewportManagerWrapper.Create();
-        }
-        void TearDownEditorFixtureImpl() override
-        {
-            m_viewportManagerWrapper.Destroy();
-        }
-    };
+    void PhysXColliderComponentModeTest::TearDownEditorFixtureImpl()
+    {
+        m_viewportManagerWrapper.Destroy();
+    }
 
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
@@ -395,9 +372,6 @@ namespace UnitTest
         EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
     }
 
-    using PhysXColliderComponentModeManipulatorTest =
-        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<PhysXColliderComponentModeTest>;
-
     TEST_F(PhysXColliderComponentModeManipulatorTest, AssetScaleManipulatorsScaleInCorrectDirection)
     {
         auto colliderEntity = CreateColliderComponent();
@@ -432,23 +406,6 @@ namespace UnitTest
         EXPECT_NEAR(assetScale.GetY(), 1.0f, tolerance);
         EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
-
-    class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture<false>
-    {
-    public:
-        void SetUpEditorFixtureImpl() override;
-        void TearDownEditorFixtureImpl() override;
-        void SetupTransform(const AZ::Quaternion& rotation, const AZ::Vector3& translation, float uniformScale);
-        void SetupCollider(
-            const Physics::ShapeConfiguration& shapeConfiguration,
-            const AZ::Quaternion& colliderRotation,
-            const AZ::Vector3& colliderOffset);
-        void SetupNonUniformScale(const AZ::Vector3& nonUniformScale);
-        void EnterColliderSubMode(PhysX::ColliderComponentModeRequests::SubMode subMode);
-
-        AZ::Entity* m_entity = nullptr;
-        AZ::EntityComponentIdPair m_idPair;
-    };
 
     void PhysXEditorColliderComponentFixture::SetUpEditorFixtureImpl()
     {
@@ -502,9 +459,6 @@ namespace UnitTest
         EnterComponentMode<PhysX::EditorColliderComponent>();
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode, subMode);
     }
-
-    using PhysXEditorColliderComponentManipulatorFixture =
-        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<PhysXEditorColliderComponentFixture>;
 
     // use a reasonably large tolerance because manipulator precision is limited by viewport resolution
     static const float ManipulatorTolerance = 0.01f;

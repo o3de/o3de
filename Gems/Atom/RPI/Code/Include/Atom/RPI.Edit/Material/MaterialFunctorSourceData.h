@@ -38,7 +38,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MaterialFunctorSourceData, "{2E8C6884-E136-4494-AEC1-5F23473278DC}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceData, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

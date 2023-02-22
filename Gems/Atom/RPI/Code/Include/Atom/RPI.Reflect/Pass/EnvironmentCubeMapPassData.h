@@ -19,7 +19,7 @@ namespace AZ
             : public PassData
         {            
             AZ_RTTI(EnvironmentCubeMapPassData, "{B97DDC6F-1CC6-44D8-8926-042C20D66272}", PassData);
-            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnvironmentCubeMapPassData, SystemAllocator);
 
             EnvironmentCubeMapPassData() = default;
             virtual ~EnvironmentCubeMapPassData() = default;

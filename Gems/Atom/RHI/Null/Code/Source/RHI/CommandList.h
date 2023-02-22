@@ -22,7 +22,7 @@ namespace AZ
         {
             using Base = RHI::CommandList;
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
             AZ_RTTI(CommandList, "{265B877D-21DC-48FF-9D82-AA30C3E16422}", Base);
 
             static RHI::Ptr<CommandList> Create();

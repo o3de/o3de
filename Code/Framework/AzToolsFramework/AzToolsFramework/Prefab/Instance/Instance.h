@@ -64,7 +64,7 @@ namespace AzToolsFramework
         class Instance
         {
         public:
-            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator);
             AZ_RTTI(Instance, "{D4219332-A648-4285-9CA6-B7F095987CD3}");
 
             friend class AzToolsFramework::PrefabEditorEntityOwnershipService;

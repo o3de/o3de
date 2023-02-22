@@ -30,7 +30,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(StandardNodePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StandardNodePaletteItem, AZ::SystemAllocator);
 
         //! Constructor
         //! \param nodeName Name of the node that will show up in the Palette
@@ -60,7 +60,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI((CreateStandardNodeMimeEvent, "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateStandardNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateStandardNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {

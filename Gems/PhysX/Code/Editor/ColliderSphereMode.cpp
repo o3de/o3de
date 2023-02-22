@@ -14,7 +14,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderSphereMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderSphereMode, AZ::SystemAllocator);
 
     void ColliderSphereMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {

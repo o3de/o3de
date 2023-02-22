@@ -96,7 +96,7 @@ namespace AzFramework
         : public WindowRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator);
 
         //! Constructor
         //! \param[in] title The title of the window (may or may not be displayed depending on the platform).

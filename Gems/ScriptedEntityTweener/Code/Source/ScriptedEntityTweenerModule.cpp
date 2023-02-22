@@ -51,7 +51,7 @@ namespace ScriptedEntityTweener
                 bool inGame = wparam == 1;
                 if (!inGame)
                 {
-                    EBUS_EVENT(ScriptedEntityTweenerBus, Reset);
+                    ScriptedEntityTweenerBus::Broadcast(&ScriptedEntityTweenerBus::Events::Reset);
                 }
             } break;
             default:

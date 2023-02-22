@@ -110,6 +110,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
     , m_ui(new Ui::SequenceBatchRenderDialog)
     , m_renderListModel(new QStringListModel(this))
     , CV_TrackViewRenderOutputCapturing(0)
+    , m_editorIdleProcessingEnabled(true)
     , m_prefixValidator(new CPrefixValidator(this))
 {
     m_ui->setupUi(this);
@@ -1330,7 +1331,7 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
         if (canBeginFrameCapture())
         {
-            const AZStd::string fileName = AZStd::string::format("Frame_%06d", m_renderContext.frameNumber);
+            const AZStd::string fileName = AZStd::string::format("%s_%06d", m_renderContext.captureOptions.prefix.c_str(), m_renderContext.frameNumber);
 
             AZStd::string filePath;
             AzFramework::StringFunc::Path::Join(

@@ -59,7 +59,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(BreakpointSavedState, "{EB3E0061-75AC-41F7-8631-6072F6C018EB}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(BreakpointSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BreakpointSavedState, AZ::SystemAllocator);
         BreakpointSavedState() {}
         BreakpointMap m_Breakpoints;
         static void Reflect(AZ::ReflectContext* reflection)

@@ -42,7 +42,7 @@ namespace AZ
             
             //Using SystemAllocator here instead of ThreadPoolAllocator as it gets slower when
             //we create thousands of DescriptorSets related to SRGs
-            AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorSet, AZ::SystemAllocator);
             AZ_RTTI(DescriptorSet, "06D7FC0A-B53E-46D9-975D-D4E445356645", Base);
 
             struct Descriptor

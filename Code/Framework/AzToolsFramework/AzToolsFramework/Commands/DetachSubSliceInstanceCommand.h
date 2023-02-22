@@ -16,7 +16,7 @@ namespace AzToolsFramework
         : public BaseSliceCommand
     {
     public:
-        AZ_CLASS_ALLOCATOR(DetachSubsliceInstanceCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DetachSubsliceInstanceCommand, AZ::SystemAllocator);
         AZ_RTTI(DetachSubsliceInstanceCommand, "{FCDE52C0-F334-4701-9CA6-43FA089007EE}");
 
         DetachSubsliceInstanceCommand(const AZ::SliceComponent::SliceInstanceEntityIdRemapList& subsliceRootList, const AZStd::string& friendlyName);

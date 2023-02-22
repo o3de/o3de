@@ -53,7 +53,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(AssetEditorWidgetUserSettings, "{382FE424-4541-4D93-9BA4-DE17A6DF8676}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(AssetEditorWidgetUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetEditorWidgetUserSettings, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -76,7 +76,7 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetEditorWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetEditorWidget, AZ::SystemAllocator);
 
             explicit AssetEditorWidget(QWidget* parent = nullptr);
             ~AssetEditorWidget() override;

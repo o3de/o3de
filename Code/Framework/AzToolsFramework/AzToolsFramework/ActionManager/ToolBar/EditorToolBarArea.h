@@ -28,7 +28,7 @@ namespace AzToolsFramework
     class EditorToolBarArea final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator);
         AZ_RTTI(EditorToolBarArea, "{7B55B739-B4E0-41C0-9E71-B526BD62C3FB}");
 
         EditorToolBarArea() = default;

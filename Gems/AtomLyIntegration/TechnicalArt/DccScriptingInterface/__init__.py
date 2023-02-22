@@ -405,17 +405,16 @@ if not O3DE_DEV:
         # I  assume that would mainly happen only if manually edited?
 
         # if  this returns None,  section 'key'  doesn't exist
-        ENGINES_PATH = get_key_value(O3DE_MANIFEST_DATA, 'engines_path')
+        ENGINES = get_key_value(O3DE_MANIFEST_DATA, 'engines')
 
-        if ENGINES_PATH:
+        if ENGINES:
 
-            if len(ENGINES_PATH) < 1:
+            if len(ENGINES) < 1:
                 _LOGGER(f'no engines in o3de manifest')
 
-            # what if there are multiple "engines_path"s? We don't know which to use
-            elif len(ENGINES_PATH) == 1: # there can only be one
-                O3DE_ENGINENAME = list(ENGINES_PATH.items())[0][0]
-                O3DE_DEV = Path(list(ENGINES_PATH.items())[0][1])
+            # what if there are multiple engines? We don't know which to use
+            elif len(ENGINES) == 1: # there can only be one
+                O3DE_DEV = Path(ENGINES[0])
 
             else:
                 _LOGGER.warning(f'Manifest defines more then one engine: {O3DE_DEV.as_posix()}')

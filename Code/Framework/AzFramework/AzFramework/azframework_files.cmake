@@ -475,7 +475,4 @@ set(FILES
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
-    Dependency/Dependency.h
-    Dependency/Dependency.inl
-    Dependency/Version.h
 )

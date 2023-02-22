@@ -13,6 +13,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Utils/Utils.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -123,7 +124,7 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-            if (m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
+            if (m_context.CreateInstance(&m_instanceCreateInfo, VkSystemAllocator::Get(), &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
                 return false;
@@ -166,7 +167,7 @@ namespace AZ
                 }
                 m_supportedDevices.clear();
 
-                m_context.DestroyInstance(m_instance, nullptr);
+                m_context.DestroyInstance(m_instance, VkSystemAllocator::Get());
                 m_instance = VK_NULL_HANDLE;
             }
         }

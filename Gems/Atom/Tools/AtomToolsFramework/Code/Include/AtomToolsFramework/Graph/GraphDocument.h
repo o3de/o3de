@@ -32,7 +32,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(GraphDocument, "{7AFB5F8B-2E83-47E6-9DC8-AB70E0194D3E}", AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(GraphDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(GraphDocument);
 
         static void Reflect(AZ::ReflectContext* context);

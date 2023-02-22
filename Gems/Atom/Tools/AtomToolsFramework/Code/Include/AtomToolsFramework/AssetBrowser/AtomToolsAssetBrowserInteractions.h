@@ -30,7 +30,7 @@ namespace AtomToolsFramework
     class AtomToolsAssetBrowserInteractions : public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsAssetBrowserInteractions, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsAssetBrowserInteractions, AZ::SystemAllocator);
 
         AtomToolsAssetBrowserInteractions();
         ~AtomToolsAssetBrowserInteractions();
