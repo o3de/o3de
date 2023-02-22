@@ -26,7 +26,7 @@ namespace AZ
         {
             friend class JsonMaterialPropertySerializer;
 
-            AZ_CLASS_ALLOCATOR(MaterialPropertySourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialPropertySourceData, SystemAllocator);
             AZ_TYPE_INFO(AZ::RPI::MaterialPropertySourceData, "{E0DB3C0D-75DB-4ADB-9E79-30DA63FA18B7}");
 
             struct Connection

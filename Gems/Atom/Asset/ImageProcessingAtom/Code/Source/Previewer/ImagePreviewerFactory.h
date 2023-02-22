@@ -18,7 +18,7 @@ namespace ImageProcessingAtom
         : public AzToolsFramework::AssetBrowser::PreviewerFactory
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImagePreviewerFactory, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImagePreviewerFactory, AZ::SystemAllocator);
 
         ImagePreviewerFactory() = default;
         ~ImagePreviewerFactory() = default;

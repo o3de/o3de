@@ -18,7 +18,7 @@ namespace AzToolsFramework
 
     const AZ::Color BaseManipulator::s_defaultMouseOverColor = AZ::Color(1.0f, 1.0f, 0.0f, 1.0f); // yellow
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator)
 
     static bool EntityIdAndEntityComponentIdComparison(const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
     {

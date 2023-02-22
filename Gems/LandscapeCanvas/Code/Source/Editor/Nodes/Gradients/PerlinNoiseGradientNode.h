@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class PerlinNoiseGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(PerlinNoiseGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PerlinNoiseGradientNode, AZ::SystemAllocator);
         AZ_RTTI(PerlinNoiseGradientNode, "{11900419-DDC1-401C-97CC-8986600EE725}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -41,7 +41,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DeferredFogPass, "{0406C8AB-E95D-43A7-AF53-BDEE22D36746}", RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DeferredFogPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DeferredFogPass, SystemAllocator);
             ~DeferredFogPass() = default;
 
 

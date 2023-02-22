@@ -17,14 +17,13 @@ if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging_Snapcraft.cmake")
     set(CPACK_MONOLITHIC_INSTALL 1)
 
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
-    #default to debian
 
     set(CPACK_GENERATOR DEB)
 
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${O3DE_INSTALL_VERSION_STRING}")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
     # get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
     set(package_dependencies

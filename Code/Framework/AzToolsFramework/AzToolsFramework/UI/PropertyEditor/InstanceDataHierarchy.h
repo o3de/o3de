@@ -38,7 +38,7 @@ namespace AzToolsFramework
 
     public:
         typedef AZStd::list<InstanceDataNode>   NodeContainer;
-        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataNode, AZ::PoolAllocator)
 
         /// Field address structure, which is a string of the 64-bit addresses of each ancestor along the hierarchy.
         using Identifier = AZ::u64;
@@ -269,7 +269,7 @@ namespace AzToolsFramework
         : public InstanceDataNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(InstanceDataHierarchy, AZ::PoolAllocator)
 
         InstanceDataHierarchy();
 

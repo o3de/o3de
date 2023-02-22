@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(GraphTemplateFileData, "{4E2FA046-1D3F-4E5F-B1BA-6E874B3A31B7}");
-        AZ_CLASS_ALLOCATOR(GraphTemplateFileData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphTemplateFileData, AZ::SystemAllocator);
 
         GraphTemplateFileData(){};
         virtual ~GraphTemplateFileData(){};

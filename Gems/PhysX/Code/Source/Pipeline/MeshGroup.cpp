@@ -571,7 +571,7 @@ namespace PhysX
         }
 
 
-        AZ_CLASS_ALLOCATOR_IMPL(MeshGroup, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MeshGroup, AZ::SystemAllocator)
 
         MeshGroup::MeshGroup()
             : m_id(AZ::Uuid::CreateRandom())

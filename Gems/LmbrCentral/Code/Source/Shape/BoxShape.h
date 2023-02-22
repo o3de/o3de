@@ -31,7 +31,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator)
         AZ_RTTI(BoxShape, "{36D1BA94-13CF-433F-B1FE-28BEBBFE20AA}")
 
         BoxShape();

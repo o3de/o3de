@@ -62,7 +62,7 @@ namespace GraphCanvas
         friend class PersistentIdComponent;
     public:
         AZ_RTTI(PersistentIdComponentSaveData, "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}", SceneMemberComponentSaveData<PersistentIdComponentSaveData>);
-        AZ_CLASS_ALLOCATOR(PersistentIdComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PersistentIdComponentSaveData, AZ::SystemAllocator);
 
         PersistentIdComponentSaveData()
             : m_persistentId(PersistentGraphMemberId::CreateRandom())

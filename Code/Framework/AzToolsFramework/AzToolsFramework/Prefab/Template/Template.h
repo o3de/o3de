@@ -28,7 +28,7 @@ namespace AzToolsFramework
         class Template
         {
         public:
-            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator);
             AZ_RTTI(Template, "{F6B7DC7B-386A-42DD-BA8B-919A4D024D7C}");
 
             using Links = AZStd::unordered_set<LinkId>;

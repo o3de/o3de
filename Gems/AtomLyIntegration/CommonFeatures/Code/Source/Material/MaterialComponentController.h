@@ -29,7 +29,7 @@ namespace AZ
         public:
             friend class EditorMaterialComponent;
 
-            AZ_CLASS_ALLOCATOR(MaterialComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialComponentController, AZ::SystemAllocator);
             AZ_RTTI(MaterialComponentController, "{34AD7ED0-9866-44CD-93B6-E86840214B91}");
 
             static void Reflect(ReflectContext* context);

@@ -130,7 +130,7 @@ namespace WhiteBox
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(DefaultMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(DefaultMode, AZ::SystemAllocator)
 
     DefaultMode::DefaultMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)

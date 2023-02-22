@@ -36,7 +36,7 @@ namespace AzToolsFramework
                 AZ::JsonDeserializerContext& context) override;
         };
 
-        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result SelectionComponentSerializer::Load(
             [[maybe_unused]] void* outputValue,

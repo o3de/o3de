@@ -62,7 +62,7 @@ namespace AZ
             AZ::ScriptProperty*             m_valueProperty;
         };
 
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMap, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMap, SystemAllocator);
 
         ScriptPropertyGenericClassMap() = default;
         virtual ~ScriptPropertyGenericClassMap() = default;
@@ -84,7 +84,7 @@ namespace AZ
         : public ScriptPropertyGenericClassMap
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMapImpl<T>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassMapImpl<T>, SystemAllocator);
 
         ScriptPropertyGenericClassMapImpl()
             : m_scriptPropertyWatcher(nullptr)
@@ -331,7 +331,7 @@ namespace AZ
         typedef AZStd::unordered_map<AZ::Crc32, ScriptProperty*> ScriptPropertyKeyedMap;
         typedef AZStd::unordered_map<AZ::Uuid, ScriptPropertyGenericClassMap* > ScriptPropertyGenericMap;
 
-        AZ_CLASS_ALLOCATOR(ScriptPropertyTable, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyTable, SystemAllocator);
         AZ_RTTI(AZ::ScriptPropertyTable, "{0EB069C0-F6C6-4871-9BDB-CC1BBF0B5315}", FunctionalScriptProperty);
 
         // No reflection for this one. Since we would need to reflect pointers.

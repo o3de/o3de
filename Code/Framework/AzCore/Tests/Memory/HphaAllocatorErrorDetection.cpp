@@ -98,7 +98,7 @@ namespace UnitTest
     class TestClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestClass, HphaSchemaErrorDetection_TestAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, HphaSchemaErrorDetection_TestAllocator);
 
         TestClass()
         {

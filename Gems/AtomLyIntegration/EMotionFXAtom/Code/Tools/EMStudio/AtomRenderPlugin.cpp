@@ -28,7 +28,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator);
 
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()

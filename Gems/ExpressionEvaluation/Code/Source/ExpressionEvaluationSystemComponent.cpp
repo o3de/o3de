@@ -28,7 +28,7 @@ namespace ExpressionEvaluation
             : public ExpressionElementParser
         {
         public:
-            AZ_CLASS_ALLOCATOR(InternalExpressionElementParser, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InternalExpressionElementParser, AZ::SystemAllocator);
 
             InternalExpressionElementParser()
                 // Just consume spaces, tabs, or commas

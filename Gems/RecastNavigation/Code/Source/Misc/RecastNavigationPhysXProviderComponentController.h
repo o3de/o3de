@@ -25,7 +25,7 @@ namespace RecastNavigation
     {
         friend class EditorRecastNavigationPhysXProviderComponent;
     public:
-        AZ_CLASS_ALLOCATOR(RecastNavigationPhysXProviderComponentController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecastNavigationPhysXProviderComponentController, AZ::SystemAllocator);
         AZ_RTTI(RecastNavigationPhysXProviderComponentController, "{182D93F8-9E76-409B-9939-6816509A6F52}");
 
         RecastNavigationPhysXProviderComponentController();

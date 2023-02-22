@@ -20,7 +20,7 @@ namespace AudioSystemGem
     {
     public:
         AZ_RTTI(AudioSystemModule, "{BE8CD7ED-AEB9-4617-B069-D848EA986ED3}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(AudioSystemModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioSystemModule, AZ::SystemAllocator);
 
         AudioSystemModule()
             : CryHooksModule()

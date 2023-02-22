@@ -19,7 +19,7 @@ namespace AWSGameLift
     {
     public:
         AZ_RTTI(AWSGameLiftClientModule, "{7b920f3e-2b23-482e-a1b6-16bd278d126c}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSGameLiftClientModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSGameLiftClientModule, AZ::SystemAllocator);
 
         AWSGameLiftClientModule()
             : AZ::Module()

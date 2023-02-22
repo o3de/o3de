@@ -39,7 +39,7 @@ namespace AZ
             friend class PassTests;
         public:
             AZ_RTTI(PassSystem, "{6AA45529-53CF-4AEF-86DF-A696C760105B}", PassSystemInterface);
-            AZ_CLASS_ALLOCATOR(PassSystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassSystem, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

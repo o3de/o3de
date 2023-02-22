@@ -24,7 +24,7 @@ namespace AWSCore
     struct Error
     {
         AZ_TYPE_INFO(Error, "{4256E22F-441A-4CDA-92D9-B943C97E92ED}")
-        AZ_CLASS_ALLOCATOR(Error, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(Error, AZ::SystemAllocator)
 
         /// Identifies the type of error. Intended for use by programs.
         ///

@@ -24,7 +24,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CylinderShapeConfig, "{53254779-82F1-441E-9116-81E1FACFECF4}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

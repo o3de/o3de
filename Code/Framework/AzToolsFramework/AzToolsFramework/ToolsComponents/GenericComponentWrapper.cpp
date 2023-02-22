@@ -298,7 +298,7 @@ namespace AzToolsFramework
             : public AZ::ComponentDescriptorHelper<GenericComponentWrapper>
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenericComponentWrapperDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericComponentWrapperDescriptor, AZ::SystemAllocator);
             AZ_TYPE_INFO(GenericComponentWrapperDescriptor, "{3326B218-282B-4985-AEDE-39A77D48AD57}");
 
             AZ::ComponentDescriptor* GetTemplateDescriptor(const AZ::Component* instance) const

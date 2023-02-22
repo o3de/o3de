@@ -39,7 +39,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{A0165FCA-A311-4FED-B36A-DC5FD2AF2857}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             SubData(int v) : m_int(v) {}
@@ -659,7 +659,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(EnumContainer, "{7F9EED53-7587-4616-B4A7-10B3AF95475E}");
-            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator);
 
             TestEnum m_enum;
             AZStd::vector<TestEnum> m_enumVector;
@@ -738,7 +738,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{983316B5-17C0-476E-9CEB-CA749B3ABE5D}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             explicit SubData(int v) : m_int(v) {}
@@ -880,7 +880,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithoutStringRepresentation, "{54E838DE-1A8D-4BBA-BD3A-D41886C439A9}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator);
 
             int m_value = 0;
 
@@ -894,7 +894,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithStringRepresentation, "{51F7FB74-2991-4CC9-850A-8D5AA0732282}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator);
 
             static const char* KeyPrefix() { return "CustomKey"; }
 
@@ -916,7 +916,7 @@ namespace UnitTest
 
         public:
             AZ_TYPE_INFO(KeyedContainer, "{53A7416F-2D84-4256-97B0-BE4B6EF6DBAF}");
-            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator);
 
             AZStd::map<AZStd::string, float> m_map;
             AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
@@ -1136,7 +1136,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(Container, "{9920B5BD-F21C-4353-9449-9C3FD38E50FC}");
-            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator);
 
             AZStd::unordered_map<AZStd::string, int> m_map;
 
@@ -1414,7 +1414,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(AggregatedContainer, "{42E09F38-2D26-4FED-9901-06003A030ED5}");
-            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator);
 
             int m_aggregated;
             int m_notAggregated;

@@ -26,7 +26,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MorphTargetRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MorphTargetRule, AZ::SystemAllocator)
 
             MorphTargetRule::MorphTargetRule()
                 :m_readOnly(false)
@@ -107,7 +107,7 @@ namespace EMotionFX
 
             //MorphTargetRuleReadOnly
 
-            AZ_CLASS_ALLOCATOR_IMPL(MorphTargetRuleReadOnly, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MorphTargetRuleReadOnly, AZ::SystemAllocator)
             
             MorphTargetRuleReadOnly::MorphTargetRuleReadOnly()
                 :m_descriptionText("All morph targets motions imported")

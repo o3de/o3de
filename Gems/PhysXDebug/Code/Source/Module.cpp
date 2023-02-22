@@ -20,7 +20,7 @@ namespace PhysXDebug
     {
     public:
         AZ_RTTI(PhysXDebugModule, "{7C9CB91D-D7D7-4362-9FE8-E4D61B6A5113}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(PhysXDebugModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXDebugModule, AZ::SystemAllocator);
 
         PhysXDebugModule()
             : CryHooksModule()
