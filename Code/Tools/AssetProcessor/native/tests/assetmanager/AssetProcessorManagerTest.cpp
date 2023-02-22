@@ -3819,6 +3819,73 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_Absolute
     EXPECT_THAT(actualDependencies, ::testing::UnorderedElementsAre(absPath.toUtf8().constData()));
 }
 
+TEST_F(SourceFileDependenciesTest, SourceDependencyIsIntermediateAsset_NotInitiallyAvailable_DependencyResolvesWhenAvailable)
+{
+    // Source Asset A emits an intermediate asset, A1
+    // Source Asset B has a source dependency to the path of A1
+    // Source Asset B has processed before Source Asset A, so A1 is not yet available.
+    // Source Asset B initially fails because A1 does not exist yet.
+    // Source Asset A processes, intermediate asset A1 becomes available
+    // Intermediate Asset A1 processes <-- this may not be necessary based on how dependencies are setup
+    // Source Asset B is re-processed because the dependency is now resolved
+    // Source Asset B processes without failure, because A1 now exists.
+
+
+    /// OLD TEST
+
+    // this test makes sure that when files DO appear that were previously placeholders, the database is updated
+    // so the strategy here is to  have files a, and c missing, which are declared as dependencies by name.
+    // then, we make them re-appear later, and check that the database has updated them appropriately.
+
+    AssetProcessor::AssetProcessorManager::JobToProcessEntry job;
+    SetupData(
+        { MakeSourceDependency("a.txt"), MakeSourceDependency(m_uuidOfB) },
+        { },
+        false,
+        true,
+        true,
+        job);
+
+    // so at this point, the database should be in the same state as after the UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid test
+    // which was already verified, by that test.
+
+    // now that the database has placeholders, we expect them to resolve themselves when we provide the actual files:
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Source, QString("tempdata\n")));
+    // now that A exists, we pretend a job came in to process a. (it doesn't require dependencies to be declared)
+    AssetProcessorManager::JobToProcessEntry job2;
+    job2.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_watchFolderPath, "a.txt");
+    job2.m_sourceFileInfo.m_scanFolder = m_scanFolder;
+    job2.m_sourceFileInfo.m_uuid = m_uuidOfA;
+    m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = SourceAssetReference{ m_watchFolderPath, "a.txt" };
+
+    m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job2);
+
+    // a should no longer be a placeholder
+    AssetProcessor::SourceFilesForFingerprintingContainer deps;
+    m_assetProcessorManager.get()->QueryAbsolutePathDependenciesRecursive(
+        m_sourceFileUuid, deps, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceToSource);
+    EXPECT_EQ(deps.size(), 3);
+    EXPECT_NE(deps.find(m_absPath.toUtf8().constData()), deps.end());
+    EXPECT_NE(deps.find(m_dependsOnFile1_Source.toUtf8().constData()), deps.end()); // a
+    EXPECT_NE(deps.find(m_dependsOnFile2_Source.toUtf8().constData()), deps.end()); // b
+    deps.clear();
+
+    m_assetProcessorManager.get()->QueryAbsolutePathDependenciesRecursive(
+        m_sourceFileUuid, deps, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_JobToJob);
+    EXPECT_EQ(deps.size(), 1);
+    EXPECT_NE(deps.find(m_absPath.toUtf8().constData()), deps.end());
+
+    // all files should now be present:
+    deps.clear();
+    m_assetProcessorManager.get()->QueryAbsolutePathDependenciesRecursive(
+        m_sourceFileUuid, deps, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any);
+    EXPECT_EQ(deps.size(), 3);
+    EXPECT_NE(deps.find(m_absPath.toUtf8().constData()), deps.end());
+    EXPECT_NE(deps.find(m_dependsOnFile1_Source.toUtf8().constData()), deps.end());
+    EXPECT_NE(deps.find(m_dependsOnFile2_Source.toUtf8().constData()), deps.end());
+
+}
+
 TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
 {
     using namespace AssetProcessor;
