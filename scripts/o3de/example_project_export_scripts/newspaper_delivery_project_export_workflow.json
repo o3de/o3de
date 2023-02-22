@@ -1,0 +1,23 @@
+{
+    "version":"0.0.0",
+    "workflow":[
+        {"step":"build editor tools", "executable":"cmake",
+            "args":["--build","build/windows_vs2022","--target","Editor","--target","AssetProcessorBatch","--config","profile", "--", "/m   "],
+            "cwd":"${EnginePath}"},
+
+        {"print":"Editor tools built! Now starting Asset Processor"},
+        {"comment":"This was used to successfully test loading python scripts", "step":"python-test-script", "using-python":true, "executable":"${ProjectPath}\\export_rules\\test_export.py",
+            "args":["${EnginePath}", "${ProjectPath}"]},
+
+        {"step":"asset processor", "executable":"${EnginePath}\\build\\windows_vs2022\\bin\\profile\\AssetProcessorBatch.exe",
+            "args":["--platform=pc", "--project-path=${ProjectPath}"]},
+        
+        {"print":"Assets processed! Now to build the project!"},
+
+        {"step":"prepare project", "executable":"cmake",
+            "args":["-B", "release", "-S", ".", "-G", "\"Visual Studio 17\"", "-DLY_3RDPARTY_PATH=${ThirdPartyPath}", "-DLY_MONOLITHIC_GAME=1"]},
+
+        {"step":"build project to install directory", "executable":"cmake",
+            "args":["--build", "build\\mono", "--target", "install", "--config", "release"]}
+    ]
+}

@@ -15,8 +15,10 @@ import sys
 import subprocess
 import shutil
 import pathlib
+import json
+import importlib.util
+from o3de import utils, manifest, validation, repo
 
-from o3de import manifest, validation, utils, repo
 
 logger = logging.getLogger('o3de.print_registration')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -62,6 +64,9 @@ def process_command(cmd_args, project_path):
     return ret
 
 
+def package_hi():
+    print("This is hello from o3de/packaging.py!")
+    return 0
 
 def package_none():
     print("It seems like packaging is not supported for your platform or use case...")
@@ -96,6 +101,9 @@ def package_none():
 # how do we handle with engine customer/contributor
 # RFC will help inform my logistical questions on what needs to be split and when
 # test driven development would help
+
+WINDOWS_PRE_ARGS = ['powershell.exe']
+
 def package_windows_standalone_monolithic(project_path: str,
                                           engine_path:str,
                                           zipped: bool):
@@ -103,7 +111,7 @@ def package_windows_standalone_monolithic(project_path: str,
 
     #packaging rules should be in a standard location with respect to the project. Note, if this is not found, we need to have reasonable defaults
     PROJECT_PATH = project_path
-    PACKAGING_RULES_PATH = os.path.join(PROJECT_PATH,  "packaging_config.packagerules")
+    PACKAGING_RULES_PATH = os.path.join(PROJECT_PATH, "packaging",  "packaging_config.packagerules")
 
     packaging_rules = None
     with open(PACKAGING_RULES_PATH, "r") as prules_file:
@@ -127,8 +135,6 @@ def package_windows_standalone_monolithic(project_path: str,
     else:
         zipped_folder = ""
 
-    WINDOWS_PRE_ARGS = ['powershell.exe']
-
     #check automated tests for how we discover executables and output
     #hard coded paths _must_ be checked, also check for timeouts
     ASSET_PROCESSOR_BATCH_EXE = os.path.join(ENGINE_PATH, 'build\\windows_vs2022\\bin\\profile\\AssetProcessorBatch.exe')
@@ -136,19 +142,20 @@ def package_windows_standalone_monolithic(project_path: str,
 
     #build the asset processor batch if not done so yet
 
-    #build all relevant tools first
+    print("build all relevant tools first")
+    
     ENGINE_BUILD_CMD_ARGS = ['cmake', '--build', 'build/windows_vs2022', '--target' ,'Editor', '--target', 'AssetProcessorBatch', '--config', 'profile', '--', '-m']
     if process_command(WINDOWS_PRE_ARGS + ENGINE_BUILD_CMD_ARGS, ENGINE_PATH) != SUCCESS:
         print("Prebuilding Engine tools failed!")
         return 1
 
-    #run the command for the asset processor
+    print("run the command for the asset processor")
     if process_command(ASSET_PROCESSOR_CMD_ARGS, PROJECT_PATH) != SUCCESS:
         print("Asset Processing Failed!")
         return 1
     
 
-    # #get cmake to prep the project
+    print("get cmake to prep the project")
     CMAKE_PREP_CMD_ARGS = ['cmake', '-B', BUILD_MODE, '-S','.','-G',CMAKE_GENERATOR,
                             f'-DLY_3RDPARTY_PATH={THIRD_PARTY_PATH}',
                             '-DLY_MONOLITHIC_GAME=1']
@@ -158,7 +165,7 @@ def package_windows_standalone_monolithic(project_path: str,
     
     #C:\workspace\projects\NewspaperDeliveryGame\install\bin\Windows\release\Monolithic
 
-    #get cmake to build the project to install directory
+    print("get cmake to build the project to install directory")
     CMAKE_RELEASE_CMD_ARGS = ['cmake', '--build', BUILD_MODE, '--target', 'install', '--config', CMAKE_CONFIG]
     if process_command(CMAKE_RELEASE_CMD_ARGS, PROJECT_PATH) != SUCCESS:
         print("CMake Build Release Failed!")
@@ -191,44 +198,80 @@ def package_windows_standalone_monolithic(project_path: str,
 #this is where we can run the switchboard logic for determining the right packaging function to run
 #the first layer recognizes what platform we're running packaging from. This may require OS specific prep-logic before running packaging logic
 def _run_packaging(args: argparse) -> int:
-    #can this be made data-driven? what if the platform selection gets renamed?
-    #maybe template functions? that way base packaging script can 'find' correct function based on defined parameters
-    #maybe use function mapping based on parameters
+    replacements = dict()
+    engine_path = manifest.get_project_engine_path(args.project_path)
+    replacements["${EnginePath}"] = str(engine_path)
+    replacements["${ProjectPath}"] = str(args.project_path)
+    replacements["${ThirdPartyPath}"] = "C:\\workspace\\o3de-packages"
 
+    with open(args.export_rules_file, 'r') as erf:
+        workflow_json = json.load(erf)
 
-    #main question is what should count as a key, or what should count as a parameter
-    #can I make this as many 2-way doors as possible. How configurable can this get
-    #how do we handle fallbacks? if we want fallback, then setting it as parameter makes most sense
-    # function_map = {
-    #     (key) -> func
-    # }
-    #should monolithic be a key, or a parameter? depending on your answer, your forking strategy for functions can be very different
-    #we can be too granular with it
-    # missing in key: host platform vs. target platform (i.e. windows -> android)
-    # key : windows.android.standalone.monolithic
-    # key : windows.standalone.monolithic
-    # key : customer.custom
+        workflow_rules = workflow_json.get("workflow") 
+        assert workflow_rules is not None, "workflow is not specified in json file!"
 
-    if platform.system()  == "Windows":
-        if args.standalone:
-            if args.monolithic:
-                package_windows_standalone_monolithic(project_path = args.project_path,
-                                                      engine_path = args.engine_path,
-                                                      zipped=args.zipped)
-            else:
-                print("Non-monolithic projects not supported!")
-                return 1
-    else:
-        return package_none()
+        for rule in workflow_rules:
+            
+            if "comment" in rule:
+                continue
+            elif "print" in rule:
+                print(rule["print"])
+            elif "step" in rule:
+                #perform necessary replacements
+                print("Running Step: "+rule["step"])
+                for key, value in replacements.items():
+                    if "executable" in rule:
+                        rule["executable"] = rule["executable"].replace(key, value)
+                    for ai in enumerate(rule["args"]):
+                        arg = rule["args"][ai[0]]
+                        arg = arg.replace(key, value)
+                        rule["args"][ai[0]] = arg
+                    if "cwd" in rule:
+                        rule["cwd"] = rule["cwd"].replace(key, value)
+                
+                step_result_replacement_name = "result-from-"+rule["step"]
 
+                cwd = rule.get("cwd", args.project_path)
+                
+                if rule.get("using-python", False):
+                    external_script_path = rule["executable"]
+                    module_name = os.path.basename(external_script_path)
+
+                    sys.path.insert(0, os.path.split(pathlib.Path(external_script_path))[0])
+                    sys.path.insert(0, os.getcwd())
+
+                    spec = importlib.util.spec_from_file_location(module_name, external_script_path)
+                    module = importlib.util.module_from_spec(spec)
+                    sys.modules[module_name] = module
+                    module.o3de_project_path = args.project_path
+                    module.o3de_engine_path  = engine_path
+                    spec.loader.exec_module(module)
+
+                    step_result = 1 #todo: determine module failure later
+
+                else:
+                    arglist = WINDOWS_PRE_ARGS+ [rule["executable"]] + rule["args"]
+
+                    step_result = process_command(arglist, cwd)
+
+                quit_on_fail = rule.get("quit-on-fail", False)
+
+                if step_result != SUCCESS and quit_on_fail:
+                    print(f'WORKFLOW FAILED AT STEP {rule["step"]}')
+                    return 1
+                    
+                replacements[step_result_replacement_name] = str(step_result)
+        print("finished running workflow!")
+
+    return 0
 
 
 def add_parser_args(parser):
     #if no use case is specified, we assume standalone
     use_case_group = parser.add_mutually_exclusive_group(required=False)
-    use_case_group.add_argument('-s', '--standalone', action='store_true',
-                       default=True,
-                       help='builds as standalone.')
+    # use_case_group.add_argument('-s', '--standalone', action='store_true',
+    #                    default=True,
+    #                    help='builds as standalone.')
     
     #need to get terminology termed out - i.e. packaging.py can be extremely confusing.
     #need to get dictionary standardized, check with @stankowi on this, need steps and terms fully defined
@@ -247,16 +290,17 @@ def add_parser_args(parser):
 
     #
 
-    parser.add_argument('-m', '--monolithic', action='store_true',
-                       default=False,
-                       help='bundles as monolithic game release.')
-    parser.add_argument('-z', '--zipped', action='store_true',
-                        default=False,
-                        help='takes the packaged build and zips it')
+    # parser.add_argument('-m', '--monolithic', action='store_true',
+    #                    default=False,
+    #                    help='bundles as monolithic game release.')
+    # parser.add_argument('-z', '--zipped', action='store_true',
+    #                     default=False,
+    #                     help='takes the packaged build and zips it')
+    parser.add_argument('-erf', '--export-rules-file', type=pathlib.Path, required=True, help='Export rules workflow JSON file')
     parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=True,
                         help='Project to package')
-    parser.add_argument('-ep', '--engine-path', type=pathlib.Path, required=True,
-                        help='Engine for building tooling')
+    # parser.add_argument('-ep', '--engine-path', type=pathlib.Path, required=True,
+    #                     help='Engine for building tooling')
     parser.set_defaults(func=_run_packaging)
     
 
