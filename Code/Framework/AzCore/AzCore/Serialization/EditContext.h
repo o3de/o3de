@@ -132,7 +132,7 @@ namespace AZ
         using EnumInfo = EnumBuilder; ///< @deprecated Use EditContext::EnumBuilder
         /// @endcond
 
-        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator);
 
         /**
          * EditContext uses serialize context to interact with data, so serialize context is

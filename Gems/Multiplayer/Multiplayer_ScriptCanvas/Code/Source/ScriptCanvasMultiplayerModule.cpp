@@ -17,7 +17,7 @@ namespace ScriptCanvasMultiplayer
     {
     public:
         AZ_RTTI(ScriptCanvasMultiplayerModule, "{6cf9ae34-9d26-45cf-b48e-ffc7d8f0c56e}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasMultiplayerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasMultiplayerModule, AZ::SystemAllocator);
 
         ScriptCanvasMultiplayerModule()
             : AZ::Module()

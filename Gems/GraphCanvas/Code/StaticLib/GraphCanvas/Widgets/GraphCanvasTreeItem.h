@@ -39,7 +39,7 @@ namespace GraphCanvas
         friend struct Comparator;
         friend class GraphCanvasTreeModel;
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasTreeItem, AZ::SystemAllocator);
         AZ_RTTI(GraphCanvasTreeItem, "{BB2B829D-64B5-4D33-9390-85056AA0F3AA}");
 
         virtual ~GraphCanvasTreeItem();

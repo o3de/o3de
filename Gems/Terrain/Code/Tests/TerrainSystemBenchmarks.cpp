@@ -157,13 +157,10 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_GetHeight)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsRegion)(benchmark::State& state)
@@ -192,13 +189,10 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsRegion)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsRegionAsync)(benchmark::State& state)
@@ -240,13 +234,10 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsRegionAsync)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsList)(benchmark::State& state)
@@ -274,13 +265,10 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsList)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsListAsync)(benchmark::State& state)
@@ -320,13 +308,10 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsListAsync)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetNormal)(benchmark::State& state)
@@ -966,16 +951,12 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionRandom)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionWorstCase)(benchmark::State& state)
@@ -1006,16 +987,12 @@ namespace UnitTest
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionWorstCase)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 1024, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
-        ->Args({ 4096, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
     // Benchmark a single usage of our more complicated terrain setup.

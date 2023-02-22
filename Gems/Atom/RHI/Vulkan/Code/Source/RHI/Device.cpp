@@ -390,6 +390,20 @@ namespace AZ
             result = m_stagingBufferPool->Init(*this, poolDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+            {
+                m_constantBufferPool = BufferPool::Create();
+                static int index = 0;
+                m_constantBufferPool->SetName(Name(AZStd::string::format("ConstantPool_%d", ++index)));
+
+                BufferPoolDescriptor bufferPoolDescriptor;
+                bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
+                bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+                bufferPoolDescriptor.m_bufferPoolPageSizeInBytes =
+                    m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+                result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
+
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
             {
@@ -627,6 +641,7 @@ namespace AZ
 
             m_bindlessDescriptorPool.Shutdown();
             m_stagingBufferPool.reset();
+            m_constantBufferPool.reset();
             m_renderPassCache.first.Clear();
             m_framebufferCache.first.Clear();
             m_descriptorSetLayoutCache.first.Clear();
@@ -1216,6 +1231,11 @@ namespace AZ
         Device::ShadingRateImageMode Device::GetImageShadingRateMode() const
         {
             return m_imageShadingRateMode;
+        }
+
+        RHI::Ptr<BufferPool> Device::GetConstantBufferPool()
+        {
+            return m_constantBufferPool;
         }
     }
 }

@@ -25,7 +25,7 @@ class TAnimSplineTrack
     : public IAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(TAnimSplineTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(TAnimSplineTrack, AZ::SystemAllocator);
     AZ_RTTI((TAnimSplineTrack, "{6D72D5F6-61A7-43D4-9104-8F7DCCC19E10}", ValueType), IAnimTrack);
 
     static constexpr void DeprecatedTypeNameVisitor(

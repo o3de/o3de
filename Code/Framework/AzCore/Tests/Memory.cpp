@@ -516,7 +516,7 @@ namespace UnitTest
             : public ThreadPoolBase<MyThreadPoolAllocator>
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator);
             AZ_TYPE_INFO(MyThreadPoolAllocator, "{28D80F96-19B1-4465-8278-B53989C44CF1}");
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
@@ -748,7 +748,7 @@ namespace UnitTest
         class MyClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator);
 
             MyClass(int data = 303)
                 : m_data(data) {}

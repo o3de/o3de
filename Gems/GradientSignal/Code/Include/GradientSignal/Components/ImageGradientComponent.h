@@ -72,7 +72,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

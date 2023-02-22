@@ -25,7 +25,7 @@ namespace EMotionFX
         };
 
         AZ_RTTI(EMotionFX::Pipeline::Rule::RootMotionExtractionData, "{7AA82E47-88CC-4430-9AEE-83BFB671D286}");
-        AZ_CLASS_ALLOCATOR(RootMotionExtractionData, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RootMotionExtractionData, AZ::SystemAllocator)
 
         virtual ~RootMotionExtractionData() = default;
         static void Reflect(AZ::ReflectContext* context);

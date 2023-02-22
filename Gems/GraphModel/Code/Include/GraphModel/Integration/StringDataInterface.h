@@ -21,7 +21,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::StringDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(StringDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StringDataInterface, AZ::SystemAllocator);
 
         StringDataInterface(GraphModel::SlotPtr slot);
         ~StringDataInterface() = default;

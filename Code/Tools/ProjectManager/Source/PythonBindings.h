@@ -104,6 +104,7 @@ namespace O3DE::ProjectManager
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
+        ProjectInfo ProjectInfoFromDict(pybind11::handle projectData, const QString& path = {});
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path) const;
         TemplateInfo TemplateInfoFromPath(pybind11::handle path) const;
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
@@ -124,6 +125,7 @@ namespace O3DE::ProjectManager
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
+        pybind11::handle m_projectManagerInterface;
         pybind11::handle m_download;
         pybind11::handle m_repo;
         pybind11::handle m_pathlib;

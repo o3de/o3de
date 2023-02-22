@@ -17,7 +17,7 @@ namespace AZ
             : public PassData
         {
             AZ_RTTI(RenderToTexturePassData, "{A2DEDE8A-C203-4BEA-896F-7F29A58F6978}", PassData);
-            AZ_CLASS_ALLOCATOR(RenderToTexturePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderToTexturePassData, SystemAllocator);
 
             RenderToTexturePassData() = default;
             virtual ~RenderToTexturePassData() = default;

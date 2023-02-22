@@ -16,7 +16,7 @@ namespace AtomToolsFramework
     //! Structure used to data drive appearance and other settings for dynamic graph model nodes.
     struct DynamicNodeConfig final
     {
-        AZ_CLASS_ALLOCATOR(DynamicNodeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNodeConfig, AZ::SystemAllocator);
         AZ_RTTI(DynamicNodeConfig, "{D43A2D1A-B67F-4144-99AF-72EA606CA026}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -55,7 +55,7 @@ namespace AssetProcessor
     //! essentially a plain data holder, but with helper funcs
     struct AssetRecognizer
     {
-        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
 
         AssetRecognizer() = default;

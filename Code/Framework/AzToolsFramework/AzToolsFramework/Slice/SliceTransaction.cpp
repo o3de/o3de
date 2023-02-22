@@ -48,7 +48,7 @@ namespace AzToolsFramework
                 using ByteBuffer = AZStd::vector<AZ::u8>;
             public:
                 AZ_RTTI(SaveSliceToDiskCommand, "{F036A88D-7487-4BE9-BD2C-41B80B86ACC5}", UndoSystem::URSequencePoint);
-                AZ_CLASS_ALLOCATOR(SaveSliceToDiskCommand, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(SaveSliceToDiskCommand, AZ::SystemAllocator);
 
                 SaveSliceToDiskCommand(const char* friendlyName = nullptr)
                     : UndoSystem::URSequencePoint(friendlyName)

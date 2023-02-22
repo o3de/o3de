@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     class DynamicNodeManager : public DynamicNodeManagerRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicNodeManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNodeManager, AZ::SystemAllocator);
         AZ_RTTI(DynamicNodeManager, "{D5330BF2-945F-4C8B-A5CF-68145EE6CBED}");
         static void Reflect(AZ::ReflectContext* context);
 

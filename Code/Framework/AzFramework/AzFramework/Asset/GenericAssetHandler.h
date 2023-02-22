@@ -36,7 +36,7 @@ namespace AzFramework
      * class MyAsset : public AZ::Data::AssetData
      * {
      * public:
-     *  AZ_CLASS_ALLOCATOR(MyAsset, AZ::SystemAllocator, 0);
+     *  AZ_CLASS_ALLOCATOR(MyAsset, AZ::SystemAllocator);
      *  AZ_RTTI(MyAsset, "{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}", AZ::Data::AssetData);
      *
      *  static void Reflect(AZ::ReflectContext* context)
@@ -84,7 +84,7 @@ namespace AzFramework
         , private AZ::AssetTypeInfoBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GenericAssetHandler<AssetType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GenericAssetHandler<AssetType>, AZ::SystemAllocator);
         AZ_RTTI(GenericAssetHandler<AssetType>, "{8B36B3E8-8C0B-4297-BDA2-1648C155C78E}", GenericAssetHandlerBase);
 
         GenericAssetHandler(const char* displayName,

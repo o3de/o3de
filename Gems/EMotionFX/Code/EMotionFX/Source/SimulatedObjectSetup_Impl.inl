@@ -8,10 +8,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedCommon, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJoint, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObject, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSetup, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedCommon, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJoint, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObject, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSetup, EMotionFX::ActorAllocator)
 
     void SimulatedJoint::Reflect(AZ::ReflectContext* context)
     {

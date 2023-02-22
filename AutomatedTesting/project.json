@@ -5,7 +5,6 @@
     "executable_name": "AutomatedTestingLauncher",
     "modules": [],
     "project_id": "{D816AFAE-4BB7-4FEF-88F4-E2B786DCF29D}",
-    "engine": "o3de",
     "display_name": "AutomatedTesting",
     "icon_path": "preview.png",
     "external_subdirectories": [

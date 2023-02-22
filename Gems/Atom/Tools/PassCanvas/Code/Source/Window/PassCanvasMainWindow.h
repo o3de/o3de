@@ -32,7 +32,7 @@ namespace PassCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PassCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PassCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 

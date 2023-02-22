@@ -32,7 +32,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DownsampleMipChainPass, "{593B0B69-89E4-4DA5-82D2-745FB2E5FFDC}", ParentPass);
-            AZ_CLASS_ALLOCATOR(DownsampleMipChainPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DownsampleMipChainPass, SystemAllocator);
           
             //! Creates a new pass without a PassTemplate
             static Ptr<DownsampleMipChainPass> Create(const PassDescriptor& descriptor);

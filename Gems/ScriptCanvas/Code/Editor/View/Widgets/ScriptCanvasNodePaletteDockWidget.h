@@ -61,7 +61,7 @@ namespace ScriptCanvasEditor
             , AZ::SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator);
             ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
             ~ScriptCanvasRootPaletteTreeItem();
 
@@ -175,7 +175,7 @@ namespace ScriptCanvasEditor
             , public GraphCanvas::SceneNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator);
 
             static const char* GetMimeType() { return "scriptcanvas/node-palette-mime-event"; }
 

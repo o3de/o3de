@@ -20,8 +20,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAssetHandler, EMotionFXAllocator)
 
         AnimGraphAsset::AnimGraphAsset(AZ::Data::AssetId id)
             : EMotionFXAsset(id)

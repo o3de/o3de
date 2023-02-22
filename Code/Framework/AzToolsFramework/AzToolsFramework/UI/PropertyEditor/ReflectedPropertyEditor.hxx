@@ -49,7 +49,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator);
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 

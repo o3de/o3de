@@ -31,7 +31,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CollisionLayersWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionLayersWidget, AZ::SystemAllocator);
 
             static const AZ::u32 s_maxCollisionLayerNameLength = 32;
             static const AZStd::string s_defaultCollisionLayerName;

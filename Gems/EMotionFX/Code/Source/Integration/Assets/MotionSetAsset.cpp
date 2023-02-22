@@ -20,8 +20,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator)
 
         /**
          * Custom callback registered with EMotion FX for the purpose of intercepting
@@ -32,7 +32,7 @@ namespace EMotionFX
             : public EMotionFX::MotionSetCallback
         {
         public:
-            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator);
 
             CustomMotionSetCallback(const AZ::Data::Asset<MotionSetAsset>& asset)
                 : MotionSetCallback(asset.Get()->m_emfxMotionSet.get())

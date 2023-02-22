@@ -36,7 +36,7 @@ namespace AZ
         struct PassData
         {
             AZ_RTTI(PassData, "{F8594AE8-2588-4D64-89E5-B078A46A9AE4}");
-            AZ_CLASS_ALLOCATOR(PassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassData, SystemAllocator);
 
             PassData() = default;
             virtual ~PassData() = default;

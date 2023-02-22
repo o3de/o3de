@@ -139,7 +139,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardApple, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardApple, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor

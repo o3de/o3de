@@ -40,7 +40,7 @@ namespace AzToolsFramework
     private:
         struct HotKeyMapping final
         {
-            AZ_CLASS_ALLOCATOR(HotKeyMapping, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HotKeyMapping, AZ::SystemAllocator);
             AZ_RTTI(HotKeyMapping, "{3A928602-A2B2-4B58-A2C6-2DF73351D35D}");
 
             AZStd::unordered_map<AZStd::string, AZStd::string> m_actionToHotKeyMap;

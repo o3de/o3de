@@ -29,7 +29,7 @@ class Grandparent
 {
 public:
     AZ_RTTI(Grandparent, "{76EF13EE-7F5E-41C8-A789-A86836D66D10}");
-    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Grandparent, AZ::SystemAllocator);
 
     virtual ~Grandparent() = default;
 
@@ -59,7 +59,7 @@ class Parent
 {
 public:
     AZ_RTTI(Parent, "{2ABA91B7-24F7-495A-ACC6-4F93DE47B507}", Grandparent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Parent() override = default;
 
@@ -88,7 +88,7 @@ class Child
 {
 public:
     AZ_RTTI(Child, "{826DB77C-11B7-42C4-8F3F-3438AFE5B29B}", Parent);
-    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Parent, AZ::SystemAllocator);
 
     ~Child() override = default;
 
@@ -257,7 +257,7 @@ class Marker
 {
 public:
     AZ_TYPE_INFO(Marker, "{BEEB4BF4-81B8-45A0-AD3F-D1875703315B}");
-    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Marker, AZ::SystemAllocator);
 
     static AZStd::vector<int> s_markedPositions;
     

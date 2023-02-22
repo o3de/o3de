@@ -23,7 +23,7 @@ namespace EMotionFX
     const char* AnimGraphTagCondition::s_functionOneOrMoreActive = "One or more tags active";
     const char* AnimGraphTagCondition::s_functionNoTagActive = "No tag active";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagCondition, AnimGraphAllocator)
 
     AnimGraphTagCondition::AnimGraphTagCondition()
         : AnimGraphTransitionCondition()
