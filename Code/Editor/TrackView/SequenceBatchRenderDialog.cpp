@@ -156,6 +156,7 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     void(QComboBox::* activated)(int) = &QComboBox::activated;
     void(QSpinBox::* editingFinished)() = &QSpinBox::editingFinished;
 
+    connect(m_ui->m_shotCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnDirectorChange);
     connect(m_ui->BATCH_RENDER_ADD_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnAddRenderItem);
     connect(m_ui->BATCH_RENDER_REMOVE_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnRemoveRenderItem);
     connect(m_ui->BATCH_RENDER_CLEAR_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnClearRenderItems);
@@ -174,6 +175,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_startFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnStartFrameChange);
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
+    connect(m_ui->m_cvarsEdit,&QTextEdit::textChanged, this, &CSequenceBatchRenderDialog::OnVarsChange);
+    connect(m_ui->BATCH_RENDER_FILE_PREFIX, &QLineEdit::textChanged, this, &CSequenceBatchRenderDialog::OnPrefixChange);
+    connect(m_ui->m_disableDebugInfoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnDisableDebugInfoChange);
+    connect(m_ui->m_createVideoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnCreateVideoChange);
 
     const int bigEnoughNumber = 1000000;
     m_ui->m_startFrame->setRange(0, bigEnoughNumber);
@@ -329,6 +334,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         m_customFPS = item.fps;
         m_ui->m_fpsCombo->setCurrentText(QString::number(item.fps));
     }
+    // format
+    m_ui->m_imageFormatCombo->setCurrentText(item.imageFormat);
     // prefix
     m_ui->BATCH_RENDER_FILE_PREFIX->setText(item.prefix);
 
@@ -637,6 +644,11 @@ void CSequenceBatchRenderDialog::OnFPSEditChange()
 void CSequenceBatchRenderDialog::OnFPSChange(int itemIndex)
 {
     m_customFPS = fpsOptions[itemIndex].fps;
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDirectorChange([[maybe_unused]] int itemIndex)
+{
     CheckForEnableUpdateButton();
 }
 
@@ -1404,6 +1416,26 @@ void CSequenceBatchRenderDialog::OnCancelRender()
     }
 }
 
+void CSequenceBatchRenderDialog::OnVarsChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnPrefixChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDisableDebugInfoChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnCreateVideoChange()
+{
+    CheckForEnableUpdateButton();
+}
+
 void CSequenceBatchRenderDialog::OnLoadBatch()
 {
     QString loadPath;
@@ -1580,6 +1612,9 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     {
         item.fps = fpsOptions[m_ui->m_fpsCombo->currentIndex()].fps;
     }
+    // format
+    item.imageFormat = m_ui->m_imageFormatCombo->currentText();
+
     // prefix
     item.prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();
     // disable debug info
