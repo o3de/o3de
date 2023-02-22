@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -41,8 +42,8 @@ namespace AZ
                 createInfo.pInitialData = descriptor.m_serializedData->GetData().data();
             }
 
-            const VkResult result =
-                device.GetContext().CreatePipelineCache(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineCache);
+            const VkResult result = device.GetContext().CreatePipelineCache(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativePipelineCache);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -55,7 +56,7 @@ namespace AZ
             if (m_nativePipelineCache != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, nullptr);
+                device.GetContext().DestroyPipelineCache(device.GetNativeDevice(), m_nativePipelineCache, VkSystemAllocator::Get());
                 m_nativePipelineCache = VK_NULL_HANDLE;
             }
         }
