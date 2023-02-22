@@ -22,21 +22,30 @@ namespace AzToolsFramework
         MetaUuidEntry::Reflect(context);
     }
 
-    bool UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid)
+    AZ::Outcome<void, AZStd::string> UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid)
     {
         auto* metadataInterface = AZ::Interface<IMetadataRequests>::Get();
 
         if (!metadataInterface)
         {
             AZ_Assert(metadataInterface, "Programmer Error - IMetadataRequests interface is not available");
-            return false;
+            return AZ::Failure(AZStd::string("Programmer Error - IMetadataRequests interface is not available"));
         }
 
         AzToolsFramework::MetaUuidEntry entry;
+        auto result = metadataInterface->GetValue(absoluteFilePath, UuidKey, entry);
 
-        if (metadataInterface->GetValue(absoluteFilePath, UuidKey, entry) && !entry.m_uuid.IsNull())
+        if (!result)
         {
-            return false;
+            return AZ::Failure(result.GetError());
+        }
+
+        if (!entry.m_uuid.IsNull())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "CreateSourceUuid failed - metadata file already exists and contains a UUID for " AZ_STRING_FORMAT " " AZ_STRING_FORMAT,
+                AZ_STRING_ARG(absoluteFilePath.Native()),
+                AZ_STRING_ARG(entry.m_uuid.ToFixedString())));
         }
 
         entry.m_uuid = uuid;
@@ -44,15 +53,15 @@ namespace AzToolsFramework
         return metadataInterface->SetValue(absoluteFilePath, UuidKey, entry);
     }
 
-    AZ::Uuid UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath)
+    AZ::Outcome<AZ::Uuid, AZStd::string> UuidUtilComponent::CreateSourceUuid(AZ::IO::PathView absoluteFilePath)
     {
         auto uuid = AZ::Uuid::CreateRandom();
 
-        if(CreateSourceUuid(absoluteFilePath, uuid))
+        if(auto result = CreateSourceUuid(absoluteFilePath, uuid); !result)
         {
-            return uuid;
+            return AZ::Failure(result.GetError());
         }
 
-        return {};
+        return AZ::Success(uuid);
     }
 } // namespace AzToolsFramework
