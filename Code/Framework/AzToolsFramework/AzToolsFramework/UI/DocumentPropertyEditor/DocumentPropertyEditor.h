@@ -188,7 +188,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator);
 
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();

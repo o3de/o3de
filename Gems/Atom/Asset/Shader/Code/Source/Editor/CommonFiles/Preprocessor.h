@@ -47,7 +47,7 @@ namespace AZ
         struct PreprocessorOptions final
         {
             AZ_RTTI(PreprocessorOptions, "{684181FC-7372-49FC-B69C-1FF510A29621}");
-            AZ_CLASS_ALLOCATOR(PreprocessorOptions, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PreprocessorOptions, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

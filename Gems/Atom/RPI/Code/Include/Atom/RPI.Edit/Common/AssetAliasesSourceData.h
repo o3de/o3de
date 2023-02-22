@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AssetAliasesSourceData, "{6EEE3144-33CC-4CE9-9C03-E411571D0712}");
-            AZ_CLASS_ALLOCATOR(AssetAliasesSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetAliasesSourceData, AZ::SystemAllocator);
             
             static void Reflect(ReflectContext* context);
 
@@ -36,7 +36,7 @@ namespace AZ
             struct AssetAliasInfo
             {
                 AZ_TYPE_INFO(AssetAliasInfo, "{192A7D39-BE4D-4C4C-AEC9-D56745EB62D0}");
-                AZ_CLASS_ALLOCATOR(AssetAliasInfo, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(AssetAliasInfo, AZ::SystemAllocator);
                 AZStd::string m_alias;
                 AZStd::string m_path;
             };

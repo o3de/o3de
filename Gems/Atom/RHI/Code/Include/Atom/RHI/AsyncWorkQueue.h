@@ -29,7 +29,7 @@ namespace AZ
         class AsyncWorkQueue
         {
         public:
-            AZ_CLASS_ALLOCATOR(AsyncWorkQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AsyncWorkQueue, AZ::SystemAllocator);
 
             AZ_DISABLE_COPY_MOVE(AsyncWorkQueue);            
 

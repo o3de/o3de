@@ -18,7 +18,7 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator)
 
     void EditorPolygonPrismShapeComponentMode::Reflect(AZ::ReflectContext* context)
     {

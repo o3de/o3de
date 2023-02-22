@@ -86,7 +86,7 @@ namespace AZ
 
             struct ThreadInfo
             {
-                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator);
 
                 AZStd::thread::id m_threadId;
                 bool m_isWorker = false;

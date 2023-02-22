@@ -49,7 +49,7 @@ namespace AzToolsFramework
         virtual ~ComponentMimeData() = default;
 
         AZ_RTTI(ComponentMimeData, "{55A643D6-DDE9-4D48-9B6B-B14C46B6C08B}");
-        AZ_CLASS_ALLOCATOR(ComponentMimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentMimeData, AZ::SystemAllocator);
 
         using ComponentDataContainer = AZStd::vector<AZ::Component*>;
         static void Reflect(AZ::ReflectContext* context);

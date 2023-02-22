@@ -26,8 +26,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator)
 
     const QColor AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteColor = QColor(255, 133, 0);
     const float AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteWidth = 5.0f;

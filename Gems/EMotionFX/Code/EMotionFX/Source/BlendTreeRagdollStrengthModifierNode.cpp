@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode::UniqueData, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode::UniqueData, AnimGraphAllocator)
 
     BlendTreeRagdollStrenghModifierNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)

@@ -26,7 +26,7 @@ namespace AzFramework
         friend class AssetCatalog;
     public:
         AZ_TYPE_INFO(AssetRegistry, "{5DBC20D9-7143-48B3-ADEE-CCBD2FA6D443}");
-        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator);
 
         AssetRegistry() = default;
 

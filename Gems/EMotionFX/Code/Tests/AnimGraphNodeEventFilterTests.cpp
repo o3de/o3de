@@ -39,7 +39,7 @@ namespace EMotionFX
         : public EMotionFX::EventHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EventFilteringEventHandler, Integration::EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EventFilteringEventHandler, Integration::EMotionFXAllocator);
 
         virtual const AZStd::vector<EventTypes> GetHandledEventTypes() const
         {

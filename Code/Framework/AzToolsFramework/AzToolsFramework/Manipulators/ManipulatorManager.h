@@ -50,7 +50,7 @@ namespace AzToolsFramework
         , private EditorEntityInfoNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorManager, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorManager, AZ::SystemAllocator)
 
         explicit ManipulatorManager(ManipulatorManagerId managerId);
         ~ManipulatorManager();

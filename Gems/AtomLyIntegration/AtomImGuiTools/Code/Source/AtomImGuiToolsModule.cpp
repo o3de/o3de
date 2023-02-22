@@ -18,7 +18,7 @@ namespace AtomImGuiTools
     {
     public:
         AZ_RTTI(AtomImGuiToolsModule, "{1B65F246-7977-4DC4-B5D9-BDAD374388FF}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AtomImGuiToolsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomImGuiToolsModule, AZ::SystemAllocator);
 
         AtomImGuiToolsModule()
             : AZ::Module()

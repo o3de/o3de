@@ -11,9 +11,9 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <ComponentDescriptors.h>
 #include <EditorComponentDescriptors.h>
-#include <QApplication>
 #include <SystemComponent.h>
 #include <TestColliderComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
@@ -137,15 +137,4 @@ namespace Physics
 
 } // namespace Physics
 
-AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
-{
-    ::testing::InitGoogleMock(&argc, argv);
-    QApplication app(argc, argv);
-    AZ::Test::ApplyGlobalParameters(&argc, argv);
-    AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ new Physics::PhysXEditorTestEnvironment });
-    int result = RUN_ALL_TESTS();
-    return result;
-}
-
-IMPLEMENT_TEST_EXECUTABLE_MAIN();
+AZ_TOOLS_UNIT_TEST_HOOK(new Physics::PhysXEditorTestEnvironment);

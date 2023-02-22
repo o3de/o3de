@@ -33,7 +33,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EMotionFXManager, EMotionFXManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EMotionFXManager, EMotionFXManagerAllocator)
 
     // the global EMotion FX manager object
     AZ::EnvironmentVariable<EMotionFXManager*> gEMFX;

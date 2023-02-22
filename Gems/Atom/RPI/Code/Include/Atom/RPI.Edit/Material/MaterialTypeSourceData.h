@@ -34,7 +34,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData, "{14085B6F-42E8-447D-9833-E1E45C2510B2}");
-            AZ_CLASS_ALLOCATOR(MaterialTypeSourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialTypeSourceData, SystemAllocator);
 
             static constexpr const char Extension[] = "materialtype";
 
@@ -77,7 +77,7 @@ namespace AZ
             {
                 friend class MaterialTypeSourceData;
                 
-                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator);
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyGroup, "{BA3AA0E4-C74D-4FD0-ADB2-00B060F06314}");
 
             public:

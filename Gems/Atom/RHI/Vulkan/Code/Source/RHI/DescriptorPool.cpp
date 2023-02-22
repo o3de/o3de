@@ -14,6 +14,7 @@
 #include <RHI/DescriptorSet.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -65,7 +66,7 @@ namespace AZ
             if (m_nativeDescriptorPool != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, nullptr);
+                device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, VkSystemAllocator::Get());
                 m_nativeDescriptorPool = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -97,8 +98,8 @@ namespace AZ
             }
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreateDescriptorPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorPool);
+            const VkResult result = device.GetContext().CreateDescriptorPool(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorPool);
             AssertSuccess(result);
 
             return ConvertResult(result);

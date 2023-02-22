@@ -27,7 +27,7 @@ namespace StartingPointInput
         {
         }
 
-        AZ_CLASS_ALLOCATOR(InputEventBindings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputEventBindings, AZ::SystemAllocator);
         AZ_RTTI(InputEventBindings, "{14FFD4A8-AE46-4E23-B45B-6A7C4F787A91}")
        
         static void Reflect(AZ::ReflectContext* reflection)
@@ -86,7 +86,7 @@ namespace StartingPointInput
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputEventBindingsAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputEventBindingsAsset, AZ::SystemAllocator);
         AZ_RTTI(InputEventBindingsAsset, "{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}", AZ::Data::AssetData);
         InputEventBindingsAsset() = default;
 

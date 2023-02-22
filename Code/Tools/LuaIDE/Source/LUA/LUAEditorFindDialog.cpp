@@ -30,7 +30,7 @@ namespace LUAEditorInternal
     {
     public:
         AZ_RTTI(FindSavedState, "{2B880623-63A9-4B39-B8B9-47609590D7D2}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator);
         FindSavedState()
         {
             m_lastSearchInFilesMode = 0;

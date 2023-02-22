@@ -40,7 +40,7 @@ namespace AZ
         {
             using Base = RHI::DeviceObject;
         public:            
-            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator);
 
             CommandQueue() = default;
             virtual ~CommandQueue() = default;

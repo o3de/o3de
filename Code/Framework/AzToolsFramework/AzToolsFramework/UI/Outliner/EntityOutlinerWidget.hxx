@@ -69,7 +69,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator)
 
         explicit EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~EntityOutlinerWidget();

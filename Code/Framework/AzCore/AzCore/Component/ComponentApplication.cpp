@@ -728,7 +728,7 @@ namespace AZ
         AZ::TickBus::QueueFunction(AZStd::move(RegisterOnFirstTick));
     }
 
-    void ReportBadEngineRoot()
+    void ComponentApplication::ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
                                       "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};

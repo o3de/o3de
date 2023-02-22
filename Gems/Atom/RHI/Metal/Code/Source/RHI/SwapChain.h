@@ -24,7 +24,7 @@ namespace AZ
             using Base = RHI::SwapChain;
         public:
             AZ_RTTI(SwapChain, "{2ECD01DB-BD24-4FD1-BA21-370B20071F02}", Base);
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
 
             static RHI::Ptr<SwapChain> Create();
             Device& GetDevice() const;

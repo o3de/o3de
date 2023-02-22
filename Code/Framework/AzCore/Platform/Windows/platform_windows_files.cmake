@@ -31,6 +31,7 @@ set(FILES
     ../Common/VisualStudio/AzCore/Natvis/azcore.natstepfilter
     ../Common/VisualStudio/AzCore/Natvis/azcore.natjmc
     ../Common/VisualStudio/AzCore/Natvis/rapidjson.natvis
+    ../Common/WinAPI/AzCore/Process/ProcessInfo_WinAPI.cpp
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp

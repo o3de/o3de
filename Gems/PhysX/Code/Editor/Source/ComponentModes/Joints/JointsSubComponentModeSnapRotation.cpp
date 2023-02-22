@@ -19,7 +19,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapRotation, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapRotation, AZ::SystemAllocator);
 
     void JointsSubComponentModeSnapRotation::Setup(const AZ::EntityComponentIdPair& idPair)
     {

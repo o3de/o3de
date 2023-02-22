@@ -20,10 +20,9 @@
 
 namespace AzFramework::ProjectManager
 {
-    AZStd::tuple<AZ::IO::FixedMaxPath, AZ::IO::FixedMaxPath> FindProjectAndEngineRootPaths(const int argc, char* argv[])
+    AZ::IO::FixedMaxPath FindProjectPath(const int argc, char* argv[])
     {
         AZ::IO::FixedMaxPath projectRootPath;
-        AZ::IO::FixedMaxPath engineRootPath;
         {
             // AZ::CommandLine and SettingsRegistryImpl is in block scope to make sure
             // that the allocated memory is cleaned up before destroying the SystemAllocator
@@ -40,16 +39,17 @@ namespace AzFramework::ProjectManager
             // in MergeSettingstoRegistry_ConfigFile
             AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
-            engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
+            // Look for the engine first in case the project path is relative
+            AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
             projectRootPath = AZ::SettingsRegistryMergeUtils::FindProjectRoot(settingsRegistry);
         }
-        return AZStd::make_tuple(projectRootPath, engineRootPath);
+        return projectRootPath;
     }
 
     // Check for a project name, if not found, attempt to launch project manager and shut down
     ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[])
     {
-        auto [projectRootPath, engineRootPath] = FindProjectAndEngineRootPaths(argc, argv);
+        const auto projectRootPath = FindProjectPath(argc, argv);
         // If we were able to locate a path to a project, we're done
         if (!projectRootPath.empty())
         {
@@ -58,9 +58,21 @@ namespace AzFramework::ProjectManager
             {
                 return ProjectPathCheckResult::ProjectPathFound;
             }
-            AZ_TracePrintf(
-                "ProjectManager", "Did not find a project file at location '%s', launching the Project Manager...",
+
+            constexpr size_t MaxMessageSize = 2048;
+            AZStd::array<char, MaxMessageSize> msg;
+            azsnprintf(msg.data(), msg.size(), "No project was found at '%s'.\n"
+                "The Project Manager will be opened so you can choose a project.",
                 projectJsonPath.c_str());
+
+            AZ_TracePrintf("ProjectManager", msg.data());
+            AZ::Utils::NativeErrorMessageBox("Project not found", msg.data());
+        }
+        else
+        {
+            AZ::Utils::NativeErrorMessageBox("Project not found",
+                "No project path was provided or detected.\nPlease provide a --project-path argument.\n"
+                "The Project Manager is being launched now so you can choose a project.");
         }
 
         if (LaunchProjectManager())
@@ -83,7 +95,14 @@ namespace AzFramework::ProjectManager
 
             if (!AZ::IO::SystemFile::Exists(executablePath.c_str()))
             {
-                AZ_Error("ProjectManager", false, "%s not found", executablePath.c_str());
+                constexpr size_t MaxMessageSize = 2048;
+                AZStd::array<char, MaxMessageSize> msg;
+                azsnprintf(msg.data(), msg.size(), 
+                    "The Project Manager was not found at '%s'.\nPlease verify O3DE is installed correctly and/or built if compiled from source. ",
+                    executablePath.c_str());
+
+                AZ_Error("ProjectManager", false, msg.data());
+                AZ::Utils::NativeErrorMessageBox("Project Manager not found", msg.data());
                 return false;
             }
 

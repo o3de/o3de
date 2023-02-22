@@ -967,7 +967,7 @@ namespace AzToolsFramework
     class ScopedUndoBatch
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScopedUndoBatch, AZ::SystemAllocator);
         explicit ScopedUndoBatch(const char* batchName);
         ~ScopedUndoBatch();
 

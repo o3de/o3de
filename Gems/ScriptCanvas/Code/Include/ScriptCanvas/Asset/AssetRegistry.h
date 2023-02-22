@@ -22,7 +22,7 @@ namespace ScriptCanvas
         : AssetRegistryRequestBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator);
 
         AssetRegistry();
         ~AssetRegistry();

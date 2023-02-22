@@ -31,7 +31,7 @@ namespace AzToolsFramework
         virtual ~ComponentAssetMimeData() { }
 
         AZ_RTTI(ComponentAssetMimeData, "{39C0AF31-9CC2-4E98-0E27-8025D15F4DF5}");
-        AZ_CLASS_ALLOCATOR(ComponentAssetMimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentAssetMimeData, AZ::SystemAllocator);
 
         ComponentAssetMimeData()
         {
@@ -58,7 +58,7 @@ namespace AzToolsFramework
         virtual ~ComponentAssetMimeDataContainer() { }
 
         AZ_RTTI(ComponentAssetMimeDataContainer, "{7744B99F-2FE9-49AF-DEB2-1562BDA04238}");
-        AZ_CLASS_ALLOCATOR(ComponentAssetMimeDataContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentAssetMimeDataContainer, AZ::SystemAllocator);
 
         AZStd::vector< ComponentAssetMimeData > m_assets;
 

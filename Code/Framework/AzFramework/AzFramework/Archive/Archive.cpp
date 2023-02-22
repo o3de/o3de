@@ -84,7 +84,7 @@ namespace AZ::IO::ArchiveInternal
     // an (inside zip) emulated open file
     struct CZipPseudoFile
     {
-        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator);
         CZipPseudoFile()
         {
             Construct();
@@ -236,7 +236,7 @@ namespace AZ::IO
         : public IResourceList
     {
     public:
-        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator);
         CResourceList() { m_iter = m_set.end(); }
         ~CResourceList() override {}
 

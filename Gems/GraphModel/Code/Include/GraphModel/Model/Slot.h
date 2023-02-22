@@ -75,7 +75,7 @@ namespace GraphModel
     {
     public:
         AZ_TYPE_INFO(ExtendableSlotConfiguration, "{ACD18AD2-AD90-408C-9C11-920C2A8D77EC}");
-        AZ_CLASS_ALLOCATOR(ExtendableSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExtendableSlotConfiguration, AZ::SystemAllocator);
 
         ExtendableSlotConfiguration() = default;
         ~ExtendableSlotConfiguration() = default;
@@ -104,7 +104,7 @@ namespace GraphModel
     class SlotDefinition
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlotDefinition, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotDefinition, AZ::SystemAllocator);
         AZ_RTTI(SlotDefinition, "{917F9C1A-1513-4694-B25A-D6404A4991ED}");
 
         SlotDefinition() = default;
@@ -239,7 +239,7 @@ namespace GraphModel
     class Slot : public GraphElement, public AZStd::enable_shared_from_this<Slot>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator);
         AZ_RTTI(Slot, "{50494867-04F1-4785-BB9C-9D6C96DCBFC9}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
 

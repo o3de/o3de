@@ -88,7 +88,7 @@ namespace AzToolsFramework
         return buttonId;
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BaseShapeComponentMode, AZ::SystemAllocator)
 
     BaseShapeComponentMode::BaseShapeComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType, bool allowAsymmetricalEditing)

@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::BufferView;
         public:
-            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator);
             AZ_RTTI(BufferView, "{9CD198D5-BA56-4591-947F-A16DCF50B3E5}", Base);
 
             static RHI::Ptr<BufferView> Create();

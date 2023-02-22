@@ -51,7 +51,7 @@ namespace AZ::RPI
     class XRRenderingInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator);
         AZ_RTTI(XRRenderingInterface, "{18177EAF-3014-4349-A28F-BF58442FFC2B}");
 
         XRRenderingInterface() = default;
@@ -143,7 +143,7 @@ namespace AZ::RPI
     class IXRRegisterInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(IXRRegisterInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IXRRegisterInterface, AZ::SystemAllocator);
         AZ_RTTI(IXRRegisterInterface, "{89FA72F6-EA61-43AA-B129-7DC63959D5EA}");
 
         IXRRegisterInterface() = default;

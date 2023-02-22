@@ -25,7 +25,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator)
 
     Motion::Motion(const char* name)
         : BaseObject()
