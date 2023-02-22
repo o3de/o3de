@@ -16,7 +16,7 @@ namespace AzToolsFramework
 
     bool IsNewActionManagerEnabled()
     {
-        bool isNewActionManagerEnabled = true;
+        bool isNewActionManagerEnabled = false;
 
         // Retrieve new action manager setting
         if (auto* registry = AZ::SettingsRegistry::Get())
