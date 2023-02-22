@@ -29,7 +29,7 @@ namespace ScriptEvents
     public:
 
         AZ_TYPE_INFO(ScriptEventMethod, "{9C593217-5548-485C-89DF-A76228EBAD72}");
-        AZ_CLASS_ALLOCATOR(ScriptEventMethod, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventMethod, AZ::SystemAllocator);
 
         ScriptEventMethod(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, const AZStd::string eventName);
 

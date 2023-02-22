@@ -88,7 +88,7 @@ namespace AzFramework
         // to serialize an EditContext for PaintBrushSettings.
         friend class AzToolsFramework::GlobalPaintBrushSettings;
 
-        AZ_CLASS_ALLOCATOR(PaintBrushSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushSettings, AZ::SystemAllocator);
         AZ_TYPE_INFO(PaintBrushSettings, "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}");
         static void Reflect(AZ::ReflectContext* context);
 

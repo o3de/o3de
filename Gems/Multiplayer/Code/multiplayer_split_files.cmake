@@ -17,6 +17,7 @@ set(FILES
     Include/Multiplayer/Components/NetworkHierarchyRootComponent.h
     Include/Multiplayer/Components/NetworkHierarchyBus.h
     Include/Multiplayer/Components/NetworkCharacterComponent.h
+    Include/Multiplayer/Components/NetworkDebugPlayerIdComponent.h
     Include/Multiplayer/Components/NetworkHitVolumesComponent.h
     Include/Multiplayer/Components/NetworkRigidBodyComponent.h
     Include/Multiplayer/Components/NetworkTransformComponent.h
@@ -25,6 +26,7 @@ set(FILES
     Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
+    Source/AutoGen/NetworkDebugPlayerIdComponent.AutoComponent.xml
     Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
     Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
@@ -34,6 +36,7 @@ set(FILES
     Source/Components/NetworkHierarchyChildComponent.cpp
     Source/Components/NetworkHierarchyRootComponent.cpp
     Source/Components/NetworkCharacterComponent.cpp
+    Source/Components/NetworkDebugPlayerIdComponent.cpp
     Source/Components/NetworkHitVolumesComponent.cpp
     Source/Components/NetworkRigidBodyComponent.cpp
     Source/Components/NetworkTransformComponent.cpp

@@ -39,7 +39,7 @@ namespace PhysX
         const AZ::Crc32 ResetSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.resetsubmode");
     } // namespace
 
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator);
 
     void ColliderComponentMode::Reflect(AZ::ReflectContext* context)
     {

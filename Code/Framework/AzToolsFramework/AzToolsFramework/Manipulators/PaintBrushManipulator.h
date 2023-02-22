@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(PaintBrushManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushManipulator, AZ::SystemAllocator);
 
         PaintBrushManipulator() = delete;
         PaintBrushManipulator(const PaintBrushManipulator&) = delete;

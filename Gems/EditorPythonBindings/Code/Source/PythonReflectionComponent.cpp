@@ -41,7 +41,7 @@ namespace EditorPythonBindings
         // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context
         struct StaticPropertyHolder final
         {
-            AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator);
 
             StaticPropertyHolder() = default;
             ~StaticPropertyHolder() = default;

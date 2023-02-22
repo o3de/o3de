@@ -20,7 +20,7 @@ class UiCompoundSplineTrack
     : public IUiAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(UiCompoundSplineTrack, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiCompoundSplineTrack, AZ::SystemAllocator)
     AZ_RTTI(UiCompoundSplineTrack, "{91947B8B-65B7-451D-9D04-0C821C82014E}", IUiAnimTrack);
 
     UiCompoundSplineTrack(int nDims, EUiAnimValue inValueType, CUiAnimParamType subTrackParamTypes[MAX_SUBTRACKS]);

@@ -289,7 +289,7 @@ namespace AzToolsFramework
              * Specifies that this class should use AZ::SystemAllocator for memory
              * management by default.
              */
-            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator);
 
             AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass*, const ComponentClass*));
             AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass*, ComponentClass*));

@@ -31,7 +31,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TexturePresetSelectionWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TexturePresetSelectionWidget, AZ::SystemAllocator);
         explicit TexturePresetSelectionWidget(EditorTextureSetting& texureSetting, QWidget* parent = nullptr);
         ~TexturePresetSelectionWidget();
 

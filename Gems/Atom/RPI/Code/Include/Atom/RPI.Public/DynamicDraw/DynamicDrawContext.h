@@ -33,7 +33,7 @@ namespace AZ
         {
             friend class DynamicDrawSystem;
             AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
-            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator);
 
         public:
             virtual ~DynamicDrawContext() = default;

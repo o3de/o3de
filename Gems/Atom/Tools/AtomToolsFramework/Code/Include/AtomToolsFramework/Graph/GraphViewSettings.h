@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     struct GraphViewSettings : private GraphCanvas::AssetEditorSettingsRequestBus::Handler
     {
         AZ_RTTI(GraphViewSettings, "{00E392C7-C372-4E09-9C07-5803B8864B85}");
-        AZ_CLASS_ALLOCATOR(GraphViewSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphViewSettings, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(GraphViewSettings);
 
         static void Reflect(AZ::ReflectContext* context);

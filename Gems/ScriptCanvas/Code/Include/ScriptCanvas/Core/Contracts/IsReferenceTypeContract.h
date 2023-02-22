@@ -15,7 +15,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(IsReferenceTypeContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IsReferenceTypeContract, AZ::SystemAllocator);
         AZ_RTTI(IsReferenceTypeContract, "{7BBA9F9A-AABF-458F-B5D6-B7CCDC8C9BE6}", Contract);
         
         ~IsReferenceTypeContract() override = default;

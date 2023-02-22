@@ -58,7 +58,7 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetEditorTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetEditorTab, AZ::SystemAllocator);
 
             using SaveCompleteCallback = AZStd::function<void()>;
 

@@ -65,7 +65,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VariableConfigurationWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableConfigurationWidget, AZ::SystemAllocator);
 
         VariableConfigurationWidget
             ( const ScriptCanvas::ScriptCanvasId& scriptCanvasId

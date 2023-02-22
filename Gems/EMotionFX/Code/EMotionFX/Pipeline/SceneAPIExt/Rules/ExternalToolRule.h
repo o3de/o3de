@@ -47,7 +47,7 @@ namespace EMotionFX
             {
             public:
                 AZ_RTTI(ExternalToolRule, "{75B41D83-D432-4D29-908D-CF26762B2399}", AZ::SceneAPI::DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(ExternalToolRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ExternalToolRule, AZ::SystemAllocator)
 
                 virtual const ReflectableData& GetData() const = 0;
                 virtual void SetData(const ReflectableData& data) = 0;

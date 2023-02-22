@@ -54,7 +54,7 @@ class OutlinerListModel
     Q_OBJECT;
 
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator);
 
     //! Columns of data to display about each Entity.
     enum Column
@@ -324,7 +324,7 @@ class OutlinerItemDelegate
     : public QStyledItemDelegate
 {
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator);
 
     OutlinerItemDelegate(QWidget* parent = nullptr);
 

@@ -46,7 +46,7 @@ namespace LmbrCentral
     {
     public:
         AZ_RTTI(SplineAttribute<AttributeType>, "{A8E73C3D-65DD-43D8-A25E-2E35674B4B78}");
-        AZ_CLASS_ALLOCATOR(SplineAttribute<AttributeType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SplineAttribute<AttributeType>, AZ::SystemAllocator);
         static void Reflect(AZ::SerializeContext& context);
 
         SplineAttribute() = default;

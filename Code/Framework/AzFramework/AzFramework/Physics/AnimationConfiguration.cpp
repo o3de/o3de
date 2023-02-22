@@ -12,7 +12,7 @@
 
 namespace Physics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimationConfiguration, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimationConfiguration, AZ::SystemAllocator)
 
     void AnimationConfiguration::Reflect(AZ::ReflectContext* context)
     {

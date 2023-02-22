@@ -29,7 +29,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(LodRule, "{6E796AC8-1484-4909-860A-6D3F22A7346F}", DataTypes::ILodRule);
-                AZ_CLASS_ALLOCATOR(LodRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(LodRule, AZ::SystemAllocator)
 
                 SCENE_DATA_API ~LodRule() override = default;
 

@@ -36,7 +36,7 @@ namespace AzToolsFramework
         boxViewportEdit->InstallSetBoxDimensions(AZStd::move(setBoxDimensions));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(BoxComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BoxComponentMode, AZ::SystemAllocator)
 
     void BoxComponentMode::Reflect(AZ::ReflectContext* context)
     {

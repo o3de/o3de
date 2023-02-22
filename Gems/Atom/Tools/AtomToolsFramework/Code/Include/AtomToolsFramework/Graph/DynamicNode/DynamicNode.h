@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     class DynamicNode final : public GraphModel::Node
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNode, AZ::SystemAllocator);
         AZ_RTTI(DynamicNode, "{A618F01A-BCD8-4BDD-9832-6AB4DFE75E79}", GraphModel::Node);
         static void Reflect(AZ::ReflectContext* context);
 

@@ -16,7 +16,7 @@ namespace LmbrCentral
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(UICanvasAssetTypeInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UICanvasAssetTypeInfo, AZ::SystemAllocator);
 
         ~UICanvasAssetTypeInfo() override;
 

@@ -43,7 +43,7 @@ namespace GradientSignal::ImageCreatorUtils
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(CreateImageDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateImageDialog, AZ::SystemAllocator);
 
         CreateImageDialog(QWidget* parent = nullptr)
             : QDialog(parent)

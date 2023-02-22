@@ -21,7 +21,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(UnknownEndpointEvent, "{F1987F1F-E335-4C76-AA00-AD30EA5A51B3}", ValidationEvent);
-        AZ_CLASS_ALLOCATOR(UnknownEndpointEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnknownEndpointEvent, AZ::SystemAllocator);
 
     protected:
         UnknownEndpointEvent(ValidationSeverity validationType, const Endpoint& endpoint)
@@ -41,7 +41,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(UnknownTargetEndpointEvent, "{0C6D8D73-A174-4548-BE06-00962A601668}", UnknownEndpointEvent);
-        AZ_CLASS_ALLOCATOR(UnknownTargetEndpointEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnknownTargetEndpointEvent, AZ::SystemAllocator);
         
         UnknownTargetEndpointEvent(const Endpoint& endpoint)
             : UnknownEndpointEvent(ValidationSeverity::Warning, endpoint)
@@ -69,7 +69,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(UnknownSourceEndpointEvent, "{7794A870-E64D-47FE-A73A-CA38378E3C4D}", UnknownEndpointEvent);
-        AZ_CLASS_ALLOCATOR(UnknownSourceEndpointEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnknownSourceEndpointEvent, AZ::SystemAllocator);
         
         UnknownSourceEndpointEvent(const Endpoint& endpoint)
             : UnknownEndpointEvent(ValidationSeverity::Warning, endpoint)

@@ -34,7 +34,7 @@ namespace AZ
                 static constexpr inline const char* Group = "Hair";
 
                 AZ_RTTI(HairAsset, "{52842B73-8F75-4620-8231-31EBCC74DD85}", AZ::Data::AssetData);
-                AZ_CLASS_ALLOCATOR(HairAsset, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairAsset, AZ::SystemAllocator);
 
                 AZStd::unique_ptr<AMD::TressFXAsset> m_tressFXAsset;
             };

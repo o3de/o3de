@@ -27,7 +27,7 @@ namespace AZ
             : public GenericStream
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorStream, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorStream, SystemAllocator);
             CompressorStream(const char* filename, OpenMode flags = OpenMode());
             CompressorStream(GenericStream* stream, bool ownStream);
             virtual ~CompressorStream();

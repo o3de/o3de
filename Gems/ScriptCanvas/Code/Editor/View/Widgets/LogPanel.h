@@ -77,7 +77,7 @@ namespace ScriptCanvasEditor
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator);
             LogTab(QWidget* pParent, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AzToolsFramework::LogPanel::TabSettings& in_settings);
             ~LogTab() override;
 

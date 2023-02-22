@@ -38,7 +38,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::MeshComponentConfig, "{63737345-51B1-472B-9355-98F99993909B}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(MeshComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             // Editor helper functions
@@ -73,7 +73,7 @@ namespace AZ
         public:
             friend class EditorMeshComponent;
 
-            AZ_CLASS_ALLOCATOR(MeshComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::MeshComponentController, "{D0F35FAC-4194-4C89-9487-D000DDB8B272}");
 
             ~MeshComponentController();

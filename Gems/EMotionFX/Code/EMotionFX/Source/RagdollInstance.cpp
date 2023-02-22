@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollInstance, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollInstance, EMotionFX::ActorAllocator)
 
     RagdollInstance::RagdollInstance()
         : m_lastPos(AZ::Vector3::CreateZero())
