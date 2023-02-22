@@ -567,22 +567,12 @@ namespace AzToolsFramework
 
         if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
-            m_columnLayout->SetExpanderShown(true);
-
             if (IsExpanded())
             {
-                auto dpe = GetDPE();
-                
                 // create and add the row child to m_domOrderedChildren
                 auto newRow = DocumentPropertyEditor::GetRowPool()->GetInstance();
+                AddRowChild(newRow, domIndex);
                 newRow->Init(m_depth + 1, this);
-                newRow->setParent(dpe);
-
-                // determine where to put this new row in the main DPE layout
-                DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
-
-                AddDomChildWidget(domIndex, newRow);
-                dpe->AddAfterWidget(priorRowInLayout, newRow);
 
                 // if it's a row, recursively populate the children from the DOM array in the passed value
                 newRow->SetValueFromDom(childValue);
@@ -591,7 +581,7 @@ namespace AzToolsFramework
             {
                 // this row isn't expanded, don't create any row children, just log that there's a null widget at
                 // the given DOM index
-                AddDomChildWidget(domIndex, nullptr);
+                AddRowChild(nullptr, domIndex);
             }
         }
         else // not a row, so it's a column widget
@@ -878,11 +868,13 @@ namespace AzToolsFramework
                     if (destinationParentRow->IsExpanded() || !widgetAsRow)
                     {
                         // both endpoints already exist, this is a real widget relocation
+                        QWidget* newOwner = nullptr;
+                        sourceParentRow->RemoveChildAt(sourceIndex, &newOwner);
+                        AZ_Assert(newOwner == sourceWidget, "source widget could not be taken!");
                         if (widgetAsRow)
                         {
                             // this is a row move, change its position in the main DPE layout
-                            auto priorRowInLayout = destinationParentRow->GetPriorRowInLayout(destinationIndex);
-                            theDPE->AddAfterWidget(priorRowInLayout, sourceWidget);
+                            destinationParentRow->AddRowChild(widgetAsRow, destinationIndex);
                         }
                         else
                         {
@@ -893,8 +885,7 @@ namespace AzToolsFramework
                     else if (destinationParentRow)
                     {
                         // new child is a row, but the destination parent isn't expanded. Just create a null placeholder
-                        // <apm> not good enough, need to handle possible addition of expander. Encapsulate that existing functionality in a reusable function
-                        destinationParentRow->AddDomChildWidget(destinationIndex, nullptr);
+                        destinationParentRow->AddRowChild(nullptr, destinationIndex);
 
                         // remove old widget
                         sourceParentRow->RemoveChildAt(sourceIndex);
@@ -917,9 +908,11 @@ namespace AzToolsFramework
                         AZ_Assert(!sourceParentRow->IsExpanded(), "row should only have null children if it's not expanded!");
                         sourceParentRow->RemoveChildAt(sourceIndex);
                     }
-                    // <apm> source is missing, but destination exists. Look up the value and treat it as an add at that location
+                    // source is missing, but destination exists. Look up the value and treat it as an add at that location
+                    auto parentValue = theDPE->GetDomValueForRow(destinationParentRow);
+                    destinationParentRow->AddChildFromDomValue(parentValue[destinationIndex], destinationIndex);
                 }
-                // else? if neither source nor destination exist for us, the widgets aren't instantiated and nothing should happen
+                // NB: no else case here. If neither source nor destination exist, the widgets aren't instantiated and nothing is moved
             }
         }
 
@@ -1110,6 +1103,20 @@ namespace AzToolsFramework
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
         columnWidget->show();
+    }
+
+    void DPERowWidget::AddRowChild(DPERowWidget* rowWidget, size_t domIndex)
+    {
+        if (rowWidget)
+        {
+            auto dpe = GetDPE();
+            rowWidget->setParent(dpe);
+            // determine where to put this new row in the main DPE layout
+            DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
+            dpe->AddAfterWidget(priorRowInLayout, rowWidget);
+        }
+        m_columnLayout->SetExpanderShown(true);
+        AddDomChildWidget(domIndex, rowWidget);
     }
 
     DPERowWidget* DPERowWidget::GetLastDescendantInLayout()

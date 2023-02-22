@@ -132,6 +132,7 @@ namespace AzToolsFramework
         DocumentPropertyEditor* GetDPE() const;
         void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
         void AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue);
+        void AddRowChild(DPERowWidget* rowWidget, size_t domIndex);
 
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
