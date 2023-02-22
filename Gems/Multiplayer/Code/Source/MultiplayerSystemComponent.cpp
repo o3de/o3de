@@ -121,7 +121,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
-    AZ_CVAR(bool, sv_multithreadedConnectionUpdates, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(bool, sv_multithreadedConnectionUpdates, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, the server will send updates to clients on different threads, which improves performance with large number of clients");
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
