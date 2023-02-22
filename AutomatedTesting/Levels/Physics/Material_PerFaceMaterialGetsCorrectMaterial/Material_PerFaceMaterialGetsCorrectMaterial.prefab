@@ -72,9 +72,21 @@
                         }
                     ]
                 },
-                "Component_[14094829544062915163]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 14094829544062915163,
+                "Component_[15478640155202823409]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 15478640155202823409,
+                    "Parent Entity": "ContainerEntity",
+                    "Transform Data": {
+                        "Translate": [
+                            495.0,
+                            572.9000244140625,
+                            41.0
+                        ]
+                    }
+                },
+                "Component_[17049195129311259924]": {
+                    "$type": "EditorMeshColliderComponent",
+                    "Id": 17049195129311259924,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
                             "Slots": [
@@ -121,39 +133,25 @@
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
+                                "subId": 4070350670
+                            },
+                            "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
                                     "subId": 4070350670
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
                             },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
-                                        "subId": 4070350670
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
-                                },
-                                "UseMaterialsFromAsset": false
-                            }
+                            "UseMaterialsFromAsset": false
                         }
-                    }
-                },
-                "Component_[15478640155202823409]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 15478640155202823409,
-                    "Parent Entity": "ContainerEntity",
-                    "Transform Data": {
-                        "Translate": [
-                            495.0,
-                            572.9000244140625,
-                            41.0
-                        ]
                     }
                 },
                 "Component_[18224841233377932914]": {

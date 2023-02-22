@@ -80,9 +80,9 @@
                     "$type": "EditorEntitySortComponent",
                     "Id": 3861913165076405600
                 },
-                "Component_[7103333782129541775]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 7103333782129541775,
+                "Component_[5636198920532941508]": {
+                    "$type": "EditorMeshColliderComponent",
+                    "Id": 5636198920532941508,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
                             "Slots": [

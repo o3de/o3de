@@ -267,6 +267,19 @@
             "Id": "Entity_[333326068332]",
             "Name": "follower",
             "Components": {
+                "Component_[10213185887994260784]": {
+                    "$type": "EditorMeshColliderComponent",
+                    "Id": 10213185887994260784,
+                    "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        }
+                    }
+                },
                 "Component_[13088569405203769999]": {
                     "$type": "EditorLockComponent",
                     "Id": 13088569405203769999
@@ -376,19 +389,6 @@
                 "Component_[281621200381688046]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 281621200381688046
-                },
-                "Component_[5053986797366085195]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 5053986797366085195,
-                    "ColliderConfiguration": {
-                        "MaterialSlots": {
-                            "Slots": [
-                                {
-                                    "Name": "Entire object"
-                                }
-                            ]
-                        }
-                    }
                 },
                 "Component_[7467962597485847042]": {
                     "$type": "EditorBallJointComponent",

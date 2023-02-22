@@ -51,43 +51,6 @@
             "Id": "Entity_[1157170092590]",
             "Name": "Sedan",
             "Components": {
-                "Component_[10040515516141845460]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 10040515516141845460,
-                    "ColliderConfiguration": {
-                        "Trigger": true,
-                        "InSceneQueries": false,
-                        "MaterialSlots": {
-                            "Slots": [
-                                {
-                                    "Name": "Entire object"
-                                }
-                            ]
-                        }
-                    },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
-                                "assetId": {
-                                    "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
-                                    "subId": 1454228742
-                                },
-                                "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                },
-                                "UseMaterialsFromAsset": false
-                            }
-                        }
-                    }
-                },
                 "Component_[10687836833489077932]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 10687836833489077932,
@@ -120,6 +83,41 @@
                 "Component_[12620083734176463307]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 12620083734176463307
+                },
+                "Component_[13533967704497836989]": {
+                    "$type": "EditorMeshColliderComponent",
+                    "Id": 13533967704497836989,
+                    "ColliderConfiguration": {
+                        "Trigger": true,
+                        "InSceneQueries": false,
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        }
+                    },
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
+                                "assetId": {
+                                    "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
+                                    "subId": 1454228742
+                                },
+                                "loadBehavior": "QueueLoad",
+                                "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
+                            },
+                            "UseMaterialsFromAsset": false
+                        }
+                    }
                 },
                 "Component_[14428318019156486339]": {
                     "$type": "EditorOnlyEntityComponent",
