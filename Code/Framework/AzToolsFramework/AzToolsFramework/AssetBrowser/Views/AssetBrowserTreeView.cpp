@@ -352,14 +352,14 @@ namespace AzToolsFramework
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
         {
             QModelIndex current;
-            for (const auto token : AZStd::ranges::split_view(path, '/'))
+            const QByteArray byteArray = path.toUtf8();
+            const AZ::IO::Path azpath{ AZStd::string_view{ byteArray.constData(), static_cast<size_t>(byteArray.size()) } };
+            for (const auto& pathPart : azpath)
             {
-                auto distance = static_cast<int32_t>(AZStd::distance(token.begin(), token.end()));
-                QString pathPart(token.begin(), distance);
                 QModelIndexList next = model()->match(
                     /*start =*/model()->index(0, 0, current),
                     /*role =*/Qt::DisplayRole,
-                    /*value =*/pathPart,
+                    /*value =*/QString::fromUtf8(pathPart.Native().data(), static_cast<int32_t>(pathPart.Native().size())),
                     /*hits =*/1,
                     /*flags =*/Qt::MatchExactly);
                 if (next.size() == 1)
