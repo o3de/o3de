@@ -57,7 +57,7 @@ namespace AZ
              //!      [Optional] If specified, will be filled with the total size necessary to contain all subresources.
             void GetSubresourceLayouts(
                 const ImageSubresourceRange& subresourceRange,
-                ImageSubresourceLayoutPlaced* subresourceLayouts,
+                ImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const;
             
              //! This implementation estimates memory usage using the descriptor. Platforms may
@@ -102,7 +102,7 @@ namespace AZ
             /// Called by GetSubresourceLayouts. The subresource range is clamped and validated beforehand.
             virtual void GetSubresourceLayoutsInternal(
                 const ImageSubresourceRange& subresourceRange,
-                ImageSubresourceLayoutPlaced* subresourceLayouts,
+                ImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const = 0;
 
             //! Returns whether the image has sub-resources which can be evicted from or streamed into the device memory

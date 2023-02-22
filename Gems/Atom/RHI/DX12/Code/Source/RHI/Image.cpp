@@ -89,7 +89,7 @@ namespace AZ
 
         void Image::GetSubresourceLayoutsInternal(
             const RHI::ImageSubresourceRange& subresourceRange,
-            RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+            RHI::ImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -104,7 +104,8 @@ namespace AZ
                     {
                         const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        subresourceLayouts[subresourceIndex] = RHI::ImageSubresourceLayoutPlaced{subresourceLayout, byteOffset};
+                        subresourceLayouts[subresourceIndex] = subresourceLayout;
+                        subresourceLayouts[subresourceIndex].m_offset = byteOffset;
                         byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                     }
                 }
