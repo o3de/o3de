@@ -44,7 +44,6 @@ namespace PhysX
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
         provided.push_back(AZ_CRC_CE("PhysicsHeightfieldColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void HeightfieldColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -55,7 +54,8 @@ namespace PhysX
     void HeightfieldColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("PhysicsColliderService"));
-        incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
+        // Incompatible with other rigid bodies because it handles its own rigid body
+        // internally and it would conflict if another rigid body is added to the entity.
         incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 

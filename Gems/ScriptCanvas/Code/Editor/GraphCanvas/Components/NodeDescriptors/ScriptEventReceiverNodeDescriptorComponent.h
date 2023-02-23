@@ -38,7 +38,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(ScriptEventReceiverHandlerNodeDescriptorSaveData, "{D8BBE799-7E4D-495A-B69A-1E3940670891}", GraphCanvas::ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(ScriptEventReceiverHandlerNodeDescriptorSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptEventReceiverHandlerNodeDescriptorSaveData, AZ::SystemAllocator);
 
             ScriptEventReceiverHandlerNodeDescriptorSaveData();
             ScriptEventReceiverHandlerNodeDescriptorSaveData(ScriptEventReceiverNodeDescriptorComponent* component);

@@ -21,7 +21,7 @@ namespace PhysX
     /// Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorCharacterControllerProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorCharacterControllerProxyShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorCharacterControllerProxyShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(EditorCharacterControllerProxyShapeConfig, "{0A9F0213-E281-4424-97C5-BAD2D318F496}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -52,13 +52,16 @@ namespace PhysX
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            // Character controller acts as dynamic kinematic rigid body,
+            // so it also serves the rigid body service.
+            provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
             provided.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
@@ -67,11 +70,8 @@ namespace PhysX
             required.push_back(AZ_CRC_CE("TransformService"));
         }
 
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            // 'PhysXColliderService' is not actually used here, it is set as dependency to not have 
-            // StaticRigidBodyComponent (PhysX gem) created when this component is attached to editor entity
-            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         EditorCharacterControllerComponent();

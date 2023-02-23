@@ -37,6 +37,9 @@ class TestAutomation(EditorTestSuite):
     class test_CreatePrefab_ComponentConfigurationRetained(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_ComponentConfigurationRetained as test_module
 
+    class test_CreatePrefab_CreationFailsWithDifferentRootEntities(EditorBatchedTest):
+        from .tests.create_prefab import CreatePrefab_CreationFailsWithDifferentRootEntities as test_module
+
     class test_CreatePrefab_UnderAnEntity(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_UnderAnEntity as test_module
 
@@ -136,3 +139,35 @@ class TestAutomation(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorBatchedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
+
+
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationOverrides(EditorTestSuite):
+
+    # These tests will execute with prefab overrides enabled
+    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=true")
+
+    # Overrides Tests
+
+    class test_AddEntity_UnderUnfocusedInstanceAsOverride(EditorBatchedTest):
+        from .tests.overrides import AddEntity_UnderUnfocusedInstanceAsOverride as test_module
+
+    class test_DeleteEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderImmediateInstance as test_module
+
+    class test_DeleteEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeleteEntity_UnderNestedInstance as test_module
+
+    class test_DeletePrefab_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderImmediateInstance as test_module
+
+    class test_DeletePrefab_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import DeletePrefab_UnderNestedInstance as test_module
+
+    class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
+
+    class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
+        from .tests.overrides import EditEntity_UnderNestedInstance as test_module

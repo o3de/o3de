@@ -30,7 +30,7 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAsset, "{CB4D603E-8CB0-4D80-8165-4244F28AF187}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ScriptEventsAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsAsset, AZ::SystemAllocator);
         
         ScriptEventsAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
             : AZ::Data::AssetData(assetId, status)
@@ -81,7 +81,7 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAssetPtr, "{CE2C30CB-709B-4BC0-BAEE-3D192D33367D}", BaseType);
-        AZ_CLASS_ALLOCATOR(ScriptEventsAssetPtr, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsAssetPtr, AZ::SystemAllocator);
 
         explicit ScriptEventsAssetPtr(AZ::Data::AssetLoadBehavior loadBehavior = AZ::Data::AssetLoadBehavior::PreLoad)
             : AZ::Data::Asset<ScriptEventsAsset>(loadBehavior)

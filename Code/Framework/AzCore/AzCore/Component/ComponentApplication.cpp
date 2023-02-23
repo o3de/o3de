@@ -108,7 +108,34 @@ namespace AZ::Internal
 
         return createCoreMetricsFile;
     }
-}
+
+    enum class DevelopmentSettingsOverrides
+    {
+        None, // 0 = no overrides are allowed
+        CommandLineOnly, // 1 = registry overrides are allowed from the command line
+        CommandLineAndProject, // 2 = registry overrides are allowed from the command line, engine, gem, and project files
+        CommandLineProjectAndUser // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+    };
+
+    //! Determines which development settings (user registry files, project registry files, etc) should
+    //! be allowed to override the default settings.
+    //! @return the level of development settings overrides that are allowed
+    static constexpr DevelopmentSettingsOverrides GetDevelopmentSettingsOverrides()
+    {
+#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
+        // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
+        // is a debug, profile, or release build.
+        return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
+#elif AZ_RELEASE_BUILD
+        // By default, if no compile setting was provided, turn off all overrides in release builds.
+        return DevelopmentSettingsOverrides::None;
+#else
+        // By default, if no compile setting was provided, turn on all overrides in non-release builds.
+        return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+#endif
+    }
+
+} // namespace AZ::Internal
 
 namespace AZ
 {
@@ -556,10 +583,12 @@ namespace AZ
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
 
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-#endif
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        {
+            // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+        }
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
@@ -699,7 +728,7 @@ namespace AZ
         AZ::TickBus::QueueFunction(AZStd::move(RegisterOnFirstTick));
     }
 
-    void ReportBadEngineRoot()
+    void ComponentApplication::ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
                                       "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
@@ -923,24 +952,33 @@ namespace AZ
         }
     }
 
-    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    void ComponentApplication::MergeSharedSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
     {
-        SettingsRegistryInterface::Specializations specializations;
-        SetSettingsRegistrySpecializations(specializations);
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        {
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                // In development builds apply the o3de registry and the command line to allow early overrides. This will
+                // allow developers to override things like default paths or Asset Processor connection settings. Any additional
+                // values will be replaced by later loads, so this step will happen again at the end of loading.
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                // Project User Registry is merged after the command line here to allow make sure the any command line override of the
+                // project path is used for merging the project's user registry
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
 
-        AZStd::vector<char> scratchBuffer;
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // In development builds apply the o3de registry and the command line to allow early overrides. This will
-        // allow developers to override things like default paths or Asset Processor connection settings. Any additional
-        // values will be replaced by later loads, so this step will happen again at the end of loading.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        // Project User Registry is merged after the command line here to allow make sure the any command line override of the project path
-        // is used for merging the project's user registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
-#endif
+            // Make sure the command line is merged at least once, before updating the runtime filepaths
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        }
+
         //! Retrieves the list gem targets that the project has load dependencies on
         //! This populates the /Amazon/Gems/<GemName> field entries which is required
         //! by the MergeSettingsToRegistry_GemRegistry() function below to locate the gem's root folder
@@ -959,19 +997,57 @@ namespace AZ
         //!    3. <project_build_path>/bin/$<CONFIG>/Registry
         //! 3. MergeSettingsToRegistry_GemRegistries - Merges the settings registry files from each gem's <GemRoot>/Registry directory
 
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
-            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(
+            registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject)
+        {
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        }
 #endif
+    }
+
+    void ComponentApplication::MergeUserSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
+    {
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        {
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
+
+            // The final merge of the command line should also execute any command-line commands.
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+        }
+
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+    }
+
+    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    {
+        SettingsRegistryInterface::Specializations specializations;
+        SetSettingsRegistrySpecializations(specializations);
+
+        AZStd::vector<char> scratchBuffer;
+
+        MergeSharedSettings(registry, specializations, scratchBuffer);
+        MergeUserSettings(registry, specializations, scratchBuffer);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
@@ -1426,7 +1502,7 @@ namespace AZ
         AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
-        EBUS_EVENT(SystemTickBus, OnSystemTick);
+        SystemTickBus::Broadcast(&SystemTickBus::Events::OnSystemTick);
     }
 
     bool ComponentApplication::ShouldAddSystemComponent(AZ::ComponentDescriptor* descriptor)
@@ -1456,7 +1532,7 @@ namespace AZ
         for (const Uuid& componentId : GetRequiredSystemComponents())
         {
             ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentId, ComponentDescriptorBus, GetDescriptor);
+            ComponentDescriptorBus::EventResult(componentDescriptor, componentId, &ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZ_Error("Module", false, "Failed to add system component required by application. No component descriptor found for: %s",

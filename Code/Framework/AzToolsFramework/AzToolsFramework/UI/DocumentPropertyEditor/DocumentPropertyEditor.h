@@ -14,6 +14,7 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
@@ -135,6 +136,8 @@ namespace AzToolsFramework
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
 
+        static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
+
         QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
 
         DPERowWidget* m_parentRow = nullptr;
@@ -185,7 +188,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator);
 
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
@@ -241,6 +244,8 @@ namespace AzToolsFramework
                 ->GetPool<AzQtComponents::ElidingLabel>();
         }
 
+        void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
@@ -270,6 +275,8 @@ namespace AzToolsFramework
         // incurring the cost of creating and destroying them
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
         AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
+
+        AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
 

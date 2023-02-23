@@ -35,7 +35,7 @@ namespace ScriptCanvas
 
     public:
         AZ_TYPE_INFO(BehaviorContextObject, "{B735214D-5182-4536-B748-61EC83C1F007}");
-        AZ_CLASS_ALLOCATOR(BehaviorContextObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorContextObject, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflection);
 

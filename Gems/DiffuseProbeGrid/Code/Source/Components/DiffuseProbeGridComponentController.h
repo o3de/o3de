@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::DiffuseProbeGridComponentConfig, "{BF190F2A-D7F7-453B-9D42-5CE940180DCE}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             DiffuseProbeGridComponentConfig() = default;
@@ -67,7 +67,7 @@ namespace AZ
         public:
             friend class EditorDiffuseProbeGridComponent;
 
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::DiffuseProbeGridComponentController, "{108588E8-355E-4A19-94AC-955E64A37CE2}");
 
             static void Reflect(AZ::ReflectContext* context);

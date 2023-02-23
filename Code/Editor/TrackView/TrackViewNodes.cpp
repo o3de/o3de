@@ -1200,7 +1200,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddConsoleVariable)
             {
-                StringDlg dlg(tr("Console Variable Name"));
+                StringDlg dlg(tr("Console Variable Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
@@ -1211,7 +1211,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddScriptVariable)
             {
-                StringDlg dlg(tr("Script Variable Name"));
+                StringDlg dlg(tr("Script Variable Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
@@ -1222,7 +1222,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddEvent)
             {
-                StringDlg dlg(tr("Track Event Name"));
+                StringDlg dlg(tr("Track Event Name"), this);
                 if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Event Node");
@@ -1304,7 +1304,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             CTrackViewAnimNode* animNode2 = static_cast<CTrackViewAnimNode*>(pNode);
             QString oldName = QString::fromUtf8(animNode2->GetName().c_str());
 
-            StringDlg dlg(tr("Rename Node"));
+            StringDlg dlg(tr("Rename Node"), this);
             dlg.SetString(oldName);
 
             // add check for duplicate entity names if this is bound to an Object node
@@ -1759,7 +1759,7 @@ void CTrackViewNodesCtrl::EditEvents()
 void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
 {
     // Change Group of the node.
-    StringDlg dlg(tr("Enter Folder Name"));
+    StringDlg dlg(tr("Enter Folder Name"), this);
     if (dlg.exec() == QDialog::Accepted)
     {
         QString name = dlg.GetString();

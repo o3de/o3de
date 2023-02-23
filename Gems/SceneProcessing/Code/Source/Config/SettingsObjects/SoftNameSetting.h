@@ -30,7 +30,7 @@ namespace AZ
         class SoftNameSetting
         {
         public:
-            AZ_CLASS_ALLOCATOR(SoftNameSetting, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SoftNameSetting, SystemAllocator);
             AZ_RTTI(SoftNameSetting, "{FE7AAAF6-8BA5-4599-B9A6-CC28026A6FFE}");
 
             SoftNameSetting() = default;

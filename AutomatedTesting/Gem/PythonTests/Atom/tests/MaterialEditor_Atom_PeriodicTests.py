@@ -133,7 +133,7 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
 
     Test Steps:
     1) Open an existing material document referred to as "original_material_document".
-    2) Verify original_material_document baseColor.color property value is 255.0, 255.0, 255.0, 1.0.
+    2) Verify original_material_document baseColor.color property value is 1.0, 1.0, 1.0, 1.0.
     3) Change the baseColor.color property value of original_material_document to 0.25, 0.25, 0.25, 1.0.
     4) Save over original_material_document.
     5) Change the baseColor.color property value of original_material_document to 0.5, 0.5, 0.5, 1.0.
@@ -147,11 +147,12 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
     13) Revert changes to original_material_document and save them.
     14) Close all currently opened documents.
     15) Open a material document referred to as "first_material_document".
-    16) Verify first_material_document baseColor.color property value is 128.0, 128.0, 128.0, 1.0.
+    16) Verify first_material_document baseColor.color property value is 0.5, 0.5, 0.5, 1.0.
     17) Change the baseColor.color property value of first_material_document to 0.4156, 0.0196, 0.6862, 1.0.
     18) Save the first_material_document as a new material document file.
     19) Open a second material document referred to as "second_material_document".
-    20) Verify second_material_document baseColor.color property value is 130.0, 130.0, 130.0, 1.0.
+    20) Verify second_material_document baseColor.color property value
+        is 0.5093766450881958, 0.5093766450881958, 0.5093766450881958, 1.0.
     21) Change the baseColor.color property value of the second_material_document to 0.4156, 0.0196, 0.6862, 1.0.
     22) Save the second_material_document as a new material document file.
     23) Close the first_material_document and second_material_document.
@@ -166,7 +167,6 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
     """
     import os
 
-    import azlmbr.paths
     from azlmbr.math import Color
 
     import Atom.atom_utils.atom_tools_utils as atom_tools_utils
@@ -198,8 +198,8 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.opened_original_material_document,
             atom_tools_utils.is_document_open(original_material_document_id) is True)
 
-        # 2. Verify original_material_document baseColor.color property value is 255.0, 255.0, 255.0, 1.0.
-        expected_original_material_starting_color = Color(255.0, 255.0, 255.0, 1.0)
+        # 2. Verify original_material_document baseColor.color property value is 1.0, 1.0, 1.0, 1.0.
+        expected_original_material_starting_color = Color(1.0, 1.0, 1.0, 1.0)
         Report.result(
             Tests.original_material_document_has_expected_starting_color,
             material_editor_utils.get_property(
@@ -317,8 +317,8 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.opened_first_material_document,
             atom_tools_utils.is_document_open(first_material_document_id) is True)
 
-        # 16. Verify first_material_document baseColor.color property value is 128.0, 128.0, 128.0, 1.0.
-        expected_first_material_starting_color = Color(128.0, 128.0, 128.0, 1.0)
+        # 16. Verify first_material_document baseColor.color property value is 0.5, 0.5, 0.5, 1.0.
+        expected_first_material_starting_color = Color(0.5, 0.5, 0.5, 1.0)
         Report.result(
             Tests.first_material_document_has_expected_starting_color,
             material_editor_utils.get_property(
@@ -346,8 +346,9 @@ def MaterialEditor_FileSaveChecks_AllChecksPass():
             Tests.opened_second_material_document,
             atom_tools_utils.is_document_open(second_material_document_id) is True)
 
-        # 20. Verify second_material_document baseColor.color property value is 130.0, 130.0, 130.0, 1.0.
-        expected_second_material_starting_color = Color(130.0, 130.0, 130.0, 1.0)
+        # 20. Verify second_material_document baseColor.color property value
+        # is 0.5093766450881958, 0.5093766450881958, 0.5093766450881958, 1.0.
+        expected_second_material_starting_color = Color(0.5093766450881958, 0.5093766450881958, 0.5093766450881958, 1.0)
         Report.result(
             Tests.second_material_document_has_expected_starting_color,
             material_editor_utils.get_property(

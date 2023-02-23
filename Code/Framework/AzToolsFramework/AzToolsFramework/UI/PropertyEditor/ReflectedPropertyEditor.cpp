@@ -265,7 +265,7 @@ namespace AzToolsFramework
         : public AZ::UserSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator);
         AZ_RTTI(ReflectedPropertyEditorState, "{A229B615-622B-4C0B-A17C-A1F5C3144D6E}", AZ::UserSettings);
 
         AZStd::unordered_set<AZ::u32> m_expandedElements; // crc of them + their parents.

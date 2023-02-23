@@ -27,8 +27,8 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionIdCommandMixin, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustMotion, EMotionFX::CommandAllocator)
 
     const char* CommandStopAllMotionInstances::s_stopAllMotionInstancesCmdName = "StopAllMotionInstances";
 
@@ -212,7 +212,8 @@ namespace CommandSystem
         AZStd::string filename;
         parameters.GetValue("filename", this, &filename);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (auto fileIoBase{ AZ::IO::FileIOBase::GetInstance() }; fileIoBase && filename.starts_with('@'))
         {
@@ -521,7 +522,8 @@ namespace CommandSystem
     {
         AZStd::string filename = parameters.GetValue("filename", command);
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -830,7 +832,8 @@ namespace CommandSystem
     {
         AZStd::string filename;
         parameters.GetValue("filename", "", filename);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {

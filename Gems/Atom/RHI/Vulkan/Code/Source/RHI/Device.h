@@ -55,7 +55,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();
@@ -129,6 +129,8 @@ namespace AZ
 
             ShadingRateImageMode GetImageShadingRateMode() const;
 
+            RHI::Ptr<BufferPool> GetConstantBufferPool();
+
         private:
             Device();
 
@@ -155,7 +157,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -185,6 +187,8 @@ namespace AZ
             AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;
+
+            RHI::Ptr<BufferPool> m_constantBufferPool;
 
             ReleaseQueue m_releaseQueue;
             CommandQueueContext m_commandQueueContext;

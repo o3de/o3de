@@ -33,7 +33,7 @@ namespace Multiplayer
         : public AZ::Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator);
         AZ_RTTI(MultiplayerComponent, "{B7F5B743-CCD3-4981-8F1A-FC2B95CE22D7}", AZ::Component);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -180,7 +180,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);
@@ -222,7 +222,7 @@ namespace Multiplayer
             if (bitset.GetBit(i))
             {
                 serializer.ClearTrackedChangesFlag();
-                serializer.Serialize(value[i], "Element");
+                serializer.Serialize(value[i], AzNetworking::GenerateIndexLabel<SIZE>(i).c_str());
                 if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
                     bitset.SetBit(i, false);

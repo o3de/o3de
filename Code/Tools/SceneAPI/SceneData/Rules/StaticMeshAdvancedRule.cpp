@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(StaticMeshAdvancedRule, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(StaticMeshAdvancedRule, SystemAllocator);
 
             StaticMeshAdvancedRule::StaticMeshAdvancedRule()
                 : m_use32bitVertices(false)

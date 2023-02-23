@@ -15,11 +15,15 @@
 
 namespace AZ::RHI
 {
+    class Image;
+    //! Key for the desired foveated rendering level
+    inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/OpenXR/FoveatedLevel";
+
     //! Base instance descriptor class used to communicate with base XR module.
     class XRInstanceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRInstanceDescriptor, "{FE1EC82F-6265-4A67-84D2-D05D4229B598}");
 
         XRInstanceDescriptor() = default;
@@ -30,7 +34,7 @@ namespace AZ::RHI
     class XRPhysicalDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRPhysicalDeviceDescriptor, "{94B9A6A2-AA80-4439-A51F-DBF20B4337BD}");
 
         XRPhysicalDeviceDescriptor() = default;
@@ -41,7 +45,7 @@ namespace AZ::RHI
     class XRDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRDeviceDescriptor, "{02118DCD-A081-4B1C-80CA-A8C5CD80D83B}");
 
         XRDeviceDescriptor() = default;
@@ -52,7 +56,7 @@ namespace AZ::RHI
     class XRSessionDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSessionDescriptor, "{697039B1-0004-4544-8B5D-B8E2B1AA7E8D}");
 
         XRSessionDescriptor() = default;
@@ -63,18 +67,29 @@ namespace AZ::RHI
     class XRSwapChainDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSwapChainDescriptor, "{89DB71B1-913E-4802-9F77-B23E2F15D4D4}");
 
         XRSwapChainDescriptor() = default;
         virtual ~XRSwapChainDescriptor() = default;
     };
-       
+
+
+    //! Supported levels of foveated rendering (variable rate shading)
+    //! Higher levels will reduce more the shading resolution in certain areas of the framebuffer.
+    enum class XRFoveatedLevel
+    {
+        None = 0,
+        Low,
+        Medium,
+        High
+    };
+
     //! The class defines the XR specific RHI rendering interface. 
     class XRRenderingInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator);
         AZ_RTTI(XRRenderingInterface, "{D1D99CEF-30E5-4690-9D91-36C0029436FD}");
 
         XRRenderingInterface() = default;
@@ -123,5 +138,10 @@ namespace AZ::RHI
 
         //! Returns whether to render or not on host platforms at the same time rendering on XR device.
         virtual bool IsDefaultRenderPipelineEnabledOnHost() const = 0;
+
+        //! Fills the contents of an image that will be use as a variable shading rate attachment depending
+        //! on the requested level of foveted rendering. The image must have the proper format and size for using
+        //! as a shading rate attachment.
+        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::Image* image, XRFoveatedLevel level) const = 0;
     };
 }

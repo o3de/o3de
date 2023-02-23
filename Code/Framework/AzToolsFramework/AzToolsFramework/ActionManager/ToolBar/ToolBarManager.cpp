@@ -43,6 +43,8 @@ namespace AzToolsFramework
 
         AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
+
+        Reset();
     }
 
     void ToolBarManager::Reflect(AZ::ReflectContext* context)
@@ -484,6 +486,18 @@ namespace AzToolsFramework
             "ToolBar Manager - Could not serialize toolbar \"%.s\" - serialization error.", toolBarIdentifier.c_str()));
     }
 
+    void ToolBarManager::Reset()
+    {
+        // Reset all stored values that are registered by the environment after initialization.
+        m_toolBars.clear();
+        m_toolBarAreas.clear();
+
+        m_actionsToToolBarsMap.clear();
+
+        m_toolBarsToRefresh.clear();
+        m_toolBarAreasToRefresh.clear();
+    }
+
     void ToolBarManager::OnSystemTick()
     {
         RefreshToolBars();
@@ -493,7 +507,7 @@ namespace AzToolsFramework
     void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the toolbar if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionToolBarVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForToolBarsContainingAction(actionIdentifier);
         }

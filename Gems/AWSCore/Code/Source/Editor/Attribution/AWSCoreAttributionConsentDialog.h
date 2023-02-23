@@ -19,7 +19,7 @@ namespace AWSCore
         : public QMessageBox
     {
     public:
-        AZ_CLASS_ALLOCATOR(AWSCoreAttributionConsentDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSCoreAttributionConsentDialog, AZ::SystemAllocator);
         AWSCoreAttributionConsentDialog();
         ~AWSCoreAttributionConsentDialog() override = default;
     };

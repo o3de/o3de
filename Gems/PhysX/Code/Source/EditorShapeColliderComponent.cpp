@@ -15,6 +15,7 @@
 #include <LyViewPaneNames.h>
 #include <ShapeColliderComponent.h>
 #include <EditorRigidBodyComponent.h>
+#include <EditorStaticRigidBodyComponent.h>
 #include <Editor/ConfigurationWindowBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
@@ -125,6 +126,7 @@ namespace PhysX
     {
         required.push_back(AZ_CRC_CE("TransformService"));
         required.push_back(AZ_CRC_CE("ShapeService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -261,15 +263,11 @@ namespace PhysX
         }
 
         shapeColliderComponent->SetShapeConfigurationList(shapeConfigurationList);
-
-        StaticRigidBodyUtils::TryCreateRuntimeComponent(*GetEntity(), *gameEntity);
     }
 
     void EditorShapeColliderComponent::CreateStaticEditorCollider()
     {
-        // Don't create static rigid body in the editor if current entity components
-        // don't allow creation of runtime static rigid body component
-        if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
+        if (!GetEntity()->FindComponent<EditorStaticRigidBodyComponent>())
         {
             return;
         }

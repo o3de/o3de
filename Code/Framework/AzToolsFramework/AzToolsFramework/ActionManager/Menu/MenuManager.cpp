@@ -41,6 +41,8 @@ namespace AzToolsFramework
 
         AZ::Interface<MenuManagerInternalInterface>::Unregister(this);
         AZ::Interface<MenuManagerInterface>::Unregister(this);
+
+        Reset();
     }
     
     void MenuManager::Reflect(AZ::ReflectContext* context)
@@ -722,6 +724,19 @@ namespace AzToolsFramework
             AZStd::string::format("Menu Manager - Could not serialize menu bar \"%.s\" - serialization error.", menuBarIdentifier.c_str()));
     }
 
+    void MenuManager::Reset()
+    {
+        // Reset all stored values that are registered by the environment after initialization.
+        m_menus.clear();
+        m_menuBars.clear();
+
+        m_actionsToMenusMap.clear();
+        m_subMenusToMenusMap.clear();
+
+        m_menusToRefresh.clear();
+        m_menuBarsToRefresh.clear();
+    }
+
     void MenuManager::OnSystemTick()
     {
         RefreshMenus();
@@ -731,7 +746,7 @@ namespace AzToolsFramework
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
         // Only refresh the menu if the action state changing could result in the action being shown/hidden.
-        if (m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(actionIdentifier))
+        if (m_actionManagerInternalInterface->GetActionMenuVisibility(actionIdentifier) != ActionVisibility::AlwaysShow)
         {
             QueueRefreshForMenusContainingAction(actionIdentifier);
         }

@@ -62,6 +62,30 @@ namespace
 
 namespace AZ
 {
+    // Definining the PoolAllocator::GetDebugConfig
+    // method in the cpp file to prevent a lengthy recompile
+    // when changing the O3DE_STACK_CAPTURE_DEPTH define
+    AllocatorDebugConfig PoolAllocator::GetDebugConfig()
+    {
+        return AllocatorDebugConfig()
+            .ExcludeFromDebugging(false)
+            .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
+            .MarksUnallocatedMemory(false)
+            .UsesMemoryGuards(false);
+    }
+
+    AllocatorDebugConfig ThreadPoolAllocator::GetDebugConfig()
+    {
+        return AllocatorDebugConfig()
+            .ExcludeFromDebugging(false)
+            .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
+            .MarksUnallocatedMemory(false)
+            .UsesMemoryGuards(false);
+    }
+}
+
+namespace AZ
+{
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     // Pool Allocation algorithm
@@ -72,7 +96,7 @@ namespace AZ
     class PoolAllocation
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolAllocation<Allocator>, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PoolAllocation<Allocator>, SystemAllocator);
 
         using PageType = typename Allocator::Page;
         using BucketType = typename Allocator::Bucket;

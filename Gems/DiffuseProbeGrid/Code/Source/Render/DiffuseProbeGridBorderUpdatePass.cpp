@@ -121,7 +121,9 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
             // there are 4 submits per grid
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size() * 4));
+            uint32_t totalSubmits = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size() * 4);
+            frameGraph.SetEstimatedItemCount(totalSubmits);
+            m_submitItems.reserve(totalSubmits);
 
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
@@ -162,88 +164,78 @@ namespace AZ
                 diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->Compile();
                 diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->Compile();
                 diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->Compile();
-            }
-        }
 
-        void DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-        {
-            RHI::CommandList* commandList = context.GetCommandList();
-            RPI::Scene* scene = m_pipeline->GetScene();
-            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
-            // submit the DispatchItems for each DiffuseProbeGrid in this range
-            uint32_t index = context.GetSubmitRange().m_startIndex;
-            while (index < context.GetSubmitRange().m_endIndex)
-            {
-                // Note: there are 4 submits per grid, so we need to calculate the diffuseProbeGridIndex in the list as (submit index / 4)
-                AZ_Assert(index % 4 == 0, "Incorrect number of submits in DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal");
-                uint32_t diffuseProbeGridIndex = index / 4;
-                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[diffuseProbeGridIndex];
-
+                // setup the submit items now to properly handle submitting on multiple threads
                 uint32_t probeCountX;
                 uint32_t probeCountY;
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
 
                 // row irradiance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->GetRHIShaderResourceGroup();
-                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
-
-                    RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_arguments = m_rowDispatchArgs;
-                    dispatchItem.m_pipelineState = m_rowPipelineState;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-
-                    commandList->Submit(dispatchItem, index++);
+                    SubmitItem& submitItem = m_submitItems.emplace_back();
+                    submitItem.m_shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->GetRHIShaderResourceGroup();
+                    submitItem.m_dispatchItem.m_arguments = m_rowDispatchArgs;
+                    submitItem.m_dispatchItem.m_pipelineState = m_rowPipelineState;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
                 }
 
                 // column irradiance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->GetRHIShaderResourceGroup();
-                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
-
-                    RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_arguments = m_columnDispatchArgs;
-                    dispatchItem.m_pipelineState = m_columnPipelineState;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-
-                    commandList->Submit(dispatchItem, index++);
+                    SubmitItem& submitItem = m_submitItems.emplace_back();
+                    submitItem.m_shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->GetRHIShaderResourceGroup();
+                    submitItem.m_dispatchItem.m_arguments = m_columnDispatchArgs;
+                    submitItem.m_dispatchItem.m_pipelineState = m_columnPipelineState;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
                 }
 
                 // row distance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->GetRHIShaderResourceGroup();
-                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
-
-                    RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_arguments = m_rowDispatchArgs;
-                    dispatchItem.m_pipelineState = m_rowPipelineState;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-
-                    commandList->Submit(dispatchItem, index++);
+                    SubmitItem& submitItem = m_submitItems.emplace_back();
+                    submitItem.m_shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->GetRHIShaderResourceGroup();
+                    submitItem.m_dispatchItem.m_arguments = m_rowDispatchArgs;
+                    submitItem.m_dispatchItem.m_pipelineState = m_rowPipelineState;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
                 }
 
                 // column distance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->GetRHIShaderResourceGroup();
-                    commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
-
-                    RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_arguments = m_columnDispatchArgs;
-                    dispatchItem.m_pipelineState = m_columnPipelineState;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
-                    dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-
-                    commandList->Submit(dispatchItem, index++);
+                    SubmitItem& submitItem = m_submitItems.emplace_back();
+                    submitItem.m_shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->GetRHIShaderResourceGroup();
+                    submitItem.m_dispatchItem.m_arguments = m_columnDispatchArgs;
+                    submitItem.m_dispatchItem.m_pipelineState = m_columnPipelineState;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
+                    submitItem.m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
                 }
+            }     
+        }
+
+        void DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        {
+            RHI::CommandList* commandList = context.GetCommandList();
+
+            // submit the DispatchItems for each DiffuseProbeGrid in this range
+            uint32_t index = context.GetSubmitRange().m_startIndex;
+            while (index < context.GetSubmitRange().m_endIndex)
+            {
+                SubmitItem& submitItem = m_submitItems[index];
+
+                commandList->SetShaderResourceGroupForDispatch(*submitItem.m_shaderResourceGroup);
+                commandList->Submit(submitItem.m_dispatchItem, index++);
             }
+        }
+
+        void DiffuseProbeGridBorderUpdatePass::FrameEndInternal()
+        {
+            m_submitItems.clear();
+
+            RenderPass::FrameEndInternal();
         }
     }   // namespace Render
 }   // namespace AZ

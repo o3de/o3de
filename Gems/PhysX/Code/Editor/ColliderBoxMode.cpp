@@ -12,7 +12,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderBoxMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderBoxMode, AZ::SystemAllocator);
 
     ColliderBoxMode::ColliderBoxMode()
     {
@@ -24,7 +24,7 @@ namespace PhysX
     {
         AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_boxEdit.get(), idPair);
         AzToolsFramework::InstallBoxViewportEditFunctions(m_boxEdit.get(), idPair);
-        m_boxEdit->Setup();
+        m_boxEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_boxEdit->AddEntityComponentIdPair(idPair);
     }
 
@@ -38,10 +38,8 @@ namespace PhysX
         m_boxEdit->Teardown();
     }
 
-    void ColliderBoxMode::ResetValues(const AZ::EntityComponentIdPair& idPair)
+    void ColliderBoxMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        AzToolsFramework::BoxManipulatorRequestBus::Event(
-            idPair, &AzToolsFramework::BoxManipulatorRequests::SetDimensions,
-            AZ::Vector3::CreateOne());
+        m_boxEdit->ResetValues();
     }
 }

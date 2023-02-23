@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(Settings, "{E3B5DE71-FB4E-472C-BD2A-BD180E68B9A6}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(Settings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Settings, AZ::SystemAllocator);
 
         Settings()
             : m_enableLogging(false)

@@ -24,7 +24,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(UnmodifiableRule, "{6527EBC2-60DF-4E5A-98B4-106F050A186C}", DataTypes::IUnmodifiableRule);
-                AZ_CLASS_ALLOCATOR(UnmodifiableRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(UnmodifiableRule, AZ::SystemAllocator)
 
                 SCENE_DATA_API ~UnmodifiableRule() override = default;
 

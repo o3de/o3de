@@ -40,7 +40,7 @@ namespace EMotionFX::MotionMatching
     AZ_CVAR_EXTERNED(bool, mm_debugDrawQueryVelocities);
     AZ_CVAR_EXTERNED(bool, mm_useKdTree);
 
-    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingInstance, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingInstance, MotionMatchAllocator)
 
     MotionMatchingInstance::~MotionMatchingInstance()
     {

@@ -6,27 +6,27 @@
  *
  */
 
-#include "ColliderComponentMode.h"
-#include "ColliderAssetScaleMode.h"
-#include "ColliderBoxMode.h"
-#include "ColliderCapsuleMode.h"
-#include "ColliderOffsetMode.h"
-#include "ColliderRotationMode.h"
-#include "ColliderSphereMode.h"
-
-#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <PhysX/EditorColliderComponentRequestBus.h>
+#include <Editor/ColliderComponentMode.h>
 
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <Editor/ColliderAssetScaleMode.h>
+#include <Editor/ColliderBoxMode.h>
+#include <Editor/ColliderCapsuleMode.h>
+#include <Editor/ColliderCylinderMode.h>
+#include <Editor/ColliderOffsetMode.h>
+#include <Editor/ColliderRotationMode.h>
+#include <Editor/ColliderSphereMode.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 
 namespace PhysX
 {
@@ -39,7 +39,7 @@ namespace PhysX
         const AZ::Crc32 ResetSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.resetsubmode");
     } // namespace
 
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator);
 
     void ColliderComponentMode::Reflect(AZ::ReflectContext* context)
     {
@@ -296,6 +296,9 @@ namespace PhysX
         case Physics::ShapeType::Capsule:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderCapsuleMode>();
             break;
+        case Physics::ShapeType::Cylinder:
+            m_subModes[SubMode::Dimensions] = AZStd::make_unique<ColliderCylinderMode>();
+            break;
         case Physics::ShapeType::CookedMesh:
             m_subModes[SubMode::Dimensions] = AZStd::make_unique<NullColliderComponentMode>();
             break;
@@ -399,13 +402,20 @@ namespace PhysX
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
+        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName, const char* tooltip)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            clusterId,
+            buttonId,
+            tooltip);
 
         return buttonId;
     }
@@ -426,9 +436,12 @@ namespace PhysX
 
         // create and register the buttons
         m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
-        m_buttonIds[static_cast<size_t>(SubMode::Offset)] = RegisterClusterButton(m_modeSelectionClusterId, "Move");
-        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
-        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
+        m_buttonIds[static_cast<size_t>(SubMode::Offset)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Move", "Switch to translation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Rotate", "Switch to rotation offset mode");
+        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] =
+            RegisterClusterButton(m_modeSelectionClusterId, "Scale", "Switch to dimensions mode");
 
         SetCurrentMode(SubMode::Offset);
 

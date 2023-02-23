@@ -84,7 +84,7 @@ namespace AZ::IO::ArchiveInternal
     // an (inside zip) emulated open file
     struct CZipPseudoFile
     {
-        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator);
         CZipPseudoFile()
         {
             Construct();
@@ -236,7 +236,7 @@ namespace AZ::IO
         : public IResourceList
     {
     public:
-        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator);
         CResourceList() { m_iter = m_set.end(); }
         ~CResourceList() override {}
 
@@ -2115,10 +2115,19 @@ namespace AZ::IO
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
-        auto manifestInfo = AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
-        return manifestInfo;
+        if (serializeContext)
+        {
+            auto manifestInfo =
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(
+                    fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
+
+            return manifestInfo;
+        }
+
+        // If the serialize context doesn't exist yet, just silently return for now. The bundle manifest will still get
+        // successfully loaded at a later point.
+        return {};
     }
 
     AZStd::vector<AZ::IO::Path> Archive::ScanForLevels(ZipDir::CachePtr pZip)

@@ -21,7 +21,7 @@ namespace PythonAssetBuilder
     {
     public:
         AZ_RTTI(PythonAssetBuilderModule, "{35C9457E-54C2-474C-AEBE-5A70CC1D435D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PythonAssetBuilderModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonAssetBuilderModule, AZ::SystemAllocator);
 
         PythonAssetBuilderModule()
             : AZ::Module()

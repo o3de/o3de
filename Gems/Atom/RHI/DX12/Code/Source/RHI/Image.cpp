@@ -143,14 +143,14 @@ namespace AZ
             // Write only states
             const bool renderTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color);
             const bool copyDest = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite);
+            const bool depthTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
 
-            // Write Only States
+            // Read Only States
             const bool shaderResource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead);
-            const bool depthRead = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
             const bool copySource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyRead);
 
-            const bool writeState = renderTarget || copyDest;
-            const bool readState = shaderResource || depthRead || copySource;
+            const bool writeState = renderTarget || copyDest || depthTarget;
+            const bool readState = shaderResource || copySource;
 
             // If any write only state is set, only write only resource states can be applied
             if (writeState)
@@ -162,6 +162,10 @@ namespace AZ
                 else if (copyDest)
                 {
                     m_initialResourceState |= D3D12_RESOURCE_STATE_COPY_DEST;
+                }
+                else if (depthTarget)
+                {
+                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
                 }
             }
             // If any read only state is set, only read only resource states can be applied
@@ -177,11 +181,6 @@ namespace AZ
                     {
                         m_initialResourceState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
                     }
-                }
-
-                if (depthRead)
-                {
-                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_READ;
                 }
 
                 if (copySource)

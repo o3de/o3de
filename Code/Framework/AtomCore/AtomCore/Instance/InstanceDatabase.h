@@ -158,7 +158,7 @@ namespace AZ
         {
             static_assert(AZStd::is_base_of<InstanceData, Type>::value, "Type must inherit from Data::Instance to be used in Data::InstanceDatabase.");
         public:
-            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator);
 
             /**
              * Create the InstanceDatabase with a single handler.
@@ -345,11 +345,11 @@ namespace AZ
             if (!assetLocal.IsReady())
             {
                 return nullptr;
-            }         
-            
+            }
+
             // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
-            return EmplaceInstance(id, assetLocal, param);            
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>

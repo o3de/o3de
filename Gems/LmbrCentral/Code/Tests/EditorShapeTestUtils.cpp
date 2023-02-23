@@ -9,6 +9,7 @@
 #include <EditorShapeTestUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <Shape/EditorSphereShapeComponent.h>
 
@@ -16,25 +17,6 @@ namespace LmbrCentral
 {
     // use a large tolerance for manipulator tests, because accuracy is limited by viewport resolution
     static constexpr float ManipulatorTolerance = 0.1f;
-
-    void DragMouse(
-        const AzFramework::CameraState& cameraState,
-        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
-        const AZ::Vector3& worldStart,
-        const AZ::Vector3& worldEnd,
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier)
-    {
-        const auto screenStart = AzFramework::WorldToScreen(worldStart, cameraState);
-        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, cameraState);
-
-        actionDispatcher
-            ->CameraState(cameraState)
-            ->MousePosition(screenStart)
-            ->KeyboardModifierDown(keyboardModifier)
-            ->MouseLButtonDown()
-            ->MousePosition(screenEnd)
-            ->MouseLButtonUp();
-    }
 
     void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType)
     {
@@ -49,6 +31,27 @@ namespace LmbrCentral
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxShapeComponentRequestsBus::EventResult(boxDimensions, entityId, &BoxShapeComponentRequests::GetBoxDimensions);
         EXPECT_THAT(boxDimensions, UnitTest::IsCloseTolerance(expectedBoxDimensions, ManipulatorTolerance));
+    }
+
+    void ExpectCapsuleRadius(AZ::EntityId entityId, float expectedRadius)
+    {
+        float radius = 0.0f;
+        CapsuleShapeComponentRequestsBus::EventResult(radius, entityId, &CapsuleShapeComponentRequests::GetRadius);
+        EXPECT_NEAR(radius, expectedRadius, ManipulatorTolerance);
+    }
+
+    void ExpectCapsuleHeight(AZ::EntityId entityId, float expectedHeight)
+    {
+        float height = 0.0f;
+        CapsuleShapeComponentRequestsBus::EventResult(height, entityId, &CapsuleShapeComponentRequests::GetHeight);
+        EXPECT_NEAR(height, expectedHeight, ManipulatorTolerance);
+    }
+
+    void ExpectSphereRadius(AZ::EntityId entityId, float expectedRadius)
+    {
+        float radius = 0.0f;
+        SphereShapeComponentRequestsBus::EventResult(radius, entityId, &SphereShapeComponentRequests::GetRadius);
+        EXPECT_NEAR(radius, expectedRadius, ManipulatorTolerance);
     }
 
     void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset)

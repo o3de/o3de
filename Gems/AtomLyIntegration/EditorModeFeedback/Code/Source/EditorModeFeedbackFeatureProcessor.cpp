@@ -143,5 +143,22 @@ namespace AZ
                 AZ::TickBus::Handler::BusDisconnect();
             }
         }
+
+        void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)
+        {            
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
+            const auto templateName = Name(m_editorStatePassSystem->GetParentPassTemplateName());
+
+            auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter,  [enableRender](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    pass->SetEnabled(enableRender);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
+        }
     } // namespace Render
 } // namespace AZ

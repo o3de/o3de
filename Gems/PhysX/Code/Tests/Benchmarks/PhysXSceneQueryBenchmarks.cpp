@@ -18,7 +18,8 @@
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 
-#include <AzCore/std/chrono/chrono.h>
+#include <PhysX/PhysXLocks.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX::Benchmarks
 {
@@ -156,7 +157,69 @@ namespace PhysX::Benchmarks
             next = (next + 1) % m_numBoxes;
         }
 
-        //get the P50, P90, P99 percentiles of each call and the standard deviation and mean
+        // get the P50, P90, P99 percentiles of each call and the standard deviation and mean
+        Utils::ReportPercentiles(state, executionTimes);
+        Utils::ReportStandardDeviationAndMeanCounters(state, executionTimes);
+    }
+
+    BENCHMARK_DEFINE_F(PhysXSceneQueryBenchmarkFixture, BM_RaycastRandomBoxesParallel)(benchmark::State& state)
+    {
+        AzPhysics::RayCastRequest request;
+        request.m_start = AZ::Vector3::CreateZero();
+        request.m_distance = 2000.0f;
+
+        AZStd::vector<int64_t> executionTimes;
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+
+        auto next = 0;
+        for ([[maybe_unused]] auto _ : state)
+        {
+            request.m_direction = m_boxes[next].GetNormalized();
+
+            auto start = AZStd::chrono::steady_clock::now();
+
+            const size_t numThreads = 4;
+
+            AZStd::vector<AZStd::thread> threads;
+            threads.reserve(numThreads);
+            AzPhysics::SceneHandle testSceneHandle = m_testSceneHandle;
+
+            for (size_t i = 0; i < numThreads; ++i)
+            {
+                threads.emplace_back(
+                    [&testSceneHandle, &request, sceneInterface]()
+                    {
+                        PhysXScene* azScene = static_cast<PhysXScene*>(sceneInterface->GetScene(testSceneHandle));
+                        physx::PxScene* pxScene = static_cast<physx::PxScene*>(azScene->GetNativePointer());
+
+                        PHYSX_SCENE_READ_LOCK(pxScene);
+
+                        const size_t iterationsNum = 1000000;
+
+                        AzPhysics::SceneQueryHits result;
+                        for (size_t k = 0; k < iterationsNum; ++k)
+                        {
+                            sceneInterface->QueryScene(testSceneHandle, &request, result);
+
+                            result.m_hits.clear();
+                        }
+                        benchmark::DoNotOptimize(result);
+                    });
+            }
+
+            for (AZStd::thread& thread : threads)
+            {
+                thread.join();
+            }
+
+            auto timeElasped = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(AZStd::chrono::steady_clock::now() - start);
+
+            executionTimes.emplace_back(timeElasped.count());
+
+            next = (next + 1) % m_numBoxes;
+        }
+
+        // get the P50, P90, P99 percentiles of each call and the standard deviation and mean
         Utils::ReportPercentiles(state, executionTimes);
         Utils::ReportStandardDeviationAndMeanCounters(state, executionTimes);
     }
@@ -234,6 +297,15 @@ namespace PhysX::Benchmarks
         ->Ranges(SceneQueryConstants::BenchmarkConfigs[3])
         ->Unit(::benchmark::kNanosecond)
         ;
+
+    BENCHMARK_REGISTER_F(PhysXSceneQueryBenchmarkFixture, BM_RaycastRandomBoxesParallel)
+        ->RangeMultiplier(2)
+        ->Ranges(SceneQueryConstants::BenchmarkConfigs[0])
+        ->Ranges(SceneQueryConstants::BenchmarkConfigs[1])
+        ->Ranges(SceneQueryConstants::BenchmarkConfigs[2])
+        ->Ranges(SceneQueryConstants::BenchmarkConfigs[3])
+        ->Unit(::benchmark::kNanosecond);
+
     BENCHMARK_REGISTER_F(PhysXSceneQueryBenchmarkFixture, BM_ShapecastRandomBoxes)
         ->RangeMultiplier(2)
         ->Ranges(SceneQueryConstants::BenchmarkConfigs[0])

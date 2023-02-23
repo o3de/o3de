@@ -25,7 +25,7 @@ namespace AzToolsFramework
 
         public:
             AZ_RTTI(FolderAssetBrowserEntry, "{938E6FCD-1582-4B63-A7EA-5C4FD28CABDC}", AssetBrowserEntry);
-            AZ_CLASS_ALLOCATOR(FolderAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FolderAssetBrowserEntry, AZ::SystemAllocator);
 
             FolderAssetBrowserEntry();
             ~FolderAssetBrowserEntry() override;

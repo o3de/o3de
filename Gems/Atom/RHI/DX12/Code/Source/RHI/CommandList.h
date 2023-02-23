@@ -47,7 +47,7 @@ namespace AZ
             , public CommandListBase
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
 
             static RHI::Ptr<CommandList> Create();
 
@@ -243,9 +243,6 @@ namespace AZ
                 // A queue of tile mappings to execute on the command queue at submission time (prior to executing the command list).
                 TileMapRequestList m_tileMapRequests;
 
-                // Signal if the commandlist is using custom sample positions for multisample
-                bool m_customSamplePositions = false;
-
                 // Signal that the global bindless heap is bound
                 bool m_bindBindlessHeap = false;
 
@@ -309,37 +306,7 @@ namespace AZ
                 {
                     const auto& pipelineData = pipelineState->GetPipelineStateData();
                     auto& multisampleState = pipelineData.m_drawData.m_multisampleState;
-                    bool customSamplePositions = multisampleState.m_customPositionsCount > 0;
-                    // Check if we need to set custom positions or reset them to the default state.
-                    if (customSamplePositions || customSamplePositions != m_state.m_customSamplePositions)
-                    {
-                        // Need to cast to a ID3D12GraphicsCommandList1 interface in order to set custom sample positions
-                        auto commandList1 = DX12ResourceCast<ID3D12GraphicsCommandList1>(GetCommandList());
-                        AZ_Assert(commandList1, "Custom sample positions is not supported on this device");
-                        if (commandList1)
-                        {
-                            if (customSamplePositions)
-                            {
-                                AZStd::vector<D3D12_SAMPLE_POSITION> samplePositions;
-                                AZStd::transform(
-                                    multisampleState.m_customPositions.begin(),
-                                    multisampleState.m_customPositions.begin() + multisampleState.m_customPositionsCount,
-                                    AZStd::back_inserter(samplePositions),
-                                    [&](const auto& item)
-                                {
-                                    return ConvertSamplePosition(item);
-                                });
-                                commandList1->SetSamplePositions(multisampleState.m_samples, 1, samplePositions.data());
-                            }
-                            else
-                            {
-                                // This will revert the sample positions to their default values.
-                                commandList1->SetSamplePositions(0, 0, NULL);
-                            }
-                        }
-                        m_state.m_customSamplePositions = customSamplePositions;
-                    }
-
+                    SetSamplePositions(multisampleState);
                     SetTopology(pipelineData.m_drawData.m_primitiveTopology);
                 }
 

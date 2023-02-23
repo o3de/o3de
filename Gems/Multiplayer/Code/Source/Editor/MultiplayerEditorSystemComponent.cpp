@@ -305,7 +305,7 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i --sv_dedicated_host_onstartup false)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
@@ -316,8 +316,11 @@ namespace Multiplayer
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         // Launch the Server
-        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
+        const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs
+            ? AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT
+            : AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE;
+
+        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, communicationType);
 
         if (outProcess)
         {

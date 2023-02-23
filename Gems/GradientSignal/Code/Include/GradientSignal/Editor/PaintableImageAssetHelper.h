@@ -32,7 +32,7 @@ namespace GradientSignal::ImageCreatorUtils
     class PaintableImageAssetHelperBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(PaintableImageAssetHelperBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintableImageAssetHelperBase, AZ::SystemAllocator);
         AZ_TYPE_INFO(PaintableImageAssetHelperBase, "{7E269EDA-7A80-4B02-9491-96F66BEF5171}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -174,7 +174,7 @@ namespace GradientSignal::ImageCreatorUtils
     class PaintableImageAssetHelper : public PaintableImageAssetHelperBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(PaintableImageAssetHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintableImageAssetHelper, AZ::SystemAllocator);
         AZ_RTTI((PaintableImageAssetHelper, "{A06517E2-9D6B-4AD6-AD7C-FBE3BF0FD57B}", EditorComponentType, EditorComponentModeType),
             PaintableImageAssetHelperBase);
 

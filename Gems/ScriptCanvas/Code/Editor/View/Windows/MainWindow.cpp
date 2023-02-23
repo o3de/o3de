@@ -82,11 +82,13 @@
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
@@ -439,6 +441,16 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
+
+            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasActionContextIdentifier, this);
+            }
+        }
+
         // Custom Actions
         {
             m_assignToSelectedEntity = new QToolButton();
@@ -673,6 +685,16 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusDisconnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
+
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasActionContextIdentifier, this);
+            }
+        }
 
         Clear();
 
@@ -1679,6 +1701,15 @@ namespace ScriptCanvasEditor
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
+                    if (isValidFileName)
+                    {
+                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
+                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
+                        {
+                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
+                            return false;
+                        }
+                    }
                 }
                 else
                 {
@@ -1866,6 +1897,12 @@ namespace ScriptCanvasEditor
         ui->action_Copy->setShortcut(QKeySequence(QKeySequence::Copy));
         ui->action_Paste->setShortcut(QKeySequence(QKeySequence::Paste));
         ui->action_Delete->setShortcut(QKeySequence(QKeySequence::Delete));
+        addAction(ui->action_Undo);
+        addAction(ui->action_Cut);
+        addAction(ui->action_Copy);
+        addAction(ui->action_Paste);
+        addAction(ui->action_Delete);
+        addAction(ui->action_Duplicate);
 
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::OnEditMenuShow);
 

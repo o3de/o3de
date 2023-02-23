@@ -19,7 +19,7 @@ namespace ShaderManagementConsole
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 

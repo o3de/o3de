@@ -21,7 +21,7 @@ namespace EMotionFX
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EMotionFXTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EMotionFXTest_MockCatalog, AZ::SystemAllocator);
 
         //////////////////////////////////////////////////////////////////////////
         // AssetCatalogRequestBus

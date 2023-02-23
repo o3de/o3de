@@ -37,7 +37,7 @@ namespace WhiteBox
     constexpr AZStd::string_view WhiteBoxEdgeRestoreSubModeIdentifier = "o3de.context.mode.whiteBox.edgeRestore";
     constexpr AZStd::string_view WhiteBoxTransformSubModeIdentifier = "o3de.context.mode.whiteBox.transform";
 
-    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator)
 
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)

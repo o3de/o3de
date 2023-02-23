@@ -20,7 +20,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LodRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LodRule, AZ::SystemAllocator)
 
             SceneData::SceneNodeSelectionList& LodRule::GetSceneNodeSelectionList(size_t index)
             {
