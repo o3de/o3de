@@ -36,8 +36,12 @@ namespace Multiplayer
 
         ////////////////////////////////////////////////////////////////////////
         // SimplePlayerSpawnerRequestBus::Handler implementation...
-        AZ::Transform VisitNextSpawnPoint() override;
+        AZ::Transform RoundRobinNextSpawnPoint() override;
         AZ::Transform GetNextSpawnPoint() const override;
+        AZStd::vector<AZ::EntityId>& GetSpawnPoints() override;
+        uint32_t GetSpawnPointCount() const override;
+        AZ::Outcome<uint32_t, AZStd::string> GetNextSpawnPointIndex() const override;
+        AZ::Outcome<void, AZStd::string> SetNextSpawnPointIndex(uint32_t index) override;
         ////////////////////////////////////////////////////////////////////////
 
     protected:
