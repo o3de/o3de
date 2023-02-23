@@ -16,7 +16,7 @@ namespace Multiplayer
 {
     //! @class SimplePlayerSpawnerRequests
     //! @brief The SimplePlayerSpawnerRequest event-bus exposes helper methods regarding network player spawners.
-    //! For example, it's common for game servers want information regarding valid spawn locations in order to reset a player's position after the player dies or the round restarts (respawning).
+    //! Although the Multiplayer System automatically spawns in players, it's common for game specific server logic to retrieve valid spawn locations when respawning a player.
     class SimplePlayerSpawnerRequests : public AZ::EBusTraits
     {
     public:
