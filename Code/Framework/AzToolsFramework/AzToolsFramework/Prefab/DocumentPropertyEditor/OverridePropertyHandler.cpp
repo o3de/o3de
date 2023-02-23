@@ -11,9 +11,9 @@
 namespace AzToolsFramework::Prefab
 {
     PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
-        : m_iconButton(new QToolButton())
+        : m_overridden(false)
+        , m_iconButton(new QToolButton())
         , m_textLabel(new AzQtComponents::ElidingLabel())
-        , m_overridden(false)
     {
         QHBoxLayout* layout = new QHBoxLayout(this);
         layout->setMargin(0);
@@ -22,8 +22,8 @@ namespace AzToolsFramework::Prefab
         layout->addWidget(m_iconButton);
         layout->addWidget(m_textLabel);
 
-        m_textLabel->setStyleSheet("[overridden=\"true\"] { font-weight: bold }");
         m_textLabel->setProperty("overridden", false);
+        m_textLabel->setStyleSheet("[overridden=\"true\"] { font-weight: bold }");
 
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, &PrefabOverrideLabelHandler::customContextMenuRequested, this, &PrefabOverrideLabelHandler::ShowContextMenu);
