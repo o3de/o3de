@@ -105,7 +105,7 @@ namespace Multiplayer
             return spawnPointEntity->GetTransform()->GetWorldTM();
         }
 
-        AZLOG_WARN("The spawn point entity id for index %i is invalid. Returning spawn point at the world's origin.", m_spawnIndex)
+        AZLOG_WARN("The spawn point entity id for index %i is invalid. Returning spawn point at the world's origin.", m_spawnIndex);
         return AZ::Transform::Identity();
     }
 
