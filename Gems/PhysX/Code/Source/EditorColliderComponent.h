@@ -87,9 +87,12 @@ namespace PhysX
         // O3DE_DEPRECATION_NOTICE(GHI-14718)
         // Initial value for m_shapeType needs to remain PhysicsAsset
         // to support command to convert EditorColliderComponent to
-        // EditorMeshColliderComponent. This is because the lack of 'ShapeType'
-        // property in prefabs still needs to mean it's using PhysicsAsset type.
-        // Initial value to be changed to Box with GHI-14718.
+        // EditorMeshColliderComponent. This is because prefabs do not
+        // store in JSON the default values and therefore the converter
+        // would lose the ability to know if the type was PhysX Asset
+        // before to convert the component to a Editor Mesh Collider.
+        // The initial value can be changed to Box when GHI-14718 deprecation
+        // task is done.
         Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
         Physics::SphereShapeConfiguration m_sphere;
         Physics::BoxShapeConfiguration m_box;
