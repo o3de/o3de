@@ -186,11 +186,11 @@ class TestAddGemDependency:
 
 class TestRemoveGemDependency:
     @pytest.mark.parametrize(
-        "enable_gems_cmake_data, expected_set, expected_return", [
+        "enable_gems_cmake_data, gem_name, expected_set, expected_return", [
             pytest.param("""
                 # Comment
                 set(ENABLED_GEMS foo bar baz TestGem)
-            """, set(['foo', 'bar', 'baz']), 0),
+            """, 'TestGem', set(['foo', 'bar', 'baz']), 0),
             pytest.param("""
                         # Comment
                         set(ENABLED_GEMS
@@ -199,7 +199,7 @@ class TestRemoveGemDependency:
                             baz
                             TestGem
                         )
-                    """, set(['foo', 'bar', 'baz']), 0),
+                    """, 'TestGem', set(['foo', 'bar', 'baz']), 0),
             pytest.param("""
                     # Comment
                     set(ENABLED_GEMS
@@ -207,13 +207,13 @@ class TestRemoveGemDependency:
                         bar
                         baz
                         TestGem)
-                """, set(['foo', 'bar', 'baz']), 0),
+                """, 'TestGem', set(['foo', 'bar', 'baz']), 0),
             pytest.param("""
                         # Comment
                         set(ENABLED_GEMS
                             foo bar
                             baz TestGem)
-                    """, set(['foo', 'bar', 'baz']), 0),
+                    """, 'TestGem', set(['foo', 'bar', 'baz']), 0),
             pytest.param("""
                         # Comment
                         set(ENABLED_GEMS
@@ -224,7 +224,7 @@ class TestRemoveGemDependency:
                             baz
                         )
                         Random Text
-                    """, set(['foo', 'bar', 'baz']),
+                    """, 'TestGem', set(['foo', 'bar', 'baz']),
                          0),
             pytest.param("""
                         set(ENABLED_GEMS
@@ -233,19 +233,35 @@ class TestRemoveGemDependency:
                             baz
                             "TestGem"
                         )
-                """, set(['foo', 'bar', 'baz']), 0),
+                """, 'TestGem', set(['foo', 'bar', 'baz']), 0),
             pytest.param("""
-            """, set(), 1),
+            """, 'TestGem', set(), 1),
             pytest.param("""
                 set(ENABLED_GEMS
                     foo
                     bar
                     baz
                 )
-                """, set(['foo', 'bar', 'baz']), 1),
+                """, 'TestGem', set(['foo', 'bar', 'baz']), 1),
+            pytest.param("""
+                set(ENABLED_GEMS
+                    foo
+                    bar
+                    baz
+                    TestGem==1.0.0
+                )
+                """, 'TestGem==1.0.0', set(['foo', 'bar', 'baz']), 0),
+            pytest.param("""
+                set(ENABLED_GEMS
+                    foo
+                    bar
+                    baz
+                    TestGem
+                )
+                """, 'TestGem==1.0.0', set(['foo', 'bar', 'baz','TestGem']), 1),
         ]
     )
-    def test_remove_gem_dependency(self, enable_gems_cmake_data, expected_set, expected_return):
+    def test_remove_gem_dependency(self, enable_gems_cmake_data, gem_name, expected_set, expected_return):
         enabled_gems_set = set()
         add_gem_return = None
 
@@ -265,7 +281,7 @@ class TestRemoveGemDependency:
                 patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_mock,\
                 patch('pathlib.Path.open', side_effect=lambda mode: StringBufferIOWrapper()) as pathlib_open_mock:
 
-            add_gem_return = cmake.remove_gem_dependency(pathlib.Path('enabled_gems.cmake'), 'TestGem')
+            add_gem_return = cmake.remove_gem_dependency(pathlib.Path('enabled_gems.cmake'), gem_name=gem_name)
             enabled_gems_set = cmake.get_enabled_gems(pathlib.Path('enabled_gems.cmake'))
 
         assert add_gem_return == expected_return

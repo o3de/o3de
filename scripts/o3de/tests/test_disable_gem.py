@@ -116,24 +116,40 @@ def init_disable_gem_data(request):
 
 @pytest.mark.usefixtures('init_disable_gem_data')
 class TestDisableGemCommand:
-    @pytest.mark.parametrize("gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,"
-                             "expected_result", [
-        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 0),
-        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
-        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, 0),
-        pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
+    @pytest.mark.parametrize("enable_gem_name, disable_gem_name, test_gem_path, "
+                             "project_path, gem_registered_with_project, "
+                             "gem_registered_with_engine, expected_result", [
+        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 0),
+        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
+        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, 0),
+        pytest.param(None, None, pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
+        # when requested to remove by name with no version expect success
+        pytest.param('TestGem', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, 0),
+        # when requested to remove a gem with matching version expect success
+        pytest.param('TestGem==1.0.0', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, 0),
+        # when requested to remove a gem that doesn't match, expect failure
+        pytest.param('TestGem==1.0.0', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, 1),
         ]
     )
-    def test_disable_gem_registers_gem_name_with_project_json(self, gem_path, project_path, gem_registered_with_project,
+    def test_disable_gem_registers_gem_name_with_project_json(self, enable_gem_name, disable_gem_name, test_gem_path, 
+                                                             project_path, gem_registered_with_project,
                                                              gem_registered_with_engine, expected_result):
 
         project_gem_dependencies = []
+        default_gem_path = pathlib.PurePath('TestGem')
 
-        def get_registered_path(engine_name: str = None, project_name: str = None, gem_name: str = None) -> pathlib.Path or None:
+        def get_registered(engine_name: str = None,
+                        project_name: str = None,
+                        gem_name: str = None,
+                        template_name: str = None,
+                        default_folder: str = None,
+                        repo_name: str = None,
+                        restricted_name: str = None,
+                        project_path: pathlib.Path = None) -> pathlib.Path or None:
             if project_name:
                 return project_path
             elif gem_name:
-                return gem_path
+                return test_gem_path if test_gem_path else default_gem_path
             elif engine_name:
                 return pathlib.PurePath('o3de')
             return None
@@ -161,9 +177,11 @@ class TestDisableGemCommand:
             return self.disable_gem.engine_data
 
         def get_project_gems(project_path: pathlib.Path):
+            gem_path = test_gem_path if test_gem_path else default_gem_path
             return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
 
         def get_engine_gems():
+            gem_path = test_gem_path if test_gem_path else default_gem_path
             return [pathlib.Path(gem_path).resolve()] if gem_registered_with_engine else []
 
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
@@ -171,8 +189,10 @@ class TestDisableGemCommand:
             return 0
 
         def remove_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
-            project_gem_dependencies.remove(gem_name)
-            return 0
+            if gem_name in project_gem_dependencies:
+                project_gem_dependencies.remove(gem_name)
+                return 0
+            return 1
 
         def get_enabled_gems(enable_gem_cmake_file: pathlib.Path) -> list:
             return project_gem_dependencies
@@ -187,7 +207,7 @@ class TestDisableGemCommand:
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
-                patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
+                patch('o3de.manifest.get_registered', side_effect=get_registered) as get_registered_patch,\
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
@@ -203,30 +223,32 @@ class TestDisableGemCommand:
             self.disable_gem.project_data.pop('gem_names', None)
 
             # First enable the gem
-            assert enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path) == 0
+            assert enable_gem.enable_gem_in_project(gem_name=enable_gem_name, gem_path=test_gem_path, project_path=project_path) == 0
 
             # Check that the gem is enabled
-            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
+            gem_json = get_gem_json_data(gem_name=enable_gem_name, gem_path=test_gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
-            assert gem_json.get('gem_name', '') in enabled_gems_list
+            expected_gem_name = enable_gem_name if enable_gem_name else gem_json.get('gem_name','')
+            assert expected_gem_name in enabled_gems_list
 
             # If the gem that is neither registered in the project.json nor engine.json,
             # then it must appear in the "gem_names" field.
             if not gem_registered_with_engine and not gem_registered_with_project:
-                assert gem_json.get('gem_name', '') in project_json.get('gem_names', [])
+                assert expected_gem_name in project_json.get('gem_names', [])
             else:
-                assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
+                assert expected_gem_name not in project_json.get('gem_names', [])
 
             # Now disable the gem
-            result = disable_gem.disable_gem_in_project(gem_path=gem_path, project_path=project_path)
+            result = disable_gem.disable_gem_in_project(gem_name=disable_gem_name, gem_path=test_gem_path, project_path=project_path)
             assert result == expected_result
 
             # Refresh the enabled_gems list and check for removal of the gem
-            gem_json = get_gem_json_data(gem_path=gem_path, project_path=project_path)
+            gem_json = get_gem_json_data(gem_path=test_gem_path, project_path=project_path)
             project_json = get_project_json_data(project_path=project_path)
             enabled_gems_list = cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
-            assert gem_json.get('gem_name', '') not in enabled_gems_list
+            expected_gem_name = disable_gem_name if disable_gem_name else expected_gem_name
+            assert expected_gem_name not in enabled_gems_list
 
             # If gem name should no longer appear in the "gem_names" field
-            assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
+            assert expected_gem_name not in project_json.get('gem_names', [])

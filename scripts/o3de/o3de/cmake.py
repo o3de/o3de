@@ -95,6 +95,9 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
     t_data = []
     removed = False
 
+    gem_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(gem_name)
+    candidate_gem_name = ''
+
     with cmake_file.open('r') as s:
         in_gem_list = False
         for line in s:
@@ -124,6 +127,15 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 while gem_name in gem_name_list:
                     gem_name_list.remove(gem_name)
                     removed = True
+                
+                if not removed:
+                    # Check if there is an alternate match to help the user if they
+                    # didn't provide the correct version
+                    for candidate in gem_name_list:
+                        candidate_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(candidate)
+                        if gem_name_without_version_specifier == candidate_name_without_version_specifier:
+                            candidate_gem_name = candidate
+                            break
 
                 # Append the renaming gems to the line
                 result_line += ' '.join(gem_name_list)
@@ -138,7 +150,12 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 t_data.append(line)
 
     if not removed:
-        logger.error(f'Failed to remove {gem_name} from cmake file {cmake_file}')
+        if candidate_gem_name:
+            logger.error(f'Failed to find and remove {gem_name} from {cmake_file},  ' \
+                f'but a similar entry was found "${candidate_gem_name}". ' \
+                'If this is the entry you want to remove please provide the name as listed above.')
+        else:
+            logger.error(f'Failed to remove {gem_name} from {cmake_file}')
         return 1
 
     # write the cmake
