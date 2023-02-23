@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework::Prefab
@@ -24,11 +25,18 @@ namespace AzToolsFramework::Prefab
             return;
         }
 
+        m_prefabPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabPublicInterface>::Get();
+        if (m_prefabPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "Could not get PrefabPublicInterface on PrefabAdapter construction.");
+            return;
+        }
+
         auto* propertyEditorToolsSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
         AZ_Assert(
             propertyEditorToolsSystemInterface != nullptr,
             "PrefabAdapter::PrefabAdapter() - PropertyEditorToolsSystemInterface is not available");
-        propertyEditorToolsSystemInterface->RegisterHandler<OverridePropertyHandler>();
+        propertyEditorToolsSystemInterface->RegisterHandler<PrefabOverrideLabelHandler>();
 
         AZ::Interface<PrefabAdapterInterface>::Register(this);
     }
@@ -38,17 +46,36 @@ namespace AzToolsFramework::Prefab
         AZ::Interface<PrefabAdapterInterface>::Unregister(this);
     }
 
-    void PrefabAdapter::AddPropertyHandlerIfOverridden(
-        AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& relativePathFromEntity, AZ::EntityId entityId) 
+    void PrefabAdapter::AddPropertyIconAndLabel(
+        AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
+        const AZStd::string_view labelText,
+        const AZ::Dom::Path& relativePathFromEntity,
+        AZ::EntityId entityId)
     {
-        if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString()))
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+
+        // Do not show override visualization on container entities.
+        if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
         {
-            adapterBuilder->BeginPropertyEditor<PrefabPropertyEditorNodes::PrefabOverrideProperty>();
-            adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::SharePriorColumn, true);
-            adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::UseMinimumWidth, true);
-            adapterBuilder->Attribute(
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Alignment,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Align::AlignLeft);
+            adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
+            adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
+            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, false);
+            adapterBuilder->EndPropertyEditor();
+        }
+        else
+        {
+            bool isPropertyOverridden = false;
+
+            // Mark as non-overridden if the relative path is empty.
+            if (!relativePathFromEntity.IsEmpty() &&
+                m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString()))
+            {
+                isPropertyOverridden = true;
+            }
+
+            adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
+            adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
+            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isPropertyOverridden);
             adapterBuilder->EndPropertyEditor();
         }
     }

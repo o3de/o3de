@@ -10,34 +10,39 @@
 
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
+#include <QHBoxLayout>
 #include <QIcon>
 #include <QMenu>
-#include <QObject>
 #include <QToolButton>
-
 
 namespace AzToolsFramework::Prefab
 {
-    //! Class to handle the override property when encountered in a DPE DOM.
+    //! Class to handle the override label property when encountered in a DPE DOM.
     //! Responsible for setting the ui/ux for overridden properties.
-    class OverridePropertyHandler
-        : public PropertyHandlerWidget<QToolButton>
+    class PrefabOverrideLabelHandler
+        : public PropertyHandlerWidget<QWidget>
     {
     public:
-        OverridePropertyHandler();
-        
-        //! Specifies the behavior when override property is encountered in the DPE DOM.
-        //! @param value The value holding the overridden property in the DPE DOM
+        PrefabOverrideLabelHandler();
+
+        //! Specifies the behavior when override label property is encountered in the DPE DOM.
+        //! @param value The value holding the override label property in the DPE DOM
         void SetValueFromDom(const AZ::Dom::Value& value);
 
         static constexpr const AZStd::string_view GetHandlerName()
         {
-            return PrefabPropertyEditorNodes::PrefabOverrideProperty::Name;
+            return PrefabPropertyEditorNodes::PrefabOverrideLabel::Name;
         }
 
     private:
-        //! Shows a custom menu when the property is clicked. Can handle operations like 'Revert', etc.
+        //! Shows a custom menu when the property is right clicked. Can handle operations like 'Revert override', etc.
         void ShowContextMenu(const QPoint&);
+
+        bool m_overridden;
+
+        QToolButton* m_iconButton;
+        AzQtComponents::ElidingLabel* m_textLabel;
     };
 } // namespace AzToolsFramework::Prefab

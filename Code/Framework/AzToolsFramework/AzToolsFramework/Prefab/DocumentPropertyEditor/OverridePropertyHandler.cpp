@@ -10,24 +10,56 @@
 
 namespace AzToolsFramework::Prefab
 {
-    OverridePropertyHandler::OverridePropertyHandler()
+    PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
+        : m_iconButton(new QToolButton())
+        , m_textLabel(new AzQtComponents::ElidingLabel())
+        , m_overridden(false)
     {
+        QHBoxLayout* layout = new QHBoxLayout(this);
+        layout->setMargin(0);
+        layout->setSpacing(0);
+
+        layout->addWidget(m_iconButton);
+        layout->addWidget(m_textLabel);
+
+        m_textLabel->setStyleSheet("[overridden=\"true\"] { font-weight: bold }");
+        m_textLabel->setProperty("overridden", false);
+
         setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(this, &OverridePropertyHandler::customContextMenuRequested, this, &OverridePropertyHandler::ShowContextMenu);
+        connect(this, &PrefabOverrideLabelHandler::customContextMenuRequested, this, &PrefabOverrideLabelHandler::ShowContextMenu);
     }
 
-    void OverridePropertyHandler::SetValueFromDom(const AZ::Dom::Value&)
+    void PrefabOverrideLabelHandler::SetValueFromDom(const AZ::Dom::Value& domValue)
     {
         static QIcon s_overrideIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg"));
+        static QIcon s_emptyIcon;
+        static QSize s_iconSize(7, 7);
 
-        setIcon(s_overrideIcon);
-        setIconSize(QSize(8, 8));
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+
+        m_overridden = PrefabOverrideLabel::IsOverridden.ExtractFromDomNode(domValue).value_or(false);
+
+        // Set up label
+        AZStd::string_view labelText = PrefabOverrideLabel::Text.ExtractFromDomNode(domValue).value_or("");
+        m_textLabel->setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
+
+        m_textLabel->setProperty("overridden", QVariant(m_overridden));
+        m_textLabel->RefreshStyle();
+
+        // Set up icon
+        m_iconButton->setIcon(m_overridden ? s_overrideIcon : s_emptyIcon);
+        m_iconButton->setIconSize(s_iconSize);
     }
 
-    void OverridePropertyHandler::ShowContextMenu(const QPoint& position)
+    void PrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
     {
+        if (!m_overridden)
+        {
+            return;
+        }
+
         QMenu contextMenu;
-        QAction* revertAction = contextMenu.addAction(tr("Revert Override"));
+        QAction* revertAction = contextMenu.addAction(tr("Revert override"));
 
         QAction* selectedItem = contextMenu.exec(mapToGlobal(position));
 
