@@ -14,6 +14,12 @@ namespace UnitTest
 {
     using PrefabInspectorOverrideTest = PrefabInspectorOverrideTestFixture;
 
+    // These paths depends on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
+    // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, these may
+    // change in the future if the data stored in the DPE DOM itself changes and need to be modified accordingly to prevent test failures.
+    constexpr AZStd::string_view domPathToTranslateProperty = "/0/3/2";
+    constexpr AZStd::string_view domPathToOverriddenTranslateProperty = "/0/3/3";
+
     TEST_F(PrefabInspectorOverrideTest, ValidatePresenceOfOverrideProperty)
     {
         AZ::EntityId newEntityId, parentContainerId, grandparentContainerId;
@@ -27,10 +33,7 @@ namespace UnitTest
         {
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
 
-            // This path depends on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
-            // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, this may
-            // change in the future if the data stored in the DPE DOM itself changes. This path must be updated if that happens.
-            AZ::Dom::Path pathToTranslateProperty("/0/3/3");
+            AZ::Dom::Path pathToTranslateProperty(domPathToOverriddenTranslateProperty);
             [[maybe_unused]] AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 3);
@@ -64,7 +67,7 @@ namespace UnitTest
         AzToolsFramework::ComponentEditor::GetComponentAdapterContentsCallback callback = [](const AZ::Dom::Value& adapterContents)
         {
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
-            AZ::Dom::Path pathToTranslateProperty("/0/3/2");
+            AZ::Dom::Path pathToTranslateProperty(domPathToTranslateProperty);
             [[maybe_unused]] AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 2);
