@@ -62,9 +62,61 @@
             return false;
         }
 
-        AZStd::optional<OverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
+        AZStd::optional<OverrideType> PrefabOverrideHandler::GetEntityOverrideType(AZ::Dom::Path path, LinkId linkId) const
         {
             AZStd::optional<OverrideType> overrideType = {};
+
+            AZStd::optional<PatchType> patchType = GetPatchType(path, linkId);
+            if (patchType.has_value())
+            {
+                switch (patchType.value())
+                {
+                case PatchType::Add:
+                    overrideType = OverrideType::AddEntity;
+                    break;
+                case PatchType::Remove:
+                    overrideType = OverrideType::RemoveEntity;
+                    break;
+                case PatchType::Edit:
+                    overrideType = OverrideType::EditEntity;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            return overrideType;
+        }
+
+        AZStd::optional<OverrideType> PrefabOverrideHandler::GetComponentOverrideType(AZ::Dom::Path path, LinkId linkId) const
+        {
+            AZStd::optional<OverrideType> overrideType = {};
+
+            AZStd::optional<PatchType> patchType = GetPatchType(path, linkId);
+            if (patchType.has_value())
+            {
+                switch (patchType.value())
+                {
+                case PatchType::Add:
+                    overrideType = OverrideType::AddComponent;
+                    break;
+                case PatchType::Remove:
+                    overrideType = OverrideType::RemoveComponent;
+                    break;
+                case PatchType::Edit:
+                    overrideType = OverrideType::EditComponent;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            return overrideType;
+        }
+
+        AZStd::optional<PatchType> PrefabOverrideHandler::GetPatchType(AZ::Dom::Path path, LinkId linkId) const
+        {
+            AZStd::optional<PatchType> patchType = {};
 
             LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
             if (link.has_value())
@@ -78,22 +130,22 @@
                         AZStd::string opPath = patchEntryIterator->value.GetString();
                         if (opPath == "remove")
                         {
-                            overrideType = OverrideType::RemoveEntity;
+                            patchType = PatchType::Remove;
                         }
                         else if (opPath == "add")
                         {
-                            overrideType = OverrideType::AddEntity;
+                            patchType = PatchType::Add;
                         }
                     }
                 }
                 else if (link->get().AreOverridesPresent(path))
                 {
                     // Any overrides on descendant paths are edits
-                    overrideType = OverrideType::EditEntity;
+                    patchType = PatchType::Edit;
                 }
             }
 
-            return overrideType;
+            return patchType;
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

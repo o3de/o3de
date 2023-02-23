@@ -29,11 +29,17 @@ namespace AzToolsFramework
             //! @return true if overrides are present at the given path on the link object matching the link id.
             bool AreOverridesPresent(AZ::Dom::Path path, LinkId linkId) const;
 
-            //! Gets the override type on the link object matching the linkId at the provided path.
+            //! Gets the entity override type on the link object matching the linkId at the provided path.
             //! @param path The path to get override type on the link object.
             //! @param linkId The id of the link object to get overrides on.
             //! @return an override type if an override is present at the given path on the link object matching the link id.
-            AZStd::optional<OverrideType> GetOverrideType(AZ::Dom::Path path, LinkId linkId) const;
+            AZStd::optional<OverrideType> GetEntityOverrideType(AZ::Dom::Path path, LinkId linkId) const;
+
+            //! Gets the component override type on the link object matching the linkId at the provided path.
+            //! @param path The path to get override type on the link object.
+            //! @param linkId The id of the link object to get overrides on.
+            //! @return an override type if an override is present at the given path on the link object matching the link id.
+            AZStd::optional<OverrideType> GetComponentOverrideType(AZ::Dom::Path path, LinkId linkId) const;
 
             //! Revert overrides corresponding to the provided path from the overrides stored in the link matching the link id.
             //! @param path The path at which overrides should be reverted from.
@@ -42,6 +48,8 @@ namespace AzToolsFramework
             bool RevertOverrides(AZ::Dom::Path path, LinkId linkId) const;
 
         private:
+            AZStd::optional<PatchType> GetPatchType(AZ::Dom::Path path, LinkId linkId) const;
+
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
     } // namespace Prefab

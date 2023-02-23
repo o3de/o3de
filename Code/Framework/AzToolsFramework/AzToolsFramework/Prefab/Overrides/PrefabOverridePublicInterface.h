@@ -34,12 +34,23 @@ namespace AzToolsFramework
             //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
             //! @param entityId The id of the entity for which to get the override type.
             //! @return an override type if an override exists on the given entity id.
-            virtual AZStd::optional<OverrideType> GetOverrideType(AZ::EntityId entityId) = 0;
-            
+            virtual AZStd::optional<OverrideType> GetEntityOverrideType(AZ::EntityId entityId) = 0;
+
+            //! Gets the override type on the given component. The prefab that creates the overrides is identified
+            //! by the class implmenting this interface based on certain selections in the editor. eg: the prefab currently being edited.
+            //! @param component The component for which to get the override type.
+            //! @return an override type if an override exists on the given component.
+            virtual AZStd::optional<OverrideType> GetComponentOverrideType(const AZ::Component& component) = 0;
+
             //! Revert overrides on the entity matching the entity id. Returns false if no overrides are present on the entity.
             //! @param entityId The id of the entity on which overrides should be reverted.
             //! @return Whether overrides are successfully reverted on the entity.
             virtual bool RevertOverrides(AZ::EntityId entityId) = 0;
+
+            //! Revert overrides on the given component. Returns false if no overrides are present on the component.
+            //! @param component The component on which overrides should be reverted.
+            //! @return Whether overrides are successfully reverted on the component.
+            virtual bool RevertComponentOverrides(const AZ::Component& component) = 0;
         };
 
         class PrefabOverridePublicRequests : public AZ::EBusTraits

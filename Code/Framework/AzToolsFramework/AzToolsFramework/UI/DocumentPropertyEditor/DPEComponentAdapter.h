@@ -44,6 +44,9 @@ namespace AZ::DocumentPropertyEditor
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
         void SetComponent(AZ::Component* componentInstance);
 
+        const AZ::Component* GetConstComponent();
+        AZ::Component* GetComponent();
+
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
 

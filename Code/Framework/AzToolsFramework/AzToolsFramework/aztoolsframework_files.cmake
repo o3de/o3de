@@ -780,6 +780,7 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/DocumentPropertyEditor/Resources/OverrideResources.qrc
     Prefab/DocumentPropertyEditor/OverridePropertyHandler.h
     Prefab/DocumentPropertyEditor/OverridePropertyHandler.cpp
     Prefab/DocumentPropertyEditor/PrefabAdapter.h

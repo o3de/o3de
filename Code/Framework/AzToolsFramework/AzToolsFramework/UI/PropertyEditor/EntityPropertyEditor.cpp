@@ -53,6 +53,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
@@ -73,6 +74,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteWidget.hxx>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditorHeader.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -113,6 +115,7 @@ AZ_POP_DISABLE_WARNING
 void initEntityPropertyEditorResources()
 {
     Q_INIT_RESOURCE(Icons);
+    Q_INIT_RESOURCE(OverrideResources);
 }
 
 namespace AzToolsFramework
@@ -900,6 +903,31 @@ namespace AzToolsFramework
         {
             UpdateStatusComboBox();
         }
+    }
+
+    void EntityPropertyEditor::OnComponentIconClicked(const AZ::Component* component, const QPoint& position)
+    {
+        if (!component)
+        {
+            return;
+        }
+
+        QMenu menu;
+
+        QAction* revertAction = menu.addAction(QObject::tr("Revert Overrides"));
+        QObject::connect(
+            revertAction,
+            &QAction::triggered,
+            this,
+            [component]
+            {
+                if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                {
+                    prefabOverridePublicInterface->RevertComponentOverrides(*component);
+                }
+            });
+
+        menu.exec(position);
     }
 
     bool EntityPropertyEditor::IsEntitySelected(const AZ::EntityId& id) const
@@ -1758,6 +1786,13 @@ namespace AzToolsFramework
                 componentEditor->AddInstance(componentInstance, aggregateInstance, referenceComponentInstance);
             }
 
+            // Set up other entity property editor customization
+            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            {
+                // Set up visualization for overrides on the component
+                UpdateOverrideVisualization(*componentEditor);
+            }
+
             // Set tab order for editor
             setTabOrder(lastTabWidget, componentEditor);
             lastTabWidget = componentEditor;
@@ -1790,6 +1825,35 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::UpdateOverrideVisualization(ComponentEditor& componentEditor)
+    {
+        if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+        {
+            const AZ::Component* component = componentEditor.GetAdapterComponent();
+            AZ_Assert(component, "Adapter component should not be null");
+            AZStd::string iconOverlayPath;
+            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(*component); overrideType.has_value())
+            {
+                if (overrideType == AzToolsFramework::Prefab::OverrideType::AddComponent)
+                {
+                    iconOverlayPath = ":/OverrideResources/component_added_as_override.svg";
+                }
+                else if (overrideType == AzToolsFramework::Prefab::OverrideType::EditComponent)
+                {
+                    iconOverlayPath = ":/OverrideResources/component_modified_as_override.svg";
+                }
+            }
+                
+            AZStd::string prevIconOverlayPath(componentEditor.property("IconOverlayPath").toString().toUtf8());
+            if (prevIconOverlayPath != iconOverlayPath)
+            {
+                componentEditor.setProperty("IconOverlayPath", iconOverlayPath.c_str());
+                componentEditor.GetHeader()->SetIconOverlay(QIcon(iconOverlayPath.c_str()));
+                componentEditor.GetHeader()->SetComponentIconClickable(!iconOverlayPath.empty());
+            }
+        }
+    }
+
     ComponentEditor* EntityPropertyEditor::CreateComponentEditor()
     {
         //caching allocated component editors for reuse and to preserve order
@@ -1814,6 +1878,27 @@ namespace AzToolsFramework
             componentEditor->GetPropertyEditor()->SetReadOnlyQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeReadOnlyStatus(node); });
             componentEditor->GetPropertyEditor()->SetHiddenQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeHiddenStatus(node); });
             componentEditor->GetPropertyEditor()->SetIndicatorQueryFunction([this](const InstanceDataNode* node) { return GetAppropriateIndicator(node); });
+
+            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            {
+                // Connect to the component icon's click event to display override context menu
+                connect(
+                    componentEditor,
+                    &ComponentEditor::OnComponentIconClicked,
+                    this,
+                    &EntityPropertyEditor::OnComponentIconClicked);
+
+                // Subscribe to DPE property changes to keep the component icon updated based on override state
+                auto propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                    [this, componentEditor](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+                        {
+                            UpdateOverrideVisualization(*componentEditor);
+                        }
+                    });
+                componentEditor->ConnectPropertyChangeHandler(propertyChangeHandler);
+            }
 
             //move spacer to bottom of editors
             m_gui->m_componentListContents->layout()->removeItem(m_spacer);

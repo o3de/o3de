@@ -353,6 +353,8 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
 
+        void OnComponentIconClicked(const AZ::Component* component, const QPoint& position);
+
         AZ::Component* ExtractMatchingComponent(AZ::Component* component, AZ::Entity::ComponentArrayType& availableComponents);
 
         void SetEntityIconToDefault();
@@ -493,6 +495,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;

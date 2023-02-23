@@ -174,6 +174,7 @@ namespace AzToolsFramework
         m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
+        connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
 
         SetExpanded(true);
         SetSelected(false);
@@ -755,6 +756,17 @@ namespace AzToolsFramework
         event->accept();
     }
 
+    void ComponentEditor::OnIconLabelClicked(const QPoint& position)
+    {
+        const AZ::Component* component = GetAdapterComponent();
+        if (!component && !m_components.empty())
+        {
+            component = m_components[0];
+        }
+
+        emit OnComponentIconClicked(component, position);
+    }
+
     void ComponentEditor::UpdateExpandability()
     {
         //updating whether or not expansion is allowed and forcing collapse if it's not
@@ -908,6 +920,11 @@ namespace AzToolsFramework
         return m_components;
     }
 
+    const AZ::Component* ComponentEditor::GetAdapterComponent() const
+    {
+        return m_adapter ? m_adapter->GetComponent() : nullptr;
+    }
+
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)
     {
         for (AZ::Component* component : m_components)
@@ -951,6 +968,13 @@ namespace AzToolsFramework
     {
         // refresh which Component Editor/Card looks selected in the Entity Outliner
         SetSelected(componentType == m_componentType);
+    }
+
+    void ComponentEditor::ConnectPropertyChangeHandler(
+        const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler& handler)
+    {
+        m_propertyChangeHandler = handler;
+        m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
     }
 }
 

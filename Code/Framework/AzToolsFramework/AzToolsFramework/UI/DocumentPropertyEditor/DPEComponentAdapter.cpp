@@ -83,6 +83,16 @@ namespace AZ::DocumentPropertyEditor
         m_componentAlias = componentInstance->GetSerializedIdentifier();
     }
 
+    const AZ::Component* ComponentAdapter::GetConstComponent()
+    {
+        return m_componentInstance;
+    }
+
+    AZ::Component* ComponentAdapter::GetComponent()
+    {
+        return m_componentInstance;
+    }
+
     void ComponentAdapter::DoRefresh()
     {
         if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)

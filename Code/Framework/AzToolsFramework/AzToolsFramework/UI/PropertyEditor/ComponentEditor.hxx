@@ -96,6 +96,7 @@ namespace AzToolsFramework
         IPropertyEditor* GetPropertyEditor();
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
+        const AZ::Component* GetAdapterComponent() const;
 
         const AZ::Uuid& GetComponentType() const { return m_componentType; }
 
@@ -104,6 +105,9 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
+
+        // Subscribe to document property editor change events
+        void ConnectPropertyChangeHandler(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler& handler);
 
     Q_SIGNALS:
         void OnExpansionContractionDone();
@@ -116,6 +120,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
+        void OnComponentIconClicked(const AZ::Component* component, const QPoint& position);
 
     private:
         /// Set up header for this component type.
@@ -129,6 +134,7 @@ namespace AzToolsFramework
 
         void OnExpanderChanged(bool expanded);
         void OnContextMenuClicked(const QPoint& position);
+        void OnIconLabelClicked(const QPoint& position);
 
         AzQtComponents::CardNotification* CreateNotification(const QString& message);
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
@@ -157,6 +163,8 @@ namespace AzToolsFramework
 
         AZStd::vector<AZ::Component*> m_components;
         AZ::Crc32 m_savedKeySeed;
+
+        AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
     };
 
 } // namespace AzToolsFramework
