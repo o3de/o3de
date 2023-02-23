@@ -474,6 +474,15 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     return match.group("object_name").strip(), match.group("version_specifier").strip()
 
 
+def object_name_found(input:str, match:str):
+    """
+    Returns True if the object name in the input string matches match 
+    :param input: The input string
+    :param match: The object name to match
+    """
+    object_name, _ = get_object_name_and_optional_version_specifier(input)
+    return object_name == match
+
 def get_object_name_and_optional_version_specifier(input:str):
     """
     Returns an object name and optional version specifier 

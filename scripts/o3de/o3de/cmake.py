@@ -10,8 +10,8 @@ Contains methods for query CMake gem target information
 """
 
 import logging
-import os
 import pathlib
+import re
 
 from o3de import manifest, utils
 
@@ -27,75 +27,55 @@ def add_gem_dependency(cmake_file: pathlib.Path,
     """
     adds a gem dependency to a cmake file
     :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem
+    :param gem_name: name of the gem with optional version specifier
     :return: 0 for success or non 0 failure code
     """
     if not cmake_file.is_file():
         logger.error(f'Failed to locate cmake file {str(cmake_file)}')
         return 1
 
-    # on a line by basis, see if there already is {gem_name}
-    # find the first occurrence of a gem, copy its formatting and replace
-    # the gem name with the new one and append it
-    t_data = []
-    added = False
-    start_marker_line_index = None
-    end_marker_line_index = None
-    with cmake_file.open('r') as s:
-        in_gem_list = False
-        line_index = 0
-        for line in s:
-            parsed_line = line.strip()
-            if parsed_line.startswith(enable_gem_start_marker):
-                # Skip pass the 'set(ENABLED_GEMS' marker just in case their are gems declared on the same line
-                parsed_line = parsed_line[len(enable_gem_start_marker):]
-                # Set the flag to indicate that we are in the ENABLED_GEMS variable
-                in_gem_list = True
-                start_marker_line_index = line_index
+    gem_name_with_version_specifier = gem_name
+    gem_name, gem_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
 
-            if in_gem_list:
-                # Since we are inside the ENABLED_GEMS variable determine if the line has the end_marker of ')'
-                if parsed_line.endswith(enable_gem_end_marker):
-                    # Strip away the line end marker
-                    parsed_line = parsed_line[:-len(enable_gem_end_marker)]
-                    # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
-                    in_gem_list = False
-                    end_marker_line_index = line_index
-
-                # Split the rest of the line on whitespace just in case there are multiple gems in a line
-                gem_name_list = map(lambda gem_name: gem_name.strip('"'), parsed_line.split())
-                if gem_name in gem_name_list:
-                    logger.info(f'{gem_name} is already enabled in file {str(cmake_file)}.')
-                    return 0
-
-            t_data.append(line)
-            line_index += 1
-
+    pre_gem_names = ''
+    post_gem_names = ''
+    all_gem_names = '' 
     indent = 4
-    if start_marker_line_index:
-        # Make sure if there is a enable gem start marker, there is an end marker as well
-        if not end_marker_line_index:
-            logger.error(f'The Enable Gem start marker of "{enable_gem_start_marker}" has been found, but not the'
-                         f' Enable Gem end marker of "{enable_gem_end_marker}"')
-            return 1
 
-        # Insert the gem before the ')' end marker
-        end_marker_partition = list(t_data[end_marker_line_index].rpartition(enable_gem_end_marker))
-        end_marker_partition[1] = f'{" " * indent}{gem_name}\n' + end_marker_partition[1]
-        t_data[end_marker_line_index] = ''.join(end_marker_partition)
-        added = True
+    with cmake_file.open('r') as s:
+        file_contents = s.read()
+        if file_contents:
+            # regex to isolate pre, gem names and post 
+            regex_all_gem_names = re.compile('(?P<pre>[\s\S]*set\s*\(\s*ENABLED_GEMS\s*)?(?P<gem_names>[^\)]+)(?P<post>\)[\s\S]*)?')
+            all_gem_names_matches = regex_all_gem_names.search(file_contents)
+            if not all_gem_names_matches:
+                logger.error(f'{cmake_file} is not formatted correctly and cannot be modified.')
+                return 1
 
-    # if we didn't add, then create a new set(ENABLED_GEMS) variable
-    # add a new gem, if empty the correct format is 1 tab=4spaces
-    if not added:
-        t_data.append('\n')
-        t_data.append(f'{enable_gem_start_marker}\n')
-        t_data.append(f'{" "  * indent}{gem_name}\n')
-        t_data.append(f'{enable_gem_end_marker}\n')
+            pre_gem_names = all_gem_names_matches.group('pre')
+            post_gem_names = all_gem_names_matches.group('post')
+            if pre_gem_names and not post_gem_names:
+                logger.error(f'{cmake_file} is missing a closing parenthesis or is not formatted correctly.')
+                return 1
+
+            # regex to replace every version of the gem name 
+            regex_replace_gem_name = re.compile(f'(?:^|\s+){gem_name}[=><~]*[\S]*')
+            all_gem_names = regex_replace_gem_name.sub('', all_gem_names_matches.group('gem_names'))
+
+            all_gem_names += f'\n{" "  * indent}{gem_name_with_version_specifier}'
+
+
+    if not pre_gem_names:
+        pre_gem_names = f'\n' \
+                        f'{enable_gem_start_marker}\n' \
+                        f'{" "  * indent}{gem_name_with_version_specifier}\n'
+
+    if not post_gem_names:
+        post_gem_names = f'{enable_gem_end_marker}\n'
 
     # write the cmake
     with cmake_file.open('w') as s:
-        s.writelines(t_data)
+        s.write(pre_gem_names + all_gem_names + post_gem_names)
 
     return 0
 

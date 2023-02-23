@@ -32,7 +32,7 @@ def enable_gem_in_project(gem_name: str = None,
                           optional: bool = False) -> int:
     """
     enable a gem in a projects enabled_gems.cmake file
-    :param gem_name: name of the gem to add
+    :param gem_name: name of the gem to add with optional version specifier, e.g. atom>=1.2.3
     :param gem_path: path to the gem to add
     :param project_name: name of to the project to add the gem to
     :param project_path: path to the project to add the gem to
@@ -69,7 +69,7 @@ def enable_gem_in_project(gem_name: str = None,
     if gem_name and not gem_path:
         gem_path = manifest.get_registered(gem_name=gem_name, project_path=project_path)
     if not gem_path:
-        logger.error(f'Unable to locate gem path from the registered manifest.json files:'
+        logger.error(f'Unable to locate "{gem_name}" from the registered gems in:'
                      f' {str(pathlib.Path( "~/.o3de/o3de_manifest.json").expanduser())},'
                      f' {project_path / "project.json"}, engine.json')
         return 1
@@ -127,13 +127,17 @@ def enable_gem_in_project(gem_name: str = None,
             return 0
 
     ret_val = 0
+
+    # include the version specifier if provided e.g. gem==1.2.3
+    gem_name = gem_name if gem_name else gem_json_data['gem_name']
+
     # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
     if gem_path not in buildable_gems:
-        ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_json_data['gem_name'],
+        ret_val = project_properties.edit_project_props(project_path, new_gem_names=gem_name,
                                                         is_optional_gem=optional)
 
     # add the gem if it is registered in either the project.json or engine.json
-    ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
+    ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_name)
 
     return ret_val
 
@@ -191,14 +195,14 @@ def _run_enable_gem_in_project(args: argparse) -> int:
             args.enabled_gem_file
         )
     else:
-        return enable_gem_in_project(args.gem_name,
-                                     args.gem_path,
-                                     args.project_name,
-                                     args.project_path,
-                                     args.enabled_gem_file,
-                                     args.force,
-                                     args.dry_run,
-                                     args.optional
+        return enable_gem_in_project(gem_name=args.gem_name,
+                                     gem_path=args.gem_path,
+                                     project_name=args.project_name,
+                                     project_path=args.project_path,
+                                     enable_gem_file=args.enabled_gem_file,
+                                     force=args.force,
+                                     dry_run=args.dry_run,
+                                     optional=args.optional
                                      )
 
 
@@ -222,7 +226,7 @@ def add_parser_args(parser):
     group.add_argument('-gp', '--gem-path', type=pathlib.Path, required=False,
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
-                       help='The name of the gem.')
+                       help='The name of the gem (e.g. "atom"). May also include a version specifier, e.g. "atom>=1.2.3"')
     group.add_argument('-agp', '--all-gem-paths', type=pathlib.Path, nargs='*', required=False,
                        help='Explicitly activates all gems in the path recursively.')
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
