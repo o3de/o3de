@@ -44,6 +44,7 @@ parts:
      - libstdc++6
     stage-snaps:
      - cmake
+     - gnome-42-2204
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
