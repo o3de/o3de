@@ -145,45 +145,66 @@ namespace PhysX
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
-        const AZ::Vector3 expected_velocity(0.0f, 0.0f, 22.0f);
-        auto original_velocity = basis.m_gameplayController->GetFallingVelocity();
+        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
+        auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        basis.m_gameplayController->SetFallingVelocity(original_velocity + expected_velocity);
-        auto end_velocity = basis.m_gameplayController->GetFallingVelocity();
+        basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
+        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        EXPECT_THAT(end_velocity.GetZ(), testing::FloatNear(expected_velocity.GetZ(), 0.001f));
+        EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ(), 0.001f));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySetsWhileMoving)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
-        const AZ::Vector3 expected_velocity(0.0f, 0.0f, 22.0f);
-        auto original_velocity = basis.m_gameplayController->GetFallingVelocity();
+        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
+        auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        basis.m_gameplayController->SetFallingVelocity(original_velocity + expected_velocity);
+        basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
         basis.Update(10);
-        auto end_velocity = basis.m_gameplayController->GetFallingVelocity();
+        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        EXPECT_THAT(end_velocity.GetZ(), testing::FloatNear(expected_velocity.GetZ() + original_velocity.GetZ(), 0.001f));
+        EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ() + originalVelocity.GetZ(), 0.001f));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
-        const auto original_height = basis.m_gameplayController->GetGroundDetectionBoxHeight();
-        const float expected_height = 10.0f;
+        const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
+        const float expectedHeight = 10.0f;
 
-        basis.m_gameplayController->SetGroundDetectionBoxHeight(expected_height + original_height);
-        auto end_height = basis.m_gameplayController->GetGroundDetectionBoxHeight();
+        basis.m_gameplayController->SetGroundDetectionBoxHeight(expectedHeight + originalHeight);
+        auto endHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
 
-        EXPECT_THAT(end_height, testing::FloatNear(expected_height + original_height, 0.001f));
+        EXPECT_THAT(endHeight, testing::FloatNear(expectedHeight + originalHeight, 0.001f));
     }
 
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GroundDetectedWhileMoving)
+    {
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
 
+        const AZ::Transform startingPosition = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 0.1f));
 
+        basis.m_controller->SetTransform(startingPosition);        
+        const auto startingDetected = basis.m_gameplayController->IsOnGround();
 
+        bool groundDetected = false;
+
+        for (int i = 0; i < 10; i++)
+        {
+            basis.Update();
+
+            if (basis.m_gameplayController->IsOnGround())
+            {
+                groundDetected = true;
+                break;
+            }
+        }
+
+        EXPECT_THAT(groundDetected, testing::AllOf(testing::IsTrue(), testing::Ne(startingDetected)));
+    }
 
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
 
