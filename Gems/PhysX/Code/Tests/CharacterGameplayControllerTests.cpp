@@ -141,6 +141,19 @@ namespace PhysX
         }
     }
 
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySets)
+    {
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+
+        const AZ::Vector3 expected_velocity(0.0f, 0.0f, 22.0f);
+        auto original_velocity = basis.m_gameplayController->GetFallingVelocity();
+
+        basis.m_gameplayController->SetFallingVelocity(original_velocity + expected_velocity);
+        auto end_velocity = basis.m_gameplayController->GetFallingVelocity();
+
+        EXPECT_THAT(end_velocity.GetZ(), testing::FloatNear(expected_velocity.GetZ(), 0.001f));
+    }
+
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
 
     TEST_P(PhysXDefaultWorldTestWithParamFixture, CharacterGameplayController_EntityFallsUnderGravity)
