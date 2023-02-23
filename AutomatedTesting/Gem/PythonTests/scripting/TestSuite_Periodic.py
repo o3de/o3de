@@ -86,7 +86,9 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
         self._run_test(request, workspace, editor, test_module)
 
-
+    def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
+        from . import ScriptEvents_AllParamDatatypes_CreationSuccess as test_module
+        self._run_test(request, workspace, editor, test_module)
 
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.SUITE_periodic
@@ -151,10 +153,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_Pane_Default_RetainOnSCRestart(self, request, workspace, editor, launcher_platform):
         from . import Pane_Default_RetainOnSCRestart as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
-        from . import ScriptEvents_AllParamDatatypes_CreationSuccess as test_module
         self._run_test(request, workspace, editor, test_module)
 
 

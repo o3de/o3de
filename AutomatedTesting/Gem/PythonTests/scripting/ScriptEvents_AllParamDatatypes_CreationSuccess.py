@@ -7,43 +7,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 N_VAR_TYPES = 10  # Top 10 variable types
 
-def verify_added_params(self):
-        """
-        function for checking if there's enough parameter fields in the parameter container for all the parameter types we want to add
-
-        returns true only if there's a row for each parameter we want to make
-        """
-        for index in range(N_VAR_TYPES):
-            if self.asset_editor_row_container.findChild(QtWidgets.QFrame, f"[{index}]") is None:
-                return False
-        return True
-
-def set_name_field_names(self):
-        """
-        function for assigning a name to each of the parameters name fields
-
-        returns None
-        """
-        index = 0
-        name_fields = tools.get_script_event_parameter_name_text(self)
-        for name_field in name_fields:
-            if name_field is not None and name_field.text() == PARAMETER_NAME:
-                name_field.setText(f"param_{index}")
-                index += 1
-
-def set_type_field_types(self):
-        """
-        function for assigning a type to each of parameter's type combo box
-
-        returns None
-        """
-        index = 0
-        type_combo_boxes = tools.get_script_event_parameter_type_combobox(self)
-        for type_combo_box in type_combo_boxes:
-            if type_combo_box is not None and index < N_VAR_TYPES:
-                type_combo_box.setCurrentIndex(index)
-                index += 1
-
 def TestScriptEvents_AllParamDatatypes_CreationSuccess():
     """
        Summary:

@@ -8,7 +8,7 @@ Object to house all the Qt Objects and behavior used in testing the asset editor
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore
 import pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
@@ -16,7 +16,9 @@ import os
 from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
 from consts.asset_editor import (ASSET_EDITOR_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT, DEFAULT_METHOD_NAME)
 from consts.general import (WAIT_TIME_SEC_3, SAVE_STRING, NAME_STRING)
-from consts.scripting import (SEARCH_FRAME_QT, SEARCH_FILTER_QT, PARAMETERS_QT, INDICATOR_QT)
+from consts.scripting import (PARAMETERS_QT, INDICATOR_QT)
+
+
 
 class QtPyAssetEditor(QtPyCommon):
     """
@@ -251,3 +253,23 @@ class QtPyAssetEditor(QtPyCommon):
         add_event.click()
         # refresh our handle on the asset editor widget since the qt object structure has changed
         self.refresh_qt_references()
+
+
+    #debug stuff. delete this before merging
+    def get_q_objects(self, qobject):
+
+        children = qobject.children()
+        depth = 0
+        for child in children:
+            print(f"{depth}->Name:{child.objectName()}: Text:{child.property('text')} {type(child)}")
+            self.print_types_recursive(child, "", depth)
+
+    def print_types_recursive(self, container, string, depth):
+
+        children = container.children()
+        string += "="
+        depth += 1
+        for child in children:
+            if child is not None:
+                print(f"{depth}->{string}: Name:{child.objectName()}: Text:{child.property('text')} {type(child)}")
+                self.print_types_recursive(child, string, depth)
