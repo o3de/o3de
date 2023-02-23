@@ -165,8 +165,25 @@ namespace PhysX
         basis.Update(10);
         auto end_velocity = basis.m_gameplayController->GetFallingVelocity();
 
-        EXPECT_THAT(end_velocity.GetZ(), testing::FloatNear(expected_velocity.GetZ(), 0.001f));
+        EXPECT_THAT(end_velocity.GetZ(), testing::FloatNear(expected_velocity.GetZ() + original_velocity.GetZ(), 0.001f));
     }
+
+    TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
+    {
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+
+        const auto original_height = basis.m_gameplayController->GetGroundDetectionBoxHeight();
+        const float expected_height = 10.0f;
+
+        basis.m_gameplayController->SetGroundDetectionBoxHeight(expected_height + original_height);
+        auto end_height = basis.m_gameplayController->GetGroundDetectionBoxHeight();
+
+        EXPECT_THAT(end_height, testing::FloatNear(expected_height + original_height, 0.001f));
+    }
+
+
+
+
 
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
 
