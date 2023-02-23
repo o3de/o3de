@@ -98,7 +98,6 @@ namespace PhysX
             }
         }
 
-        
         //! Function to remove the ground for tests where the ground can interfere with the intent of the test. 
         void RemoveGround()
         {
@@ -120,7 +119,7 @@ namespace PhysX
 
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
         basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier);
-        EXPECT_THAT(expectedGravityMultiplier, testing::FloatEq(basis.m_gameplayController->GetGravityMultiplier()));
+        EXPECT_THAT(basis.m_gameplayController->GetGravityMultiplier(), testing::FloatEq(expectedGravityMultiplier));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
@@ -137,7 +136,7 @@ namespace PhysX
             basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier + i);
             basis.Update();
 
-            EXPECT_THAT(expectedGravityMultiplier + i, testing::FloatEq(basis.m_gameplayController->GetGravityMultiplier()));
+            EXPECT_THAT(basis.m_gameplayController->GetGravityMultiplier(), testing::FloatEq(expectedGravityMultiplier + i));
         }
     }
 
