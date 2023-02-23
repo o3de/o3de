@@ -515,7 +515,24 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
         get_gem_external_subdirectories(gem_path, list(), all_gems_json_data)
 
     # convert from being keyed on gem_path to gem_name and store the paths
-    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_key='gem_name', replaced_key_name='path')
+    # resulting dictionary format will look like
+    # {
+    #     '<gem name>': [
+    #         {'gem_name':'<gem name>', 'version':'<version>', 'path':'<path>'}
+    #     ],
+    # }
+    #     e.g.
+    # {
+    #     'gem1': [
+    #         {'gem_name':'gem1', 'version':'1.0.0'},
+    #         {'gem_name':'gem1', 'version':'2.0.0'},
+    #     ],
+    #     'gem2': [
+    #         {'gem_name':'gem2', 'version':'1.0.0'},
+    #         {'gem_name':'gem2', 'version':'2.0.0'},
+    #     ],
+    # }
+    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
 
     return all_gems_json_data
 

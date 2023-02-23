@@ -485,7 +485,7 @@ def get_object_name_and_optional_version_specifier(input:str):
         return input, None
 
 
-def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None):
+def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None, place_values_in_list:bool = False):
     """
     Takes a dictionary of dictionaries and replaces the keys with the value of 
     a specific value key.
@@ -494,6 +494,7 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
     :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
     :param value_key: The value's key to replace the current key with
     :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
+    :param place_values_in_list: (Optional) Put the values in a list, useful when the new key is not unique
     """
 
     # we cannot iterate over the dict while deleting entries
@@ -515,4 +516,9 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
         del input[key]
 
         # replace with an entry keyed on value_key's value
-        input[value[value_key]] = value
+        if place_values_in_list:
+            entries = input.get(value[value_key], [])
+            entries.append(value)
+            input[value[value_key]] = entries
+        else:
+            input[value[value_key]] = value

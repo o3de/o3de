@@ -235,10 +235,11 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
 
 def get_incompatible_gem_version_specifiers(gem_json_data:dict, all_gems_json_data:dict, checked_specifiers:set) -> set:
     """
-    Returns a set of gem version specifiers that are not compatible with the gem's provided
-    If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
-    :param gem_version_specifier_list: a list of gem names and (optional)version specifiers
+    Returns a set of gem version specifiers that are not compatible with the provided gem's dependencies
+    If a dependency entry only has a gem name, it is assumed compatible with every gem version with that name.
+    :param gem_json_data: gem json data with optional 'dependencies' list
     :param all_gems_json_data: json data of all gems to use for compatibility checks
+    :param checked_specifiers: a set of all gem specifiers already checked to avoid cycles
     """
     gem_version_specifier_list = gem_json_data.get('dependencies')
     if not gem_version_specifier_list:
@@ -249,14 +250,6 @@ def get_incompatible_gem_version_specifiers(gem_json_data:dict, all_gems_json_da
         return set(gem_version_specifier_list)
 
     incompatible_gem_version_specifiers = set()
-
-    # helper function to check dependency tree for incompatible gem dependencies
-    def get_gem_dependency_version_specifiers(gem_name):
-        gem_dependencies = all_gems_json_data[gem_name].get('dependencies')
-        if gem_dependencies:
-            incompatible_dependency_specifiers = get_incompatible_gem_version_specifiers(all_gems_json_data[gem_name], all_gems_json_data, checked_specifiers)
-            if incompatible_dependency_specifiers:
-                incompatible_gem_version_specifiers.update(incompatible_dependency_specifiers)
 
     for gem_version_specifier in gem_version_specifier_list:
         if gem_version_specifier in checked_specifiers:
@@ -269,17 +262,36 @@ def get_incompatible_gem_version_specifiers(gem_json_data:dict, all_gems_json_da
             incompatible_gem_version_specifiers.add(f"{gem_json_data['gem_name']} is missing the dependency {gem_version_specifier}")
             continue
 
-        if not version_specifier:
-            # when no version specifier is provided we assume compatibility with any version
-            get_gem_dependency_version_specifiers(gem_name)
-            continue
-        
-        gem_version = all_gems_json_data[gem_name].get('version')
-        if gem_version and not has_compatible_version([gem_version_specifier], gem_name, gem_version):
-            incompatible_gem_version_specifiers.add(f"{gem_json_data['gem_name']} depends on {gem_version_specifier} but {gem_name} version {gem_version} was found")
-            continue
+        all_candidate_incompatible_gem_version_specifiers = set() 
+        # check every version of this gem and only record incompatible specifiers
+        # when we don't find one that is compatible
+        found_candidate = False
+        for candidate_gem_json_data in all_gems_json_data[gem_name]:
+            if version_specifier:
+                gem_version = candidate_gem_json_data.get('version')
+                if gem_version and not has_compatible_version([gem_version_specifier], gem_name, gem_version):
+                    if not found_candidate:
+                        all_candidate_incompatible_gem_version_specifiers.add(f"{gem_json_data['gem_name']} depends on {gem_version_specifier} but {gem_name} version {gem_version} was found")
+                    continue
+                else:
+                    found_candidate = True
+            else:
+                found_candidate = True
 
-        get_gem_dependency_version_specifiers(gem_name)
+            if found_candidate:
+                # clear all previous incompatible errors because we found a candidate
+                # we only want to show dependency incompatibility 
+                all_candidate_incompatible_gem_version_specifiers = set()
+
+            # check dependencies recursively 
+            candidate_incompatible_gem_version_specifiers = get_incompatible_gem_version_specifiers(candidate_gem_json_data, all_gems_json_data, checked_specifiers)
+            if candidate_incompatible_gem_version_specifiers:
+                all_candidate_incompatible_gem_version_specifiers.update(candidate_incompatible_gem_version_specifiers)
+            else:
+                all_candidate_incompatible_gem_version_specifiers = set()
+                break
+        
+        incompatible_gem_version_specifiers.update(all_candidate_incompatible_gem_version_specifiers)
 
     return incompatible_gem_version_specifiers
 
