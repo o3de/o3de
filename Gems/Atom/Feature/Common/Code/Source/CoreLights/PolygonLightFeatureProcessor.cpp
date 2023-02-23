@@ -289,7 +289,7 @@ namespace AZ::Render
         else
         {
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-            bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal));
+            bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal.GetNormalized()));
         }
     }
 
