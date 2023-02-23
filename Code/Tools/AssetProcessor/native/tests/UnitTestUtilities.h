@@ -199,7 +199,7 @@ namespace UnitTests
                         // Any mode besides OPEN_READ_ONLY creates a file
                         if ((systemMode & ~int(IO::SystemFile::SF_OPEN_READ_ONLY)) > 0)
                         {
-                            m_mockFiles[handle] = AZStd::pair<AZStd::string, AZStd::string>(filePath, "");
+                            m_mockFiles[handle] = { filePath, "" };
                         }
 
                         return AZ::IO::Result(AZ::IO::ResultCode::Success);

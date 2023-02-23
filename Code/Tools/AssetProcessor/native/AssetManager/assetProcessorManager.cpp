@@ -2731,6 +2731,9 @@ namespace AssetProcessor
             return;
         }
 
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+        AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests interface is not available.");
+
         // During unit tests, it can be the case that cache folders are actually in a temp folder structure
         // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
         // for deletions may report the canonical path (/private/var/...) when the 'cache root' or watched folder
@@ -3068,9 +3071,9 @@ namespace AssetProcessor
                 {
                     AssetProcessor::FileStateInfo fileStateInfo;
 
-                    if(AZ::Interface<AssetProcessor::IFileStateRequests>::Get()->GetFileInfo(
-                        sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo)
-                        && fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
+                    if (fileStateInterface->GetFileInfo(
+                            sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo) &&
+                        fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
                     {
                         // File on disk has different case compared to the file being processed
                         // This usually means a file was renamed and a "change" event was fired for both the old and new name

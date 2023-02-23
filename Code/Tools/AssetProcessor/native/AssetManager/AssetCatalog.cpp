@@ -488,8 +488,7 @@ namespace AssetProcessor
                         return false;
                     }
 
-                    AssetProcessor::FileStateInfo fileStateInfo;
-                    const bool fileExists = fileStateInterface->GetFileInfo(sourceAsset.AbsolutePath().c_str(), &fileStateInfo) && fileStateInfo.m_absolutePath.compare(sourceAsset.AbsolutePath().c_str()) == 0;
+                    const bool fileExists = fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str());
 
                     // Only try to update for files which actually exist
                     if (fileExists)
