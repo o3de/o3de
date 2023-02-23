@@ -23,7 +23,6 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
-#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -74,7 +73,6 @@ namespace PhysX
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
-        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
         , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
@@ -155,12 +153,6 @@ namespace PhysX
 
         // non-uniform scale handling
         void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
-
-        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
-        AZ::Vector3 GetTranslationOffset() const override;
-        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
-        AZ::Transform GetManipulatorSpace() const override;
-        AZ::Quaternion GetRotationOffset() const override;
 
         // AZ::Render::MeshComponentNotificationBus overrides ...
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,

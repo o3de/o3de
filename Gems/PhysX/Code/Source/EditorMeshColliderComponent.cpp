@@ -239,7 +239,6 @@ namespace PhysX
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(entityId);
         PhysX::MeshColliderComponentRequestsBus::Handler::BusConnect(entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
         ColliderShapeRequestBus::Handler::BusConnect(entityId);
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(entityId);
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
@@ -294,7 +293,6 @@ namespace PhysX
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         PhysX::MeshColliderComponentRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
@@ -713,27 +711,6 @@ namespace PhysX
         {
             DisplayMeshCollider(debugDisplay);
         }
-    }
-
-    AZ::Vector3 EditorMeshColliderComponent::GetTranslationOffset() const
-    {
-        return m_configuration.m_position;
-    }
-
-    void EditorMeshColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
-    {
-        m_configuration.m_position = translationOffset;
-        UpdateCollider();
-    }
-
-    AZ::Transform EditorMeshColliderComponent::GetManipulatorSpace() const
-    {
-        return GetWorldTM();
-    }
-
-    AZ::Quaternion EditorMeshColliderComponent::GetRotationOffset() const
-    {
-        return m_configuration.m_rotation;
     }
 
     void EditorMeshColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
