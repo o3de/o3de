@@ -19,10 +19,12 @@ namespace Multiplayer
     void SimplePlayerSpawnerComponent::Activate()
     {
         AZ::Interface<IMultiplayerSpawner>::Register(this);
+        SimplePlayerSpawnerRequestBus::Handler::BusConnect();
     }
 
     void SimplePlayerSpawnerComponent::Deactivate()
     {
+        SimplePlayerSpawnerRequestBus::Handler::BusDisconnect();
         AZ::Interface<IMultiplayerSpawner>::Unregister(this);
     }
 
@@ -72,16 +74,27 @@ namespace Multiplayer
         incompatible.push_back(AZ_CRC_CE("MultiplayerSpawnerService"));
     }
 
-    AZ::Transform SimplePlayerSpawnerComponent::VisitNextPlayerSpawnPoint()
+    AZ::Transform SimplePlayerSpawnerComponent::VisitNextSpawnPoint()
+    {
+        const AZ::Transform nextSpawnPoint = GetNextSpawnPoint();
+        m_spawnIndex = ++m_spawnIndex % m_spawnPoints.size();
+        return nextSpawnPoint;
+    }
+
+    AZ::Transform SimplePlayerSpawnerComponent::GetNextSpawnPoint() const
     {
         if (m_spawnPoints.empty())
         {
-            AZLOG_WARN("SimplePlayerSpawnerComponent is missing spawn points. Spawning player at the origin.")
+            AZLOG_WARN("SimplePlayerSpawnerComponent is missing spawn points. Returning spawn point at the world's origin.")
             return AZ::Transform::Identity();
         }
 
-        ++m_spawnIndex;
-        m_spawnIndex %= m_spawnPoints.size();
+        if (m_spawnIndex >= m_spawnPoints.size())
+        {
+            AZ_Assert(false, "SimplePlayerSpawnerComponent has an out-of-bounds m_spawnIndex %i. Please ensure spawn index is always valid.", m_spawnIndex);
+            return AZ::Transform::Identity();
+        }
+
         const AZ::EntityId spawnPointEntityId = m_spawnPoints[m_spawnIndex];
 
         AZ::Entity* spawnPointEntity = nullptr;
@@ -92,15 +105,16 @@ namespace Multiplayer
             return spawnPointEntity->GetTransform()->GetWorldTM();
         }
 
-        AZLOG_WARN("The spawn point entity id for index %i is invalid. Spawning player at the origin.", m_spawnIndex)
+        AZLOG_WARN("The spawn point entity id for index %i is invalid. Returning spawn point at the world's origin.", m_spawnIndex)
         return AZ::Transform::Identity();
     }
+
 
     NetworkEntityHandle SimplePlayerSpawnerComponent::OnPlayerJoin(
         [[maybe_unused]] uint64_t userId, [[maybe_unused]] const MultiplayerAgentDatum& agentDatum)
     {
         const PrefabEntityId prefabEntityId(AZ::Name(m_playerSpawnable.m_spawnableAsset.GetHint().c_str()));
-        const AZ::Transform transform = VisitNextPlayerSpawnPoint();
+        const AZ::Transform transform = VisitNextSpawnPoint();
         INetworkEntityManager::EntityList entityList =
             GetNetworkEntityManager()->CreateEntitiesImmediate(prefabEntityId, NetEntityRole::Authority, transform);
 
