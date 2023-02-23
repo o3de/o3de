@@ -356,8 +356,12 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, VerifyToolBarInToolBarArea)
     {
+        const char* TestToolBarName = "Test ToolBar";
+
         m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
-        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        AzToolsFramework::ToolBarProperties toolBarProperties;
+        toolBarProperties.m_name = TestToolBarName;
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", toolBarProperties);
 
         // Add the ToolBar to the toolbar area.
         m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
@@ -366,8 +370,10 @@ namespace UnitTest
         m_toolBarManagerInternalInterface->RefreshToolBarAreas();
 
         // Verify the ToolBar is now in the ToolBar Area.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
-        EXPECT_EQ(m_mainWindow->toolBarArea(toolBar), Qt::ToolBarArea::TopToolBarArea);
+        auto toolBars = m_mainWindow->findChildren<QToolBar*>("");
+        EXPECT_EQ(toolBars.size(), 1);
+        EXPECT_EQ(toolBars[0]->windowTitle(), TestToolBarName);
+        EXPECT_EQ(m_mainWindow->toolBarArea(toolBars[0]), Qt::ToolBarArea::TopToolBarArea);
     }
 
     TEST_F(ActionManagerFixture, GetSortKeyOfActionInToolBar)

@@ -54,6 +54,7 @@ namespace AzToolsFramework
         for (QToolBar* toolBar : m_toolBarsCache)
         {
             m_mainWindow->removeToolBar(toolBar);
+            delete toolBar;
         }
         m_toolBarsCache.clear();
 
