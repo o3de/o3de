@@ -31,3 +31,9 @@ class TestLauncherAutomation(object):
         levels = ["levels/Prefab/Base/Base.spawnable",
                   "levels/Prefab/QuitOnSuccessfulSpawn/QuitOnSuccessfulSpawn.spawnable"]
         run_launcher_tests(launcher, levels, remote_console_instance, null_renderer=True)
+
+    @pytest.mark.parametrize(launcher_platform, ['windows_dedicated'])
+    def test_DedicatedLauncher_Launches(self, launcher, remote_console_instance, launcher_platform):
+        levels = ["levels/Prefab/Base/Base.spawnable"]
+        run_launcher_tests(launcher, levels, remote_console_instance)
+
