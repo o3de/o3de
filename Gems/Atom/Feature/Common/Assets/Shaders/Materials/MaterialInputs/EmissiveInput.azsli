@@ -32,7 +32,7 @@ float3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, float fact
     float3 emissive = float3(0,0,0);
     if(emissiveEnabled)
     {
-        emissive = emissiveColor * factor * lerp(1, alpha, emissiveAffectedByAlpha);
+        emissive = factor * lerp(1, alpha, emissiveAffectedByAlpha) * emissiveColor;
         if (useTexture)
         {
             float3 sampledValue = map.Sample(mapSampler, uv).rgb;
