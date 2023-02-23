@@ -185,7 +185,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawPolygonPrismShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_polygonShapeConfig.GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_polygonPrismMesh, debugDisplay);
 
                 debugDisplay.SetColor(m_shapeWireColor);

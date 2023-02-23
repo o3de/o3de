@@ -32,7 +32,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        ToolBarManager(QWidget* defaultParentWidget);
+        explicit ToolBarManager(QWidget* defaultParentWidget);
         virtual ~ToolBarManager();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -69,6 +69,7 @@ namespace AzToolsFramework
         void RefreshToolBars() override;
         void RefreshToolBarAreas() override;
         ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
+        void Reset() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
