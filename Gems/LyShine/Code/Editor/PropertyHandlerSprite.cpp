@@ -63,7 +63,7 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
 
         slicerButton->setFocusPolicy(Qt::StrongFocus);
 
-        slicerButton->setIcon(QIcon("Icons/PropertyEditor/open_in.png"));
+        slicerButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
 
         // The icon size needs to be smaller than the fixed size to make sure it visually aligns properly.
         QSize iconSize = QSize(fixedSize.width() - 2, fixedSize.height() - 2);
