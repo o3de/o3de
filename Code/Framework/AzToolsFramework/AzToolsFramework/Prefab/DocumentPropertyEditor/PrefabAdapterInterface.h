@@ -37,7 +37,7 @@ namespace AzToolsFramework::Prefab
         //! @param labelText The text string to be displayed in label.
         //! @param relativePathFromEntity The path as seen by the entity a component or its properties.
         //! @param entityId The entity id to use to query the prefab system about the presence of overrides.
-        virtual void AddPropertyIconAndLabel(
+        virtual void AddPropertyLabelNode(
             AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
             AZStd::string_view labelText,
             const AZ::Dom::Path& relativePathFromEntity,

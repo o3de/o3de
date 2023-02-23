@@ -154,7 +154,7 @@ namespace AZ::DocumentPropertyEditor
                 relativePathFromEntity /= m_componentAlias;
                 relativePathFromEntity /= AZ::Dom::Path(serializedPath);
             }
-            prefabAdapterInterface->AddPropertyIconAndLabel(adapterBuilder, labelText, relativePathFromEntity, m_entityId);
+            prefabAdapterInterface->AddPropertyLabelNode(adapterBuilder, labelText, relativePathFromEntity, m_entityId);
         }
     }
 } // namespace AZ::DocumentPropertyEditor

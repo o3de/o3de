@@ -24,9 +24,9 @@ namespace AzToolsFramework::Prefab
         PrefabAdapter();
         ~PrefabAdapter();
     private:
-        void AddPropertyIconAndLabel(
+        void AddPropertyLabelNode(
             AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
-            const AZStd::string_view labelText,
+            AZStd::string_view labelText,
             const AZ::Dom::Path& relativePathFromEntity,
             AZ::EntityId entityId) override;
 

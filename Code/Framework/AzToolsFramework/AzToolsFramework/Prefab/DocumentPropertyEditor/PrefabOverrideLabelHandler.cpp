@@ -6,24 +6,23 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 
 namespace AzToolsFramework::Prefab
 {
     PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
         : m_overridden(false)
-        , m_iconButton(new QToolButton())
-        , m_textLabel(new AzQtComponents::ElidingLabel())
     {
+        m_iconButton = new QToolButton();
+        m_textLabel = new AzQtComponents::ElidingLabel();
+        m_textLabel->setProperty(OverriddenPropertyName, false);
+        m_textLabel->setStyleSheet(QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
+
         QHBoxLayout* layout = new QHBoxLayout(this);
         layout->setMargin(0);
         layout->setSpacing(0);
-
         layout->addWidget(m_iconButton);
         layout->addWidget(m_textLabel);
-
-        m_textLabel->setProperty("overridden", false);
-        m_textLabel->setStyleSheet("[overridden=\"true\"] { font-weight: bold }");
 
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, &PrefabOverrideLabelHandler::customContextMenuRequested, this, &PrefabOverrideLabelHandler::ShowContextMenu);
@@ -43,7 +42,7 @@ namespace AzToolsFramework::Prefab
         AZStd::string_view labelText = PrefabOverrideLabel::Text.ExtractFromDomNode(domValue).value_or("");
         m_textLabel->setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
 
-        m_textLabel->setProperty("overridden", QVariant(m_overridden));
+        m_textLabel->setProperty(OverriddenPropertyName, QVariant(m_overridden));
         m_textLabel->RefreshStyle();
 
         // Set up icon

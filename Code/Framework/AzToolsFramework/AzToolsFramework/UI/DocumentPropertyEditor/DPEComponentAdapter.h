@@ -49,7 +49,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
         //! Creates a node for displaying label information.
-        //! Requests the PrefabAdapterInterface to add a property ndoe and configures its style if an override exist.
+        //! Requests the PrefabAdapterInterface to add a property node and configures its style if an override exist.
         //! @param adapterBuilder The adapter builder to use for adding property node.
         //! @param labelText The text string to be displayed in label.
         //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.

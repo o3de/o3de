@@ -25,6 +25,8 @@ namespace AzToolsFramework::Prefab
         : public PropertyHandlerWidget<QWidget>
     {
     public:
+        inline static constexpr const char* OverriddenPropertyName = "overridden";
+
         PrefabOverrideLabelHandler();
 
         //! Specifies the behavior when override label property is encountered in the DPE DOM.

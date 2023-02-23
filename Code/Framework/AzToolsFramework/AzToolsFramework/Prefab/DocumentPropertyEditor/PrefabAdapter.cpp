@@ -8,8 +8,8 @@
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapter.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/OverridePropertyHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
@@ -46,37 +46,28 @@ namespace AzToolsFramework::Prefab
         AZ::Interface<PrefabAdapterInterface>::Unregister(this);
     }
 
-    void PrefabAdapter::AddPropertyIconAndLabel(
+    void PrefabAdapter::AddPropertyLabelNode(
         AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
-        const AZStd::string_view labelText,
+        AZStd::string_view labelText,
         const AZ::Dom::Path& relativePathFromEntity,
         AZ::EntityId entityId)
     {
         using PrefabPropertyEditorNodes::PrefabOverrideLabel;
 
-        // Do not show override visualization on container entities.
-        if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+        adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
+        adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
+
+        // Do not show override visualization on container entities or for empty serialized paths.
+        if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId) || relativePathFromEntity.IsEmpty())
         {
-            adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-            adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
             adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, false);
-            adapterBuilder->EndPropertyEditor();
         }
         else
         {
-            bool isPropertyOverridden = false;
-
-            // Mark as non-overridden if the relative path is empty.
-            if (!relativePathFromEntity.IsEmpty() &&
-                m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString()))
-            {
-                isPropertyOverridden = true;
-            }
-
-            adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-            adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
-            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isPropertyOverridden);
-            adapterBuilder->EndPropertyEditor();
+            bool isOverridden = m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString());
+            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isOverridden);
         }
+        
+        adapterBuilder->EndPropertyEditor();
     }
 } // namespace AzToolsFramework::Prefab

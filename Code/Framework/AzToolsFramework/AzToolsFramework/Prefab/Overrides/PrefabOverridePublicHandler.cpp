@@ -56,10 +56,9 @@ namespace AzToolsFramework
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
-                AZ::Dom::Path relativeDomPathFromEntity(relativePathFromEntity);
-                if (!relativeDomPathFromEntity.IsEmpty())
+                if (!relativePathFromEntity.empty())
                 {
-                    pathAndLinkIdPair.first /= relativeDomPathFromEntity;
+                    pathAndLinkIdPair.first /= AZ::Dom::Path(relativePathFromEntity);
                 }
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
             }
