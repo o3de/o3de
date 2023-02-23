@@ -62,7 +62,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Specular Lighting ---
 
-    OUT.m_specularColor.rgb = lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+    OUT.m_specularColor.rgb = lightingData.specularLighting.rgb;
     OUT.m_specularColor.a = 1.0;
 
     // --- Roughness and Specular ---
@@ -79,6 +79,9 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     OUT.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     OUT.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
+
+    // --- Emissive ---
+    OUT.m_diffuseColor.rgb += lightingData.emissiveLighting;
 
     // --- Subsurface ---
 #if OUTPUT_SUBSURFACE
