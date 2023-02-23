@@ -35,7 +35,7 @@ namespace AzToolsFramework
     class EditorToolBar final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator);
         AZ_RTTI(EditorToolBar, "{A3862087-FEB3-466C-985B-92F9411BC2EF}");
 
         EditorToolBar();
@@ -79,7 +79,7 @@ namespace AzToolsFramework
 
         struct ToolBarItem final
         {
-            AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator);
             AZ_RTTI(ToolBarItem, "{B0DE0795-2C3F-4ABC-AAAB-1A68604EF33E}");
 
             explicit ToolBarItem(

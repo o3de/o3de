@@ -30,7 +30,7 @@ namespace Terrain
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator);
         AZ_RTTI(PaintBrushUndoBuffer, "{6EF041B7-D59F-4CC1-B75E-0C04D6D091FD}");
 
         PaintBrushUndoBuffer(AZ::EntityId imageEntityId)

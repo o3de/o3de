@@ -28,7 +28,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CollisionGroupWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionGroupWidget, AZ::SystemAllocator);
 
             CollisionGroupWidget();
             
@@ -52,7 +52,7 @@ namespace PhysX
             : public AzToolsFramework::GenericEnumPropertyComboBoxHandler<AzPhysics::CollisionGroup>
         {
         public:
-            AZ_CLASS_ALLOCATOR(CollisionGroupEnumPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionGroupEnumPropertyComboBoxHandler, AZ::SystemAllocator);
         };
 
     } // namespace Editor

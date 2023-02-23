@@ -29,7 +29,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsInspector, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsInspector, AZ::SystemAllocator);
 
         EntityPreviewViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~EntityPreviewViewportSettingsInspector() override;

@@ -31,7 +31,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(InstanceUpdateExecutor, "{E21DB0D4-0478-4DA9-9011-31BC96F55837}", InstanceUpdateExecutorInterface);
-            AZ_CLASS_ALLOCATOR(InstanceUpdateExecutor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceUpdateExecutor, AZ::SystemAllocator);
 
             explicit InstanceUpdateExecutor(int instanceCountToUpdateInBatch = 0);
 

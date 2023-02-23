@@ -19,8 +19,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode::BlendSpaceMotion, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode::BlendSpaceMotion, AnimGraphAllocator)
 
     BlendSpaceNode::BlendSpaceMotion::BlendSpaceMotion()
         : m_coordinates(0.0f, 0.0f)

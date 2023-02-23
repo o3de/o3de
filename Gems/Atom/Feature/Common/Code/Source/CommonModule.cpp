@@ -34,7 +34,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(CommonModule, "{116699A4-176B-41BE-8D07-77590319687B}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(CommonModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommonModule, AZ::SystemAllocator);
 
             CommonModule()
                 : AZ::Module()

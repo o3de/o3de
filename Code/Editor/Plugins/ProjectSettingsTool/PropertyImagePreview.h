@@ -69,7 +69,7 @@ namespace ProjectSettingsTool
     class PropertyImagePreviewHandler
         : public AzToolsFramework::PropertyHandler<AZStd::string, PropertyImagePreviewCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyImagePreviewHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyImagePreviewHandler, AZ::SystemAllocator);
 
     public:
         PropertyImagePreviewHandler(ValidationHandler* valHdlr);

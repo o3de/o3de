@@ -27,7 +27,7 @@ namespace Terrain
     struct TerrainWorldRendererConfig final
         : public AZ::ComponentConfig
     {
-        AZ_CLASS_ALLOCATOR(TerrainWorldRendererConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainWorldRendererConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainWorldRendererConfig, "{08C5863C-092D-4A69-8226-4978E4F6E343}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

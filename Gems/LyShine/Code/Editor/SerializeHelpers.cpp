@@ -28,7 +28,7 @@ namespace SerializeHelpers
     {
     public:
         virtual ~SerializedElementContainer() { }
-        AZ_CLASS_ALLOCATOR(SerializedElementContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SerializedElementContainer, AZ::SystemAllocator);
         AZ_RTTI(SerializedElementContainer, "{4A12708F-7EC5-4F56-827A-6E67C3C49B3D}");
         AZStd::vector<AZ::Entity*> m_entities;
         AZStd::vector<AZ::Entity*> m_childEntities;

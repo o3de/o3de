@@ -22,7 +22,7 @@ class CTimeRangesTrack
     : public TAnimTrack<ITimeRangeKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CTimeRangesTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CTimeRangesTrack, AZ::SystemAllocator);
     AZ_RTTI(CTimeRangesTrack, "{6BD2B893-7E42-47C7-92B3-5C58F8AE33F3}", IAnimTrack);
 
     // IAnimTrack.

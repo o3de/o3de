@@ -36,10 +36,11 @@ namespace PhysX
             picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Groups");
 
-            connect(picker, &widget_t::valueChanged, this, [picker]()
-                {
-                    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-                });
+            connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
+            });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionGroupWidget::OnEditButtonClicked);
 

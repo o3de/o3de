@@ -95,7 +95,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(OctreeScene, "{A88E4D86-11F1-4E3F-A91A-66DE99502B93}");
-        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OctreeScene, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(OctreeScene);
 
         explicit OctreeScene(const AZ::Name& sceneName);

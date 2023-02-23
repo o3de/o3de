@@ -30,7 +30,7 @@ namespace AZ
         : public SettingsRegistryInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(SettingsRegistryImpl, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SettingsRegistryImpl, AZ::OSAllocator);
         AZ_RTTI(AZ::SettingsRegistryImpl, "{E9C34190-F888-48CA-83C9-9F24B4E21D72}", AZ::SettingsRegistryInterface);
 
         static constexpr size_t MaxRegistryFolderEntries = 128;

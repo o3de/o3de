@@ -12,7 +12,6 @@ from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import pathlib
 import logging
-from collections import OrderedDict
 from o3de import manifest, utils, cmake, validation
 
 logger = logging.getLogger('o3de.compatibility')
@@ -54,17 +53,7 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
         return None
 
     if not engines_json_data:
-        engines_json_data = OrderedDict()
-        engines = manifest.get_manifest_engines()
-        for engine in engines:
-            if isinstance(engine, dict):
-                engine_path = pathlib.Path(engine['path']).resolve()
-            else:
-                engine_path = pathlib.Path(engine).resolve()
-            engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
-            if not engine_json_data:
-                continue
-            engines_json_data[engine_path] = engine_json_data
+        engines_json_data = manifest.get_engines_json_data_by_path()
 
     most_compatible_engine_path = None
     most_compatible_engine_version = None
