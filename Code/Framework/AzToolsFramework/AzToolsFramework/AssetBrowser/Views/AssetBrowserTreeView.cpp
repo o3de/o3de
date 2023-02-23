@@ -365,30 +365,21 @@ namespace AzToolsFramework
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
         {
             QModelIndex current;
-            for (auto token : AZStd::ranges::split_view(path, '/'))
+            const QByteArray byteArray = path.toUtf8();
+            const AZ::IO::PathView azpath{ AZStd::string_view{ byteArray.constData(), static_cast<size_t>(byteArray.size()) } };
+            for (const auto& pathPart : azpath)
             {
-                QStringView pathPart{ token.begin(), token.end() };
-                const int rows = model()->rowCount(current);
-                bool rowFound = false;
-                for (int row=0; row < rows; ++row)
+                const QModelIndexList next = model()->match(
+                    /*start =*/model()->index(0, 0, current),
+                    /*role =*/Qt::DisplayRole,
+                    /*value =*/QString::fromUtf8(pathPart.Native().data(), static_cast<int32_t>(pathPart.Native().size())),
+                    /*hits =*/1,
+                    /*flags =*/Qt::MatchExactly);
+                if (next.size() == 1)
                 {
-                    QModelIndex rowIdx = model()->index(row, 0, current);
-                    auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
-                    if (rowEntry)
-                    {
-                        if (rowEntry->GetDisplayName() == pathPart)
-                        {
-                            current = rowIdx;
-                            rowFound = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        return nullptr;
-                    }
+                    current = next[0];
                 }
-                if (!rowFound)
+                else if (current.isValid())
                 {
                     return nullptr;
                 }
