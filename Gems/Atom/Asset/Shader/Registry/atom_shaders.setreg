@@ -5,6 +5,10 @@
                 "BuildVariants": true,
                 "Build": {
                     "ConfigPath": "@gemroot:AtomShader@/Config"
+                },
+                "ShaderVariantListBuilder" : {
+                    "EnableHashCompare": false, // Setting this to false will always rebuild all variants when a .shadervariantlist changes.
+                    "SuddenChangeInMinutes": 5, // If a .shadervariantlist changes several times within this time period, the IsNew status of each previous variant in .shadervariantlist will be preserved.
                 }
             }
         }
