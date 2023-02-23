@@ -155,7 +155,9 @@ namespace AZ
     namespace Internal
     {
         template <class T>
-        using HasAZTypeInfo = AZStd::bool_constant<HasGetAzTypeInfo_v<AZStd::remove_cvref_t<AZStd::remove_pointer_t<T>>>>;
+        using HasAZTypeInfo = AZStd::bool_constant<
+            HasGetO3deTypeName_v<AZStd::remove_cvref_t<AZStd::remove_pointer_t<T>>>
+            && HasGetO3deTypeId_v<AZStd::remove_cvref_t<AZStd::remove_pointer_t<T>>>>;
 
         template <class T>
         inline constexpr bool HasAzTypeInfo_v = HasAZTypeInfo<T>::value;
@@ -201,10 +203,10 @@ namespace AZ
                 }
                 else
                 {
-                    constexpr AZStd::fixed_string<1024> typeNameAggregate = []()
+                    AZ::TypeNameString typeNameAggregate = []()
                     {
                         bool prependSeparator = false;
-                        AZStd::fixed_string<1024> aggregateTypeName;
+                        AZ::TypeNameString aggregateTypeName;
                         for (AZStd::string_view templateParamName : { AZStd::string_view(AzTypeInfo<Tn>::Name())... })
                         {
                             aggregateTypeName += prependSeparator ? TypeNameSeparator : "";
@@ -214,8 +216,7 @@ namespace AZ
                         return aggregateTypeName;
                     }();
 
-                    // resize down the aggregate type name to the exact size
-                    return AZStd::fixed_string<typeNameAggregate.size()>(typeNameAggregate);
+                    return typeNameAggregate;
                 }
             }
 
@@ -227,7 +228,7 @@ namespace AZ
                 }
                 else
                 {
-                    constexpr auto typeIds = AZStd::to_array<AZ::TypeId>({ AzTypeInfo<Tn>::GetCanonicalTypeId()... });
+                    const auto typeIds = AZStd::to_array<AZ::TypeId>({ AzTypeInfo<Tn>::GetCanonicalTypeId()... });
                     if (typeIds.empty())
                     {
                         return {};
@@ -325,105 +326,140 @@ namespace AZ
 
     // Default function for enums without an overload
     template <class T>
-    constexpr auto GetAzTypeInfo(AZ::Adl, AZStd::type_identity<T>)
-        -> AZStd::enable_if_t<AZStd::is_enum_v<T>, TypeInfoObject>
+    constexpr auto GetO3deTypeName(AZ::Adl, AZStd::type_identity<T>)
+        -> AZStd::enable_if_t<AZStd::is_enum_v<T>, TypeNameString>
     {
-        using UnderlyingType = AZStd::RemoveEnumT<T>;
-        TypeTraits typeTraits{};
-        // Track the C++ type traits required by the SerializeContext
-        typeTraits |= AZStd::is_signed_v<UnderlyingType> ? TypeTraits::is_signed : AZ::TypeTraits{};
-        typeTraits |= AZStd::is_unsigned_v<UnderlyingType> ? TypeTraits::is_unsigned : AZ::TypeTraits{};
-        typeTraits |= TypeTraits::is_enum;
         if constexpr (AZ::HasAzEnumTraits_v<T>)
         {
-            TypeInfoObject typeInfoObject;
-            typeInfoObject.m_name = AzEnumTraits<T>::EnumName.data();
-            typeInfoObject.m_typeTraits = typeTraits;
-            typeInfoObject.m_typeSize = sizeof(T);
-            return typeInfoObject;
+            constexpr AZ::TypeNameString typeName{ AZStd::string_view(AzEnumTraits<T>::EnumName) };
+            return typeName;
         }
         else
         {
-            TypeInfoObject typeInfoObject;
-            typeInfoObject.m_name = "[enum]";
-            typeInfoObject.m_typeTraits = typeTraits;
-            typeInfoObject.m_typeSize = sizeof(T);
-            return typeInfoObject;
+            return "[enum]";
         }
+    }
+
+    template <class T>
+    constexpr auto GetO3deTypeId(AZ::Adl, AZStd::type_identity<T>)
+        -> AZStd::enable_if_t<AZStd::is_enum_v<T>, AZ::TypeId>
+    {
+        return AZ::TypeId{};
     }
 
 
     // override for function pointers
     template<class R, class... Args>
-    constexpr TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<R(Args...)>)
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<R(Args...)>)
     {
-        AZStd::fixed_string<512> typeName{ '{' };
-        typeName += AZ::AzTypeInfo<R>::Name();
-        typeName += '(';
-        typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
-        typeName += ")}";
+        static AZ::TypeNameString s_canonicalTypeName;
+        if (s_canonicalTypeName.empty())
+        {
+            AZStd::fixed_string<512> typeName{ '{' };
+            typeName += AZ::AzTypeInfo<R>::Name();
+            typeName += '(';
+            typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
+            typeName += ")}";
+            s_canonicalTypeName = typeName;
+        }
 
-        AZ::TypeInfoObject typeInfoObject;
-        typeInfoObject.m_name = typeName;
-        typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, Args...>::GetCanonicalTypeId();
-        // Functions don't have a size value
-        return typeInfoObject;
+        return s_canonicalTypeName;
+    }
+
+    template<class R, class... Args>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<R(Args...)>)
+    {
+        static const AZ::TypeId s_canonicalTypeId = AZ::Internal::AggregateTypes<R, Args...>::GetCanonicalTypeId();
+        return s_canonicalTypeId;
     }
 
     // override for member function pointers
     template<class R, class C, class... Args>
-    constexpr TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<R(C::*)(Args...)>)
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<R(C::*)(Args...)>)
     {
-        AZStd::fixed_string<512> typeName{ '{' };
-        typeName += AZ::AzTypeInfo<R>::Name();
-        typeName += '(';
-        typeName += AZ::AzTypeInfo<C>::Name();
-        typeName += "::*)(";
-        typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
-        typeName += ")}";
+        static AZ::TypeNameString s_canonicalTypeName;
+        if (s_canonicalTypeName.empty())
+        {
+            AZStd::fixed_string<512> typeName{ '{' };
+            typeName += AZ::AzTypeInfo<R>::Name();
+            typeName += '(';
+            typeName += AZ::AzTypeInfo<C>::Name();
+            typeName += "::*)(";
+            typeName += AZ::Internal::AggregateTypes<Args...>::TypeName();
+            typeName += ")}";
+            s_canonicalTypeName = typeName;
+        }
 
-        AZ::TypeInfoObject typeInfoObject;
-        typeInfoObject.m_name = typeName;
-        typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, C, Args...>::GetCanonicalTypeId();
-        typeInfoObject.m_typeSize = sizeof(R(C::*)(Args...));
-        return typeInfoObject;
+        return s_canonicalTypeName;
+    }
+
+    template<class R, class C, class... Args>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<R(C::*)(Args...)>)
+    {
+        static const AZ::TypeId s_canonicalTypeId = AZ::Internal::AggregateTypes<R, C, Args...>::GetCanonicalTypeId();
+        return s_canonicalTypeId;
     }
 
     // override for const member function pointers
     template<class R, class C, class... Args>
-    constexpr TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<R(C::*)(Args...) const>)
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<R(C::*)(Args...) const>)
     {
-        TypeInfoObject typeInfoObject = GetAzTypeInfo(AZ::Adl{}, AZStd::type_identity<R(C::*)(Args...)>{});
         // Append " const" to the a member function pointer name
-        typeInfoObject.m_name += " const";
-        return typeInfoObject;
+        static const AZ::TypeNameString s_canonicalTypeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<R(C::*)(Args...)>{})
+            + " const";
+
+        return s_canonicalTypeName;
     }
 
-    // overrride for member data pointers
-    template<class R, class C>
-    constexpr TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<R C::*>)
+    template<class R, class C, class... Args>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<R(C::*)(Args...) const>)
     {
-        AZStd::fixed_string<512> typeName{ '{' };
-        typeName += AZ::AzTypeInfo<R>::Name();
-        typeName += ' ';
-        typeName + AZ::AzTypeInfo<C>::Name();
-        typeName += "::*}";
+        // TypeIds are the same between a const and non-const member functions
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<R(C::*)(Args...)>{});
+    }
 
-        AZ::TypeInfoObject typeInfoObject;
-        typeInfoObject.m_name = typeName;
-        typeInfoObject.m_canonicalTypeId = AZ::Internal::AggregateTypes<R, C>::GetCanonicalTypeId();
-        typeInfoObject.m_typeSize = sizeof(R C::*);
-        return typeInfoObject;
+    // override for member data pointers
+    template<class R, class C>
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<R C::*>)
+    {
+        static AZ::TypeNameString s_canonicalTypeName;
+        if (s_canonicalTypeName.empty())
+        {
+            AZStd::fixed_string<512> typeName{ '{' };
+            typeName += AZ::AzTypeInfo<R>::Name();
+            typeName += ' ';
+            typeName + AZ::AzTypeInfo<C>::Name();
+            typeName += "::*}";
+            s_canonicalTypeName = typeName;
+        }
+
+        return s_canonicalTypeName;
+    }
+
+    template<class R, class C>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<R C::*>)
+    {
+        static const AZ::TypeId s_canonicalTypeId = AZ::Internal::AggregateTypes<R, C>::GetCanonicalTypeId();
+        return s_canonicalTypeId;
     }
 
     // override for std::reference_wrapper
     // Treat it as the raw type
     template <class T>
-    constexpr AZ::TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<std::reference_wrapper<T>>)
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<std::reference_wrapper<T>>)
     {
-        AZ::TypeInfoObject typeInfoObject = AZ::CreateTypeInfoObject<T>();
-        typeInfoObject.m_name += '&';
-        return typeInfoObject;
+        // Append ampersand to the raw type name
+        static const AZ::TypeNameString s_canonicalTypeName = GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<T>{})
+            + '&';
+
+        return s_canonicalTypeName;
+    }
+
+    template <class T>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<std::reference_wrapper<T>>)
+    {
+        // Return the type id of the non-reference type for the reference wrapper
+        return AZ::AzTypeInfo<T>::Uuid();
     }
 } // namespace AZ
 
@@ -453,18 +489,34 @@ namespace AZ
 #define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(_ClassType, _ClassUuid, _DisplayName) \
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassType, _DisplayName, _ClassUuid)
 
-    //! Add GetAzTypeInfo overload for commonly used O3DE types
-    AZ_TYPE_INFO_SPECIALIZE(AZ::Uuid, "{E152C105-A133-4d03-BBF8-3D4B2FBA3E2A}");
-    AZ_TYPE_INFO_SPECIALIZE(PlatformID, "{0635D08E-DDD2-48DE-A7AE-73CC563C57C3}");
+// Adds declaration TypeInfo function overloads for a type(class, enum or fundamental)
+#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(_ClassName) \
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(_ClassName)
+
+// Adds function definition for TypeInfo functions
+// NOTE: This needs to be in the same namespace as the declaration
+// The functions do not have the inline attached, so this macro is only suitable for use
+// in a single translation unit
+#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid) \
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid)
+
+// Adds inline function definition for TypeInfo functions
+// This macro can be used in a header or inline file and is suitable for use with class template types
+#define AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid) \
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid)
+
+    //! Add GetO3deTypeName and GetO3deTypeId declarations for commonly used O3DE types
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(AZ::Uuid);
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(PlatformID);
 }
 
 namespace AZStd
 {
-    AZ_TYPE_INFO_SPECIALIZE(AZStd::monostate, "{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}");
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZStd::allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}", "allocator");
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(AZStd::monostate);
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(AZStd::allocator);
 
-    // Adding specialization of AZStd container types in the AZStd namespace to allow Argument Dependent Lookup to add the GetAzTypeInfo
-    // to function overload set
+    // Adding specialization of AZStd container types in the AZStd namespace
+    // to allow ADL for these types when invoking GetO3deTypeName/GetO3deTypeId from the AzTypeInfo template
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::less, "AZStd::less", "{41B40AFC-68FD-4ED9-9EC7-BA9992802E1B}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::less_equal, "AZStd::less_equal", "{91CC0BDC-FC46-4617-A405-D914EF1C1902}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::greater, "AZStd::greater", "{907F012A-7A4F-4B57-AC23-48DC08D0782E}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
@@ -496,7 +548,7 @@ namespace AZStd
     static constexpr const char* s_variantTypeId{ "{1E8BB1E5-410A-4367-8FAA-D43A4DE14D4B}" };
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::variant, "AZStd::variant", s_variantTypeId, AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 
-    // GetAzTypeInfo overload for AZStd::function
+    // GetO3deTypeName/GetO3deTypeId overload for AZStd::function
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::function, "AZStd::function", "{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
 }
 
@@ -505,7 +557,7 @@ namespace std
     // AZStd::optional is std::optional brought into the AZStd:: namespace
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::optional, "AZStd::optional", "{AB8C50C0-23A7-4333-81CD-46F648938B1C}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
 
-    // Adding overloads for GetAzTypeInfo and GetAzTemplateInfo in the std:: namespace since AZStd::tuple is just std::tuple brought into the AZStd namespace
+    // Adding overloads for GetO3deTypeName/GetO3deTypeId/GetO3deClassTemplateId and GetO3deTemplateId in the std:: namespace since AZStd::tuple is just std::tuple brought into the AZStd namespace
     // This allows ADL to add those function to the list of function overloads when evaulating the overload set
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 }
@@ -568,7 +620,7 @@ namespace AZ
                     oldName += "const ";
                 }
 
-                // The raw type name provided through an GetAzTypeInfo overload
+                // The raw type name provided through the GetO3deTypeName overload
                 oldName += AZ::AzTypeInfo<ValueTypeNoQualifiers>::Name();
 
                 // If the type is a pointer it is append afterwards

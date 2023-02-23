@@ -2990,7 +2990,7 @@ namespace AZ
         class GenericClassWrapper
             : public GenericClassInfo
         {
-            inline static constexpr AZStd::fixed_string<128> ClassName = AZStd::fixed_string<128>("Internal::RValueToLValueWrapper<")
+            inline static const AZStd::fixed_string<128> ClassName = AZStd::fixed_string<128>("Internal::RValueToLValueWrapper<")
                 + AZ::AzTypeInfo<T>::Name() + ">";
         public:
             GenericClassWrapper()

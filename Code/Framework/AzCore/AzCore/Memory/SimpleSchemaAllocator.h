@@ -118,12 +118,12 @@ namespace AZ
 
             return newPtr;
         }
-                
+
         size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override
         {
             return MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
         }
-        
+
         void GarbageCollect() override
         {
             m_schema->GarbageCollect();

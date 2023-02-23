@@ -450,7 +450,7 @@ static_assert(AZ_VA_NUM_ARGS(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 
 // This will invoke the macro in the second pass over the macro arguments
 #define AZ_MACRO_CALL(macro, ...) macro AZ_WRAP(__VA_ARGS__)
 // Does not use a wrapper macro to expand the __VA_ARGS__ first
-// This should be used for triggering macros in the first pass over the macro before it is suppressed for recusive calls
+// This should be used for triggering macros in the first pass over the macro before it is suppressed for recursive calls
 #define AZ_MACRO_CALL_FIRST_PASS(macro, ...) macro(__VA_ARGS__)
 #define AZ_MACRO_CALL_INDEX(prefix, ...) AZ_MACRO_CALL(AZ_JOIN(prefix, AZ_VA_NUM_ARGS(AZ_UNWRAP(__VA_ARGS__))), AZ_UNWRAP(__VA_ARGS__))
 #define AZ_MACRO_CALL_WRAP(macro, ...)  AZ_MACRO_CALL(macro, __VA_ARGS__)

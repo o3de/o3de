@@ -71,7 +71,7 @@ namespace AZStd
 
 namespace std
 {
-    // GetAzTypeInfo overload for AZStd::unique_ptr
+    // Add TypeInfo overloads for AZStd::unique_ptr
     // The Deleter is not part of the TypeInfo
     // The POSTFIX version of aggregating the Uuid together with the class template argument T is used to maintain backwards
     // compatibility with existing `unique_ptr<T>` serialized data

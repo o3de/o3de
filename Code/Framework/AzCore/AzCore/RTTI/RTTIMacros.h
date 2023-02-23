@@ -123,25 +123,6 @@ namespace AZ
 #define AZ_RTTI_TEMPLATE_ARGUMENT_LIST_15(...) AZ_RTTI_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
 #define AZ_RTTI_TEMPLATE_ARGUMENT_LIST(...) AZ_RTTI_TEMPLATE_MACRO_CALL(AZ_RTTI_TEMPLATE_ARGUMENT_LIST_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-// Wrap actual template placholder inside of angle brackets <> if not empty
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_0(...)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(...) < __VA_ARGS__ >
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_2(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_3(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_4(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_5(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_6(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_7(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_8(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_9(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_10(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_11(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_12(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_13(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_14(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_15(...) AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_1(__VA_ARGS__)
-#define AZ_RTTI_WRAP_IN_ANGLE_BRACKETS(...) AZ_RTTI_TEMPLATE_MACRO_CALL(AZ_RTTI_WRAP_IN_ANGLE_BRACKETS_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
-
 // The virtual functions are forward declared and the static functions are defined inline
 // Even the constexpr functions are only defined at the implementation location
 // Due to this, the Base Classes do not need to be specifed to the this macro
@@ -177,14 +158,12 @@ AZ_POP_DISABLE_WARNING \
     AZ_RTTI_SIMPLE_TEMPLATE_ID TemplateParamsInParen \
     Inline_ AZ::TypeId ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen ::RTTI_Type() \
     { \
-        using ClassType = ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen; \
-        return AZ::AzTypeInfo<ClassType>::GetCanonicalTypeId(); \
+        return AZ::AzTypeInfo<ClassName_>::Uuid(); \
     } \
     AZ_RTTI_SIMPLE_TEMPLATE_ID TemplateParamsInParen \
     Inline_ const char* ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen ::RTTI_TypeName() \
     { \
-        using ClassType = ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen; \
-        return AZ::AzTypeInfo<ClassType>::Name(); \
+        return AZ::AzTypeInfo<ClassName_>::Name(); \
     }
 
 
@@ -194,22 +173,20 @@ virtual inline        AZ::TypeId RTTI_GetType() const { return RTTI_Type(); }   
 virtual inline const char* RTTI_GetTypeName() const { return RTTI_TypeName(); }                                                \
 virtual inline bool             RTTI_IsTypeOf(const AZ::TypeId & typeId) const { return RTTI_IsContainType(typeId); }          \
 virtual void                    RTTI_EnumTypes(AZ::RTTI_EnumCallback cb, void* userData) { RTTI_EnumHierarchy(cb, userData); } \
-static inline constexpr AZ::TypeId RTTI_Type() \
+static inline AZ::TypeId RTTI_Type() \
 { \
-    using ClassType = ClassName_ AZ_RTTI_WRAP_IN_ANGLE_BRACKETS TemplateParamsInParen; \
-    return AZ::AzTypeInfo<ClassType>::GetCanonicalTypeId(); \
+    return AZ::AzTypeInfo<ClassName_>::Uuid(); \
 } \
-static inline constexpr const char* RTTI_TypeName() \
+static inline const char* RTTI_TypeName() \
 { \
-    using ClassType = ClassName_ AZ_RTTI_WRAP_IN_ANGLE_BRACKETS TemplateParamsInParen; \
-    return AZ::AzTypeInfo<ClassType>::Name(); \
+    return AZ::AzTypeInfo<ClassName_>::Name(); \
 } \
 AZ_POP_DISABLE_WARNING
 
 /// AZ_RTTI()
 #define AZ_RTTI_0(ClassName_, TemplateParamsInParen)             AZ_RTTI_COMMON(ClassName_, TemplateParamsInParen)                \
-static constexpr bool                 RTTI_IsContainType(const AZ::TypeId& id) { return id == RTTI_Type(); }                      \
-static constexpr void                 RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData) { cb(RTTI_Type(), userData); } \
+static bool                 RTTI_IsContainType(const AZ::TypeId& id) { return id == RTTI_Type(); }                      \
+static void                 RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData) { cb(RTTI_Type(), userData); } \
 AZ_PUSH_DISABLE_WARNING(26433, "-Winconsistent-missing-override")                                                                 \
 virtual inline const void*  RTTI_AddressOf(const AZ::TypeId& id) const { return (id == RTTI_Type()) ? this : nullptr; }           \
 virtual inline void*        RTTI_AddressOf(const AZ::TypeId& id) { return (id == RTTI_Type()) ? this : nullptr; }                 \
@@ -608,8 +585,12 @@ AZ_POP_DISABLE_WARNING
 #define AZ_RTTI_I_MACRO_SPECIALIZE_I(MACRO_NAME, NPARAMS, PARAMS) AZ_RTTI_I_MACRO_SPECIALIZE_II(MACRO_NAME, NPARAMS, PARAMS)
 #define AZ_RTTI_I_MACRO_SPECIALIZE(MACRO_NAME, NPARAMS, PARAMS) AZ_RTTI_I_MACRO_SPECIALIZE_I(MACRO_NAME, NPARAMS, PARAMS)
 
+#define AZ_RTTI_I_MACRO_CALL_II(MACRO_NAME, ...) MACRO_NAME(__VA_ARGS__)
+#define AZ_RTTI_I_MACRO_CALL_I(MACRO_NAME, ...) AZ_RTTI_I_MACRO_CALL_II(MACRO_NAME, __VA_ARGS__)
+#define AZ_RTTI_I_MACRO_CALL(MACRO_NAME, ...) AZ_RTTI_I_MACRO_CALL_I(MACRO_NAME, __VA_ARGS__)
+
 #define AZ_RTTI_HELPER_METADATA_BASECLASS_SPLIT_WITH_NAME(_BaseClassesInParen, _Name, _DisplayName, _Uuid, ...) \
-    AZ_TYPE_INFO_WITH_NAME(_Name, _DisplayName, _Uuid AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) __VA_ARGS__) \
+    AZ_RTTI_I_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME, _Name, _DisplayName, _Uuid AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) __VA_ARGS__) \
     AZ_RTTI_I_MACRO_SPECIALIZE(AZ_RTTI_, AZ_VA_NUM_ARGS(AZ_INTERNAL_REMOVE_PARENTHESIS(_BaseClassesInParen)), AZ_WRAP(_Name, (__VA_ARGS__) \
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_UNWRAP(_BaseClassesInParen)) AZ_UNWRAP(_BaseClassesInParen)))
 
@@ -660,7 +641,7 @@ AZ_POP_DISABLE_WARNING
 
 /*
  * Macro which adds the declarations of the virtual functions required for RTTI to the class declaration
- * This does add overloads required for GetAzTypeInfo to the class
+ * This does add overloads required for TypeInfo to the class
  * The AZ_TYPE_INFO_WITH_NAME macro should be used separately
  * Useful for class which supplies itself as a template argument to one of it's base classes
  * as part of CRTP
@@ -677,15 +658,15 @@ AZ_POP_DISABLE_WARNING
  * The AZ_RTTI_NO_TYPE_INFO_IMPL macro can be used after the class definition to implement only the RTTI functions
  * Wrapping the first argument in parenthesis allows template placeholder arguments to be supplied
  * which allows adding RTTI to class template
- * The Template placholders such as AZ_TYPE_INFO_CLASS and AZ_TYPE_INFO_AUTO are detailed in the bottom of TemplateInfo.h
+ * The Template placeholders such as AZ_TYPE_INFO_CLASS and AZ_TYPE_INFO_AUTO are detailed in the bottom of TemplateInfo.h
  *
  * The first argument should be either the class name for a regular class or when specifying the arguments for a class template
- * the simple-template-name (with no brackets) inside of an inner set of parenthesis, followed by 0 or template placholder
+ * the simple-template-name (with no brackets) inside of an inner set of parenthesis, followed by 0 or template placeholder
  * arguments
  * ex. class -> `AZ_RTTI_NO_TYPE_INFO_IMPL(EditorComponentBase, Component)`
  * ex. class template -> `AZ_RTTI_NO_TYPE_INFO_IMPL((EditorComponentAdapter, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), EditorComponentBase);
  *
- * INFO: Any argument can be surrouned in parenthesis to supress commas within the argument.
+ * INFO: Any argument can be surrounded in parenthesis to suppress commas within the argument.
  * For example specifying a base class template specialization with a comma in it, can be wrapped in parenthesis
  * ex. `AZ_RTTI_NO_TYPE_INFO_IMPL(MyVector, (AZStd::vector<int, AZStd::allocator), OtherBase)`
  *
@@ -698,7 +679,7 @@ AZ_POP_DISABLE_WARNING
  * Explanation of macro
  * `AZ_RTTI_MACRO_SPECIALIZE` -> Wrapper macro used to call the combined AZ_RTTI_NO_TYPE_INFO_IMPL_<N>
  * `AZ_RTTI_NO_TYPE_INFO_IMPL_` -> Prefix to combine with the number of base class arguments
- * `AZ_VA_NUM_ARGS(__VA_ARGS__))` -> counts the number of base class aguments
+ * `AZ_VA_NUM_ARGS(__VA_ARGS__))` -> counts the number of base class arguments
  * `AZ_INTERNAL_USE_FIRST_ELEMENT(AZ_INTERNAL_REMOVE_PARENTHESIS(ClassOrTemplateName_))` ->
  *  removes any parenthesis from the first argument and then grab any inner first arguments
  *    If ClassOrTemplateName_ is class argument of `ClassName`, unpacks to `ClassName`
@@ -706,7 +687,7 @@ AZ_POP_DISABLE_WARNING
  * `AZ_WRAP(AZ_INTERNAL_SKIP_FIRST(AZ_INTERNAL_REMOVE_PARENTHESIS(ClassOrTemplateName_)))` ->
  *   removes any parenthesis from the first argument and then grabs all the arguments after the inner first argument.
  *   Afterwards wraps those remaining arguments in parenthesis.
- *   The result is the template placeholder parameters are pased (TemplateParam1, ..., TemplateParamN)
+ *   The result is the template placeholder parameters are passed (TemplateParam1, ..., TemplateParamN)
  *
  * `__VA_ARGS__` -> Passes the base classes as the 1st through Nth index arguments to the `AZ_RTTI_NO_TYPE_INFO_IMPL_N` macro
  */
@@ -731,12 +712,12 @@ AZ_POP_DISABLE_WARNING
 /* Steps to Add AZ_RTTI support to a derived class which inherits from a base class that used the
  * CRTP
  * 1. Forward declare the derived class
- * 2. Add external GetAzTypeInfo overload for the class using either the AZ_TYPE_INFO_SPECIALIZE_WITH_NAME for a class type
+ * 2. Add external TypeInfo overload for the class using either the AZ_TYPE_INFO_SPECIALIZE_WITH_NAME for a class type
  *    or AZ_TYPE_INFO_TEMPLATE_WITH_NAME for a class template
  * 3. Add class definition for the derived class and inherit from the template base class, while supplying the derived class
  *    as a template argument
- * 4. Inside the class defintion add a call to the AZ_RTTI_NO_TYPE_INFO_DECL() macro to forward declare the Rtti functoins
- * 5. After the class defintion add a call to the AZ_RTTI_NO_TYPE_INFO_IMPL() with the first parameter being a template-name
+ * 4. Inside the class definition add a call to the AZ_RTTI_NO_TYPE_INFO_DECL() macro to forward declare the Rtti functions
+ * 5. After the class definition add a call to the AZ_RTTI_NO_TYPE_INFO_IMPL() with the first parameter being a template-name
  *    without any arguments(correct: AZStd::vector, incorrect: AZStd::vector<T, Alloc>)
  * ex. Given a class which supplies itself as base class template argument as follows
  * template <class ValueType, class Derived>

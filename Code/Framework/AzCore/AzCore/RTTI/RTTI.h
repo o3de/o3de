@@ -537,7 +537,7 @@ namespace AZ
         }
 
         template<class T>
-        constexpr void RttiEnumHierarchyHelper(RTTI_EnumCallback cb, void* userData, const AZStd::false_type& /* HasAZRtti<T> */)
+        void RttiEnumHierarchyHelper(RTTI_EnumCallback cb, void* userData, const AZStd::false_type& /* HasAZRtti<T> */)
         {
             cb(AzTypeInfo<T>::Uuid(), userData);
         }
@@ -546,12 +546,12 @@ namespace AZ
         template<class T, RttiKind rttiKind = HasAZRtti<T>::kind_type::value>
         struct RttiCaller
         {
-            AZ_FORCE_INLINE static constexpr bool RTTI_IsContainType(const AZ::TypeId& id)
+            AZ_FORCE_INLINE static bool RTTI_IsContainType(const AZ::TypeId& id)
             {
                 return T::RTTI_IsContainType(id);
             }
 
-            AZ_FORCE_INLINE static constexpr void RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData)
+            AZ_FORCE_INLINE static void RTTI_EnumHierarchy(AZ::RTTI_EnumCallback cb, void* userData)
             {
                 T::RTTI_EnumHierarchy(cb, userData);
             }
@@ -680,49 +680,49 @@ namespace AZ
     }
 
     template<class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AZ::AzTypeInfo<U>::Uuid();
     }
 
     template<template<class...> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<auto> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<auto, auto> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<class, class, auto> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<class, class, class, auto> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<class, auto> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
 
     template<template<class, auto, class> class U>
-    inline constexpr AZ::TypeId RttiTypeId()
+    inline AZ::TypeId RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }

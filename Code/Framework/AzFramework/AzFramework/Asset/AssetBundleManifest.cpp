@@ -79,7 +79,7 @@ namespace AzFramework
             struct AssetBundleManifestV2
             {
                 // Use the same ClassName and typeid as the AssetBundleManifest
-                AZ_TYPE_INFO(AssetBundleManifestV2, azrtti_typeid<AssetBundleManifest>());
+                AZ_TYPE_INFO(AssetBundleManifestV2, AssetBundleManifestTypeId);
                 AZStd::string m_catalogName;
                 AZStd::vector<AZStd::string> m_dependentBundleNames;
                 AZStd::vector<AZStd::string> m_levelDirs;

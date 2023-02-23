@@ -32,20 +32,20 @@
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 
- // Compile checks that a primitative type(int) and qualified types have AzTypeInfo
-static_assert(AZ::Internal::HasAzTypeInfo_v<int>, "int value type should is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int*>, "pointer to int type is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int const>, "const int value type is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int&>, "lvalue reference to non-const int type is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int const&>, "lvalue reference to const int type is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int&&>, "rvalue reference to non-const int type is missing GetAzTypeInfo overload");
-static_assert(AZ::Internal::HasAzTypeInfo_v<int const&&>, "rvalue reference to const int type is missing GetAzTypeInfo overload");
+ // Compile checks that a primitive type(int) and qualified types have AzTypeInfo
+static_assert(AZ::Internal::HasAzTypeInfo_v<int>, "int value type should is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int*>, "pointer to int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const>, "const int value type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int&>, "lvalue reference to non-const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const&>, "lvalue reference to const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int&&>, "rvalue reference to non-const int type is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<int const&&>, "rvalue reference to const int type is missing GetO3deTypeName or GetO3deTypeId overload");
 
 // Check unique_ptr<T>
-static_assert(AZ::Internal::HasAzTypeInfo_v<AZStd::unique_ptr<int>>, "unique_ptr<T> is missing GetAzTypeInfo overload");
-static_assert(!AZStd::is_void_v<decltype(GetAzTemplateInfo(AZ::Adl{},
-    AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<std::unique_ptr>{}))>,
-    "unique_ptr is missing GetAzTemplateInfo overload");
+static_assert(AZ::Internal::HasAzTypeInfo_v<AZStd::unique_ptr<int>>, "unique_ptr<T> is missing GetO3deTypeName or GetO3deTypeId overload");
+static_assert(AZStd::is_same_v<decltype(GetO3deTemplateId(AZ::Adl{},
+    AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<std::unique_ptr>{})), AZ::TemplateId>,
+    "unique_ptr is missing GetO3deTemplateId overload");
 
 namespace UnitTest
 {
@@ -67,10 +67,10 @@ namespace UnitTestAlias
 static_assert(AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
     AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTestUsing::AliasTest>>);
 
-// An alias template are a seperate template from any types it references
+// An alias template are a separate template from any types it references
 // An alias template doesn't actually alias another template, but is its own construct.
 // For example `template<class T> void_t = void`, doesn't "reference" another template, it just maps
-// any instantiaton of the template to void
+// any instantiation of the template to void
 // Similarly `template<class T> unique_ptr = std::unique_ptr<T>`, is not an alias for the `std::unique_ptr`
 // template, the result of it's instantiation results in a class type of `std::unique_ptr<T>`
 static_assert(!AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<UnitTest::AliasTest>,
@@ -78,7 +78,7 @@ static_assert(!AZStd::is_same_v<AZ::AzGenericTypeInfo::Internal::TemplateIdentit
 
 namespace UnitTest
 {
-    // Non intrusive typeinfo for external and intergral types
+    // Non intrusive typeinfo for external and integral types
     struct ExternalClass
     {
     };
@@ -164,105 +164,104 @@ namespace UnitTest
 
         // TypeId aggregation with template ID as prefix
         // Aggregation uses right fold for addition (Id1 + (Id2 + (Id3 + (... + Idn))))
-        static_assert(azrtti_typeid<int>() + azrtti_typeid<char>() == AZ::Internal::AggregateTypes<int, char>::GetCanonicalTypeId());
-        static_assert(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>() == azrtti_typeid<AZStd::tuple<int>>());
-        static_assert(azrtti_typeid<AZStd::tuple>() + (azrtti_typeid<int>() + azrtti_typeid<char>()) == azrtti_typeid<AZStd::tuple<int, char>>());
-        static_assert(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>() + azrtti_typeid<char>() != azrtti_typeid<AZStd::tuple<int, char>>());
+        EXPECT_EQ(azrtti_typeid<int>() + azrtti_typeid<char>(), (AZ::Internal::AggregateTypes<int, char>::GetCanonicalTypeId()));
+        EXPECT_EQ(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>(), azrtti_typeid<AZStd::tuple<int>>());
+        EXPECT_EQ(azrtti_typeid<AZStd::tuple>() + (azrtti_typeid<int>() + azrtti_typeid<char>()), (azrtti_typeid<AZStd::tuple<int, char>>()));
+        EXPECT_NE(azrtti_typeid<AZStd::tuple>() + azrtti_typeid<int>() + azrtti_typeid<char>(), (azrtti_typeid<AZStd::tuple<int, char>>()));
 
-        static_assert(AZ::Uuid("{B2F5707A-08FA-566A-BE44-226C634405BE}") == azrtti_typeid<AZStd::less<int>>());
+
         EXPECT_EQ(AZ::Uuid("{B2F5707A-08FA-566A-BE44-226C634405BE}"), (azrtti_typeid<AZStd::less<int>>()));
-        static_assert(AZ::Uuid("{6D2500BA-EE64-5288-9766-4C7CD8A10476}") == azrtti_typeid<AZStd::less_equal<int>>());
+
         EXPECT_EQ(AZ::Uuid("{6D2500BA-EE64-5288-9766-4C7CD8A10476}"), (azrtti_typeid<AZStd::less_equal<int>>()));
-        static_assert(AZ::Uuid("{5959973B-2113-5789-BC8C-2F1E4A917953}") == azrtti_typeid<AZStd::greater<int>>());
+
         EXPECT_EQ(AZ::Uuid("{5959973B-2113-5789-BC8C-2F1E4A917953}"), (azrtti_typeid<AZStd::greater<int>>()));
-        static_assert(AZ::Uuid("{7769141C-BF97-5E9B-B77F-F075FA915905}") == azrtti_typeid<AZStd::greater_equal<int>>());
+
         EXPECT_EQ(AZ::Uuid("{7769141C-BF97-5E9B-B77F-F075FA915905}"), (azrtti_typeid<AZStd::greater_equal<int>>()));
-        static_assert(AZ::Uuid("{39487937-0E1C-5F78-8A7E-B24EFE32F48F}") == azrtti_typeid<AZStd::equal_to<int>>());
+
         EXPECT_EQ(AZ::Uuid("{39487937-0E1C-5F78-8A7E-B24EFE32F48F}"), (azrtti_typeid<AZStd::equal_to<int>>()));
-        static_assert(AZ::Uuid("{AE785799-21A1-5D89-A083-E4441E1F81A8}") == azrtti_typeid<AZStd::hash<int>>());
+
         EXPECT_EQ(AZ::Uuid("{AE785799-21A1-5D89-A083-E4441E1F81A8}"), (azrtti_typeid<AZStd::hash<int>>()));
-        static_assert(AZ::Uuid("{64503325-ECF4-5F02-95F9-E37D00810E59}") == azrtti_typeid<AZStd::pair<int, int>>());
+
         EXPECT_EQ(AZ::Uuid("{64503325-ECF4-5F02-95F9-E37D00810E59}"), (azrtti_typeid<AZStd::pair<int, int>>()));
-        static_assert(AZ::Uuid("{853CDD8D-12FF-5619-9A42-10178785620A}") == azrtti_typeid<AZStd::tuple<int, char, float, double>>());
+
         EXPECT_EQ(AZ::Uuid("{853CDD8D-12FF-5619-9A42-10178785620A}"), (azrtti_typeid<AZStd::tuple<int, char, float, double>>()));
-        static_assert(AZ::Uuid("{85AFA5E8-AA5C-50A3-9CAB-B8C483DA88C5}") == azrtti_typeid<AZStd::vector<int>>());
+
         EXPECT_EQ(AZ::Uuid("{85AFA5E8-AA5C-50A3-9CAB-B8C483DA88C5}"), (azrtti_typeid<AZStd::vector<int>>()));
-        static_assert(AZ::Uuid("{09C2272F-2353-5337-BDCB-B1D0D6A2A778}") == azrtti_typeid<AZStd::list<int>>());
+
         EXPECT_EQ(AZ::Uuid("{09C2272F-2353-5337-BDCB-B1D0D6A2A778}"), (azrtti_typeid<AZStd::list<int>>()));
-        static_assert(AZ::Uuid("{2D875DAD-A157-5792-AE25-96D909E1BE4C}") == azrtti_typeid<AZStd::forward_list<int>>());
+
         EXPECT_EQ(AZ::Uuid("{2D875DAD-A157-5792-AE25-96D909E1BE4C}"), (azrtti_typeid<AZStd::forward_list<int>>()));
-        static_assert(AZ::Uuid("{9DF03CD1-931A-544D-A93B-0546907B70CA}") == azrtti_typeid<AZStd::set<int>>());
+
         EXPECT_EQ(AZ::Uuid("{9DF03CD1-931A-544D-A93B-0546907B70CA}"), (azrtti_typeid<AZStd::set<int>>()));
-        static_assert(AZ::Uuid("{243A34FA-C6F6-51D1-8166-06DED5141370}") == azrtti_typeid<AZStd::unordered_set<int>>());
+
         EXPECT_EQ(AZ::Uuid("{243A34FA-C6F6-51D1-8166-06DED5141370}"), (azrtti_typeid<AZStd::unordered_set<int>>()));
-        static_assert(AZ::Uuid("{79F4B21A-02CD-58C1-9669-FA2E5E7A142A}") == azrtti_typeid<AZStd::unordered_multiset<int>>());
+
         EXPECT_EQ(AZ::Uuid("{79F4B21A-02CD-58C1-9669-FA2E5E7A142A}"), (azrtti_typeid<AZStd::unordered_multiset<int>>()));
-        static_assert(AZ::Uuid("{BB54671F-18E6-5F96-B659-FA236D1B7D31}") == azrtti_typeid<AZStd::map<int, int>>());
+
         EXPECT_EQ(AZ::Uuid("{BB54671F-18E6-5F96-B659-FA236D1B7D31}"), (azrtti_typeid<AZStd::map<int, int>>()));
-        static_assert(AZ::Uuid("{C543E26A-7772-5511-8CE1-A8FA6441CAD3}") == azrtti_typeid<AZStd::unordered_map<int, int>>());
+
         EXPECT_EQ(AZ::Uuid("{C543E26A-7772-5511-8CE1-A8FA6441CAD3}"), (azrtti_typeid<AZStd::unordered_map<int, int>>()));
-        static_assert(AZ::Uuid("{FD30FBC0-B826-51CF-A75B-E00466FEB0F0}") == azrtti_typeid<AZStd::unordered_map<AZStd::string, MyClass>>());
+
         EXPECT_EQ(AZ::Uuid("{FD30FBC0-B826-51CF-A75B-E00466FEB0F0}"), (azrtti_typeid<AZStd::unordered_map<AZStd::string, MyClass>>()));
-        static_assert(AZ::Uuid("{64E53B04-DD49-55DB-8299-5B4ED53A5F1C}") == azrtti_typeid<AZStd::unordered_multimap<int, int>>());
+
         EXPECT_EQ(AZ::Uuid("{64E53B04-DD49-55DB-8299-5B4ED53A5F1C}"), (azrtti_typeid<AZStd::unordered_multimap<int, int>>()));
-        static_assert(AZ::Uuid("{1C213FE1-ED58-5889-8FC9-48D0E11D2E7E}") == azrtti_typeid<AZStd::unordered_multimap<AZStd::string, MyClass>>());
+
         EXPECT_EQ(AZ::Uuid("{1C213FE1-ED58-5889-8FC9-48D0E11D2E7E}"), (azrtti_typeid<AZStd::unordered_multimap<AZStd::string, MyClass>>()));
-        static_assert(AZ::Uuid("{0BF83553-00B0-5B7C-9BF3-A87C811F0752}") == azrtti_typeid<AZStd::shared_ptr<int>>());
+
         EXPECT_EQ(AZ::Uuid("{0BF83553-00B0-5B7C-9BF3-A87C811F0752}"), (azrtti_typeid<AZStd::shared_ptr<int>>()));
-        static_assert(AZ::Uuid("{E91D2018-767D-57D4-AF21-5CBEA51A15EC}") == azrtti_typeid<AZStd::optional<int>>());
+
         EXPECT_EQ(AZ::Uuid("{E91D2018-767D-57D4-AF21-5CBEA51A15EC}"), (azrtti_typeid<AZStd::optional<int>>()));
-        static_assert(AZ::Uuid("{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}") == azrtti_typeid<AZStd::basic_string<char>>());
+
         EXPECT_EQ(AZ::Uuid("{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"), (azrtti_typeid<AZStd::basic_string<char>>()));
-        static_assert(AZ::Uuid("{406E9B16-A89C-5289-B10E-17F338588559}") == azrtti_typeid<AZStd::char_traits<char>>());
+
         EXPECT_EQ(AZ::Uuid("{406E9B16-A89C-5289-B10E-17F338588559}"), (azrtti_typeid<AZStd::char_traits<char>>()));
-        static_assert(AZ::Uuid("{7114E998-A8B4-519B-9342-A86D1587B4F7}") == azrtti_typeid<AZStd::basic_string_view<char>>());
+
         EXPECT_EQ(AZ::Uuid("{7114E998-A8B4-519B-9342-A86D1587B4F7}"), (azrtti_typeid<AZStd::basic_string_view<char>>()));
 
-        static_assert(AZ::Uuid("E95DF2A0-D136-5E86-9CF7-9C806786DC39") == azrtti_typeid<AZStd::fixed_string< 4>>());
+
         EXPECT_EQ(AZ::Uuid("{A3C35B6E-E2DE-58F7-A897-06C64C5BC1E3}"), (azrtti_typeid<AZStd::fixed_vector<int, 4>>()));
-        static_assert(AZ::Uuid("{A3C35B6E-E2DE-58F7-A897-06C64C5BC1E3}") == azrtti_typeid<AZStd::fixed_vector<int, 4>>());
+
         EXPECT_EQ(AZ::Uuid("{A3C35B6E-E2DE-58F7-A897-06C64C5BC1E3}"), (azrtti_typeid<AZStd::fixed_vector<int, 4>>()));
-        static_assert(AZ::Uuid("{F670463F-FB3F-5CF3-A1FE-A7CC6DB312E8}") == azrtti_typeid<AZStd::fixed_list<int, 4>>());
+
         EXPECT_EQ(AZ::Uuid("{F670463F-FB3F-5CF3-A1FE-A7CC6DB312E8}"), (azrtti_typeid<AZStd::fixed_list<int, 4>>()));
-        static_assert(AZ::Uuid("{71C90433-74CE-5018-BEFD-FC98F4451AEF}") == azrtti_typeid<AZStd::fixed_forward_list<int, 4>>());
+
         EXPECT_EQ(AZ::Uuid("{71C90433-74CE-5018-BEFD-FC98F4451AEF}"), (azrtti_typeid<AZStd::fixed_forward_list<int, 4>>()));
-        static_assert(AZ::Uuid("{DD9565F2-A80F-5DD3-B33F-0B0BF1C24A4F}") == azrtti_typeid<AZStd::array<int, 4>>());
+
         EXPECT_EQ(AZ::Uuid("{DD9565F2-A80F-5DD3-B33F-0B0BF1C24A4F}"), (azrtti_typeid<AZStd::array<int, 4>>()));
-        static_assert(AZ::Uuid("{E5848517-FBDC-5D0F-9012-B16951027D9E}") == azrtti_typeid<AZStd::bitset<8>>());
+
         EXPECT_EQ(AZ::Uuid("{E5848517-FBDC-5D0F-9012-B16951027D9E}"), (azrtti_typeid<AZStd::bitset<8>>()));
-        static_assert(AZ::Uuid("{2962AD0B-AD39-5D19-9548-7AB0E68A1787}") == azrtti_typeid<AZStd::function<bool(int)>>());
+
         EXPECT_EQ(AZ::Uuid("{2962AD0B-AD39-5D19-9548-7AB0E68A1787}"), (azrtti_typeid<AZStd::function<bool(int)>>()));
 
-        static_assert(AZ::Uuid("{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}") == azrtti_typeid<AZStd::monostate>());
+
         EXPECT_EQ(AZ::Uuid("{B1E9136B-D77A-4643-BE8E-2ABDA246AE0E}"), (azrtti_typeid<AZStd::monostate>()));
-        static_assert(AZ::Uuid("{7570E0E7-0BA8-5382-BB14-CEB7B1C0DBEB}") == azrtti_typeid<AZStd::variant<int, char>>());
+
         EXPECT_EQ(AZ::Uuid("{7570E0E7-0BA8-5382-BB14-CEB7B1C0DBEB}"), (azrtti_typeid<AZStd::variant<int, char>>()));
     }
 
     TEST_F(Rtti, TypeInfoQualifierTest)
     {
         // The Uuid of a value type should result of a pointer type
-        static_assert(azrtti_typeid<int>() == azrtti_typeid<int*>());
-        static_assert(AZ::AzTypeInfo<int>::Uuid() == AZ::AzTypeInfo<int*>::Uuid());
-        static_assert(AZ::AzTypeInfo<int>::GetCanonicalTypeId() == AZ::AzTypeInfo<int*>::GetPointeeTypeId());
+        EXPECT_EQ(azrtti_typeid<int>(), azrtti_typeid<int*>());
+        EXPECT_EQ(AZ::AzTypeInfo<int>::Uuid(), AZ::AzTypeInfo<int*>::Uuid());
+        EXPECT_EQ(AZ::AzTypeInfo<int>::GetCanonicalTypeId(), AZ::AzTypeInfo<int*>::GetPointeeTypeId());
 
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int>::Name() } == AZStd::string_view("int"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int const>::Name() } == AZStd::string_view("int const"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int const&>::Name() } == AZStd::string_view("int const&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int const&&>::Name() } == AZStd::string_view("int const&&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int&>::Name() } == AZStd::string_view("int&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<int&&>::Name() } == AZStd::string_view("int&&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int*>::Name() } == AZStd::string_view("int const*"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int* const>::Name() } == AZStd::string_view("int const* const"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int* const&>::Name() } == AZStd::string_view("int const* const&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int* const&&>::Name() } == AZStd::string_view("int const* const&&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int* &>::Name() } == AZStd::string_view("int const*&"));
-        static_assert(AZStd::string_view{ AZ::AzTypeInfo<const int* &&>::Name() } == AZStd::string_view("int const*&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int>::Name() }, AZStd::string_view("int"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const>::Name() }, AZStd::string_view("int const"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const&>::Name() }, AZStd::string_view("int const&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int const&&>::Name() }, AZStd::string_view("int const&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int&>::Name() }, AZStd::string_view("int&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<int&&>::Name() }, AZStd::string_view("int&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int*>::Name() }, AZStd::string_view("int const*"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const>::Name() }, AZStd::string_view("int const* const"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const&>::Name() }, AZStd::string_view("int const* const&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* const&&>::Name() }, AZStd::string_view("int const* const&&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* &>::Name() }, AZStd::string_view("int const*&"));
+        EXPECT_EQ(AZStd::string_view{ AZ::AzTypeInfo<const int* &&>::Name() }, AZStd::string_view("int const*&&"));
 
-        static_assert(AZ::AzTypeInfo<const int*>::Uuid() == AZ::AzTypeInfo<int*>::Uuid());
+        EXPECT_EQ(AZ::AzTypeInfo<const int*>::Uuid(), AZ::AzTypeInfo<int*>::Uuid());
 
         // Validate that a container of value tpyes have a different type id than a container of pointers
-        static_assert(azrtti_typeid<AZStd::vector<int>>() != azrtti_typeid<AZStd::vector<int*>>());
         EXPECT_NE(azrtti_typeid<AZStd::vector<int>>(), azrtti_typeid<AZStd::vector<int*>>());
     }
 
@@ -538,6 +537,18 @@ namespace UnitTest
         EXPECT_EQ(azrtti_typeid<MyClassMix>(), helper->GetTypeId());
         // MyClassMix isn't a template
         EXPECT_TRUE(helper->GetGenericTypeId().IsNull());
+
+        // Validate that ADL lookup of Class Template Ids via the AzTypeInfo<T>::GetTemplateId() function
+        // will work
+        static_assert(AZ::HasGetO3deTypeName_v<IntVector>);
+        static_assert(AZ::HasGetO3deTypeId_v<IntVector>);
+
+        constexpr auto vectorTemplateId = GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<IntVector>{});
+        static_assert(!vectorTemplateId.IsNull());
+
+        static_assert(AZ::HasUnqualifiedGetO3deClassTemplateId_v<AZStd::vector<int>>);
+        static_assert(AZ::HasUnqualifiedGetO3deClassTemplateId_v<IntVector>);
+        static_assert(AZ::HasGetO3deClassTemplateId_v<IntVector>);
     }
 
     class ExampleAbstractClass

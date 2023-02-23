@@ -34,10 +34,10 @@ namespace AZ
         is_unsigned = 0b10,
         //! Stores the result of the std::is_enum check
         is_enum = 0b100,
-        //! Stores if the TypeInfoObject represents an object pointer type
+        //! Stores if the type represents an object pointer type
         //! NOTE: This should not be set for a member pointer(i.e T::*)
         is_pointer = 0b1000,
-        //! Stores if the TypeInfoObject repersents a template
+        //! Stores if the type represents a template
         is_template = 0b10000
     };
 
@@ -45,96 +45,6 @@ namespace AZ
 
     //! An identifier which used to reference a Class Template
     using TemplateId = AZ::Uuid;
-
-    //! Structure used to contain compile time information
-    //! associated with a Class Template
-    struct TemplateInfoObject
-    {
-        constexpr TemplateId GetTemplateId() const
-        {
-            return m_templateId;
-        }
-
-        TemplateId m_templateId;
-    };
-
-    //! Stores fields needed type info object
-    //! NOTE:This class doesn't have to be used for the GetAzTypeInfo function below
-    //! The only requirement is that a type that supports the following function exist
-    //! const char* GetName();
-    //! TypeId GetCanonicalTypeId();
-    //! TypeTraits GetTraits()
-    //! size_t GetSize()
-    struct TypeInfoObject
-    {
-        // Returns a fixed_string const reference instead of a const char*
-        // This makes it safer to use the GetName function to be used with an xvalue TypeInfoObject
-        // i.e `auto typeName = TypeInfoObject{}.GetName();` will return an `AZStd::fixed_string`
-        // instead of a `const char*` to a dangling TypeInfoObject
-        constexpr const TypeNameString& GetName() const
-        {
-            return m_name;
-        }
-
-        constexpr AZ::TypeId GetCanonicalTypeId() const
-        {
-            return m_canonicalTypeId;
-        }
-        constexpr AZ::TypeId GetPointeeTypeId() const
-        {
-            return m_pointeeTypeId;
-        }
-        constexpr AZ::TypeId GetTemplateId() const
-        {
-            return m_templateId;
-        }
-
-        constexpr TypeTraits GetTraits() const
-        {
-            return m_typeTraits;
-        }
-
-        constexpr size_t GetSize() const
-        {
-            return m_typeSize;
-        }
-
-        //! Name identifier is for storing the only the class name
-        //! or class template name
-        //! The names of template parameters are not stored.
-        //! and are composed via any template argument type info when GetName() is called
-        TypeNameString m_name;
-
-        //! Stores the exact TypeId to use for a specific type.
-        //! This Id takes into account the qualifiers and templates used to make the "complete" type
-        //! The following conditions for two types hold, using AZStd::vector as an example
-        //! `AZStd::vector<int>` TypeId == `AZStd::vector<int>` TypeId
-        //! `AZStd::vector<int>` TypeId != `AZStd::vector<int*>` TypeId
-        //! `AZStd::vector<int>` TypeId != `AZStd::vector<int>*` TypeId
-        //! `AZStd::vector<int>` TypeId != `AZStd::vector<float>` TypeId
-        AZ::TypeId m_canonicalTypeId;
-
-        //! Stores the TypeId for a specific type without the pointer typeid from it
-        //! ex. If the Canonical Type represents `AZStd::vector<int*>*`,
-        //! then the Pointee TypeId is `AZStd::vector<int*>`
-        //!
-        //! If the TypeInfo isn't a pointer, then a value of Null Uuid is the default
-        AZ::TypeId m_pointeeTypeId;
-
-        //! Store the identifier if the TypeInfo is a Class Template
-        //! ex. `AZStd::vector`, or `AZStd::unordered_map`, etc...
-        //! Even if two types have different canonical Type Ids, as long as the template
-        //! Ids are the same, this value will be the same
-        //! `AZStd::vector<int>` TemplateId == `AZStd::vector<float>` TemplateId
-        //! `AZStd::vector<int>` TemplateId == `AZStd::vector<int*>` TemplateId
-        //! `AZStd::vector<int>` TemplateId != `AZStd::unordered_set<int>` TemplateId
-        //!
-        //! If the TypeInfo isn't a template, then a value of Null Uuid is the default
-        TemplateId m_templateId;
-
-        AZ::TypeTraits m_typeTraits{};
-        size_t m_typeSize{};
-    };
 } // namespace AZ
 
 namespace AZ::Internal
@@ -154,7 +64,7 @@ namespace AZ::Internal
 namespace AZ
 {
     // Tag Type inside the AZ Namespace, which is added supplied as the first argument to function
-    // calls of GetAzTypeInfo and GetAzTemplateInfo
+    // calls of GetO3deTypeName, GetO3deTypeId, GetO3deClassTemplateId
     // This allow Argument Dependent Lookup(ADL) to find overloads of these functions in the AZ namespace
     // Therefore allowing for existing overloads for types not declared in the AZ namespace to be picked up
     // Example:
@@ -162,33 +72,48 @@ namespace AZ
     // The AZStd::allocator class is declared in the AZStd namespace
     // Therefore the AZ_TYPE_INFO_SPECIALIZE_WITH_NAME up above would have to be put in the AZStd namespace to be
     // picked up by ADL normally.
-    // But by adding an argument within the AZ namespace to the call of `GetAzTypeInfo`, the
-    // AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZStd::allocator...) macro can also be placed in the AZ namespace
+    // But by adding an argument within the AZ namespace, for the `GetO3deTypeName` and `GetO3deTypeId` functions,
+    // the AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZStd::allocator...) macro can also be placed in the AZ namespace
     struct Adl {};
 }
 
 namespace AZ
 {
     // AzTypeInfo specialization helper for non-intrusive TypeInfo
-#define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassName, _DisplayName, _ClassUuid) \
-    constexpr AZ::TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<_ClassName>) \
-    { \
-        using ClassType = _ClassName; \
-        constexpr AZStd::string_view name_{_DisplayName }; \
-        AZ::TypeTraits typeTraits{}; \
-        typeTraits |= AZStd::is_signed_v<AZStd::RemoveEnumT<ClassType>> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{}; \
-        typeTraits |= AZStd::is_unsigned_v<AZStd::RemoveEnumT<ClassType>> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{}; \
-        typeTraits |= AZStd::is_enum_v<ClassType> ? AZ::TypeTraits::is_enum : AZ::TypeTraits{}; \
-        \
-        AZ::TypeInfoObject typeInfoObject; \
-        typeInfoObject.m_name = !name_.empty() ? name_.data() : #_ClassName; \
-        typeInfoObject.m_canonicalTypeId = AZ::TypeId{ _ClassUuid }; \
-        typeInfoObject.m_typeTraits = typeTraits; \
-        typeInfoObject.m_typeSize = AZ::Internal::TypeInfoSizeof<ClassType>; \
-        return typeInfoObject; \
-    }
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, _Inline) \
+        _Inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>) \
+        { \
+            constexpr AZStd::string_view displayName(_DisplayName); \
+            constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
+                : AZ::TypeNameString(#_ClassName); \
+            return typeName; \
+        } \
+        _Inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>) \
+        { \
+            constexpr AZ::TypeId typeId{ _ClassUuid }; \
+            return typeId; \
+        }
 
-    //! Add GetAzTypeInfo overloads for built-in types
+    // Helper Macros which provides declaration of TypeInfo methods
+    // Useful for reducing build times by moving implementation to a translation unit
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(_ClassName) \
+        AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+        AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>);
+
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(_ClassName, _DisplayName, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, constexpr)
+
+    // Provides the definitions for the TypeInfo Methods
+    // This should be used in a translation unit(.cpp) file
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL(_ClassName, _DisplayName, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid,)
+
+    // Provides the definitions for the TypeInfo methods with the addition of the inline specifier
+    // Useful for defining these functions in a header or .inl file when dealing with a class template
+    #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_IMPL_INLINE(_ClassName, _DisplayName, _ClassUuid) \
+        AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, inline)
+
+    //! Add GetO3deTypeName and GetO3deTypeId overloads for built-in types
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(char, "char", "{3AB0037F-AF8D-48ce-BCA0-A170D18B2C03}");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(AZ::s8, "AZ::s8", "{58422C0E-1E47-4854-98E6-34098F6FE12D}");
     AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(short, "short", "{B8A56D56-A10D-4dce-9F63-405EE243DD3C}");
@@ -208,30 +133,32 @@ namespace AZ
 
 namespace AZ
 {
-    // Deleted GetAzTypeInfo(...) function to provide the symbol for a function called GetAzTypeInfo
-    // whenever the provided type does not have an overload
-    void GetAzTypeInfo(...) = delete;
+    //! TypeName
 
-    // Base variable template which is false whenever a type doesn't have a GetAzTypeInfo
+    // Deleted GetO3deTypeName(...) function to provide the symbol for a function called GetO3deTypeName
+    // whenever the provided type does not have an overload
+    void GetO3deTypeName(...) = delete;
+
+    // Base variable template which is false whenever a type doesn't have a GetO3deTypeName
     // function or functor not callable in the current scope
     template <class T, class = void>
-    constexpr bool HasUnqualifiedGetAzTypeInfo_v = false;
+    constexpr bool HasUnqualifiedGetO3deTypeName_v = false;
 
-    // Check if there is a function available using ADL called R GetAzTypeInfo(AZ::Adl, type_identity<T>)
+    // Check if there is a function available using ADL called R GetO3deTypeName(AZ::Adl, type_identity<T>)
     // This is used as a customization point to allow code to opt in to AzTypeInfo using non-member functions
-    // This specialization must be after the GetAzTypeInfo function declarations for built-in types
+    // This specialization must be after the GetO3deTypeName function declarations for built-in types
     // as the overload set for non-class types are formed as soon as the specialization template is defined
-    // For class types, they can implement the GetAzTypeInfo function a later point in code
+    // For class types, they can implement the GetO3deTypeName function a later point in code
     // and argument dependent lookup will pick them up
     template <class T>
-    constexpr bool HasUnqualifiedGetAzTypeInfo_v<T, AZStd::enable_if_t<
-        !AZStd::is_void_v<decltype(GetAzTypeInfo(AZ::Adl{}, AZStd::type_identity<T>{})) >> > = true;
+    constexpr bool HasUnqualifiedGetO3deTypeName_v<T, AZStd::enable_if_t<
+        AZStd::is_same_v<decltype(GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TypeNameString>> > = true;
 
-    // Base variable template which is false whenever a type doesn't have a GetAzTypeInfo
+    // Base variable template which is false whenever a type doesn't have a GetO3deTypeName
     // member function
     template <class T, class = void>
-    inline constexpr bool HasMemberGetAzTypeInfo_v = false;
-    // Check if thereis a function available called `R <type>::GetAzTypeInfo(AZStd::type_identity<T>)` and has a return
+    inline constexpr bool HasMemberGetO3deTypeName_v = false;
+    // Check if there is a function available called `R <type>::GetO3deTypeName(AZStd::type_identity<T>)` and has a return
     // value that isn't void
     // This is used as a customization point to allow code to opt in to AzTypeInfo using member functions
     // NOTE: The AZStd::type_identity parameter is to make sure that typeinfo is only retrieved from the exact class
@@ -241,126 +168,107 @@ namespace AZ
     // struct Component{};
     // struct MeshComponent : Component {};
     // ```
-    // Requesting Calling `MeshComponent::GetAzTypeInfo` should NOT return the type info for the base class
+    // Requesting Calling `MeshComponent::GetO3deTypeName` should NOT return the type info for the base class
     template <class T>
-    inline constexpr bool HasMemberGetAzTypeInfo_v<T, AZStd::enable_if_t<
-        !AZStd::is_void_v<decltype(T::GetAzTypeInfo(AZStd::type_identity<T>{}))>>> = true;
+    inline constexpr bool HasMemberGetO3deTypeName_v<T, AZStd::enable_if_t<
+        AZStd::is_same_v<decltype(T::GetO3deTypeName(AZStd::type_identity<T>{})), AZ::TypeNameString>>> = true;
 
     template <class T>
-    inline constexpr bool HasGetAzTypeInfo_v = HasMemberGetAzTypeInfo_v<T> || HasUnqualifiedGetAzTypeInfo_v<T>;
+    using HasMemberGetO3deTypeName = AZStd::bool_constant<HasMemberGetO3deTypeName_v<T>>;
 
-    template<class T>
-    static constexpr AZ::TypeInfoObject CreateTypeInfoObject()
-    {
-        // Get the pointed to type with its qualifiers intact
-        // ex.
-        // const int* const& -> const int*
-        //         ^                ^
-        //        raw     ->    remove_cvref<T>
-        //
-        // const int*          -> const int
-        //      ^                    ^
-        // remove_cvref<T> -> remove_pointer_t<remove_cvref_t<T>>
-        //
-        // const int                                                     -> int
-        //      ^                                                            ^
-        // remove_pointer_t<remove_cvref_t<T>>> ->   remove_cvref_t<remove_pointer_t<remove_cvref_t<T>>>
-        using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
-        // Needed for the case when checking is_const on a `const int&`
-        // the reference must be removed before checking the constantness
-        using TypeNoReference = AZStd::remove_reference_t<T>;
+    // True if the class has an overload as a member function or an overload available in its namespace.
+    template <class T>
+    inline constexpr bool HasGetO3deTypeName_v = HasMemberGetO3deTypeName_v<T> || HasUnqualifiedGetO3deTypeName_v<T>;
+}
 
-        using ValueType = AZStd::conditional_t<AZStd::is_pointer_v<TypeNoQualifiers>,
-            AZStd::remove_pointer_t<TypeNoQualifiers>,
-            T>;
-        using ValueTypeNoQualifiers = AZStd::remove_cvref_t<ValueType>;
-        // Needed for the case when checking is_const on a `const int* const&`
-        using ValueTypeNoReference = AZStd::remove_reference_t<ValueType>;
+namespace AZ
+{
+    //! Type Uuid
 
-        if constexpr (HasGetAzTypeInfo_v<ValueTypeNoQualifiers>)
-        {
-            AZ::TypeInfoObject typeInfoObject{};
-            if constexpr (HasMemberGetAzTypeInfo_v<ValueTypeNoQualifiers>)
-            {
-                typeInfoObject = ValueTypeNoQualifiers::GetAzTypeInfo(AZStd::type_identity<ValueTypeNoQualifiers>{});
-            }
-            else if constexpr (HasUnqualifiedGetAzTypeInfo_v<ValueTypeNoQualifiers>)
-            {
-                typeInfoObject = GetAzTypeInfo(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
-            }
+    // Deleted GetO3deTypeId(...) function to provide the symbol for a function called GetO3deTypeId
+    // whenever the provided type does not have an overload
+    void GetO3deTypeId(...) = delete;
 
-            // First calculate the type qualifiers of the pointee type
-            if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
-            {
-                if constexpr (AZStd::is_const_v<ValueTypeNoReference>)
-                {
-                    // Appending the string if " const"  because it can done unambiguously instead of prepending "const "
-                    // Plus it has the benefit of not needing to make a new instance of a TypeInfoString for the addition
-                    typeInfoObject.m_name += " const";
-                }
+    // Base variable template which is false whenever a type doesn't have a GetO3deTypeId
+    // function or functor not callable in the current scope
+    template <class T, class = void>
+    constexpr bool HasUnqualifiedGetO3deTypeId_v = false;
 
-                // Append '&' if the ValueType with qualifiers is an lvalue
-                // or append '&&' if the ValueType with qualifiers is an rvalue
-                if constexpr (AZStd::is_lvalue_reference_v<ValueType>)
-                {
-                    typeInfoObject.m_name += "&";
-                }
-                else if constexpr (AZStd::is_rvalue_reference_v<ValueType>)
-                {
-                    typeInfoObject.m_name += "&&";
-                }
+    // Check if there is a function available using ADL called R GetO3deTypeId(AZ::Adl, type_identity<T>)
+    // This is used as a customization point to allow code to opt in to AzTypeInfo using non-member functions
+    // This specialization must be after the GetO3deTypeId function declarations for built-in types
+    // as the overload set for non-class types are formed as soon as the specialization template is defined
+    // For class types, they can implement the GetO3deTypeId function a later point in code
+    // and argument dependent lookup will pick them up
+    template <class T>
+    constexpr bool HasUnqualifiedGetO3deTypeId_v<T, AZStd::enable_if_t<
+        AZStd::is_same_v<decltype(GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TypeId>> > = true;
 
-                // Finally append the pointer '*' to the name
-                typeInfoObject.m_name += "*";
+    // Base variable template which is false whenever a type doesn't have a GetO3deTypeId
+    // member function
+    template <class T, class = void>
+    inline constexpr bool HasMemberGetO3deTypeId_v = false;
+    // Check if there is a function available called `R <type>::GetO3deTypeId(AZStd::type_identity<T>)` and has a return
+    // value that isn't void
+    // This is used as a customization point to allow code to opt in to AzTypeInfo using member functions
+    // NOTE: The AZStd::type_identity parameter is to make sure that typeinfo is only retrieved from the exact class
+    // and not from any derived class
+    // i.e
+    //  ```
+    // struct Component{};
+    // struct MeshComponent : Component {};
+    // ```
+    // Requesting Calling `MeshComponent::GetO3deTypeId` should NOT return the type info for the base class
+    template <class T>
+    inline constexpr bool HasMemberGetO3deTypeId_v<T, AZStd::enable_if_t<
+        AZStd::is_same_v<decltype(T::GetO3deTypeId(AZStd::type_identity<T>{})), AZ::TypeId>>> = true;
 
-                // For pointer types update the type id and type traits here
+    // True if the class has an overload as a member function or an overload available in its namespace.
+    template <class T>
+    inline constexpr bool HasGetO3deTypeId_v = HasMemberGetO3deTypeId_v<T> || HasUnqualifiedGetO3deTypeId_v<T>;
+}
 
-                //! The pointee TypeId for T* is canonical TypeId for T
-                //! Needs to be stored in a local variable
-                //! until the canonical TypeId has been updated
-                AZ::TypeId pointeeTypeId = typeInfoObject.m_canonicalTypeId;
-                //! The canonical TypeId for T* is the pointer TypeId for T
-                typeInfoObject.m_canonicalTypeId = pointeeTypeId + AZ::Internal::PointerId_v;
-                //! Now the pointee TypeId can be updated with the canonical TypeId for T
-                typeInfoObject.m_pointeeTypeId = pointeeTypeId;
+namespace AZ
+{
+    //! Template Uuid
 
-                // Update the type traits to indicate the type is a pointer
-                typeInfoObject.m_typeTraits |= AZ::TypeTraits::is_pointer;
-                // Use the sizeof of the supplied type T with no qualifiers
-                typeInfoObject.m_typeSize = sizeof(TypeNoQualifiers*);
+    //! Deleted set of GetO3deClassTemplateId functions
+    //! which provides a callable symbol when GetAzTemplateId() function overload is not available
+    //! The return type is void to distinguish it from actual overloads which return AZ::Uuid
+    //! This function should be overloaded for class template (not types)
+    //! using the signature of `AZ::TemplateId GetO3deClassTemplateId(decltype(GetTemplateIdentity<ActualType>()))`
+    //! For example to overload GetO3deClassTemplateId for AZStd::vector the following signature should be used
+    //! `AZ::TemplateId GetO3deClassTemplateId(AZ::Adl{}, decltype(GetTemplateIdentity<AZStd::vector>()))`
+    void GetO3deClassTemplateId(...);
 
-            }
+    template <class T, class = void>
+    inline constexpr bool HasUnqualifiedGetO3deClassTemplateId_v = false;
 
-            if constexpr (AZStd::is_const_v<TypeNoReference>)
-            {
-                typeInfoObject.m_name += " const";
-            }
+    // Specialization for when an unqualified call to GetO3deClassTemplateId is available in the current scope
+    // via unqualified name lookup and ADL
+    template <class T>
+    inline constexpr bool HasUnqualifiedGetO3deClassTemplateId_v<T, AZStd::enable_if_t <
+        AZStd::is_same_v<decltype(GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TemplateId > >> = true;
 
-            if constexpr (AZStd::is_lvalue_reference_v<T>)
-            {
-                typeInfoObject.m_name += "&";
-            }
-            else if constexpr (AZStd::is_rvalue_reference_v<T>)
-            {
-                typeInfoObject.m_name += "&&";
-            }
+    template <class T, class = void>
+    inline constexpr bool HasMemberGetO3deClassTemplateId_v = false;
 
-            return typeInfoObject;
-        }
-        else
-        {
-            static_assert(HasGetAzTypeInfo_v<ValueTypeNoQualifiers>,
-                "No unqualified or static member GetAzTypeInfo method is available. "
-                "AZ_TYPE_INFO or AZ_RTTI can be used in a class/struct, or use AZ_TYPE_INFO_SPECIALIZE() externally. "
-                "Make sure to include the header containing this information (usually your class header).");
-            return AZ::TypeInfoObject{};
-        }
-    }
+    // Specialization for a class T that provides GetO3deClassTemplateId as a static member function
+    template <class T>
+    inline constexpr bool HasMemberGetO3deClassTemplateId_v<T, AZStd::enable_if_t<
+        AZStd::is_same_v<decltype(T::GetO3deClassTemplateId(AZStd::type_identity<T>{})), AZ::TemplateId>> > = true;
 
+    // True if the class has an overload as a member function or an overload available in its namespace.
+    template <class T>
+    inline constexpr bool HasGetO3deClassTemplateId_v = HasMemberGetO3deClassTemplateId_v<T> || HasUnqualifiedGetO3deClassTemplateId_v<T>;
+}
+
+namespace AZ
+{
     /**
     * Since O3DE fully support cross shared libraries (DLL) operation, it does not rely on typeid, static templates, etc.
     * to generate the same result in different compilations. A unique ID for each type is required.
-    * By default the code will try to access to a static GetAzTypeInfo functions inside a class the type info metadata.
+    * By default the code will try to access to a static GetO3deTypeName/GetO3deTypeId functions inside a class the type info metadata.
     * For types when intrusive is not an option(fundamental types such as int, float or enums), the class will need to specialize the AzTypeInfo.
     */
     template<class T>
@@ -376,7 +284,7 @@ namespace AZ
         //! This is different from the other AzTypeInfo T types
         //! Required for maintaining backwards compatibility
         //! with code that expects AzTypeInfo<int*>::Uuid() == AzTypeInfo<int>::Uuid()
-        static constexpr AZ::TypeId Uuid()
+        static AZ::TypeId Uuid()
         {
             if constexpr (!AZStd::is_pointer_v<AZStd::remove_cvref_t<T>>)
             {
@@ -388,42 +296,259 @@ namespace AZ
             }
         }
 
-        static constexpr AZ::TypeId GetCanonicalTypeId()
+        static AZ::TypeId GetCanonicalTypeId()
         {
-            // As this is the most used Uuid retrieve function
-            // make sure it is calculated at compile time
-            constexpr AZ::TypeId typeId = s_typeInfoObject.GetCanonicalTypeId();
-            return typeId;
+            // Get the pointee to type with its qualifiers intact
+            // ex.
+            // const int* const& -> const int*
+            //         ^                ^
+            //        raw     ->    remove_cvref<T>
+            //
+            // const int*          -> const int
+            //      ^                    ^
+            // remove_cvref<T> -> remove_pointer_t<remove_cvref_t<T>>
+            //
+            // const int                                                     -> int
+            //      ^                                                            ^
+            // remove_pointer_t<remove_cvref_t<T>>> ->   remove_cvref_t<remove_pointer_t<remove_cvref_t<T>>>
+            using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
+
+            using ValueType = AZStd::conditional_t<AZStd::is_pointer_v<TypeNoQualifiers>,
+                AZStd::remove_pointer_t<TypeNoQualifiers>,
+                T>;
+            using ValueTypeNoQualifiers = AZStd::remove_cvref_t<ValueType>;
+
+            if constexpr (HasGetO3deTypeId_v<ValueTypeNoQualifiers>)
+            {
+                static AZ::TypeId s_canonicalTypeId;
+                // Calculate the uuid only once
+                if (s_canonicalTypeId.IsNull())
+                {
+                    if constexpr (HasMemberGetO3deTypeId_v<ValueTypeNoQualifiers>)
+                    {
+                        s_canonicalTypeId = ValueTypeNoQualifiers::GetO3deTypeId(AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+                    else
+                    {
+                        s_canonicalTypeId = GetO3deTypeId(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+
+                    // If the T parameter is a pointer mixin the pointer id
+                    if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
+                    {
+                        //! The canonical TypeId for T* is the canonical TypeId for T + PointerId constant
+                        s_canonicalTypeId += AZ::Internal::PointerId_v;
+                    }
+                }
+
+                return s_canonicalTypeId;
+            }
+            else
+            {
+                static_assert(HasGetO3deTypeId_v<ValueTypeNoQualifiers>,
+                    "No unqualified or static member GetO3deTypeId method is available. "
+                    "AZ_TYPE_INFO or AZ_RTTI can be used in a class/struct, or use AZ_TYPE_INFO_SPECIALIZE() externally. "
+                    "Make sure to include the header containing this information (usually your class header).");
+                return AZ::TypeId{};
+            }
         }
 
-        static constexpr AZ::TypeId GetPointeeTypeId()
+        static AZ::TypeId GetPointeeTypeId()
         {
-            return s_typeInfoObject.GetPointeeTypeId();
+            // For pointer types update the type id and type traits here
+            // Get the pointee to type with its qualifiers intact
+            // ex.
+            // const int* const& -> const int*
+            //         ^                ^
+            //        raw     ->    remove_cvref<T>
+            //
+            // const int*          -> const int
+            //      ^                    ^
+            // remove_cvref<T> -> remove_pointer_t<remove_cvref_t<T>>
+            //
+            // const int                                                     -> int
+            //      ^                                                            ^
+            // remove_pointer_t<remove_cvref_t<T>>> ->   remove_cvref_t<remove_pointer_t<remove_cvref_t<T>>>
+            using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
 
+            using ValueType = AZStd::conditional_t<AZStd::is_pointer_v<TypeNoQualifiers>,
+                AZStd::remove_pointer_t<TypeNoQualifiers>,
+                T>;
+            using ValueTypeNoQualifiers = AZStd::remove_cvref_t<ValueType>;
+
+            // First calculate the type qualifiers of the pointee type
+            if constexpr (!AZStd::is_pointer_v<TypeNoQualifiers>)
+            {
+                // If it is not a pointer then return a default constructed TypeId
+                return AZ::TypeId{};
+            }
+            else if constexpr (HasGetO3deTypeId_v<ValueTypeNoQualifiers>)
+            {
+                static AZ::TypeId s_pointeeTypeId;
+
+                // Calculate the uuid only once
+                if (s_pointeeTypeId.IsNull())
+                {
+                    if constexpr (HasMemberGetO3deTypeId_v<ValueTypeNoQualifiers>)
+                    {
+                        s_pointeeTypeId = ValueTypeNoQualifiers::GetO3deTypeId(AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+                    else
+                    {
+                        s_pointeeTypeId = GetO3deTypeId(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+                }
+
+                return s_pointeeTypeId;
+            }
+            else
+            {
+                static_assert(HasGetO3deTypeId_v<ValueTypeNoQualifiers>,
+                    "No unqualified or static member GetO3deTypeId method is available. "
+                    "AZ_TYPE_INFO or AZ_RTTI can be used in a class/struct, or use AZ_TYPE_INFO_SPECIALIZE() externally. "
+                    "Make sure to include the header containing this information (usually your class header).");
+                return AZ::TypeId{};
+            }
         }
 
-        static constexpr AZ::TypeId GetTemplateId()
+        static AZ::TemplateId GetTemplateId()
         {
-            return s_typeInfoObject.GetTemplateId();
+            using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
+            using ValueType = AZStd::conditional_t<AZStd::is_pointer_v<TypeNoQualifiers>,
+                AZStd::remove_pointer_t<TypeNoQualifiers>,
+                T>;
+            using ValueTypeNoQualifiers = AZStd::remove_cvref_t<ValueType>;
+
+            if constexpr (HasGetO3deClassTemplateId_v<ValueTypeNoQualifiers>)
+            {
+                if constexpr (HasMemberGetO3deClassTemplateId_v<ValueTypeNoQualifiers>)
+                {
+                    return ValueTypeNoQualifiers::GetO3deClassTemplateId(AZStd::type_identity<ValueTypeNoQualifiers>{});
+                }
+                else
+                {
+                    return GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
+                }
+            }
+            else
+            {
+                return AZ::TemplateId{};
+            }
         }
 
-        static constexpr const char* Name()
+        static const char* Name()
         {
-            return s_typeInfoObject.GetName().c_str();
+            // Get the pointee to type with its qualifiers intact
+            // ex.
+            // const int* const& -> const int*
+            //         ^                ^
+            //        raw     ->    remove_cvref<T>
+            //
+            // const int*          -> const int
+            //      ^                    ^
+            // remove_cvref<T> -> remove_pointer_t<remove_cvref_t<T>>
+            //
+            // const int                                                     -> int
+            //      ^                                                            ^
+            // remove_pointer_t<remove_cvref_t<T>>> ->   remove_cvref_t<remove_pointer_t<remove_cvref_t<T>>>
+            using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
+            // Needed for the case when checking is_const on a `const int&`
+            // the reference must be removed before checking the constantness
+            using TypeNoReference = AZStd::remove_reference_t<T>;
+
+            using ValueType = AZStd::conditional_t<AZStd::is_pointer_v<TypeNoQualifiers>,
+                AZStd::remove_pointer_t<TypeNoQualifiers>,
+                T>;
+            using ValueTypeNoQualifiers = AZStd::remove_cvref_t<ValueType>;
+            // Needed for the case when checking is_const on a `const int* const&`
+            using ValueTypeNoReference = AZStd::remove_reference_t<ValueType>;
+
+            if constexpr (HasGetO3deTypeName_v<ValueTypeNoQualifiers>)
+            {
+                static AZ::TypeNameString s_typeNameString;
+                // Calculate the type name only once on startup
+                if (s_typeNameString.empty())
+                {
+                    AZ::TypeNameString typeName{};
+                    if constexpr (HasMemberGetO3deTypeName_v<ValueTypeNoQualifiers>)
+                    {
+                        typeName = ValueTypeNoQualifiers::GetO3deTypeName(AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+                    else
+                    {
+                        typeName = GetO3deTypeName(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
+                    }
+
+                    // First calculate the type qualifiers of the pointee type
+                    if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
+                    {
+                        if constexpr (AZStd::is_const_v<ValueTypeNoReference>)
+                        {
+                            // Appending the string if " const"  because it can done unambiguously instead of prepending "const "
+                            // Plus it has the benefit of not needing to make a new instance of a TypeInfoString for the addition
+                            typeName += " const";
+                        }
+
+                        // Append '&' if the ValueType with qualifiers is an lvalue
+                        // or append '&&' if the ValueType with qualifiers is an rvalue
+                        if constexpr (AZStd::is_lvalue_reference_v<ValueType>)
+                        {
+                            typeName += "&";
+                        }
+                        else if constexpr (AZStd::is_rvalue_reference_v<ValueType>)
+                        {
+                            typeName += "&&";
+                        }
+
+                        // Finally append the pointer '*' to the name
+                        typeName += "*";
+                    }
+
+                    if constexpr (AZStd::is_const_v<TypeNoReference>)
+                    {
+                        typeName += " const";
+                    }
+
+                    if constexpr (AZStd::is_lvalue_reference_v<T>)
+                    {
+                        typeName += "&";
+                    }
+                    else if constexpr (AZStd::is_rvalue_reference_v<T>)
+                    {
+                        typeName += "&&";
+                    }
+
+                    s_typeNameString = typeName;
+                }
+
+                return s_typeNameString.c_str();
+            }
+            else
+            {
+                static_assert(HasGetO3deTypeName_v<ValueTypeNoQualifiers>,
+                    "No unqualified or static member GetO3deTypeName method is available. "
+                    "AZ_TYPE_INFO or AZ_RTTI can be used in a class/struct, or use AZ_TYPE_INFO_SPECIALIZE() externally. "
+                    "Make sure to include the header containing this information (usually your class header).");
+                return "";
+            }
         }
 
         static constexpr TypeTraits GetTypeTraits()
         {
-            return s_typeInfoObject.GetTraits();
+            AZ::TypeTraits typeTraits{};
+            typeTraits |= AZStd::is_signed_v<AZStd::RemoveEnumT<T>> ? AZ::TypeTraits::is_signed : AZ::TypeTraits{};
+            typeTraits |= AZStd::is_unsigned_v<AZStd::RemoveEnumT<T>> ? AZ::TypeTraits::is_unsigned : AZ::TypeTraits{};
+            typeTraits |= AZStd::is_enum_v<T> ? AZ::TypeTraits::is_enum : AZ::TypeTraits{};
+            typeTraits |= AZStd::is_pointer_v<T> ? AZ::TypeTraits::is_pointer : AZ::TypeTraits{};
+
+            return typeTraits;
         }
 
         static constexpr size_t Size()
         {
-            return s_typeInfoObject.GetSize();
+            using TypeNoQualifiers = AZStd::remove_cvref_t<T>;
+            return AZ::Internal::TypeInfoSizeof<TypeNoQualifiers>;
         }
-
-    protected:
-        static constexpr AZ::TypeInfoObject s_typeInfoObject = CreateTypeInfoObject<T>();
     };
 
     template<class T, class U>
@@ -440,31 +565,29 @@ namespace AZ
 }
 
 #define AZ_TYPE_INFO_INTERNAL_CLASS_GETTERS(_ClassName) \
-    static constexpr auto TYPEINFO_Name() \
+    static const char* TYPEINFO_Name() \
     { \
         return AZ::AzTypeInfo<_ClassName>::Name(); \
     } \
-    static constexpr auto TYPEINFO_Uuid() \
+    static AZ::TypeId TYPEINFO_Uuid() \
     { \
         return AZ::AzTypeInfo<_ClassName>::Uuid(); \
     }
 
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName) static_assert(false, "A ClassName and ClassUUID must be provided")
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_1(_ClassName, _DisplayName, _ClassUuid) \
-    static constexpr AZ::TypeInfoObject GetAzTypeInfo(AZStd::type_identity<_ClassName>) \
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName, _ClassUuid) \
+    static constexpr AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_ClassName>) \
     { \
-        using ClassType = _ClassName; \
-        \
-        AZ::TypeInfoObject typeInfoObject; \
-        typeInfoObject.m_name = !AZStd::string_view(_DisplayName).empty() ? #_ClassName : _DisplayName; \
-        typeInfoObject.m_canonicalTypeId = AZ::TypeId{ _ClassUuid }; \
-        typeInfoObject.m_typeTraits = AZ::TypeTraits{}; \
-        typeInfoObject.m_typeSize = sizeof(ClassType); \
-        return typeInfoObject; \
+        constexpr AZStd::string_view displayName(_DisplayName); \
+        constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
+            : AZ::TypeNameString(#_ClassName); \
+        return typeName; \
+    } \
+    static constexpr AZ::TypeId GetO3deTypeId(AZStd::type_identity<_ClassName>) \
+    { \
+        constexpr AZ::TypeId typeId{ _ClassUuid }; \
+        return typeId; \
     } \
     AZ_TYPE_INFO_INTERNAL_CLASS_GETTERS(_ClassName);
-
-
 
 // NOTE: This the same macro logic as the `AZ_MACRO_SPECIALIZE`, but it must used instead of
 // `AZ_MACRO_SPECIALIZE` macro as the C preprocessor macro expansion will not expand a macro with the same
@@ -507,18 +630,127 @@ namespace AZ
 *       ...
 *   };
 */
-#define AZ_TYPE_INFO_WITH_NAME(_Identifier, _DisplayName, ...) AZ_TYPE_INFO_MACRO_CALL(AZ_TYPE_INFO_INTERNAL_WITH_NAME_, AZ_VA_NUM_ARGS(__VA_ARGS__), (_Identifier, _DisplayName, __VA_ARGS__))
-#define AZ_TYPE_INFO(_Identifier, ...) AZ_TYPE_INFO_WITH_NAME(_Identifier, #_Identifier, __VA_ARGS__)
+#define AZ_TYPE_INFO_WITH_NAME(_Identifier, _DisplayName, _ClassUuid, ...) \
+    AZ_TYPE_INFO_MACRO_CALL(AZ_TYPE_INFO_INTERNAL_WITH_NAME_, \
+    AZ_VA_NUM_ARGS(__VA_ARGS__), \
+    (_Identifier, _DisplayName, _ClassUuid AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) __VA_ARGS__))
+#define AZ_TYPE_INFO(_Identifier, _ClassUuid, ...) AZ_TYPE_INFO_WITH_NAME(_Identifier, #_Identifier, _ClassUuid, __VA_ARGS__)
 
-// * NOTE: For a Class template, the "first" argument to the the following the the first argument must be a
+// Helper macro that declares the TypeInfo static members as part of a class
+// This pairs with the AZ_TYPE_INFO_IMPL/AZ_TYPE_INFO_IMPL_INLINE where an implemenation can be provided
+// in a translation unit(.cpp) or a an inline(.inl) file in order to help reduce compile times
+#define AZ_TYPE_INFO_DECL(_ClassName) \
+    static AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_ClassName>); \
+    static AZ::TypeId GetO3deTypeId(AZStd::type_identity<_ClassName>); \
+    static const char* TYPEINFO_Name(); \
+    static AZ::TypeId TYPEINFO_Uuid();
+
+
+// Repeat of AZ_TYPE_INFO_MACRO_CALL with a different name oo allow
+// calling a macro if inside of an expansion of a current AZ_TYPE_INFO_MACRO_CALL call
+#define AZ_TYPE_INFO_MACRO_CALL_NEW_II(MACRO_NAME, NPARAMS, PARAMS)    MACRO_NAME##NPARAMS PARAMS
+#define AZ_TYPE_INFO_MACRO_CALL_NEW_I(MACRO_NAME, NPARAMS, PARAMS)     AZ_TYPE_INFO_MACRO_CALL_NEW_II(MACRO_NAME, NPARAMS, PARAMS)
+#define AZ_TYPE_INFO_MACRO_CALL_NEW(MACRO_NAME, NPARAMS, PARAMS)       AZ_TYPE_INFO_MACRO_CALL_NEW_I(MACRO_NAME, NPARAMS, PARAMS)
+
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_0(...)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(...) template< AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__) >
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_2(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_3(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_4(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_5(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_6(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_7(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_8(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_9(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_10(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_11(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_12(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_13(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_14(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_15(...) AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID(...) AZ_TYPE_INFO_MACRO_CALL_NEW(AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+
+
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_0(...)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(...) < AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__) >
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_2(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_3(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_4(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_5(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_6(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_7(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_8(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_9(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_10(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_11(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_12(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_13(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_14(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_15(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
+#define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST(...) AZ_TYPE_INFO_MACRO_CALL_NEW(AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_0(_ClassName, _DisplayName, _ClassUuid, _Inline, _TemplateParamsInParen) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
+    _Inline AZ::TypeNameString _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeName(AZStd::type_identity<_ClassName>) \
+    { \
+        constexpr AZStd::string_view displayName(_DisplayName); \
+        constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
+            : AZ::TypeNameString(#_ClassName); \
+        return typeName; \
+    } \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
+    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeId(AZStd::type_identity<_ClassName>) \
+    { \
+        constexpr AZ::TypeId typeId{ _ClassUuid }; \
+        return typeId; \
+    } \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
+    _Inline const char* _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
+    { \
+        return AZ::AzTypeInfo<_ClassName>::Name(); \
+    } \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
+    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
+    { \
+        return AZ::AzTypeInfo<_ClassName>::Uuid(); \
+    }
+
+
+
+// Helper macro which allows adding an optional function specifier such as `inline` to type info
+// function definitions
+// It wraps the variadic args in parenthesis as a single argument to add function definitions
+// for class template types
+// The AZ_UNWRAP removes any existing parenthesis before adding the new parenthesis
+#define AZ_TYPE_INFO_WITH_NAME_IMPL_HELPER(_Identifier, _DisplayName, _Uuid, _Inline, ...) \
+    AZ_TYPE_INFO_MACRO_CALL(AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_, \
+    AZ_VA_NUM_ARGS(__VA_ARGS__), \
+    (\
+        _Identifier, \
+        _DisplayName, \
+        _Uuid, \
+        _Inline \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_WRAP(AZ_UNWRAP(__VA_ARGS__))) AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+    ))
+
+// Adds definitions of the TypeInfo functions no additional function specifiers
+#define AZ_TYPE_INFO_WITH_NAME_IMPL(_Identifier, _DisplayName, _Uuid, ...) \
+    AZ_TYPE_INFO_WITH_NAME_IMPL_HELPER(_Identifier, _DisplayName, _Uuid,, __VA_ARGS__)
+
+// Adds definitions of the TypeInfo functions with the inline specified in front of them
+#define AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(_Identifier, _DisplayName, _Uuid, ...) \
+    AZ_TYPE_INFO_WITH_NAME_IMPL_HELPER(_Identifier, _DisplayName, _Uuid, inline, __VA_ARGS__)
+
+
+// * NOTE: For a Class template, the first argument must be a
 // `template-name` identifier as according to the C++ standard: http://eel.is/c++draft/temp.names#nt:template-name
-// It should NOT be a `simple-template-id` whose grammer is shown here http://eel.is/c++draft/temp.names#nt:simple-template-id
+// It should NOT be a `simple-template-id` whose grammar is shown here http://eel.is/c++draft/temp.names#nt:simple-template-id
 // For example tto provide AZ_TYPE_INFO support for a type such as
 /* template<class R, class C, class... Args>
    class AttributeMemberFunction<R(C::*)(Args...)>
 
    The following use of the AZ_TYPE_INFO_WITH_NAME macro is the correct way to add support:
-   AZ_TYPE_INFO_WITH_NAME(AZ::AttributeMemberFunction, "{F41F655D-87F7-4A87-9412-9AF4B528B142}", AZ_TYPE_INFO_CLASS_TYPENAME, AZ_TYPE_INFO_CLASS_TYPENAME, AZ_TYPE_INFO_CLASS_VARARGS);
+   AZ_TYPE_INFO_WITH_NAME(AttributeMemberFunction, "{F41F655D-87F7-4A87-9412-9AF4B528B142}", AZ_TYPE_INFO_CLASS_TYPENAME, AZ_TYPE_INFO_CLASS_TYPENAME, AZ_TYPE_INFO_CLASS_VARARGS);
    Notice that the first argument does not have any angle bracket nor template parameters.
 
    Next is an incorrect usage of AZ_TYPE_INFO_WITH_NAME macro

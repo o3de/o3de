@@ -318,7 +318,7 @@ namespace AZ
         : public Attribute
     {
     public:
-        AZ_RTTI((AZ::AttributeData, "{24248937-86FB-406C-8DD5-023B10BD0B60}", T), Attribute);
+        AZ_RTTI((AttributeData, "{24248937-86FB-406C-8DD5-023B10BD0B60}", T), Attribute);
         AZ_CLASS_ALLOCATOR(AttributeData<T>, SystemAllocator);
         template<class U>
         explicit AttributeData(U&& data)
@@ -357,7 +357,7 @@ namespace AZ
         : public AttributeData<T>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberData, "{00E5F991-6B96-43CC-9869-F371548581D9}", T C::*), AttributeData<T>);
+        AZ_RTTI((AttributeMemberData, "{00E5F991-6B96-43CC-9869-F371548581D9}", T C::*), AttributeData<T>);
         AZ_CLASS_ALLOCATOR(AttributeMemberData<T C::*>, SystemAllocator);
         typedef T C::* DataPtr;
         explicit AttributeMemberData(DataPtr p)
@@ -485,7 +485,7 @@ namespace AZ
     class AttributeFunction<R(Args...)> : public Attribute
     {
     public:
-        AZ_RTTI((AZ::AttributeFunction, "{EE535A42-940C-42DE-848D-9C6CE57D8A62}",
+        AZ_RTTI((AttributeFunction, "{EE535A42-940C-42DE-848D-9C6CE57D8A62}",
             R(Args...)), Attribute);
         AZ_CLASS_ALLOCATOR(AttributeFunction<R(Args...)>, SystemAllocator);
         typedef R(*FunctionPtr)(Args...);
@@ -624,7 +624,7 @@ namespace AZ
         : public AttributeFunction<R(Args...)>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberFunction, "{F41F655D-87F7-4A87-9412-9AF4B528B142}",
+        AZ_RTTI((AttributeMemberFunction, "{F41F655D-87F7-4A87-9412-9AF4B528B142}",
             R(C::*)(Args...)), AttributeFunction<R(Args...)>);
         AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...)>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...);
@@ -676,7 +676,7 @@ namespace AZ
         : public AttributeFunction<R(Args...)>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberFunction, "{4E21155A-0FB0-4F11-999A-B946B5954A0A}",
+        AZ_RTTI((AttributeMemberFunction, "{4E21155A-0FB0-4F11-999A-B946B5954A0A}",
             R(C::*)(Args...) const), AttributeFunction<R(Args...)>);
         AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...) const>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...) const;

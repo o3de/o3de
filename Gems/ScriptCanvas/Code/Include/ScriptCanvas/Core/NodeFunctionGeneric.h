@@ -61,29 +61,36 @@ namespace ScriptCanvas
     using NodeFunctionGenericMultiReturn = NodeFunctionGenericMultiReturnImpl<function, t_Traits>;
 
     template<auto Function, typename t_Traits>
-    inline constexpr AZ::TypeInfoObject GetAzTypeInfo(AZ::Adl, AZStd::type_identity<NodeFunctionGenericMultiReturnImpl<Function, t_Traits>>)
+    inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<NodeFunctionGenericMultiReturnImpl<Function, t_Traits>>)
     {
         using t_Func = decltype(Function);
-        constexpr AZ::TypeId templateUuid{ "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}" };
         constexpr const char* displayName = "NodeFunctionGenericMultiReturn";
-        AZStd::fixed_string<512> typeName{ displayName };
-        typeName += '<';
-
-        bool prependSeparator = false;
-        for (AZStd::string_view templateParamName : { AZ::Internal::AggregateTypes<t_Func, t_Traits>::TypeName() })
+        static AZ::TypeNameString s_typeName;
+        if (s_typeName.empty())
         {
-            typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : "";
-            typeName += templateParamName;
-            prependSeparator = true;
-        }
-        typeName += '>';
+            AZ::TypeNameString typeName{ displayName };
+            typeName += '<';
 
-        AZ::TypeInfoObject typeInfoObject;
-        typeInfoObject.m_name = typeName;
-        typeInfoObject.m_templateId = templateUuid;
-        typeInfoObject.m_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes<t_Func, t_Traits>::GetCanonicalTypeId();
-        typeInfoObject.m_typeTraits |= AZ::TypeTraits::is_template;
-        return typeInfoObject;
+            bool prependSeparator = false;
+            for (AZStd::string_view templateParamName : { AZ::Internal::AggregateTypes<t_Func, t_Traits>::TypeName() })
+            {
+                typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : "";
+                typeName += templateParamName;
+                prependSeparator = true;
+            }
+            typeName += '>';
+            s_typeName = typeName;
+        }
+
+        return s_typeName;
+    }
+    template<auto Function, typename t_Traits>
+    inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<NodeFunctionGenericMultiReturnImpl<Function, t_Traits>>)
+    {
+        using t_Func = decltype(Function);
+        constexpr AZ::TemplateId templateUuid{ "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}" };
+        static const AZ::TypeId s_typeId = templateUuid + AZ::Internal::AggregateTypes<t_Func, t_Traits>::GetCanonicalTypeId();
+        return s_typeId;
     }
 
 
