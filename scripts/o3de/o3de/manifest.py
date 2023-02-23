@@ -13,6 +13,8 @@ import json
 import logging
 import os
 import pathlib
+from packaging.version import Version
+from collections import deque
 
 from o3de import validation, utils, repo, compatibility
 
@@ -758,6 +760,55 @@ def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pa
     return cache_file
 
 
+def get_most_compatible_object(object_name: str, 
+                              object_typename: str, 
+                              object_validator: callable, 
+                              name_key: str, 
+                              objects: list) -> pathlib.Path or None:
+    """
+        Looks for the most compatible object based on object_name which may contain a version specifier.
+        Example: o3de>=1.2.3
+
+       :param object_name: Name of the object with optional version specifier 
+       :param object_typename: Type of object e.g. 'engine','project' or 'gem' 
+       :param object_validator: Validator to use for json file 
+       :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
+       :param objects: List of paths to search
+    """
+    matching_paths = deque()
+    most_compatible_version = Version('0.0.0')
+    object_name, version_specifier = utils.get_object_name_and_optional_version_specifier(object_name)
+    for object in objects:
+        if isinstance(object, dict):
+            path = pathlib.Path(object['path']).resolve()
+        else:
+            path = pathlib.Path(object).resolve()
+
+        json_data = get_json_data(object_typename, path, object_validator)
+        if json_data:
+            candidate_name = json_data.get(name_key,'')
+            if version_specifier:
+                candidate_version = json_data.get('version','0.0.0')
+                if compatibility.has_compatible_version([object_name + version_specifier], candidate_name, candidate_version):
+                    if not matching_paths:
+                        matching_paths.appendleft(path)
+                        most_compatible_version = Version(candidate_version)
+                    elif Version(candidate_version) > most_compatible_version:
+                        matching_paths.appendleft(path)
+                        most_compatible_version = Version(candidate_version)
+                    else:
+                        matching_paths.append(path)
+            elif candidate_name == object_name:
+                matching_paths.append(path)
+    if matching_paths:
+        best_candidate_path = matching_paths[0]
+        if len(matching_paths) > 1:
+            matches = "\n".join(map(str,matching_paths))
+            logger.warning(f"Multiple matches found for: '{object_name}'\n{matches}\nSelecting most compatible match: '{best_candidate_path}'")
+        return best_candidate_path
+
+    return None
+
 def get_registered(engine_name: str = None,
                    project_name: str = None,
                    gem_name: str = None,
@@ -792,54 +843,11 @@ def get_registered(engine_name: str = None,
     """
     json_data = load_o3de_manifest()
 
-    # check global first then this engine
     if isinstance(engine_name, str):
-        engines = get_manifest_engines()
-        matching_engine_paths = []
-        for engine in engines:
-            if isinstance(engine, dict):
-                engine_path = pathlib.Path(engine['path']).resolve()
-            else:
-                engine_path = pathlib.Path(engine).resolve()
-
-            engine_json = engine_path / 'engine.json'
-            if not pathlib.Path(engine_json).is_file():
-                logger.warning(f'{engine_json} does not exist')
-            else:
-                with engine_json.open('r') as f:
-                    try:
-                        engine_json_data = json.load(f)
-                    except json.JSONDecodeError as e:
-                        logger.warning(f'{engine_json} failed to load: {str(e)}')
-                    else:
-                        this_engines_name = engine_json_data.get('engine_name','')
-                        if this_engines_name == engine_name:
-                            matching_engine_paths.append(engine_path)
-        if matching_engine_paths:
-            engine_path = matching_engine_paths[0]
-            if len(matching_engine_paths) > 1:
-                engines = "\n".join(map(str,matching_engine_paths))
-                logger.warning(f"Multiple engines were found that match: '{engine_name}'\n{engines}\nSelecting first engine: '{engine_path}'")
-            return engine_path
-        
+        return get_most_compatible_object(engine_name, 'engine', validation.valid_o3de_engine_json, 'engine_name', get_manifest_engines())
 
     elif isinstance(project_name, str):
-        projects = get_all_projects()
-        for project_path in projects:
-            project_path = pathlib.Path(project_path).resolve()
-            project_json = project_path / 'project.json'
-            if not pathlib.Path(project_json).is_file():
-                logger.warning(f'{project_json} does not exist')
-            else:
-                with project_json.open('r') as f:
-                    try:
-                        project_json_data = json.load(f)
-                    except json.JSONDecodeError as e:
-                        logger.warning(f'{project_json} failed to load: {str(e)}')
-                    else:
-                        this_projects_name = project_json_data['project_name']
-                        if this_projects_name == project_name:
-                            return project_path
+        return get_most_compatible_object(project_name, 'project', validation.valid_o3de_project_json, 'project_name', get_all_projects())
 
     elif isinstance(gem_name, str):
         gems = []
@@ -856,22 +864,7 @@ def get_registered(engine_name: str = None,
                 for registered_project_path in registered_project_paths:
                     gems.extend(get_all_gems(registered_project_path))
                 gems = list(dict.fromkeys(gems))
-
-        for gem_path in gems:
-            gem_path = pathlib.Path(gem_path).resolve()
-            gem_json = gem_path / 'gem.json'
-            if not pathlib.Path(gem_json).is_file():
-                logger.warning(f'{gem_json} does not exist')
-            else:
-                with gem_json.open('r') as f:
-                    try:
-                        gem_json_data = json.load(f)
-                    except json.JSONDecodeError as e:
-                        logger.warning(f'{gem_json} failed to load: {str(e)}')
-                    else:
-                        this_gems_name = gem_json_data['gem_name']
-                        if this_gems_name == gem_name:
-                            return gem_path
+        return get_most_compatible_object(gem_name, 'gem', validation.valid_o3de_gem_json, 'gem_name', gems)
 
     elif isinstance(template_name, str):
         templates = []

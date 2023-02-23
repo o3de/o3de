@@ -391,41 +391,137 @@ class TestManifestGetRegistered:
             pytest.param('InvalidProject', pathlib.Path('Templates/DefaultProject'), None)
     ])
     def test_get_registered_template(self, template_name, relative_template_path, expected_path):
-            def get_engine_json_data(engine_name: str = None,
-                                    engine_path: str or pathlib.Path = None) -> dict or None:
-                engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
-                if expected_path:
-                    engine_payload['templates'] = [relative_template_path]
-                return engine_payload
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+            if expected_path:
+                engine_payload['templates'] = [relative_template_path]
+            return engine_payload
 
-            def get_gem_json_data(gem_name: str = None,
-                                    gem_path: str or pathlib.Path = None) -> dict or None:
-                gem_payload = json.loads(TEST_GEM_JSON_PAYLOAD)
-                return gem_payload
+        def get_gem_json_data(gem_name: str = None,
+                                gem_path: str or pathlib.Path = None) -> dict or None:
+            gem_payload = json.loads(TEST_GEM_JSON_PAYLOAD)
+            return gem_payload
 
-            def get_project_json_data(project_name: str = None,
-                                    project_path: str or pathlib.Path = None,
-                                    user: bool = False) -> dict or None:
-                project_payload = json.loads(TEST_PROJECT_JSON_PAYLOAD)
-                return project_payload
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
+            project_payload = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+            return project_payload
 
-            def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
-                manifest_payload = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
-                manifest_payload['projects'] = []
-                return manifest_payload
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            manifest_payload = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+            manifest_payload['projects'] = []
+            return manifest_payload
 
-            with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _1, \
-                patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _2, \
-                patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _3, \
-                patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _4, \
-                patch('pathlib.Path.resolve', self.resolve) as _5, \
-                patch('pathlib.Path.samefile', self.samefile) as _6, \
-                patch('pathlib.Path.open', return_value=io.StringIO(TEST_PROJECT_TEMPLATE_JSON_PAYLOAD)) as _7, \
-                patch('pathlib.Path.is_file', self.is_file) as _8,\
-                patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
+        with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _1, \
+            patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _2, \
+            patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _3, \
+            patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _4, \
+            patch('pathlib.Path.resolve', self.resolve) as _5, \
+            patch('pathlib.Path.samefile', self.samefile) as _6, \
+            patch('pathlib.Path.open', return_value=io.StringIO(TEST_PROJECT_TEMPLATE_JSON_PAYLOAD)) as _7, \
+            patch('pathlib.Path.is_file', self.is_file) as _8,\
+            patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
 
-                path = manifest.get_registered(template_name=template_name)
-                assert path == expected_path
+            path = manifest.get_registered(template_name=template_name)
+            assert path == expected_path
+
+@pytest.mark.parametrize("test_object_typename", [
+        pytest.param('engine'),
+        pytest.param('project'),
+        pytest.param('gem')
+    ])
+class TestManifestGetRegisteredVersionedObject:
+    @staticmethod
+    def get_this_engine_path() -> pathlib.Path:
+        return pathlib.Path('D:/o3de/o3de')
+
+    @staticmethod
+    def is_file(self) -> bool:
+        # use a simple suffix check to avoid hitting the actual file system
+        return self.suffix != ''
+
+    @staticmethod
+    def resolve(self):
+        return self
+
+    @pytest.mark.parametrize("object_name, json_data_by_path, expected_path", [
+            # when no version information exists and name matches expect object not found
+            pytest.param('object-name', {pathlib.PurePath('object1'):{"name":"object-name"}}, pathlib.PurePath('object1'), ),
+            # when version information exists and version specifier provided expect correct engine found
+            pytest.param('object-name==1.0.0', {
+                pathlib.PurePath('object1'):{"name":"object-name","version":"1.0.0"},
+                pathlib.PurePath('object2'):{"name":"object-name","version":"2.0.0"}
+                }, pathlib.PurePath('object1'), ),
+            # when version information exists and version specifier provided expect correct engine found
+            pytest.param('object-name>=1.0.0', {
+                pathlib.PurePath('object1'):{"name":"object-name","version":"1.0.0"},
+                pathlib.PurePath('object2'):{"name":"object-name","version":"2.0.0"}
+                }, pathlib.PurePath('object2'), ),
+            # when version information exists and version specifier matches multiple engines, expect first match returned 
+            pytest.param('object-name==1.0.0', {
+                pathlib.PurePath('object1'):{"name":"object-name","version":"1.0.0"},
+                pathlib.PurePath('object2'):{"name":"object-name","version":"1.0.0"}
+                }, pathlib.PurePath('object1'), ),
+            # when engine is not found expect none is returned 
+            pytest.param('object-missing', {pathlib.PurePath('object1'):{"name":"object-name"}}, None ),
+    ])
+    def test_get_registered_object_with_version(self, test_object_typename, object_name, json_data_by_path, expected_path):
+        def get_json_data(object_typename: str,
+                        object_path: str or pathlib.Path,
+                        object_validator: callable) -> dict or None:
+            if object_typename == test_object_typename:
+                if test_object_typename == 'engine':
+                    payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+                elif test_object_typename == 'project':
+                    payload = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+                elif test_object_typename == 'gem':
+                    payload = json.loads(TEST_GEM_JSON_PAYLOAD)
+                object_path = pathlib.PurePath(object_path)
+                payload.update(json_data_by_path.get(object_path, {}))
+                # change '<object>_name' field value set in 'name' 
+                # e.g. 'engine_name' or 'project_name' gets value from 'name'
+                if 'name' in payload:
+                    payload[object_typename + '_name'] = payload['name']
+                return payload
+
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            return get_json_data('engine', engine_path, None)
+
+        def get_gem_json_data(gem_name: str = None,
+                            gem_path: str or pathlib.Path = None) -> dict or None:
+            return get_json_data('gem', gem_path, None)
+
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
+            return get_json_data('project', project_path, None)
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            manifest_payload = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+            if test_object_typename == 'gem':
+                manifest_payload['external_subdirectories'] = [p.as_posix() for p in json_data_by_path.keys()]
+            else:
+                manifest_payload[test_object_typename + 's'] = [p.as_posix() for p in json_data_by_path.keys()]
+            return manifest_payload
+
+        with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _1, \
+            patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _2, \
+            patch('o3de.manifest.get_json_data', side_effect=get_json_data) as _2, \
+            patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _3, \
+            patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as _4, \
+            patch('pathlib.Path.resolve', self.resolve) as _5, \
+            patch('pathlib.Path.is_file', self.is_file) as _8,\
+            patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) as _9: 
+
+            engine_name = object_name if test_object_typename == 'engine' else None
+            project_name = object_name if test_object_typename == 'project' else None
+            gem_name = object_name if test_object_typename == 'gem' else None
+
+            path = manifest.get_registered(engine_name=engine_name, project_name=project_name, gem_name=gem_name)
+            assert path == expected_path
 
 class TestManifestProjects:
     @staticmethod
@@ -541,6 +637,8 @@ class TestManifestGetGemsJsonData:
     engine_external_path = pathlib.Path("engine_gem1")
     project_external_path = pathlib.Path("project_gem1")
     gem_external_path = pathlib.Path("external_gem1")
+    gem_version1_external_path = pathlib.Path("external_gem_v1")
+    gem_version2_external_path = pathlib.Path("external_gem_v2")
 
     @staticmethod
     def resolve(self):
@@ -550,24 +648,31 @@ class TestManifestGetGemsJsonData:
                             "external_subdirectories, expected_result", [
             # when engine_path provided, expect engine gems
             pytest.param(pathlib.Path('C:/engine1'), None, False, False, list(), 
-                {'engine_gem1':{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}}),
+                {'engine_gem1':[{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}]}),
             # when project_path provided, expect project gems
             pytest.param(None, pathlib.Path('C:/project1'), False, False, list(),
-                {'project_gem1':{'gem_name':'project_gem1', 'path':pathlib.Path('project_gem1')}}),
+                {'project_gem1':[{'gem_name':'project_gem1', 'path':pathlib.Path('project_gem1')}]}),
             # when manifest gems are requested expect manifest gems 
             pytest.param(None, None, True, False, list(),
-                {'manifest_gem1':{'gem_name':'manifest_gem1', 'path':pathlib.Path('manifest_gem1')}}),
+                {'manifest_gem1':[{'gem_name':'manifest_gem1', 'path':pathlib.Path('manifest_gem1')}]}),
             # when engine gems are requested expect engine gems 
             pytest.param(None, None, False, True, list(),
-                {'engine_gem1':{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}}),
+                {'engine_gem1':[{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}]}),
             # when project_path provided and engine gems are requested expect both 
             pytest.param(None, pathlib.Path('C:/project1'), False, True, list(),
-                {'project_gem1':{'gem_name':'project_gem1', 'path':pathlib.Path('project_gem1')},
-                 'engine_gem1':{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}}),
+                {'project_gem1':[{'gem_name':'project_gem1', 'path':pathlib.Path('project_gem1')}],
+                 'engine_gem1':[{'gem_name':'engine_gem1', 'path':pathlib.Path('engine_gem1')}]}),
             # when external subdirectories are provided (recursive), expect they are found 
             pytest.param(None, None, False, False, ['external_gem1'],
-                {'external_gem1':{'gem_name':'external_gem1', 'external_subdirectories':['external_sub_gem2'], 'path':pathlib.Path('external_gem1')},
-                'external_sub_gem2':{'gem_name':'external_sub_gem2', 'path':pathlib.Path('external_gem1/external_sub_gem2')}
+                {'external_gem1':[{'gem_name':'external_gem1', 'external_subdirectories':['external_sub_gem2'], 'path':pathlib.Path('external_gem1')}],
+                'external_sub_gem2':[{'gem_name':'external_sub_gem2', 'path':pathlib.Path('external_gem1/external_sub_gem2')}]
+                }),
+            # when a gem with multiple version exists, expect they are both found
+            pytest.param(None, None, False, False, ['external_gem_v1','external_gem_v2'],
+                {'versioned_gem':[
+                    {'gem_name':'versioned_gem', 'version':'1.0.0', 'path':pathlib.Path('external_gem_v1')},
+                    {'gem_name':'versioned_gem', 'version':'2.0.0', 'path':pathlib.Path('external_gem_v2')},
+                    ],
                 }),
         ]
     )
@@ -599,6 +704,10 @@ class TestManifestGetGemsJsonData:
                 return {'gem_name':'external_gem1', 'external_subdirectories':['external_sub_gem2']}
             elif gem_path == self.gem_external_path / 'external_sub_gem2':
                 return {'gem_name':'external_sub_gem2'}
+            elif gem_path == self.gem_version1_external_path:
+                return {'gem_name':'versioned_gem','version':'1.0.0'}
+            elif gem_path == self.gem_version2_external_path:
+                return {'gem_name':'versioned_gem','version':'2.0.0'}
             return  {}
 
         with patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch, \
