@@ -9,8 +9,6 @@ base: core22
 
 parts:
   o3de:
-    after:
-      - gnome
     plugin: dump
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
@@ -44,6 +42,15 @@ parts:
      - libffi7
      - libc6
      - libstdc++6
+     - libgcc-s1
+     - liblzma5
+     - libzstd1
+     - libdbus-1-3
+     - libsystemd0
+     - liblz4-1
+     - libcap2
+     - libgcrypt20
+     - libgpg-error0
     stage-snaps:
      - cmake
 
