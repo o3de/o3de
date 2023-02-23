@@ -217,6 +217,11 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
         {
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         }
+
+        if (QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
+        {
+            addToolBar(Qt::TopToolBarArea, toolBar);
+        }
     }
 
     m_id = -1;
@@ -224,7 +229,7 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
 
 CLayoutViewPane::~CLayoutViewPane() 
 {
-    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+    if (AzToolsFramework::IsNewActionManagerEnabled())
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }

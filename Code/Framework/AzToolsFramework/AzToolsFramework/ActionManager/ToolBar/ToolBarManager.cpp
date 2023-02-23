@@ -436,7 +436,7 @@ namespace AzToolsFramework
             auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
             if (toolBarIterator != m_toolBars.end())
             {
-                toolBarIterator->second.RefreshToolBar();
+                toolBarIterator->second.RefreshToolBars();
             }
         }
 

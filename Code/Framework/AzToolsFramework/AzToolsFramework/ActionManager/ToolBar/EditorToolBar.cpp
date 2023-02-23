@@ -20,15 +20,12 @@
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
-        : m_toolBar(new QToolBar("", s_defaultParentWidget))
     {
-        m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
-        : m_toolBar(new QToolBar(name.c_str(), s_defaultParentWidget))
+        : m_name(name)
     {
-        m_toolBar->setMovable(false);
     }
 
     void EditorToolBar::AddSeparator(int sortKey)
@@ -120,17 +117,43 @@ namespace AzToolsFramework
 
     QToolBar* EditorToolBar::GetToolBar()
     {
-        return m_toolBar;
+        QToolBar* toolBar = new QToolBar(m_name.c_str(), s_defaultParentWidget);
+        toolBar->setMovable(false);
+
+        m_toolBars.insert(toolBar);
+
+        s_defaultParentWidget->connect(
+            toolBar,
+            &QObject::destroyed,
+            s_defaultParentWidget,
+            [this, toolBar]()
+            {
+                m_toolBars.erase(toolBar);
+            }
+        );
+
+        RefreshToolBars();
+
+        return toolBar;
     }
 
-    const QToolBar* EditorToolBar::GetToolBar() const
+    void EditorToolBar::EnumerateToolBars(AZStd::function<bool(QToolBar*)> handler)
     {
-        return m_toolBar;
+        for (QToolBar* toolBar : m_toolBars)
+        {
+            if(handler(toolBar))
+            {
+                break;
+            }
+        }
     }
 
-    void EditorToolBar::RefreshToolBar()
+    void EditorToolBar::RefreshToolBars()
     {
-        m_toolBar->clear();
+        if (m_toolBars.empty())
+        {
+            return;
+        }
 
         for (const auto& vectorIterator : m_toolBarItems)
         {
@@ -153,19 +176,37 @@ namespace AzToolsFramework
                                     continue;
                                 }
 
-                                m_toolBar->addAction(action);
+                                EnumerateToolBars(
+                                    [action](QToolBar* toolBar) -> bool
+                                    {
+                                        toolBar->addAction(action);
+                                        return false;
+                                    }
+                                );
                             }
                         }
                         break;
                     case ToolBarItemType::Separator:
                         {
-                            m_toolBar->addSeparator();
+                            EnumerateToolBars(
+                                [](QToolBar* toolBar) -> bool
+                                {
+                                    toolBar->addSeparator();
+                                    return false;
+                                }
+                            );
                         }
                         break;
                     case ToolBarItemType::ActionAndSubMenu:
                     case ToolBarItemType::Widget:
                         {
-                            m_toolBar->addAction(toolBarItem.m_widgetAction);
+                            EnumerateToolBars(
+                                [toolBarItem](QToolBar* toolBar) -> bool
+                                {
+                                    toolBar->addAction(toolBarItem.m_widgetAction);
+                                    return false;
+                                }
+                            );
                         }
                         break;
                     default:
