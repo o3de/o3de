@@ -26,7 +26,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(fileIOMock, "{9F23EB93-917B-401F-AC91-63D85BADB102}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(fileIOMock, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(fileIOMock, OSAllocator);
 
             fileIOMock() = default;
             ~fileIOMock() = default;
@@ -96,7 +96,7 @@ namespace AWSMetrics
         : protected AWSMetricsNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AWSMetricsNotificationBusMock, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSMetricsNotificationBusMock, AZ::SystemAllocator);
 
         AWSMetricsNotificationBusMock()
             : m_numSuccessNotification(0)
@@ -134,8 +134,10 @@ namespace AWSMetrics
         , protected AWSMetricsRequestBus::Handler
     {
     public:
-        // Size for each test metrics event will be 180 bytes.
-        static constexpr int TestMetricsEventSizeInBytes = 180;
+        // We calculate the event size by adding the size of all the key value pairs in MetricsEvent.m_attributes 
+        // TestMetricsEventSizeInBytes value is based on a simple event with default attributes + one test attribute
+        // See MetricEvents::GetSizeInBytes and MetricsManager::SubmitMetrics for details
+        static constexpr int TestMetricsEventSizeInBytes = 178;
         static constexpr int MbToBytes = 1000000;
         static constexpr int DefaultFlushPeriodInSeconds = 1;
         static constexpr int MaxNumMetricsEvents = 10;

@@ -11,8 +11,10 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
 
 #include <QHBoxLayout>
@@ -21,7 +23,6 @@
 #endif // Q_MOC_RUN
 
 class QCheckBox;
-class QTimer;
 
 namespace AzQtComponents
 {
@@ -67,7 +68,6 @@ namespace AzToolsFramework
         void onCheckstateChanged(int expanderState);
 
     protected:
-        DocumentPropertyEditor* GetDPE() const;
         DPERowWidget* GetRow() const;
         void CreateExpanderWidget();
 
@@ -94,6 +94,7 @@ namespace AzToolsFramework
 
         friend class DocumentPropertyEditor;
         friend class DPELayout;
+
     public:
         explicit DPERowWidget();
         void Init(int depth, DPERowWidget* parentRow);
@@ -135,6 +136,8 @@ namespace AzToolsFramework
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
 
+        static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
+
         QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
 
         DPERowWidget* m_parentRow = nullptr;
@@ -157,11 +160,8 @@ namespace AzToolsFramework
 
             bool IsDefault() const
             {
-                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment &&
-                    !m_sharePriorColumn &&
-                    !m_minimumWidth &&
-                    m_descriptionString.empty() &&
-                    !m_isDisabled;
+                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !m_sharePriorColumn &&
+                    !m_minimumWidth && m_descriptionString.empty() && !m_isDisabled;
             }
         };
         AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
@@ -178,6 +178,7 @@ namespace AzToolsFramework
             AZStd::unique_ptr<PropertyHandlerWidgetInterface> hanlderInterface;
         };
         AZStd::unordered_map<QWidget*, HandlerInfo> m_widgetToPropertyHandlerInfo;
+        void ReleaseHandler(HandlerInfo& handler);
     };
 
     class DocumentPropertyEditor
@@ -187,7 +188,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator);
 
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
@@ -210,8 +211,6 @@ namespace AzToolsFramework
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
-        void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
-
         // sets whether this DPE should also spawn a DPEDebugWindow when its adapter
         // is set. Initially, this takes its value from the CVAR ed_showDPEDebugView,
         // but can be overridden here
@@ -222,21 +221,30 @@ namespace AzToolsFramework
             return "ed_enableDPE";
         }
         static bool ShouldReplaceRPE();
+        static bool ShouldReplaceCVarEditor();
+
+        static constexpr const char* GetEnableCVarEditorName()
+        {
+            return "ed_enableCVarDPE";
+        }
 
         AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
         // shared pools of recycled widgets
-        auto GetRowPool()
+        static auto GetRowPool()
         {
-            return m_rowPool;
+            return static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get())->GetPool<DPERowWidget>();
         }
 
-        auto GetLabelPool()
+        static auto GetLabelPool()
         {
-            return m_labelPool;
+            return static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get())
+                ->GetPool<AzQtComponents::ElidingLabel>();
         }
+
+        void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
@@ -250,8 +258,6 @@ namespace AzToolsFramework
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
 
-        void CleanupReleasedHandlers();
-
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
@@ -261,17 +267,16 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<DocumentPropertyEditorSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;
-
         bool m_spawnDebugView = false;
 
-        QTimer* m_handlerCleanupTimer;
-        AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         DPERowWidget* m_rootNode = nullptr;
 
         // keep pools of frequently used widgets that can be recycled for efficiency without
         // incurring the cost of creating and destroying them
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
         AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
+
+        AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
 
@@ -280,4 +285,4 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
     AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
-}
+} // namespace AZ

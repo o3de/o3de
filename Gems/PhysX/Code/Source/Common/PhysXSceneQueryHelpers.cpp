@@ -103,15 +103,10 @@ namespace PhysX
                     hit.m_physicsMaterialId = physicsMaterial->GetId();
                 }
 #endif
-
             }
             else if (hit.m_shape != nullptr)
             {
-                if (const auto& physicsMaterial = hit.m_shape->GetMaterial();
-                    physicsMaterial.get() != nullptr)
-                {
-                    hit.m_physicsMaterialId = physicsMaterial->GetId();
-                }
+                hit.m_physicsMaterialId = hit.m_shape->GetMaterialId();
             }
             if (hit.m_physicsMaterialId.IsValid())
             {
@@ -335,8 +330,9 @@ namespace PhysX
 #endif
 
         UnboundedOverlapCallback::UnboundedOverlapCallback(const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& hitCallback,
-            AZStd::vector<physx::PxOverlapHit>& hitBuffer)
+            AZStd::vector<physx::PxOverlapHit>& hitBuffer, AzPhysics::SceneQueryHits& hits)
             : m_hitCallback(hitCallback)
+            , m_results(hits)
             , physx::PxHitCallback<physx::PxOverlapHit>(hitBuffer.begin(), static_cast<physx::PxU32>(hitBuffer.size()))
         {}
 

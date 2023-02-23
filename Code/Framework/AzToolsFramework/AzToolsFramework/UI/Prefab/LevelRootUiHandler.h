@@ -23,7 +23,7 @@ namespace AzToolsFramework
         : public EditorEntityUiHandlerBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(LevelRootUiHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LevelRootUiHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::LevelRootUiHandler, "{B1D3B270-CD29-4033-873A-D78E76AB24A4}", EditorEntityUiHandlerBase);
 
         LevelRootUiHandler();

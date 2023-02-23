@@ -38,7 +38,7 @@ namespace AzToolsFramework
         class EditorEntityType final
         {
         public:
-            AZ_CLASS_ALLOCATOR(EditorEntityType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorEntityType, AZ::SystemAllocator);
             AZ_RTTI(EditorEntityType, "{9761CD58-D86E-4EA1-AE67-5302AECD54A4}");
 
             EditorEntityType() = default;

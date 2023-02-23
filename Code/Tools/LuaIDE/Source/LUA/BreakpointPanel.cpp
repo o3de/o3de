@@ -30,7 +30,8 @@ DHBreakpointsWidget::~DHBreakpointsWidget()
 void DHBreakpointsWidget::PullFromContext()
 {
     const LUAEditor::BreakpointMap* myData = NULL;
-    EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+    LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+        myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
     AZ_Assert(myData, "Nobody responded to the request breakpoints message.");
     BreakpointsUpdate(*myData);
 }
@@ -173,7 +174,10 @@ void DHBreakpointsWidget::OnDoubleClicked(const QModelIndex& modelIdx)
     QTableWidgetItem* line = item(modelIdx.row(), 0);
     QTableWidgetItem* file = item(modelIdx.row(), 1);
 
-    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestEditorFocus, AZStd::string(file->data(Qt::DisplayRole).toString().toUtf8().data()), line->data(Qt::DisplayRole).toInt());
+    LUAEditor::LUABreakpointRequestMessages::Bus::Broadcast(
+        &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestEditorFocus,
+        AZStd::string(file->data(Qt::DisplayRole).toString().toUtf8().data()),
+        line->data(Qt::DisplayRole).toInt());
 }
 
 void DHBreakpointsWidget::RemoveRow(int which)
@@ -185,5 +189,6 @@ void DHBreakpointsWidget::RemoveRow(int which)
     QByteArray fileName = file->data(Qt::DisplayRole).toString().toUtf8().data();
     int lineNumber = line->data(Qt::DisplayRole).toInt();
 
-    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestDeleteBreakpoint, AZStd::string(fileName.constData()), lineNumber);
+    LUAEditor::LUABreakpointRequestMessages::Bus::Broadcast(
+        &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestDeleteBreakpoint, AZStd::string(fileName.constData()), lineNumber);
 }

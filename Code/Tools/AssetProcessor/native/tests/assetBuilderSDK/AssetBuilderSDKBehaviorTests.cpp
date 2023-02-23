@@ -39,8 +39,6 @@ namespace AssetProcessor
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             m_systemEntity = m_app->Create(desc);
@@ -62,8 +60,6 @@ namespace AssetProcessor
             m_systemEntity = nullptr;
             m_app->Destroy();
             m_app.reset();
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
         bool IsBehaviorFlaggedForEditor(const AZ::AttributeArray& attributes)

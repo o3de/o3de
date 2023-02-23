@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     struct EntityPreviewViewportSettings final
     {
         AZ_RTTI(EntityPreviewViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
-        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettings, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

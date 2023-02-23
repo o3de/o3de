@@ -24,7 +24,7 @@ namespace AZ
         public:
             using ResourceType = Image;
 
-            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator);
             AZ_RTTI(ImageView, "0BDF7F84-BBC8-40C7-BC9A-686E22099643", Base);
 
             static RHI::Ptr<ImageView> Create();
@@ -56,14 +56,16 @@ namespace AZ
 
             VkImageViewType GetImageViewType(const Image& image) const;
             void BuildImageSubresourceRange(VkImageViewType imageViewType, VkImageAspectFlags aspectFlags);
+            void ReleaseView();
+            void ReleaseBindlessIndices();
 
             VkImageView m_vkImageView = VK_NULL_HANDLE;
             RHI::Format m_format = RHI::Format::Unknown;
             RHI::ImageSubresourceRange m_imageSubresourceRange;
             VkImageSubresourceRange m_vkImageSubResourceRange;
 
-            uint32_t m_readIndex = ~0u;
-            uint32_t m_readWriteIndex = ~0u;
+            uint32_t m_readIndex = InvalidBindlessIndex;
+            uint32_t m_readWriteIndex = InvalidBindlessIndex;
         };
     }
 }

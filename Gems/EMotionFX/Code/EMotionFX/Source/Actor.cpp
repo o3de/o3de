@@ -46,7 +46,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Actor, ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Actor, ActorAllocator)
 
     Actor::MeshLODData::MeshLODData()
     {

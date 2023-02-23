@@ -31,18 +31,6 @@ namespace AZ::IO
         {
             return FullFileDecompressor(2, 2, m_arbitrarilyLargeAlignment);
         }
-
-        void SetUp() override
-        {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-        }
     };
 
     INSTANTIATE_TYPED_TEST_CASE_P(
@@ -66,14 +54,6 @@ namespace AZ::IO
             Canceled
         };
 
-        void SetUp() override
-        {
-            UnitTest::LeakDetectionFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
         void TearDown() override
         {
             m_decompressor.reset();
@@ -87,9 +67,6 @@ namespace AZ::IO
 
             delete m_context;
             m_context = nullptr;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
 
             UnitTest::LeakDetectionFixture::TearDown();
         }

@@ -7,5 +7,7 @@
 #
 
 set(FILES
+    Source/AudioSystemGemSystemComponent.cpp
+    Source/AudioSystemGemSystemComponent.h
     Source/AudioSystemModule.cpp
 )

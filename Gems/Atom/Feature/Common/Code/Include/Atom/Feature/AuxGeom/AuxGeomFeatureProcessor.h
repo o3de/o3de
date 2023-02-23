@@ -25,6 +25,7 @@ namespace AZ
             : public RPI::AuxGeomFeatureProcessorInterface
         {
         public: // functions
+            AZ_CLASS_ALLOCATOR(AuxGeomFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::AuxGeomFeatureProcessor, "{75E17417-C8E3-4B64-8469-7662D1E0904A}", AZ::RPI::AuxGeomFeatureProcessorInterface);
             AZ_FEATURE_PROCESSOR(AuxGeomFeatureProcessor);

@@ -15,7 +15,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator);
 
             HeaderHandler* HeaderHandler::s_instance = nullptr;
 

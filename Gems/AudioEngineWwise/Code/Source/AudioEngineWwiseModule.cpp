@@ -11,12 +11,12 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <IGem.h>
 
-#include <AudioEngineWwiseGemSystemComponent.h>
+#include "AudioEngineWwiseGemSystemComponent.h"
 
-#if defined(AUDIO_ENGINE_WWISE_EDITOR)
+#if defined(AUDIO_ENGINE_WWISE_BUILDER)
     #include <AudioControlBuilderComponent.h>
     #include <WwiseBuilderComponent.h>
-#endif // AUDIO_ENGINE_WWISE_EDITOR
+#endif // AUDIO_ENGINE_WWISE_BUILDER
 
 namespace AudioEngineWwiseGem
 {
@@ -25,17 +25,18 @@ namespace AudioEngineWwiseGem
     {
     public:
         AZ_RTTI(AudioEngineWwiseModule, "{303B0192-D866-4378-9342-728AA6E66F74}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(AudioEngineWwiseModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioEngineWwiseModule, AZ::SystemAllocator);
 
         AudioEngineWwiseModule()
             : CryHooksModule()
         {
             m_descriptors.insert(m_descriptors.end(), {
-                AudioEngineWwiseGemSystemComponent::CreateDescriptor(),
-            #if defined(AUDIO_ENGINE_WWISE_EDITOR)
+            #if defined(AUDIO_ENGINE_WWISE_BUILDER)
                 AudioControlBuilder::BuilderPluginComponent::CreateDescriptor(),
                 WwiseBuilder::BuilderPluginComponent::CreateDescriptor(),
-            #endif // AUDIO_ENGINE_WWISE_EDITOR
+            #else
+                AudioEngineWwiseGemSystemComponent::CreateDescriptor(),
+            #endif // AUDIO_ENGINE_WWISE_BUILDER
             });
         }
 
@@ -45,7 +46,9 @@ namespace AudioEngineWwiseGem
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
+            #if !defined(AUDIO_ENGINE_WWISE_BUILDER)
                 azrtti_typeid<AudioEngineWwiseGemSystemComponent>(),
+            #endif // !AUDIO_ENGINE_WWISE_BUILDER
             };
         }
     };

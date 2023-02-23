@@ -29,7 +29,7 @@ namespace EMotionFX
     {
         namespace Group
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionGroup, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionGroup, AZ::SystemAllocator)
 
             MotionGroup::MotionGroup()
                 : m_id(AZ::Uuid::CreateRandom())
@@ -105,6 +105,7 @@ namespace EMotionFX
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/motions-tab/")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MotionGroup::m_name, "Name motion",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", IMotionGroup::TYPEINFO_Uuid())

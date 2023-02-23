@@ -86,6 +86,10 @@ namespace AZ
         void EnterProfilingMode();
         void ExitProfilingMode();
 
+        // Controls if profiling should be enabled for newly created allocators
+        void SetDefaultProfilingState(bool newState) { m_defaultProfilingState = newState; }
+        bool GetDefaultProfilingState() const { return m_defaultProfilingState; }
+
         /// Outputs allocator useage to the console, and also stores the values in m_dumpInfo for viewing in the crash dump
         void DumpAllocators();
 
@@ -150,6 +154,7 @@ namespace AZ
         volatile int        m_numAllocators;
         OutOfMemoryCBType   m_outOfMemoryListener;
         bool                m_isAllocatorLeaking;
+        bool                m_defaultProfilingState = false;
         MemoryBreak         m_memoryBreak[MaxNumMemoryBreaks];
         char                m_activeBreaks;
         AZStd::mutex        m_allocatorListMutex;

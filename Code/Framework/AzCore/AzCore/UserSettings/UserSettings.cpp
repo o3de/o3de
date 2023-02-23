@@ -25,7 +25,7 @@ namespace AZ
         void AddSettings(UserSettings* settings, u32 settingsId, u32 groupId)
         {
             AZ_Warning("UserSettings", UserSettingsBus::GetNumOfEventHandlers(groupId) > 0, "There is no UserSettings handler for group %u, settings %u will not be tracked!", groupId, settingsId);
-            EBUS_EVENT_ID(groupId, UserSettingsBus, AddUserSettings, settingsId, settings);
+            UserSettingsBus::Event(groupId, &UserSettingsBus::Events::AddUserSettings, settingsId, settings);
         }
 
         //-------------------------------------------------------------------------
@@ -35,7 +35,7 @@ namespace AZ
         {
             // if we don't have any handlers exit
             AZStd::intrusive_ptr<UserSettings> ret;
-            EBUS_EVENT_ID_RESULT(ret, groupId, UserSettingsBus, FindUserSettings, settingsId);
+            UserSettingsBus::EventResult(ret, groupId, &UserSettingsBus::Events::FindUserSettings, settingsId);
             return ret;
         }
     }   // namespace UserSettingsInternal
@@ -46,7 +46,7 @@ namespace AZ
     bool UserSettings::Save(u32 providerId, const char* settingsPath, SerializeContext* sc)
     {
         bool settingsSaved = false;
-        EBUS_EVENT_ID_RESULT(settingsSaved, providerId, UserSettingsBus, Save, settingsPath, sc);
+        UserSettingsBus::EventResult(settingsSaved, providerId, &UserSettingsBus::Events::Save, settingsPath, sc);
         return settingsSaved;
     }
     //-------------------------------------------------------------------------

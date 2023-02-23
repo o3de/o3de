@@ -21,6 +21,8 @@ namespace AZ
 {
     namespace Render
     {
+        constexpr uint32_t MaxRecursionDepth = 16;
+
         //! Ray tracing shader that generates probe radiance values.
         class DiffuseProbeGridRayTracingPass final
             : public RPI::RenderPass
@@ -29,7 +31,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridRayTracingPass);
 
             AZ_RTTI(DiffuseProbeGridRayTracingPass, "{CB0DF817-3D07-4AC7-8574-F5EE529B8DCA}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRayTracingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRayTracingPass, SystemAllocator);
 
             //! Creates a DiffuseProbeGridRayTracingPass
             static RPI::Ptr<DiffuseProbeGridRayTracingPass> Create(const RPI::PassDescriptor& descriptor);
@@ -63,8 +65,9 @@ namespace AZ
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
+
+            RHI::ShaderInputNameIndex m_maxRecursionDepthNameIndex = "m_maxRecursionDepth";
 
             bool m_initialized = false;
         };

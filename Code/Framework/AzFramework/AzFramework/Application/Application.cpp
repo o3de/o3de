@@ -14,7 +14,6 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -282,7 +281,6 @@ namespace AzFramework
         // This is internal Amazon code, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
         AZStd::vector<AZ::Uuid> componentUuidsForMetricsCollection
         {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
@@ -306,7 +304,8 @@ namespace AzFramework
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
         };
 
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, componentUuidsForMetricsCollection);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
     }
 
     void Application::Reflect(AZ::ReflectContext* context)
@@ -348,7 +347,6 @@ namespace AzFramework
         AZ::ComponentTypeList components = ComponentApplication::GetRequiredSystemComponents();
 
         components.insert(components.end(), {
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
@@ -434,7 +432,7 @@ namespace AzFramework
     {
         AZ::Uuid uuid(AZ::Uuid::CreateNull());
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity)
         {
             AZ::Component* component = entity->FindComponent(componentId);

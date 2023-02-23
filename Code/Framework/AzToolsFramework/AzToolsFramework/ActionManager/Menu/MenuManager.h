@@ -31,7 +31,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager(QWidget* defaultParentWidget);
+        explicit MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -71,11 +71,13 @@ namespace AzToolsFramework
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) override;
+        MenuManagerOperationResult QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) override;
         void RefreshMenus() override;
         void RefreshMenuBars() override;
         MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
+        void Reset() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
@@ -83,10 +85,14 @@ namespace AzToolsFramework
         // ActionManagerNotificationBus overrides ...
         void OnActionStateChanged(AZStd::string actionIdentifier) override;
 
+        // Identifies whether adding a submenu to a menu would generate any circular dependencies.
+        bool WouldGenerateCircularDependency(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier);
+
         AZStd::unordered_map<AZStd::string, EditorMenu> m_menus;
         AZStd::unordered_map<AZStd::string, EditorMenuBar> m_menuBars;
 
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionsToMenusMap;
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_subMenusToMenusMap;
 
         AZStd::unordered_set<AZStd::string> m_menusToRefresh;
         AZStd::unordered_set<AZStd::string> m_menuBarsToRefresh;

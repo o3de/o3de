@@ -14,18 +14,19 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetEntryChangeset.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 #include <chrono>
 
@@ -271,14 +272,14 @@ namespace AzToolsFramework
             return SourceFileDetails();
         }
 
-        void AssetBrowserComponent::HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId)
+        void AssetBrowserComponent::HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId, const bool initialFilenameChange)
         {
             if (assetPath.empty())
             {
                 return;
             }
 
-            m_assetBrowserModel->HandleAssetCreatedInEditor(assetPath, creatorBusId);
+            m_assetBrowserModel->HandleAssetCreatedInEditor(assetPath, creatorBusId, initialFilenameChange);
         }
 
         void AssetBrowserComponent::AddFile(const AZ::s64& fileId) 

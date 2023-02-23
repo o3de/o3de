@@ -108,7 +108,7 @@ void ViewportNudge::Nudge(
                 }
 
                 // Update.
-                EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+                UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
             }
 
             // Tell the Properties panel to update
@@ -177,13 +177,14 @@ void ViewportNudge::Nudge(
             {
                 // Get.
                 float rotation;
-                EBUS_EVENT_ID_RESULT(rotation, element->GetId(), UiTransformBus, GetZRotation);
+                UiTransformBus::EventResult(rotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
 
                 // Set.
-                EBUS_EVENT_ID(element->GetId(), UiTransformBus, SetZRotation, (rotation + (rotationDeltaInDegrees * rotationDirection)));
+                UiTransformBus::Event(
+                    element->GetId(), &UiTransformBus::Events::SetZRotation, (rotation + (rotationDeltaInDegrees * rotationDirection)));
 
                 // Update.
-                EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+                UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
             }
 
             // Tell the Properties panel to update

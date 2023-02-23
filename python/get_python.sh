@@ -18,6 +18,23 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 cd $DIR
 
+install_dependencies () {
+    echo installing via pip...
+    $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
+    retVal=$?
+    if [ $retVal -ne 0 ]; then
+        echo "Failed to install the packages listed in $DIR/requirements.txt.  Check the log above!"
+        return $retVal
+    fi
+
+    $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
+    retVal=$?
+    if [ $retVal -ne 0 ]; then
+        echo "Failed to install $DIR/../scripts/o3de into python.  Check the log above!"
+        return $retVal
+    fi
+}
+
 # Overall strategy: Run python with --version to see if its already there
 # otherwise, use cmake and the new package system to download it.
 # To find cmake, search the path for cmake.  If not found, try a fixed known location.
@@ -30,9 +47,8 @@ cd $DIR
 python_exitcode=$?
 if [ $python_exitcode == 0 ]; then
     echo get_python.sh: Python is already downloaded: $(./python.sh --version)
-    $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
-    $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
-    exit 0
+    install_dependencies
+    exit $?
 fi
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
@@ -73,7 +89,5 @@ if [ $retVal -ne 0 ]; then
     exit $retVal
 fi
 
-echo installing via pip...
-$DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
-$DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
+install_dependencies
 exit $?

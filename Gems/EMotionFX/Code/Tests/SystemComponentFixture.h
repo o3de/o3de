@@ -17,7 +17,6 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -42,7 +41,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI(EMotionFXTestModule, "{32567457-5341-4D8D-91A9-E48D8395DE65}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator);
 
         EMotionFXTestModule()
         {
@@ -55,6 +54,7 @@ namespace EMotionFX
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentFixtureApp, AZ::SystemAllocator)
 
         ComponentFixtureApp()
         {
@@ -212,7 +212,6 @@ namespace EMotionFX
     };
 
     using SystemComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -223,7 +222,6 @@ namespace EMotionFX
     // Use this fixture if you want to load asset catalog. Some assets (reference anim graph for example)
     // can only be loaded when asset catalog is loaded.
     using SystemComponentFixtureWithCatalog = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

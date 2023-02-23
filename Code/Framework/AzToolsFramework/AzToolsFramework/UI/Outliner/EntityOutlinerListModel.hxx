@@ -63,7 +63,7 @@ namespace AzToolsFramework
         Q_OBJECT;
 
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerListModel, AZ::SystemAllocator);
 
         //! Columns of data to display about each Entity.
         enum Column
@@ -203,6 +203,7 @@ namespace AzToolsFramework
 
         bool m_autoExpandEnabled = true;
         bool m_layoutResetQueued = false;
+        bool m_suppressNextSelectEntity = false;
 
         AZStd::string m_filterString;
         AZStd::vector<ComponentTypeValue> m_componentFilters;
@@ -316,7 +317,7 @@ namespace AzToolsFramework
         : public QStyledItemDelegate
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerItemDelegate, AZ::SystemAllocator);
 
         EntityOutlinerItemDelegate(QWidget* parent = nullptr);
 

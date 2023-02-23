@@ -46,6 +46,7 @@ namespace EMotionFX
             : public EventHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR_DECL
             const AZStd::vector<EventTypes> GetHandledEventTypes() const
             {
                 return

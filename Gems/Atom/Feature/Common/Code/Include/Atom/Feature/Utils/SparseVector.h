@@ -72,7 +72,7 @@ namespace AZ::Render
             // If there's a free slot, then use that space and update the linked list of free slots.
             slotToReturn = m_nextFreeSlot;
             m_nextFreeSlot = reinterpret_cast<size_t&>(m_data.at(m_nextFreeSlot));
-            m_data.at(slotToReturn) = T();
+            new (&m_data.at(slotToReturn)) T();
         }
         else
         {

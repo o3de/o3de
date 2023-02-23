@@ -136,7 +136,10 @@ namespace AZ
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
             m_features.m_dualSourceBlending = true;
-            m_features.m_customResolvePositions = true;
+            D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options2, sizeof(options2));
+            m_features.m_customSamplePositions =
+                options2.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::All;
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::PipelineStatistics | RHI::QueryTypeFlags::Timestamp;
             D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3;
@@ -156,6 +159,11 @@ namespace AZ
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
             // DX12's tile resource implementation uses undefined swizzle tile layout which only requires tier 1
             m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
+
+            // Check support of wive operation
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
+            m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -684,7 +692,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {            
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }

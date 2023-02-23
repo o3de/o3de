@@ -108,7 +108,7 @@ namespace GraphCanvas
         static const int k_stencilScaleFactor;
     public:
         AZ_TYPE_INFO(GridGraphicsItem, "{D483E19C-8046-472B-801D-A6B1A9F2FF33}");
-        AZ_CLASS_ALLOCATOR(GridGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GridGraphicsItem, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context) = delete;
 
         GridGraphicsItem(GridVisualComponent& gridVisual);

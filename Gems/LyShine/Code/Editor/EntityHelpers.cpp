@@ -57,19 +57,19 @@ namespace EntityHelpers
 
         // Transform pivot position to canvas space
         AZ::Vector2 pivotPos;
-        EBUS_EVENT_ID_RESULT(pivotPos, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+        UiTransformBus::EventResult(pivotPos, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
         // Transform destination position to canvas space
         AZ::Matrix4x4 transformFromViewport;
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
         AZ::Vector2 globalPos2(QtHelpers::QPointFToVector2(globalPos));
         AZ::Vector3 destPos3 = transformFromViewport * AZ::Vector3(globalPos2.GetX(), globalPos2.GetY(), 0.0f);
         AZ::Vector2 destPos(destPos3.GetX(), destPos3.GetY());
 
         // Adjust offsets
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, element->GetId(), UiTransform2dBus, GetOffsets);
-        EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, offsets + (destPos - pivotPos));
+        UiTransform2dBus::EventResult(offsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
+        UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets + (destPos - pivotPos));
     }
 
     AZ::Entity* GetParentElement(const AZ::Entity* element)
@@ -81,7 +81,7 @@ namespace EntityHelpers
             return nullptr;
         }
 
-        EBUS_EVENT_ID_RESULT(parentElement, element->GetId(), UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, element->GetId(), &UiElementBus::Events::GetParent);
 
         return parentElement;
     }
@@ -89,30 +89,30 @@ namespace EntityHelpers
     AZ::Entity* GetParentElement(const AZ::EntityId& elementId)
     {
         AZ::Entity* parentElement = nullptr;
-        EBUS_EVENT_ID_RESULT(parentElement, elementId, UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, elementId, &UiElementBus::Events::GetParent);
         return parentElement;
     }
 
     AZ::Entity* GetEntity(AZ::EntityId id)
     {
         AZ::Entity* element = nullptr;
-        EBUS_EVENT_RESULT(element, AZ::ComponentApplicationBus, FindEntity, id);
+        AZ::ComponentApplicationBus::BroadcastResult(element, &AZ::ComponentApplicationBus::Events::FindEntity, id);
         return element;
     }
 
     void ComputeCanvasSpaceRectNoScaleRotate(AZ::EntityId elementId, UiTransform2dInterface::Offsets offsets, UiTransformInterface::Rect& rect)
     {
         AZ::Entity* parentElement = nullptr;
-        EBUS_EVENT_ID_RESULT(parentElement, elementId, UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, elementId, &UiElementBus::Events::GetParent);
         if (parentElement)
         {
             UiTransformInterface::Rect parentRect;
-            EBUS_EVENT_ID(parentElement->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+            UiTransformBus::Event(parentElement->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
             AZ::Vector2 parentSize = parentRect.GetSize();
 
             UiTransform2dInterface::Anchors anchors;
-            EBUS_EVENT_ID_RESULT(anchors, elementId, UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(anchors, elementId, &UiTransform2dBus::Events::GetAnchors);
 
             float left   = parentRect.left + parentSize.GetX() * anchors.m_left   + offsets.m_left;
             float right  = parentRect.left + parentSize.GetX() * anchors.m_right  + offsets.m_right;
@@ -141,7 +141,7 @@ namespace EntityHelpers
     AZ::Vector2 ComputeCanvasSpacePivotNoScaleRotate(AZ::EntityId elementId, UiTransform2dInterface::Offsets offsets)
     {
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, elementId, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, elementId, &UiTransformBus::Events::GetPivot);
 
         UiTransformInterface::Rect rect;
         ComputeCanvasSpaceRectNoScaleRotate(elementId, offsets, rect);
@@ -160,20 +160,20 @@ namespace EntityHelpers
 
         // attempt to get more info about the entity
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
         if (entity)
         {
             result = entity->GetName();
 
             AZ::Entity* parent = nullptr;
-            EBUS_EVENT_ID_RESULT(parent, entityId, UiElementBus, GetParent);
+            UiElementBus::EventResult(parent, entityId, &UiElementBus::Events::GetParent);
             while (parent)
             {
                 AZStd::string entityName = parent->GetName();
                 AZ::EntityId parentId = parent->GetId();
                 parent = nullptr;   // in case entity is not listening on bus
-                EBUS_EVENT_ID_RESULT(parent, parentId, UiElementBus, GetParent);
+                UiElementBus::EventResult(parent, parentId, &UiElementBus::Events::GetParent);
 
                 // we do not want to include the root element name
                 if (parent)
@@ -293,9 +293,9 @@ namespace EntityHelpers
             // neither is the parent of the other. In this case we know that element1NextAncestor and
             // element2NextAncestor are siblings and children of the common parent
             int index1 = -1;
-            EBUS_EVENT_ID_RESULT(index1, commonParent->GetId(), UiElementBus, GetIndexOfChild, element1NextAncestor);
+            UiElementBus::EventResult(index1, commonParent->GetId(), &UiElementBus::Events::GetIndexOfChild, element1NextAncestor);
             int index2 = -1;
-            EBUS_EVENT_ID_RESULT(index2, commonParent->GetId(), UiElementBus, GetIndexOfChild, element2NextAncestor);
+            UiElementBus::EventResult(index2, commonParent->GetId(), &UiElementBus::Events::GetIndexOfChild, element2NextAncestor);
 
             AZ_Assert(index1 != -1 && index2 != -1, "Immediate ancestors not found in parent.");
 
@@ -308,21 +308,21 @@ namespace EntityHelpers
     {
         // Get the existing offsets and pass them to the version of this function that takes starting offsets
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, entityId, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, entityId, &UiTransform2dBus::Events::GetOffsets);
         MoveByLocalDeltaUsingOffsets(entityId, offsets, deltaInLocalSpace);
     }
 
     void MoveByLocalDeltaUsingOffsets(AZ::EntityId entityId, const UiTransform2dInterface::Offsets& startingOffsets, AZ::Vector2 deltaInLocalSpace)
     {
         // simply add the local space delta to the offsets
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetOffsets, startingOffsets + deltaInLocalSpace);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetOffsets, startingOffsets + deltaInLocalSpace);
     }
 
     AZ::Vector2 MoveByLocalDeltaUsingAnchors(AZ::EntityId entityId, AZ::EntityId parentEntityId, AZ::Vector2 deltaInLocalSpace, bool restrictDirection)
     {
         // Get the existing anchors and pass them to the version of this function that takes starting anchors
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, entityId, UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, entityId, &UiTransform2dBus::Events::GetAnchors);
         return MoveByLocalDeltaUsingAnchors(entityId, parentEntityId, anchors, deltaInLocalSpace, restrictDirection);
     }
 
@@ -332,7 +332,7 @@ namespace EntityHelpers
         UiTransform2dInterface::Anchors anchors = startingAnchors;
 
         AZ::Vector2 parentSize;
-        EBUS_EVENT_ID_RESULT(parentSize, parentEntityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(parentSize, parentEntityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
         // compute the anchorDelta in anchor space (0-1) and add to the anchor values
         AZ::Vector2 anchorDelta(0.0f, 0.0f);
@@ -429,7 +429,7 @@ namespace EntityHelpers
             deltaInLocalSpace.SetY(deltaInLocalSpace.GetY() + adjustment.GetY() * parentSize.GetY());
         }
 
-        EBUS_EVENT_ID(entityId, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(entityId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
         return deltaInLocalSpace;
     }
@@ -438,7 +438,7 @@ namespace EntityHelpers
     {
         AZ::Vector3 deltaInCanvasSpace3(deltaInCanvasSpace.GetX(), deltaInCanvasSpace.GetY(), 0.0f);
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformFromCanvasSpace, transform);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformFromCanvasSpace, transform);
 
         AZ::Vector3 deltaInLocalSpace3 = transform.Multiply3x3(deltaInCanvasSpace3);
         AZ::Vector2 deltaInLocalSpace = AZ::Vector2(deltaInLocalSpace3.GetX(), deltaInLocalSpace3.GetY());
@@ -450,7 +450,7 @@ namespace EntityHelpers
     {
         AZ::Vector3 deltaInLocalSpace3(deltaInLocalSpace.GetX(), deltaInLocalSpace.GetY(), 0.0f);
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformToCanvasSpace, transform);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformToCanvasSpace, transform);
 
         AZ::Vector3 deltaInCanvasSpace3 = transform.Multiply3x3(deltaInLocalSpace3);
         AZ::Vector2 deltaInCanvasSpace = AZ::Vector2(deltaInCanvasSpace3.GetX(), deltaInCanvasSpace3.GetY());
@@ -462,7 +462,7 @@ namespace EntityHelpers
     {
         AZ::Vector3 deltaInViewportSpace3(deltaInViewportSpace.GetX(), deltaInViewportSpace.GetY(), 0.0f);
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, GetViewportToCanvasMatrix, transform);
+        UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::GetViewportToCanvasMatrix, transform);
 
         AZ::Vector3 deltaInCanvasSpace3 = transform.Multiply3x3(deltaInViewportSpace3);
         AZ::Vector2 deltaInLocalSpace = AZ::Vector2(deltaInCanvasSpace3.GetX(), deltaInCanvasSpace3.GetY());

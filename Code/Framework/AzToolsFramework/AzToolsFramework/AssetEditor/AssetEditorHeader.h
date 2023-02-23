@@ -27,12 +27,11 @@ namespace Ui
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorHeader, AZ::SystemAllocator);
        
         explicit AssetEditorHeader(QWidget* parent = nullptr);
 
         void setName(const QString& name);
-        void setLocation(const QString& location);
         void setIcon(const QIcon& icon);
     private:
         QFrame* m_backgroundFrame;
@@ -43,6 +42,5 @@ namespace Ui
         QIcon m_icon;
 
         AzQtComponents::ElidingLabel* m_assetName;
-        AzQtComponents::ElidingLabel* m_assetLocation;
     };
 } // namespace Ui

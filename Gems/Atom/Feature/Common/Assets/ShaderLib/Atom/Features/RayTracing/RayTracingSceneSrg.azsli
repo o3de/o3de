@@ -8,6 +8,14 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingMaterialSrg.azsli and RayTracingFeatureProcessor.h files
+//        that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
+
 ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
 {
     RaytracingAccelerationStructure m_scene;
@@ -183,8 +191,10 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_BUFFER_FLAG_BITANGENT      (1 << 1)
     #define MESH_BUFFER_FLAG_UV             (1 << 2)
 
+#if !USE_BINDLESS_SRG
     // Unbounded array of mesh stream buffers:
     // Note 1: Index, Position, and Normal stream buffers are guaranteed to be valid for each mesh
     // Note 2: Optional stream buffers such as Tangent, Bitangent, and UV are indicated in the MeshInfo.m_bufferFlags field
     ByteAddressBuffer m_meshBuffers[];
+#endif
 }

@@ -28,7 +28,7 @@ namespace AZ
         class Instance final
         {
         public:
-            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Instance, AZ::SystemAllocator);
 
             struct Descriptor
             {

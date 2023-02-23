@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <Editor/ComboBoxEditButtonPair.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
 #include <QObject>
 #endif
 
@@ -24,7 +24,7 @@ namespace NvCloth
         = Handler Documentation                                     =
         =============================================================
 
-        Custom handler for the Cloth Component's Mesh Node property as a ComboBoxEditButtonPair widget.
+        Custom handler for the Cloth Component's Mesh Node property as a PropertyStringComboBoxCtrl widget.
 
         Handler Name: "MeshNodeSelector"
 
@@ -36,12 +36,12 @@ namespace NvCloth
         */
         class MeshNodeHandler
             : public QObject
-            , public AzToolsFramework::PropertyHandler<AZStd::string, ComboBoxEditButtonPair>
+            , public AzToolsFramework::PropertyHandler<AZStd::string, AzToolsFramework::PropertyStringComboBoxCtrl>
         {
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(MeshNodeHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshNodeHandler, AZ::SystemAllocator);
 
             MeshNodeHandler() = default;
             
@@ -54,9 +54,10 @@ namespace NvCloth
             bool ReadValuesIntoGUI(size_t index, widget_t* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
 
         private:
-            void OnEditButtonClicked(widget_t* GUI);
-
+            void OnEditButtonClicked();
             AZ::Data::Asset<AZ::Data::AssetData> GetMeshAsset(const AZ::EntityId entityId) const;
+
+            AZ::EntityId m_entityId;
         };
     } // namespace Editor
 } // namespace NvCloth

@@ -22,7 +22,7 @@ namespace TestAssetBuilder
     {
     public:
         AZ_RTTI(TestAsset, "{3BDE90FA-B163-4FB9-BC67-22AC2ABD8C28}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(TestAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAsset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

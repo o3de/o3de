@@ -6,9 +6,6 @@
  *
  */
 
-#ifndef AZFRAMEWORK_APPLICATIONAPI_H
-#define AZFRAMEWORK_APPLICATIONAPI_H
-
 #pragma once
 
 #include <AzCore/base.h>
@@ -252,4 +249,4 @@ namespace AzFramework
     using LevelSystemLifecycleNotificationBus = AZ::EBus<LevelSystemLifecycleNotifications>;
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_APPLICATIONAPI_H
+DECLARE_EBUS_EXTERN(AzFramework::ApplicationRequests);

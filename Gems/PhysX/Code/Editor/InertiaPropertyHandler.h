@@ -25,7 +25,7 @@ namespace PhysX
         {
             Q_OBJECT //AUTOMOC
         public:
-            AZ_CLASS_ALLOCATOR(InertiaPropertyHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InertiaPropertyHandler, AZ::SystemAllocator);
 
             AZ::u32 GetHandlerName(void) const override;
             QWidget* CreateGUI(QWidget* parent) override;

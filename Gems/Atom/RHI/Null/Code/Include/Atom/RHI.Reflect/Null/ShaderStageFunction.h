@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ShaderStageFunction, "{BA5D7597-6CFF-4521-B438-BEAD638E5FF8}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
             
             static void Reflect(AZ::ReflectContext* context);
             

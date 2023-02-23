@@ -38,6 +38,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3Functor, SystemAllocator)
             AZ_RTTI(Splat3Functor, "{4719BBAD-21A1-4909-88E9-C190208BDD00}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -67,6 +68,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(DummyShaderCollectionFunctor, SystemAllocator)
             AZ_RTTI(DummyShaderCollectionFunctor, "{6ED031DC-DADC-4A47-B858-DDA9748700A6}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -604,22 +606,22 @@ namespace UnitTest
         MaterialAssetCreator materialCreator;
 
         Data::Asset<MaterialAsset> materialAssetV1;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAssetV1));
 
         Data::Asset<MaterialAsset> materialAssetV3;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(3);
         EXPECT_TRUE(materialCreator.End(materialAssetV3));
 
         Data::Asset<MaterialAsset> materialAssetV6;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(6);
         EXPECT_TRUE(materialCreator.End(materialAssetV6));
 
         Data::Asset<MaterialAsset> materialAssetV9;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(9);
         EXPECT_TRUE(materialCreator.End(materialAssetV9));
 
@@ -709,7 +711,7 @@ namespace UnitTest
         // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAsset));
 

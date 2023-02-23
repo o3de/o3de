@@ -22,7 +22,7 @@ namespace AWSCore
     {
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(AwsApiJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiJob, AZ::SystemAllocator);
 
         using IConfig = IAwsApiJobConfig;
         using Config = AwsApiJobConfig;

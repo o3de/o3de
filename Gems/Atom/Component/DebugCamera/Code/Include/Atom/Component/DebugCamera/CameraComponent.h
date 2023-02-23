@@ -37,7 +37,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(CameraComponentConfig, "{F4F7512E-D744-4DD9-9AA8-2F5AB15480F6}", AZ::ComponentConfig);
-            AZ_CLASS_ALLOCATOR(CameraComponentConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CameraComponentConfig, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

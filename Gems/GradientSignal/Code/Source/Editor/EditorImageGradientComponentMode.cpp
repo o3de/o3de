@@ -8,6 +8,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -28,11 +29,13 @@
 
 namespace GradientSignal
 {
+    AZ_CLASS_ALLOCATOR_IMPL(EditorImageGradientComponentMode, AZ::SystemAllocator)
+
     //! Class that tracks the data for undoing/redoing a paint stroke.
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator);
         AZ_RTTI(PaintBrushUndoBuffer, "{E37936AC-22E1-403A-A36B-55390832EDE4}");
 
         PaintBrushUndoBuffer(AZ::EntityId imageEntityId)
@@ -139,6 +142,26 @@ namespace GradientSignal
         m_brushManipulator.reset();
 
         ImageGradientModificationNotificationBus::Handler::BusDisconnect();
+    }
+
+    void EditorImageGradientComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorImageGradientComponentMode>(context);
+    }
+
+    void EditorImageGradientComponentMode::RegisterActions()
+    {
+        // Actions are registered in the PaintBrushMainpulator class
+    }
+
+    void EditorImageGradientComponentMode::BindActionsToModes()
+    {
+        AzToolsFramework::PaintBrushManipulator::BindActionsToMode(azrtti_typeid<EditorImageGradientComponentMode>());
+    }
+
+    void EditorImageGradientComponentMode::BindActionsToMenus()
+    {
+        // Actions are added to menus in the PaintBrushMainpulator class
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()

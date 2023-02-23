@@ -333,8 +333,6 @@ namespace UnitTest
             auto handleEntry = m_allocationMap.find(reinterpret_cast<void*>(handle));
             if (handleEntry != m_allocationMap.end())
             {
-                m_allocationMap.erase(handleEntry);
-
                 const AZ::TypeId& typeId = handleEntry->second;
                 if (typeId == azrtti_typeid<AZ::CustomType<int>>())
                 {
@@ -352,6 +350,7 @@ namespace UnitTest
                 {
                     azfree(reinterpret_cast<void*>(handle));
                 }
+                m_allocationMap.erase(handleEntry);
             }
         }
     };
