@@ -1807,6 +1807,10 @@ namespace AssetProcessor
         // If so, ignore the event.
         if (ShouldIgnorePendingMove(normalizedFilePath.toUtf8().constData(), triggeredByMetadata, source.m_isDelete))
         {
+            AZ_TracePrintf(
+                AssetProcessor::DebugChannel,
+                "Ignoring processing of " AZ_STRING_FORMAT " - file is marked as pending move\n",
+                AZ_STRING_ARG(normalizedFilePath));
             return;
         }
 
