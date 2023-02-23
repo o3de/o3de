@@ -137,11 +137,15 @@ namespace VideoPlaybackFramework
     {
         VideoPlaybackFrameworkRequestBus::Handler::BusConnect();
 
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnableCatalogForAsset, azrtti_typeid<VideoPlaybackAsset>());
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mp4");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mkv");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "webm");
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, AddExtension, "mov");
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [](AZ::Data::AssetCatalogRequests* handler)
+            {
+                handler->EnableCatalogForAsset(azrtti_typeid<VideoPlaybackAsset>());
+                handler->AddExtension("mp4");
+                handler->AddExtension("mkv");
+                handler->AddExtension("webm");
+                handler->AddExtension("mov");
+            });
     }
 
     void VideoPlaybackFrameworkSystemComponent::Deactivate()

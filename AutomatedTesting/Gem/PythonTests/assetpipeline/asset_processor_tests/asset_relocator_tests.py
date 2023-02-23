@@ -260,13 +260,13 @@ class TestsAssetRelocator_WindowsAndMac(object):
         # Look for expected message inside the log and verify that no move or delete occurs in the log
         utils.validate_log_output(ap_batch_output, [expected_message], [unexpected_message])
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
+    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="Python based file locking does not function on Linux")
     @pytest.mark.test_case_id("C21968355")
     @pytest.mark.test_case_id("C21968356")
     @pytest.mark.test_case_id("C21968359")
     @pytest.mark.test_case_id("C21968360")
     @pytest.mark.assetpipeline
-    @pytest.mark.skipif(ly_test_tools.LINUX, reason="Python based file locking does not function on Linux")
     @pytest.mark.parametrize(
         "test_id, read_only, confirm, expect_success, expected_queries, unexpected_queries",
         # Comprehend a list of tuples for pytest parametrize while maintaining readability of arguments
