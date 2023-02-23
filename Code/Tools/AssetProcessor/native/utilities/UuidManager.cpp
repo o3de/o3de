@@ -57,6 +57,32 @@ namespace AssetProcessor
         return AZ::Failure(entry.GetError());
     }
 
+    AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> UuidManager::GetUuidDetails(const SourceAssetReference& sourceAsset)
+    {
+        return GetOrCreateUuidEntry(sourceAsset);
+    }
+
+    AZStd::vector<AZ::IO::Path> UuidManager::FindFilesByUuid(AZ::Uuid uuid)
+    {
+        AZStd::scoped_lock scopeLock(m_uuidMutex);
+        auto itr = m_existingUuids.find(uuid);
+
+        if (itr != m_existingUuids.end())
+        {
+            return { itr->second };
+        }
+
+        auto range = m_existingLegacyUuids.equal_range(uuid);
+        AZStd::vector<AZ::IO::Path> foundFiles;
+
+        for (auto legacyItr = range.first; legacyItr != range.second; ++legacyItr)
+        {
+            foundFiles.emplace_back(legacyItr->second);
+        }
+
+        return foundFiles;
+    }
+
     void UuidManager::FileChanged(AZ::IO::PathView file)
     {
         InvalidateCacheEntry(file);
@@ -85,6 +111,20 @@ namespace AssetProcessor
         if (itr != m_uuids.end())
         {
             m_existingUuids.erase(itr->second.m_uuid);
+
+            for (auto legacyUuid : itr->second.m_legacyUuids)
+            {
+                auto range = m_existingLegacyUuids.equal_range(legacyUuid);
+
+                for (auto legacyItr = range.first; legacyItr != range.second; ++legacyItr)
+                {
+                    if (legacyItr->second == file)
+                    {
+                        m_existingLegacyUuids.erase(legacyItr);
+                        break;
+                    }
+                }
+            }
             m_uuids.erase(itr);
         }
     }
@@ -99,7 +139,7 @@ namespace AssetProcessor
         m_enabledTypes = AZStd::move(types);
     }
 
-    AZStd::string UuidManager::GetCanonicalPath(AZ::IO::PathView file)
+    AZ::IO::Path UuidManager::GetCanonicalPath(AZ::IO::PathView file)
     {
         return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
     }
@@ -108,7 +148,7 @@ namespace AssetProcessor
     {
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
-        auto normalizedPath = GetCanonicalPath(sourceAsset.AbsolutePath());
+        AZ::IO::Path normalizedPath = GetCanonicalPath(sourceAsset.AbsolutePath());
         auto itr = m_uuids.find(normalizedPath);
 
         // Check if we already have the UUID loaded into memory
@@ -258,12 +298,11 @@ namespace AssetProcessor
         newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
         newUuid.m_legacyUuids = CreateLegacyUuids(sourceAsset.RelativePath().c_str());
         newUuid.m_originalPath = sourceAsset.RelativePath().c_str();
-        newUuid.m_millisecondsSinceUnixEpoch = aznumeric_cast<AZ::u64>(QDateTime::currentMSecsSinceEpoch());
+        newUuid.m_millisecondsSinceUnixEpoch = enabledType ? aznumeric_cast<AZ::u64>(QDateTime::currentMSecsSinceEpoch()) : 0;
 
         return newUuid;
     }
-
-    AZ::Outcome<void, AZStd::string> UuidManager::CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType)
+    AZ::Outcome<void, AZStd::string> UuidManager::CacheUuidEntry(AZ::IO::PathView normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType)
     {
         if (enabledType)
         {
@@ -273,11 +312,17 @@ namespace AssetProcessor
             {
                 // Insertion failure means this UUID is duplicated
                 return AZ::Failure(AZStd::string::format(
-                    "Source " AZ_STRING_FORMAT " has duplicate UUID " AZ_STRING_FORMAT " which is already assigned to another asset " AZ_STRING_FORMAT ". "
+                    "Source " AZ_STRING_FORMAT " has duplicate UUID " AZ_STRING_FORMAT
+                    " which is already assigned to another asset " AZ_STRING_FORMAT ". "
                     "Every asset must have a unique ID.  Please change the UUID for one of these assets to resolve the conflict.",
-                    AZ_STRING_ARG(normalizedPath),
+                    AZ_STRING_ARG(normalizedPath.Native()),
                     AZ_STRING_ARG(entry.m_uuid.ToFixedString()),
-                    AZ_STRING_ARG(result.first->second)));
+                    AZ_STRING_ARG(result.first->second.Native())));
+            }
+
+            for (const auto& legacyUuid : entry.m_legacyUuids)
+            {
+                m_existingLegacyUuids.emplace(legacyUuid, normalizedPath);
             }
         }
 

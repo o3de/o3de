@@ -34,6 +34,10 @@ namespace AssetProcessor
         virtual AZ::Outcome<AZ::Uuid, AZStd::string> GetUuid(const SourceAssetReference& sourceAsset) = 0;
         //! Gets the set of legacy UUIDs for the given source asset.  These are all the UUIDs that may have been used to reference this asset based on previous generation methods.
         virtual AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacyUuids(const SourceAssetReference& sourceAsset) = 0;
+        //! Returns the full set of UUID entry details for the given asset.
+        virtual AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetUuidDetails(const SourceAssetReference& sourceAsset) = 0;
+        //! Returns the file(s) matching the provided UUID.  If the UUID provided is a legacy UUID there may be multiple matches.
+        virtual AZStd::vector<AZ::IO::Path> FindFilesByUuid(AZ::Uuid uuid) = 0;
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that changed.
@@ -70,28 +74,32 @@ namespace AssetProcessor
 
         AZ::Outcome<AZ::Uuid, AZStd::string> GetUuid(const SourceAssetReference& sourceAsset) override;
         AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
+        AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetUuidDetails(const SourceAssetReference& sourceAsset) override;
+        AZStd::vector<AZ::IO::Path> FindFilesByUuid(AZ::Uuid uuid) override;
         void FileChanged(AZ::IO::PathView file) override;
         void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
         bool IsGenerationEnabledForFile(AZ::IO::PathView file) override;
 
     private:
-        AZStd::string GetCanonicalPath(AZ::IO::PathView file);
+        AZ::IO::Path GetCanonicalPath(AZ::IO::PathView file);
         AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
         AzToolsFramework::MetaUuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
-        AZ::Outcome<void, AZStd::string> CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType);
+        AZ::Outcome<void, AZStd::string> CacheUuidEntry(AZ::IO::PathView normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
 
         AZStd::recursive_mutex m_uuidMutex;
         // Cache of uuids.  AbsPath -> UUIDEntry
-        AZStd::unordered_map<AZStd::string, AzToolsFramework::MetaUuidEntry> m_uuids;
+        AZStd::unordered_map<AZ::IO::Path, AzToolsFramework::MetaUuidEntry> m_uuids;
         // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
-        // List of already existing UUIDs
-        AZStd::unordered_map<AZ::Uuid, AZStd::string> m_existingUuids;
+        // Map of already existing UUIDs -> File path
+        AZStd::unordered_map<AZ::Uuid, AZ::IO::Path> m_existingUuids;
+        // Map of legacy UUID -> File path.  There may be multiple files with the same legacy UUID
+        AZStd::unordered_multimap<AZ::Uuid, AZ::IO::Path> m_existingLegacyUuids;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
 } // namespace AssetProcessor
