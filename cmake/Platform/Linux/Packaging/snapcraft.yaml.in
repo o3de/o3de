@@ -41,11 +41,11 @@ parts:
      - libfontconfig1
      - libunwind-dev
      - libssl3
+     - libffi7
      - libc6
      - libstdc++6
     stage-snaps:
      - cmake
-     - gnome-42-2204
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
