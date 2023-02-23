@@ -45,7 +45,7 @@ CSettingsManagerDialog::CSettingsManagerDialog(QWidget* pParent)
 
     connect(ui->m_layoutListBox, &QListWidget::itemSelectionChanged, this, &CSettingsManagerDialog::OnSelectionChanged);
 
-    // Diable import button until a layout is selected.
+    // Disable import button until a layout is selected.
     ui->m_importBtn->setEnabled(false);
 }
 
