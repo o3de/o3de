@@ -85,7 +85,7 @@ namespace Multiplayer
     {
         if (m_spawnPoints.empty())
         {
-            AZLOG_WARN("SimplePlayerSpawnerComponent is missing spawn points. Returning spawn point at the world's origin.")
+            AZLOG_WARN("SimplePlayerSpawnerComponent is missing spawn points. Returning spawn point at the world's origin.");
             return AZ::Transform::Identity();
         }
 
