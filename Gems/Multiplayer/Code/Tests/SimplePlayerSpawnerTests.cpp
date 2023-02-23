@@ -13,7 +13,7 @@
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 
-#pragma optimize("", off)
+
 namespace Multiplayer
 {
     using namespace testing;
@@ -127,4 +127,3 @@ namespace Multiplayer
         EXPECT_FALSE(spawnPointIndexOutcome.IsSuccess());
     }
 } // namespace Multiplayer
-#pragma optimize("", on)
