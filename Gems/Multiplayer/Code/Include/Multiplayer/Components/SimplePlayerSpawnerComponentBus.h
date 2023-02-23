@@ -33,12 +33,22 @@ namespace Multiplayer
         //! @return AZ::Transform The location of the next spawn point
         virtual AZ::Transform GetNextSpawnPoint() const = 0;
 
+
+        //! Returns a mutable list of all the spawn points.
+        //! Only use this list on multiplayer hosts; clients aren't in charge of spawn players so this list might not actually represent where the players spawn.
+        //! @return AZStd::vector<AZ::EntityId> List of spawn points.
         virtual AZStd::vector<AZ::EntityId>& GetSpawnPoints() = 0;
 
+        //! Returns the number of spawn points.
+        //! @return Number of spawn points.
         virtual uint32_t GetSpawnPointCount() const = 0;
 
+        //! Returns the index of the player spawn point.
+        //! @return AZ::Outcome<uint32_t, AZStd::string> If success, the value present a valid index that can be used to lookup into the spawn points array.
         virtual AZ::Outcome<uint32_t, AZStd::string> GetNextSpawnPointIndex() const = 0;
 
+        //! Overwrites the next player's spawn index. The spawn index provided must be a valid in-bounds index into the array of available spawn points.
+        //! @return AZ::Outcome<void, AZStd::string> Success means a valid index was provided; otherwise the index is out-of-bounds.
         virtual AZ::Outcome<void, AZStd::string> SetNextSpawnPointIndex(uint32_t index) = 0;
     };
     using SimplePlayerSpawnerRequestBus = AZ::EBus<SimplePlayerSpawnerRequests>;
