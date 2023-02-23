@@ -139,15 +139,15 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetUnregisteredToolBar)
     {
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_TRUE(toolBar == nullptr);
     }
 
-    TEST_F(ActionManagerFixture, GetToolBar)
+    TEST_F(ActionManagerFixture, GenerateToolBar)
     {
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_TRUE(toolBar != nullptr);
     }
 
@@ -155,7 +155,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar.
@@ -174,7 +174,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar.
@@ -203,7 +203,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
         
         // Register a new action and add it to the ToolBar.
@@ -232,7 +232,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Add a separator to the ToolBar.
@@ -282,7 +282,7 @@ namespace UnitTest
         m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Verify the separator is now in the ToolBar.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         const auto& actions = toolBar->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -310,7 +310,7 @@ namespace UnitTest
         m_toolBarManagerInterface->AddSeparatorToToolBar("o3de.toolbar.test", 10);
 
         // Verify the actions are now in the ToolBar in the expected order.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
         QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
@@ -462,7 +462,7 @@ namespace UnitTest
     {
         // Register toolbar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar. Have ToolBarVisibility set to HideWhenDisabled.
@@ -504,7 +504,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the menu. ToolBarVisibility is set to OnlyInActiveMode by default.
@@ -543,7 +543,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the default mode. Set ToolBarVisibility to AlwaysShow.

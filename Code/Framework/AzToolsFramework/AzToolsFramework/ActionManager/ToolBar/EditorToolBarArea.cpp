@@ -33,7 +33,7 @@ namespace AzToolsFramework
         return m_toolBarToSortKeyMap.contains(toolBarIdentifier);
     }
 
-    AZStd::optional<int> EditorToolBarArea::GetToolBarSortKey(const AZStd::string& toolBarIdentifier) const
+    AZStd::optional<int> EditorToolBarArea::GenerateToolBarSortKey(const AZStd::string& toolBarIdentifier) const
     {
         auto toolBarIterator = m_toolBarToSortKeyMap.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBarToSortKeyMap.end())
@@ -62,7 +62,7 @@ namespace AzToolsFramework
         {
             for (const auto& toolBarIdentifier : vectorIterator.second)
             {
-                if (QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(toolBarIdentifier))
+                if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(toolBarIdentifier))
                 {
                     m_mainWindow->addToolBar(m_toolBarArea, toolBar);
                     AzQtComponents::StyleManager::repolishStyleSheet(toolBar);

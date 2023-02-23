@@ -115,7 +115,7 @@ namespace AzToolsFramework
         return widgetIterator->second;
     }
 
-    QToolBar* EditorToolBar::GetToolBar()
+    QToolBar* EditorToolBar::GenerateToolBar()
     {
         QToolBar* toolBar = new QToolBar(m_name.c_str(), s_defaultParentWidget);
         toolBar->setMovable(false);

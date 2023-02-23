@@ -63,7 +63,7 @@ namespace AzToolsFramework
         AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
 
         // Returns a copy of the ToolBar.
-        QToolBar* GetToolBar();
+        QToolBar* GenerateToolBar();
 
         // Clears the toolBars and re-creates them from the EditorToolBar information.
         void RefreshToolBars();
