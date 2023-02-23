@@ -403,6 +403,10 @@ namespace UnitTests
 
         QTemporaryDir m_tempDir{ QDir::tempPath() + QLatin1String("/AssetProcessorUnitTest-XXXXXX") };
 
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
+        AzToolsFramework::MetadataManager m_metadataManager;
+        AssetProcessor::UuidManager m_uuidManager;
+
         // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
         // allocator, reducing the chance of missing or forgetting to destroy one in the future.
         AZStd::unique_ptr<StaticData> m_data;
