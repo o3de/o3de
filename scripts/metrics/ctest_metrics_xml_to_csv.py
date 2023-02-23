@@ -12,6 +12,7 @@ import csv
 import argparse
 import xml.etree.ElementTree as xmlElementTree
 import datetime
+import uuid
 
 from common import logging
 
@@ -44,16 +45,16 @@ def main():
     # Construct the full path to the xml file
     xml_file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
 
-    # Create csv file
-    full_path = os.path.join(args.output_directory, args.branch)
-    week = datetime.datetime.now().isocalendar().week
-    full_path = os.path.join(full_path, f"Week{week:02d}")
-    full_path = os.path.join(full_path, args.csv_file)
+    # Define directory format as branch/year/month/day/filename
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    full_path = os.path.join(args.output_directory, args.branch, f"{now.year:04d}", f"{now.month:02d}", f"{now.day:02d}"
+                             , f"{str(uuid.uuid4())[:8]}.{args.csv_file}")
+
     if os.path.exists(full_path):
         logger.warning(f"The file {full_path} already exists. It will be overridden.")
-    if not os.path.exists(os.path.split(full_path)[0]):
+    if not os.path.exists(os.path.dirname(full_path)):
         # Create directory if it doesn't exist
-        os.makedirs(os.path.split(full_path)[0])
+        os.makedirs(os.path.dirname(full_path))
 
     with open(full_path, 'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CTEST_FIELDS_HEADER, restval='N/A')
@@ -77,7 +78,7 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD_HH_mm)."
+        help=f"The directory and file name for the csv to be saved."
     )
     parser.add_argument(
         "-o", "--output-directory", action="store", default=os.getcwd(),

@@ -12,12 +12,11 @@ import csv
 import argparse
 import xml.etree.ElementTree as xmlElementTree
 import datetime
+import uuid
 
 import ly_test_tools.cli.codeowners_hint as codeowners_hint
 from common import logging, exception
 
-
-TESTING_DIR = 'Testing'
 
 # Setup logging.
 logger = logging.get_logger("test_metrics")
@@ -31,7 +30,6 @@ PYTEST_FIELDS_HEADER = [
     'sig_owner'
 ]
 SIG_OWNER_CACHE = {}
-
 
 def _get_default_csv_filename():
     """
@@ -56,11 +54,10 @@ def main():
     if not os.path.exists(args.xml_folder):
         raise exception.MetricsExn(f"Cannot find directory: {args.xml_folder}")
 
-    # Create csv file
-    full_path = os.path.join(args.output_directory, args.branch)
-    week = datetime.datetime.now().isocalendar().week
-    full_path = os.path.join(full_path, f"Week{week:02d}")
-    full_path = os.path.join(full_path, args.csv_file)
+    # Define directory format as branch/year/month/day/filename
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    full_path = os.path.join(args.output_directory, args.branch, f"{now.year:04d}", f"{now.month:02d}", f"{now.day:02d}"
+                             , f"{str(uuid.uuid4())[:8]}.{args.csv_file}")
     if os.path.exists(full_path):
         logger.warning(f"The file {full_path} already exists. It will be overridden.")
     if not os.path.exists(os.path.dirname(full_path)):
