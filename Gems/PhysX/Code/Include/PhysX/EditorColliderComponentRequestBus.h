@@ -19,7 +19,6 @@ namespace PhysX
         : public AZ::EntityComponentBus
     {
     public:
-
         /// Sets the offset of the collider relative to the entity position.
         /// @param offset The offset of the collider
         virtual void SetColliderOffset(const AZ::Vector3& offset) = 0;
@@ -187,7 +186,6 @@ namespace PhysX
         : public AZ::EntityComponentBus
     {
     public:
-
         //! Sets the scale of the asset collider.
         //! @param The scale of the asset collider.
         virtual void SetAssetScale(const AZ::Vector3&) = 0;
@@ -201,13 +199,13 @@ namespace PhysX
 
     /// O3DE_DEPRECATION_NOTICE(GHI-14717)
     /// <EditorColliderValidationRequests>
-    /// This is a Bus in order to communicate the status of the meshes of the collider and avoid dependencies with the rigidbody
+    /// Bus used to validate that non-convex meshes are not used with simulation types which do not support them.
     /// </EditorColliderValidationRequests>
     class AZ_DEPRECATED(EditorColliderValidationRequests, "Functionality moved to EditorMeshColliderValidationRequests")
         : public AZ::ComponentBus
     {
     public:
-        /// Checks if the the mesh in the collider is correct with the current state of the Rigidbody!
+        /// Checks if the the mesh in the collider is correct with the current state of the Rigidbody.
         virtual void ValidateRigidBodyMeshGeometryType() = 0;
     };
 
@@ -215,11 +213,11 @@ namespace PhysX
     using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
     AZ_POP_DISABLE_WARNING
     
-    //! This is a Bus in order to communicate the status of the meshes of the collider and avoid dependencies with the rigidbody
+    //! Bus used to validate that non-convex meshes are not used with simulation types which do not support them.
     class EditorMeshColliderValidationRequests : public AZ::ComponentBus
     {
     public:
-        //! Checks if the the mesh in the collider is correct with the current state of the Rigidbody!
+        //! Checks if the the mesh in the collider is correct with the current state of the Rigidbody.
         virtual void ValidateRigidBodyMeshGeometryType() = 0;
     };
 

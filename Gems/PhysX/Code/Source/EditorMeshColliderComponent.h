@@ -69,7 +69,6 @@ namespace PhysX
     class EditorMeshColliderComponentDescriptor;
 
     //! Editor PhysX Mesh Collider Component.
-    //!
     class EditorMeshColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -106,10 +105,9 @@ namespace PhysX
         EditorMeshColliderComponent(
             const Physics::ColliderConfiguration& colliderConfiguration, const Physics::PhysicsAssetShapeConfiguration& assetShapeConfig);
 
-        // these functions are made virtual because we call them from other modules
-        virtual const EditorProxyAssetShapeConfig& GetShapeConfiguration() const;
-        virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
-        virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        const EditorProxyAssetShapeConfig& GetShapeConfiguration() const;
+        const Physics::ColliderConfiguration& GetColliderConfiguration() const;
+        Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
         Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
 
         // BoundsRequestBus overrides ...
@@ -133,7 +131,7 @@ namespace PhysX
 
         void UpdateShapeConfiguration();
 
-        //! AzToolsFramework::EntitySelectionEvents overrides ...
+        // AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;
 
@@ -221,7 +219,7 @@ namespace PhysX
 
         void ValidateAssetMaterials();
 
-        EditorProxyAssetShapeConfig m_shapeConfiguration;
+        EditorProxyAssetShapeConfig m_proxyShapeConfiguration;
         Physics::ColliderConfiguration m_configuration;
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;

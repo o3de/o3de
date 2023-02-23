@@ -88,7 +88,7 @@ namespace PhysX
         // Initial value for m_shapeType needs to remain PhysicsAsset
         // to support command to convert EditorColliderComponent to
         // EditorMeshColliderComponent. This is because the lack of 'ShapeType'
-        // property in prefabs still need to mean it's using PhysicsAsset type.
+        // property in prefabs still needs to mean it's using PhysicsAsset type.
         // Initial value to be changed to Box with GHI-14718.
         Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
         Physics::SphereShapeConfiguration m_sphere;
@@ -120,7 +120,6 @@ namespace PhysX
     };
 
     //! Editor PhysX Primitive Collider Component.
-    //!
     class EditorColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -148,10 +147,9 @@ namespace PhysX
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration);
 
-        // these functions are made virtual because we call them from other modules
-        virtual const EditorProxyShapeConfig& GetShapeConfiguration() const;
-        virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
-        virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        const EditorProxyShapeConfig& GetShapeConfiguration() const;
+        const Physics::ColliderConfiguration& GetColliderConfiguration() const;
+        Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
         Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
 
         // BoundsRequestBus overrides ...
@@ -176,7 +174,7 @@ namespace PhysX
 
         void UpdateShapeConfiguration();
 
-        //! AzToolsFramework::EntitySelectionEvents overrides ...
+        // AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;
 
@@ -254,7 +252,7 @@ namespace PhysX
 
         void BuildDebugDrawMesh() const;
 
-        EditorProxyShapeConfig m_shapeConfiguration;
+        EditorProxyShapeConfig m_proxyShapeConfiguration;
         Physics::ColliderConfiguration m_configuration;
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;

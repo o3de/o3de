@@ -126,7 +126,7 @@ namespace PhysX
             serializeContext->Class<EditorMeshColliderComponent, EditorComponentBase>()
                 ->Version(1 + (1<<PX_PHYSICS_VERSION_MAJOR)) // Use PhysX version to trigger prefabs recompilation when switching between PhysX 4 and 5.
                 ->Field("ColliderConfiguration", &EditorMeshColliderComponent::m_configuration)
-                ->Field("PhysicsAssetShapeConfiguration", &EditorMeshColliderComponent::m_shapeConfiguration)
+                ->Field("PhysicsAssetShapeConfiguration", &EditorMeshColliderComponent::m_proxyShapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorMeshColliderComponent::m_colliderDebugDraw)
                 ->Field("ComponentMode", &EditorMeshColliderComponent::m_componentModeDelegate)
                 ->Field("HasNonUniformScale", &EditorMeshColliderComponent::m_hasNonUniformScale)
@@ -149,10 +149,9 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshColliderComponent::OnConfigurationChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &EditorMeshColliderComponent::m_shapeConfiguration,
+                        &EditorMeshColliderComponent::m_proxyShapeConfiguration,
                         "Physics Asset",
                         "Configuration of physics asset shape.")
-                    //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshColliderComponent::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::RemoveNotify, &EditorMeshColliderComponent::ValidateRigidBodyMeshGeometryType)
                     ->DataElement(
@@ -180,7 +179,7 @@ namespace PhysX
         const Physics::ColliderConfiguration& colliderConfiguration,
         const EditorProxyAssetShapeConfig& proxyAssetShapeConfig)
         : m_configuration(colliderConfiguration)
-        , m_shapeConfiguration(proxyAssetShapeConfig)
+        , m_proxyShapeConfiguration(proxyAssetShapeConfig)
     {
     }
 
@@ -188,13 +187,13 @@ namespace PhysX
         const Physics::ColliderConfiguration& colliderConfiguration,
         const Physics::PhysicsAssetShapeConfiguration& assetShapeConfig)
         : m_configuration(colliderConfiguration)
-        , m_shapeConfiguration(assetShapeConfig)
+        , m_proxyShapeConfiguration(assetShapeConfig)
     {
     }
 
     const EditorProxyAssetShapeConfig& EditorMeshColliderComponent::GetShapeConfiguration() const
     {
-        return m_shapeConfiguration;
+        return m_proxyShapeConfiguration;
     }
 
     const Physics::ColliderConfiguration& EditorMeshColliderComponent::GetColliderConfiguration() const
@@ -233,41 +232,44 @@ namespace PhysX
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
+        const auto entityId = GetEntityId();
+        const auto componentId = GetId();
+
         AzToolsFramework::Components::EditorComponentBase::Activate();
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
-        PhysX::MeshColliderComponentRequestsBus::Handler::BusConnect(GetEntityId());
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(
-            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
-        AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
-        EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        EditorMeshColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        EditorMeshColliderValidationRequestBus::Handler::BusConnect(GetEntityId());
-        AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
+        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(entityId);
+        PhysX::MeshColliderComponentRequestsBus::Handler::BusConnect(entityId);
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
+        ColliderShapeRequestBus::Handler::BusConnect(entityId);
+        AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(entityId);
+        EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
+        EditorMeshColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(entityId, componentId));
+        EditorMeshColliderValidationRequestBus::Handler::BusConnect(entityId);
+        AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
             [this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale); });
-        AZ::NonUniformScaleRequestBus::Event(GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+        AZ::NonUniformScaleRequestBus::Event(
+            entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
-        m_hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-        m_shapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
+        m_hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entityId) != nullptr);
+        m_proxyShapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
 
-        AZ::TransformBus::EventResult(m_cachedWorldTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
+        AZ::TransformBus::EventResult(m_cachedWorldTransform, entityId, &AZ::TransformInterface::GetWorldTM);
         m_cachedNonUniformScale = AZ::Vector3::CreateOne();
         if (m_hasNonUniformScale)
         {
-            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
         }
 
         // Debug drawing
-        m_colliderDebugDraw.Connect(GetEntityId());
+        m_colliderDebugDraw.Connect(entityId);
         m_colliderDebugDraw.SetDisplayCallback(this);
 
         // ComponentMode
         m_componentModeDelegate.ConnectWithSingleComponentMode<
             EditorMeshColliderComponent, ColliderComponentMode>(
-                AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
+            AZ::EntityComponentIdPair(entityId, componentId), nullptr);
 
         if (ShouldUpdateCollisionMeshFromRender())
         {
@@ -342,14 +344,14 @@ namespace PhysX
     void EditorMeshColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto sharedColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(m_configuration);
-        m_shapeConfiguration.m_configuration.m_subdivisionLevel = m_shapeConfiguration.m_subdivisionLevel;
+        m_proxyShapeConfiguration.m_configuration.m_subdivisionLevel = m_proxyShapeConfiguration.m_subdivisionLevel;
 
         auto* meshColliderComponent = gameEntity->CreateComponent<MeshColliderComponent>();
         meshColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
             sharedColliderConfig,
-            AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_shapeConfiguration.m_configuration)) });
+            AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_proxyShapeConfiguration.m_configuration)) });
 
-        AZ_Warning("PhysX", m_shapeConfiguration.m_pxAsset.GetId().IsValid(),
+        AZ_Warning("PhysX", m_proxyShapeConfiguration.m_pxAsset.GetId().IsValid(),
             "EditorMeshColliderComponent::BuildGameEntity. No asset assigned to Collider Component. Entity: %s",
             GetEntity()->GetName().c_str());
     }
@@ -362,12 +364,12 @@ namespace PhysX
 
     void EditorMeshColliderComponent::UpdateMeshAsset()
     {
-        if (m_shapeConfiguration.m_pxAsset.GetId().IsValid())
+        if (m_proxyShapeConfiguration.m_pxAsset.GetId().IsValid())
         {
             AZ::Data::AssetBus::Handler::BusDisconnect(); // Disconnect in case there was a previous asset being used.
-            AZ::Data::AssetBus::Handler::BusConnect(m_shapeConfiguration.m_pxAsset.GetId());
-            m_shapeConfiguration.m_pxAsset.QueueLoad();
-            m_shapeConfiguration.m_configuration.m_asset = m_shapeConfiguration.m_pxAsset;
+            AZ::Data::AssetBus::Handler::BusConnect(m_proxyShapeConfiguration.m_pxAsset.GetId());
+            m_proxyShapeConfiguration.m_pxAsset.QueueLoad();
+            m_proxyShapeConfiguration.m_configuration.m_asset = m_proxyShapeConfiguration.m_pxAsset;
             m_colliderDebugDraw.ClearCachedGeometry();
         }
 
@@ -391,7 +393,7 @@ namespace PhysX
             return;
         }
 
-        if (m_shapeConfiguration.m_pxAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
+        if (m_proxyShapeConfiguration.m_pxAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
         {
             // Mesh asset has not been loaded, wait for OnAssetReady to be invoked.
             // We specifically check Ready state here rather than ReadyPreNotify to ensure OnAssetReady has been invoked
@@ -411,8 +413,8 @@ namespace PhysX
         configuration.m_debugName = GetEntity()->GetName();
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-        Utils::CreateShapesFromAsset(m_shapeConfiguration.m_configuration,
-            m_configuration, m_hasNonUniformScale, m_shapeConfiguration.m_subdivisionLevel, shapes);
+        Utils::CreateShapesFromAsset(m_proxyShapeConfiguration.m_configuration,
+            m_configuration, m_hasNonUniformScale, m_proxyShapeConfiguration.m_subdivisionLevel, shapes);
         configuration.m_colliderAndShapeData = shapes;
 
         if (m_sceneInterface)
@@ -433,14 +435,14 @@ namespace PhysX
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorMeshColliderComponent::GetMeshAsset() const
     {
-        return m_shapeConfiguration.m_pxAsset;
+        return m_proxyShapeConfiguration.m_pxAsset;
     }
 
     void EditorMeshColliderComponent::SetMeshAsset(const AZ::Data::AssetId& id)
     {
         if (id.IsValid())
         {
-            m_shapeConfiguration.m_pxAsset.Create(id);
+            m_proxyShapeConfiguration.m_pxAsset.Create(id);
             UpdateMeshAsset();
             m_colliderDebugDraw.ClearCachedGeometry();
         }
@@ -448,9 +450,9 @@ namespace PhysX
 
     void EditorMeshColliderComponent::UpdateMaterialSlotsFromMeshAsset()
     {
-        Utils::SetMaterialsFromPhysicsAssetShape(m_shapeConfiguration.m_configuration, m_configuration.m_materialSlots);
+        Utils::SetMaterialsFromPhysicsAssetShape(m_proxyShapeConfiguration.m_configuration, m_configuration.m_materialSlots);
 
-        m_configuration.m_materialSlots.SetSlotsReadOnly(m_shapeConfiguration.m_configuration.m_useMaterialsFromAsset);
+        m_configuration.m_materialSlots.SetSlotsReadOnly(m_proxyShapeConfiguration.m_configuration.m_useMaterialsFromAsset);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
@@ -471,7 +473,7 @@ namespace PhysX
 
     void EditorMeshColliderComponent::ValidateAssetMaterials()
     {
-        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_shapeConfiguration.m_pxAsset;
+        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_proxyShapeConfiguration.m_pxAsset;
 
         if (!physicsAsset.IsReady())
         {
@@ -504,10 +506,10 @@ namespace PhysX
 
     void EditorMeshColliderComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        if (asset == m_shapeConfiguration.m_pxAsset)
+        if (asset == m_proxyShapeConfiguration.m_pxAsset)
         {
-            m_shapeConfiguration.m_pxAsset = asset;
-            m_shapeConfiguration.m_configuration.m_asset = asset;
+            m_proxyShapeConfiguration.m_pxAsset = asset;
+            m_proxyShapeConfiguration.m_configuration.m_asset = asset;
 
             UpdateMaterialSlotsFromMeshAsset();
             UpdateCollider();
@@ -526,11 +528,11 @@ namespace PhysX
         const PhysX::EditorRigidBodyComponent* entityRigidbody = m_entity->FindComponent<PhysX::EditorRigidBodyComponent>();
 
         if (entityRigidbody &&
-            m_shapeConfiguration.m_pxAsset.IsReady())
+            m_proxyShapeConfiguration.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-            Utils::CreateShapesFromAsset(m_shapeConfiguration.m_configuration, m_configuration, m_hasNonUniformScale,
-                m_shapeConfiguration.m_subdivisionLevel, shapes);
+            Utils::CreateShapesFromAsset(m_proxyShapeConfiguration.m_configuration, m_configuration, m_hasNonUniformScale,
+                m_proxyShapeConfiguration.m_subdivisionLevel, shapes);
 
             if (shapes.empty())
             {
@@ -561,7 +563,7 @@ namespace PhysX
             {
                 m_componentWarnings.clear();
 
-                AZStd::string assetPath = m_shapeConfiguration.m_configuration.m_asset.GetHint().c_str();
+                AZStd::string assetPath = m_proxyShapeConfiguration.m_configuration.m_asset.GetHint().c_str();
                 const size_t lastSlash = assetPath.rfind('/');
                 if (lastSlash != AZStd::string::npos)
                 {
@@ -602,8 +604,8 @@ namespace PhysX
 
     void EditorMeshColliderComponent::BuildDebugDrawMesh() const
     {
-        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_shapeConfiguration.m_pxAsset;
-        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_configuration;
+        const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_proxyShapeConfiguration.m_pxAsset;
+        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_proxyShapeConfiguration.m_configuration;
 
         if (!physicsAsset.IsReady())
         {
@@ -613,7 +615,7 @@ namespace PhysX
 
         AzPhysics::ShapeColliderPairList shapeConfigList;
         Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
-            m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
+            m_proxyShapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
         for (size_t shapeIndex = 0; shapeIndex < shapeConfigList.size(); shapeIndex++)
         {
@@ -629,16 +631,16 @@ namespace PhysX
 
     void EditorMeshColliderComponent::DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
-        if (!m_colliderDebugDraw.HasCachedGeometry() || !m_shapeConfiguration.m_configuration.m_asset.IsReady())
+        if (!m_colliderDebugDraw.HasCachedGeometry() || !m_proxyShapeConfiguration.m_configuration.m_asset.IsReady())
         {
             return;
         }
 
-        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_configuration;
+        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_proxyShapeConfiguration.m_configuration;
 
         AzPhysics::ShapeColliderPairList shapeConfigList;
         Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
-            m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
+            m_proxyShapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
         const AZ::Vector3& assetScale = physicsAssetConfiguration.m_assetScale;
 
@@ -759,8 +761,8 @@ namespace PhysX
         {
             m_cachedAabb = PhysX::Utils::GetColliderAabb(GetWorldTM()
                 , m_hasNonUniformScale
-                , m_shapeConfiguration.m_subdivisionLevel
-                , m_shapeConfiguration.m_configuration
+                , m_proxyShapeConfiguration.m_subdivisionLevel
+                , m_proxyShapeConfiguration.m_configuration
                 , m_configuration);
             m_cachedAabbDirty = false;
         }
@@ -770,7 +772,7 @@ namespace PhysX
 
     void EditorMeshColliderComponent::UpdateShapeConfigurationScale()
     {
-        m_shapeConfiguration.m_configuration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
+        m_proxyShapeConfiguration.m_configuration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
     }
 
     void EditorMeshColliderComponent::EnablePhysics()
@@ -876,7 +878,7 @@ namespace PhysX
 
     bool EditorMeshColliderComponent::ShouldUpdateCollisionMeshFromRender() const
     {
-        const bool collisionMeshNotSet = !m_shapeConfiguration.m_pxAsset.GetId().IsValid();
+        const bool collisionMeshNotSet = !m_proxyShapeConfiguration.m_pxAsset.GetId().IsValid();
         return collisionMeshNotSet;
     }
 
@@ -1006,13 +1008,13 @@ namespace PhysX
 
     void EditorMeshColliderComponent::SetAssetScale(const AZ::Vector3& scale)
     {
-        m_shapeConfiguration.m_configuration.m_assetScale = scale;
+        m_proxyShapeConfiguration.m_configuration.m_assetScale = scale;
         UpdateCollider();
     }
 
     AZ::Vector3 EditorMeshColliderComponent::GetAssetScale() const
     {
-        return m_shapeConfiguration.m_configuration.m_assetScale;
+        return m_proxyShapeConfiguration.m_configuration.m_assetScale;
     }
 
     void EditorMeshColliderComponent::UpdateShapeConfiguration()

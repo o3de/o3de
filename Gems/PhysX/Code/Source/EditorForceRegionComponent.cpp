@@ -298,19 +298,8 @@ namespace PhysX
             ColliderShapeRequestBus::EventResult(aabb, GetEntityId(), &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
 
             const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
-            AZStd::vector<AZ::Vector3> points = Utils::Geometry::GenerateBoxPoints(-halfExtents, halfExtents);
-
             const AZ::Vector3 aabbCenter = aabb.GetCenter();
-            AZStd::transform(
-                points.begin(),
-                points.end(),
-                points.begin(),
-                [&aabbCenter](AZ::Vector3& point)
-                {
-                    return point + aabbCenter;
-                });
-
-            return points;
+            return Utils::Geometry::GenerateBoxPoints(aabbCenter - halfExtents, aabbCenter + halfExtents);
         }();
 
         const AZ::Entity::ComponentArrayType& enabledComponents = forceRegionEntity->GetComponents();
@@ -347,13 +336,11 @@ namespace PhysX
 
                 DrawForceArrows(randomPoints, debugDisplayRequests);
             }
-
-            if ([[maybe_unused]] auto* editorMeshColliderComponent = azrtti_cast<EditorMeshColliderComponent*>(component))
+            else if (azrtti_cast<EditorMeshColliderComponent*>(component))
             {
                 DrawForceArrows(shapeAabbPoints, debugDisplayRequests);
             }
-
-            if (auto* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component))
+            else if (auto* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component))
             {
                 DrawForceArrows(editorShapeColliderComponent->GetSamplePoints(), debugDisplayRequests);
             }
