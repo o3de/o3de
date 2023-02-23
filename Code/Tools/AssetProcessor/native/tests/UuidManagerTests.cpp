@@ -477,7 +477,6 @@ namespace UnitTests
     {
         static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
         static constexpr AZ::IO::FixedMaxPath RenamedFile = "c:/somepath/MockFile.txt";
-        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
 
         MakeFile(TestFile);
 
