@@ -193,21 +193,22 @@ namespace AZ
                 {
                     EnableGPUBasedValidation();
                 }
-            }
 
+                // DRED has a perf cost on some drivers/hw so only enable it if RHI validation is enabled.
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
 #else
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
 #endif
-            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
-            {
-                // Turn on auto-breadcrumbs and page fault reporting.
-                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
-                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+                {
+                    // Turn on auto-breadcrumbs and page fault reporting.
+                    pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-                pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #endif
+                }
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;
@@ -225,12 +226,6 @@ namespace AZ
             }
 
             m_dx12Device = dx12Device.Get();
-            DX12Ptr<IDXGIDevice> dxgiDevice;
-            if (!SUCCEEDED(m_dx12Device->QueryInterface(dxgiDevice.GetAddressOf())))
-            {
-                AZ_Assert(false, "Failed to get the DXGI Device");
-            }
-            m_dxgiDevice = dxgiDevice.Get();
             m_dxgiFactory = physicalDevice.GetFactory();
             m_dxgiAdapter = physicalDevice.GetAdapter();
             
