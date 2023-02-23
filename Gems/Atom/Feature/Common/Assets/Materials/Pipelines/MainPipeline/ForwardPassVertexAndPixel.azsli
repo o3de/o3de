@@ -81,7 +81,8 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
 
     // --- Emissive ---
-    OUT.m_diffuseColor.rgb += lightingData.emissiveLighting;
+    // Sending to specular output for historical reasons until sending to diffuse can be validated
+    OUT.m_specularColor.rgb += lightingData.emissiveLighting; 
 
     // --- Subsurface ---
 #if OUTPUT_SUBSURFACE
