@@ -41,6 +41,7 @@ parts:
      - libfontconfig1
      - libunwind-dev
      - libssl3
+     - libc6
      - libstdc++6
     stage-snaps:
      - cmake
