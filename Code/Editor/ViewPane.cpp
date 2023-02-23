@@ -218,6 +218,8 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         }
 
+        // If this is being instantiated after the Action Manager was alreadi initialized, add the toolbar.
+        // Else it will be added in OnToolBarRegistrationHook.
         if (QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
         {
             addToolBar(Qt::TopToolBarArea, toolBar);

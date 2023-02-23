@@ -155,6 +155,14 @@ namespace AzToolsFramework
             return;
         }
 
+        EnumerateToolBars(
+            [](QToolBar* toolBar) -> bool
+            {
+                toolBar->clear();
+                return false;
+            }
+        );
+
         for (const auto& vectorIterator : m_toolBarItems)
         {
             for (const auto& toolBarItem : vectorIterator.second)
