@@ -89,7 +89,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(MockVegetationDependenciesModule, "{3F7470AD-4FF9-48E6-8FFB-A5314F874F2B}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MockVegetationDependenciesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockVegetationDependenciesModule, AZ::SystemAllocator);
 
         MockVegetationDependenciesModule()
         {

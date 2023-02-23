@@ -29,7 +29,7 @@ namespace AzQtComponents
     {
     public:
         // viewport adds hitlocation
-        AZ_CLASS_ALLOCATOR(ViewportDragContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ViewportDragContext, AZ::SystemAllocator);
         AZ_RTTI(ViewportDragContext, "{8297256B-8DD4-499C-B564-0EAA829E8ACA}", AzQtComponents::DragAndDropContextBase);
         AZ::Vector3 m_hitLocation;
     };

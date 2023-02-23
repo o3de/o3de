@@ -59,6 +59,9 @@ namespace UnitTest
     class GradientSignalBaseFixture
     {
     public:
+        GradientSignalBaseFixture();
+        virtual ~GradientSignalBaseFixture();
+
         void SetupCoreSystems();
         void TearDownCoreSystems();
 
@@ -101,6 +104,11 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceAltitudeGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
+
+    protected:
+        AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
+        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
+        AZStd::unique_ptr<AZ::RPI::ImageSystem> m_imageSystem;
     };
 
     struct GradientSignalTest
@@ -108,18 +116,11 @@ namespace UnitTest
         , public ::testing::Test
     {
     protected:
-        GradientSignalTest();
-        ~GradientSignalTest() override;
-
         void SetUp() override;
         void TearDown() override;
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler);
-
-        AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
-        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
-        AZStd::unique_ptr<AZ::RPI::ImageSystem> m_imageSystem;
     };
 
 #ifdef HAVE_BENCHMARK

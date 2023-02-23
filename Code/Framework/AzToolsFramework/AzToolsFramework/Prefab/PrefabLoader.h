@@ -37,8 +37,8 @@ namespace AzToolsFramework
             : public PrefabLoaderInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
-            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C8}", PrefabLoaderInterface);
+            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator);
+            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C}", PrefabLoaderInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 

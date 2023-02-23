@@ -13,59 +13,59 @@
 
 namespace AzToolsFramework
 {
-    //! Wraps 2 linear manipulators, providing a viewport experience for 
+    //! Wraps linear manipulators, providing a viewport experience for 
     //! modifying the radius and height of a capsule.
     //! It is designed to be usable either by a component mode or by other contexts which are not associated with a
-    //! particular component, so it does not contain any reference to an EntityComponentIdPair or other component-based
-    //! identifier.
+    //! particular component, so editing does not rely on an EntityComponentIdPair or other component-based identifier.
     class CapsuleViewportEdit : public BaseShapeViewportEdit
     {
     public:
-        CapsuleViewportEdit() = default;
-        virtual ~CapsuleViewportEdit() = default;
+        CapsuleViewportEdit(bool allowAsymmetricalEditing = false);
 
-        void InstallGetRotationOffset(AZStd::function<AZ::Quaternion()> getRotationOffset);
+        //! Set whether to force height to exceed twice the radius when editing (default is true).
+        void SetEnsureHeightExceedsTwiceRadius(bool ensureHeightExceedsTwiceRadius);
+
         void InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius);
         void InstallGetCapsuleHeight(AZStd::function<float()> getCapsuleHeight);
         void InstallSetCapsuleRadius(AZStd::function<void(float)> setCapsuleRadius);
         void InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight);
 
         // BaseShapeViewportEdit overrides ...
-        void Setup(const ManipulatorManagerId manipulatorManagerId = g_mainManipulatorManagerId) override;
+        void Setup(const ManipulatorManagerId manipulatorManagerId) override;
         void Teardown() override;
         void UpdateManipulators() override;
-        void ResetValues() override;
-        void AddEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+        void ResetValuesImpl() override;
+        void AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
         void OnCameraStateChanged(const AzFramework::CameraState& cameraState);
     private:
-        AZ::Quaternion GetRotationOffset() const;
         float GetCapsuleRadius() const;
         float GetCapsuleHeight() const;
         void SetCapsuleRadius(float radius);
         void SetCapsuleHeight(float height);
-
-        AZ::Transform GetLocalTransform() const;
 
         void SetupRadiusManipulator(
             const ManipulatorManagerId manipulatorManagerId,
             const AZ::Transform& worldTransform,
             const AZ::Transform& localTransform,
             const AZ::Vector3& nonUniformScale);
-        void SetupHeightManipulator(
+        AZStd::shared_ptr<LinearManipulator> SetupHeightManipulator(
             const ManipulatorManagerId manipulatorManagerId,
             const AZ::Transform& worldTransform,
             const AZ::Transform& localTransform,
-            const AZ::Vector3& nonUniformScale);
-        void OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action);
-        void OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action);
+            const AZ::Vector3& nonUniformScale,
+            float axisDirection);
+        void OnRadiusManipulatorMoved(const LinearManipulator::Action& action);
+        void OnHeightManipulatorMoved(const LinearManipulator::Action& action);
         void AdjustRadiusManipulator(const float capsuleHeight);
-        void AdjustHeightManipulator(const float capsuleRadius);
+        void AdjustHeightManipulators(const float capsuleRadius);
 
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator;
+        AZStd::shared_ptr<LinearManipulator> m_radiusManipulator;
+        AZStd::shared_ptr<LinearManipulator> m_topManipulator;
+        AZStd::shared_ptr<LinearManipulator> m_bottomManipulator;
+        bool m_allowAsymmetricalEditing = false; //!< Whether moving the ends of the capsule independently is allowed.
+        bool m_ensureHeightExceedsTwiceRadius = true; //!< Whether to force height to exceed twice the radius when editing.
 
-        AZStd::function<AZ::Quaternion()> m_getRotationOffset;
         AZStd::function<float()> m_getCapsuleRadius;
         AZStd::function<float()> m_getCapsuleHeight;
         AZStd::function<void(float)> m_setCapsuleRadius;

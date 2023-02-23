@@ -33,7 +33,7 @@ namespace AzToolsFramework
     class EditorMenu final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator);
         AZ_RTTI(EditorMenu, "{6B6F6802-C587-4734-A5DB-5732329EED03}");
 
         EditorMenu();
@@ -80,7 +80,7 @@ namespace AzToolsFramework
 
         struct MenuItem final
         {
-            AZ_CLASS_ALLOCATOR(MenuItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MenuItem, AZ::SystemAllocator);
             AZ_RTTI(MenuItem, "{1AB076C8-CF8F-42C1-98DB-856A067A4D21}");
 
             explicit MenuItem(

@@ -733,8 +733,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
             QString(),
             dir,
             "*." UICANVASEDITOR_CANVAS_EXTENSION,
-            nullptr,
-            QFileDialog::DontConfirmOverwrite);
+            nullptr);
         if (filename.isEmpty())
         {
             return false;
@@ -2211,16 +2210,7 @@ void EditorWindow::closeEvent(QCloseEvent* closeEvent)
 
     m_animationWidget->EditorAboutToClose();
 
-#if defined(AZ_PLATFORM_LINUX)
-    // Work-around for issue on Linux where closing (and destroying) the window an re-opening causes the Editor
-    // to hang or crash. So instead of closing this window, replicate the action of unchecking UI Editor from the
-    //  Editor toolbar by hiding the parent view pane instead
-    nativeParentWidget()->hide();
-    closeEvent->ignore();
-#else
     QMainWindow::closeEvent(closeEvent);
-#endif
-
 }
 
 void EditorWindow::dragEnterEvent(QDragEnterEvent* event)

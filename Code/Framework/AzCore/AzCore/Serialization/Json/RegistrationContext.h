@@ -23,7 +23,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(JsonRegistrationContext, "{5A763774-CA8B-4245-A897-A03C503DCD60}", ReflectContext);
-        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator);
 
         class SerializerBuilder;
         using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;

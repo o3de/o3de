@@ -318,7 +318,7 @@ namespace AZ
     {
     public:
         AZ_RTTI((AttributeData<T>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", T), Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeData<T>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeData<T>, SystemAllocator);
         template<class U>
         explicit AttributeData(U&& data)
             : m_data(AZStd::forward<U>(data)) {}
@@ -357,7 +357,7 @@ namespace AZ
     {
     public:
         AZ_RTTI((AZ::AttributeMemberData<T C::*>, "{00E5F991-6B96-43CC-9869-F371548581D9}", T, C), AttributeData<T>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberData<T C::*>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeMemberData<T C::*>, SystemAllocator);
         typedef T C::* DataPtr;
         explicit AttributeMemberData(DataPtr p)
             : AttributeData<T>(T())
@@ -485,7 +485,7 @@ namespace AZ
     {
     public:
         AZ_RTTI((AZ::AttributeFunction<R(Args...)>, "{EE535A42-940C-42DE-848D-9C6CE57D8A62}", R, Args...), Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeFunction<R(Args...)>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeFunction<R(Args...)>, SystemAllocator);
         typedef R(*FunctionPtr)(Args...);
         explicit AttributeFunction(FunctionPtr f)
                 : m_function(f)
@@ -535,7 +535,7 @@ namespace AZ
             AZStd::remove_cvref_t<Invocable>>;
     public:
         AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator);
         template<typename CallableType>
         explicit AttributeInvocable(CallableType&& invocable)
             : m_callable(AZStd::forward<CallableType>(invocable))
@@ -591,6 +591,12 @@ namespace AZ
         {
             return DomInvokeHelper<Callable>::Invoke(m_callable, arguments);
         }
+
+        const Callable& GetCallable() const
+        {
+            return m_callable;
+        }
+
     private:
         Callable m_callable;
     };
@@ -617,7 +623,7 @@ namespace AZ
     {
     public:
         AZ_RTTI((AZ::AttributeMemberFunction<R(C::*)(Args...)>, "{F41F655D-87F7-4A87-9412-9AF4B528B142}", R, C, Args...), AttributeFunction<R(Args...)>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...)>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...)>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...);
 
         explicit AttributeMemberFunction(FunctionPtr f)
@@ -668,7 +674,7 @@ namespace AZ
     {
     public:
         AZ_RTTI((AZ::AttributeMemberFunction<R(C::*)(Args...) const>, "{4E21155A-0FB0-4F11-999A-B946B5954A0A}", R, C, Args...), AttributeFunction<R(Args...)>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...) const>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...) const>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...) const;
 
         explicit AttributeMemberFunction(FunctionPtr f)

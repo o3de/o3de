@@ -100,10 +100,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -153,10 +150,14 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
                                        project_path: pathlib.Path = None, 
                                        include_manifest_gems: bool = False,
-                                       include_engine_gems: bool = False) -> dict:
+                                       include_engine_gems: bool = False,
+                                       external_subdirectories: list = None
+                                       ) -> dict:
             return {}
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return self.enable_gem.project_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -178,8 +179,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
@@ -297,7 +303,9 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                         project_path: pathlib.Path = None, 
                                         include_manifest_gems: bool = False,
-                                        include_engine_gems: bool = False) -> dict:
+                                        include_engine_gems: bool = False,
+                                        external_subdirectories: list = None
+                                        ) -> dict:
             all_gems_json_data = {}
             for gem_name in gem_json_data_by_name.keys():
                 all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
@@ -318,7 +326,9 @@ class TestEnableGemCommand:
                 engine_data['api_versions'] = test_engine_api_versions
             return engine_data
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_data = self.enable_gem.project_data
             project_data['engine'] = test_engine_name
             if test_engine_version != None:
@@ -357,8 +367,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\

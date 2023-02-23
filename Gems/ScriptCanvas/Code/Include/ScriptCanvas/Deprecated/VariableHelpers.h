@@ -21,7 +21,7 @@ namespace ScriptCanvas
         struct VariableInfo
         {
             AZ_TYPE_INFO(VariableInfo, "{57DEBC6B-8708-454B-96DC-0A34D1835709}");
-            AZ_CLASS_ALLOCATOR(VariableInfo, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VariableInfo, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             VariableInfo() = default;

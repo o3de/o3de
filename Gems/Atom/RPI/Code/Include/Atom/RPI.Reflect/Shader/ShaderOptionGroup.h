@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_TYPE_INFO(ShaderOptionGroup, "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}");
-            AZ_CLASS_ALLOCATOR(ShaderOptionGroup, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderOptionGroup, AZ::ThreadPoolAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -58,6 +58,8 @@ namespace PhysX
         AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
         void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(const AzPhysics::SceneQueryRequest* request) override;
+        bool QueryScene(const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result) override;
+
         AzPhysics::SceneQueryHitsList QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneQuery::AsyncRequestId requestId,
             const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQuery::AsyncCallback callback) override;
@@ -144,9 +146,9 @@ namespace PhysX
         static thread_local AZStd::vector<physx::PxRaycastHit> s_rayCastBuffer; //!< thread local structure to hold hits for a single raycast or shapecast.
         static thread_local AZStd::vector<physx::PxSweepHit> s_sweepBuffer; //!< thread local structure to hold hits for a single shapecast.
         static thread_local AZStd::vector<physx::PxOverlapHit> s_overlapBuffer; //!< thread local structure to hold hits for a single overlap query.
-        AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
-        AZ::u64 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
-        AZ::u64 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
+        AZ::u32 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
+        AZ::u32 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
+        AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         SceneSimulationFilterCallback m_collisionFilterCallback; //!< Handles the filtering of collision pairs reported from PhysX.
         SceneSimulationEventCallback m_simulationEventCallback; //!< Handles the collision and trigger events reported from PhysX.

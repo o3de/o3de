@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionDataHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionDataHandler, EditorAllocator)
 
     AZ::u32 MotionDataHandler::GetHandlerName() const
     {
@@ -29,7 +29,8 @@ namespace EMotionFX
 
         connect(picker, &QComboBox::currentTextChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

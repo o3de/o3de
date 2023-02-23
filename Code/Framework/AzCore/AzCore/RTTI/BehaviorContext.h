@@ -223,7 +223,7 @@ namespace AZ
         : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorDefaultValue, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorDefaultValue, AZ::SystemAllocator);
 
         BehaviorDefaultValue(const BehaviorDefaultValue&) = delete;
         BehaviorDefaultValue(BehaviorDefaultValue&&) = delete;
@@ -379,7 +379,7 @@ namespace AZ
     struct InputRestriction
     {
         AZ_TYPE_INFO(InputRestriction, "{9DF4DDBE-63BE-4749-9921-52C82BF5E307}");
-        AZ_CLASS_ALLOCATOR(InputRestriction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputRestriction, AZ::SystemAllocator);
 
         bool m_listExcludes = true;
         InputIndices m_indices;
@@ -394,7 +394,7 @@ namespace AZ
     struct BranchOnResultInfo
     {
         AZ_TYPE_INFO(BranchOnResultInfo, "{C063AB6F-462F-485F-A911-DE3A8946A019}");
-        AZ_CLASS_ALLOCATOR(BranchOnResultInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BranchOnResultInfo, AZ::SystemAllocator);
 
         AZStd::string m_trueName = "True";
         AZStd::string m_falseName = "False";
@@ -409,7 +409,7 @@ namespace AZ
     struct CheckedOperationInfo
     {
         AZ_TYPE_INFO(CheckedOperationInfo, "{9CE9560F-ECAB-46EF-B341-3A86973E71CD}");
-        AZ_CLASS_ALLOCATOR(CheckedOperationInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CheckedOperationInfo, AZ::SystemAllocator);
 
         AZStd::string m_safetyCheckName;
         InputRestriction m_inputRestriction;
@@ -434,7 +434,7 @@ namespace AZ
     struct OverloadArgumentGroupInfo
     {
         AZ_TYPE_INFO(OverloadArgumentGroupInfo, "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
-        AZ_CLASS_ALLOCATOR(OverloadArgumentGroupInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OverloadArgumentGroupInfo, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_parameterGroupNames;
         AZStd::vector<AZStd::string> m_resultGroupNames;
@@ -447,7 +447,7 @@ namespace AZ
     struct ExplicitOverloadInfo
     {
         AZ_TYPE_INFO(ExplicitOverloadInfo, "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
-        AZ_CLASS_ALLOCATOR(ExplicitOverloadInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExplicitOverloadInfo, AZ::SystemAllocator);
 
         AZStd::string m_name;
         AZStd::string m_categoryPath;
@@ -503,7 +503,7 @@ namespace AZ
     struct EventHandlerCreationFunctionHolder
     {
         AZ_TYPE_INFO(EventHandlerCreationFunctionHolder, "{40F7C5D8-8DA0-4979-BC8C-0A52EDA80633}");
-        AZ_CLASS_ALLOCATOR(EventHandlerCreationFunctionHolder, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EventHandlerCreationFunctionHolder, AZ::SystemAllocator);
 
         EventHandlerCreationFunction m_function;
     };
@@ -573,7 +573,7 @@ namespace AZ
             using FunctionPointer = R(*)(Args...);
             using ClassType = void;
 
-            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl, AZ::SystemAllocator);
 
             static const int s_startArgumentIndex = 1; // +1 for result type
             static const int s_startNamedArgumentIndex = s_startArgumentIndex; // +1 for result type
@@ -632,7 +632,7 @@ namespace AZ
             using FunctionPointerConst = R(C::*)(Args...) const;
             typedef C ClassType;
 
-            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl<R(C::*)(Args...)>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BehaviorMethodImpl<R(C::*)(Args...)>, AZ::SystemAllocator);
 
             static const int s_startArgumentIndex = 1; // +1 for result type
             static const int s_startNamedArgumentIndex = s_startArgumentIndex + 1; // +1 for result type, +1 for class Type (this ptr)
@@ -791,7 +791,7 @@ namespace AZ
             static const int s_startNamedArgumentIndex =
                 s_startArgumentIndex + s_isBusIdParameter; // +1 for result type, +1 (optional for busID)
 
-            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator);
 
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
 
@@ -849,7 +849,7 @@ namespace AZ
             static const int s_startArgumentIndex = 1; // +1 for result type
             static const int s_startNamedArgumentIndex = s_startArgumentIndex + s_isBusIdParameter; // +1 for result type, +1 (optional for busID)
 
-            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BehaviorEBusEvent, AZ::SystemAllocator);
 
             BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context);
             BehaviorEBusEvent(FunctionPointerConst functionPointer, BehaviorContext* context);
@@ -995,7 +995,7 @@ namespace AZ
         class BehaviorValuesSpecialization : public BehaviorValues
         {
         public:
-            AZ_CLASS_ALLOCATOR(BehaviorValuesSpecialization, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BehaviorValuesSpecialization, AZ::SystemAllocator);
 
             template<class LastValue>
             inline void SetValues(LastValue&& value)
@@ -1127,7 +1127,7 @@ namespace AZ
     class BehaviorClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorClass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorClass, SystemAllocator);
 
         BehaviorClass();
         ~BehaviorClass();
@@ -1274,7 +1274,7 @@ namespace AZ
         bool SetSetter(Setter setter, BehaviorClass* currentClass, BehaviorContext* context, const AZStd::false_type& /* is AZStd::is_same<Getter,nullptr_t>::type( */);
 
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorProperty, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorProperty, AZ::SystemAllocator);
 
         BehaviorProperty(BehaviorContext* context);
         ~BehaviorProperty() override;
@@ -1338,7 +1338,7 @@ namespace AZ
     class BehaviorEBus
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorEBus, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorEBus, SystemAllocator);
 
         typedef void(*QueueFunctionType)(void* /*userData1*/, void* /*userData2*/);
 
@@ -1740,7 +1740,7 @@ namespace AZ
         };
 
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator);
         AZ_RTTI(BehaviorContext, "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}", ReflectContext);
 
         bool IsTypeReflected(AZ::Uuid typeId) const override;
@@ -4494,7 +4494,8 @@ namespace AZ
 
             CallFunction<R, Args...>::Member(m_functionPtr, *arguments[0].GetAsUnsafe<C*>(), arguments.data() + 1, result, AZStd::make_index_sequence<sizeof...(Args)>());
 
-            EBUS_EVENT_ID(((void*)(*arguments[0].GetAsUnsafe<C*>())), BehaviorObjectSignals, OnMemberMethodCalled, this);
+            BehaviorObjectSignals::Event(
+                (void*)(*arguments[0].GetAsUnsafe<C*>()), &BehaviorObjectSignals::Events::OnMemberMethodCalled, this);
 
             return true;
         }

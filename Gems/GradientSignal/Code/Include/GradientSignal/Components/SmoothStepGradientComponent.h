@@ -30,7 +30,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SmoothStepGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SmoothStepGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SmoothStepGradientConfig, "{A53D2A38-FFE1-4828-B91E-4D5A8B712BB2}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         GradientSampler m_gradientSampler;

@@ -31,7 +31,7 @@ namespace GraphCanvas
         , public NodePropertyRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePropertyDisplayWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePropertyDisplayWidget, AZ::SystemAllocator);
 
         NodePropertyDisplayWidget(QGraphicsItem* parent = nullptr);
         ~NodePropertyDisplayWidget() override;

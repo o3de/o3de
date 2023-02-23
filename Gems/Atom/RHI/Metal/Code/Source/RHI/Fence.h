@@ -25,7 +25,7 @@ namespace AZ
         class Fence final
         {
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             RHI::ResultCode Init(RHI::Ptr<Device> metalDevice, RHI::FenceState initialState);
             void Shutdown();
@@ -89,7 +89,7 @@ namespace AZ
             : public RHI::Fence
         {
         public:
-            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
 
             static RHI::Ptr<FenceImpl> Create();
 

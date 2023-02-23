@@ -20,6 +20,7 @@
 #include <RHI/ReleaseContainer.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/SwapChain.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -795,7 +796,8 @@ namespace AZ
 
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
 
             if (result == VkResult::VK_SUCCESS)
             {
@@ -805,7 +807,7 @@ namespace AZ
                 device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &memoryRequirements);
                 if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
                 {
-                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, nullptr);
+                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, VkSystemAllocator::Get());
                     m_vkImage = VK_NULL_HANDLE;
                     return RHI::ResultCode::Fail;
                 }
@@ -867,7 +869,8 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -922,6 +925,13 @@ namespace AZ
             {
                 // The KHR value will map to the core one in case compatible 2D array is part of core.
                 flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR;
+            }
+
+            if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation) &&
+                descriptor.m_multisampleState.m_customPositionsCount > 0 &&
+                RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::ImageBindFlags::DepthStencil))
+            {
+                flags |= VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT;
             }
 
             flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;

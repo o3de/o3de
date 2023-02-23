@@ -29,7 +29,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LocalFileIO, "{87A8D32B-F695-4105-9A4D-D99BE15DFD50}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LocalFileIO, SystemAllocator);
 
             LocalFileIO();
             ~LocalFileIO();

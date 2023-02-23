@@ -73,7 +73,8 @@ namespace Camera
         }
 
         m_initialTransform = AZ::Transform::CreateIdentity();
-        EBUS_EVENT_ID_RESULT(m_initialTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(m_initialTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
         AZ::TickBus::Handler::BusConnect();
     }
 
@@ -159,7 +160,7 @@ namespace Camera
     {
         // Step 1 Acquire a target
         AZ::Transform initialCameraTransform = AZ::Transform::Identity();
-        EBUS_EVENT_ID_RESULT(initialCameraTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+        AZ::TransformBus::EventResult(initialCameraTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZ::Transform targetTransform(m_initialTransform);
         for (ICameraTargetAcquirer* targetAcquirer : m_targetAcquirers)
         {
@@ -184,6 +185,6 @@ namespace Camera
         }
 
         // Step 4 Alert the camera component of the new desired transform
-        EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, finalTransform);
+        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, finalTransform);
     }
 } //namespace Camera

@@ -22,7 +22,7 @@ namespace AZ
             friend class QueryPool;
             using Base = RHI::Query;
         public:
-            AZ_CLASS_ALLOCATOR(Query, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::ThreadPoolAllocator);
             AZ_RTTI(Query, "{07E43C0C-A2BD-4DD1-B0F2-F4C62BE023E6}", Base);
             ~Query() = default;
 

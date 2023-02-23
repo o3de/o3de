@@ -19,6 +19,7 @@ namespace Physics
         const AZStd::string& GetSuperscriptTwo();
         const AZStd::string& GetSuperscriptThree();
         const AZStd::string& GetInterpunct();
+        const AZStd::string& GetBulletPoint();
         const AZStd::string& GetSpeedUnit();
         const AZStd::string& GetAngularVelocityUnit();
         const AZStd::string& GetLengthUnit();

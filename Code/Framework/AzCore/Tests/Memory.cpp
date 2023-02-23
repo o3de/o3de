@@ -40,12 +40,16 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
         }
         void TearDown() override
         {
             AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     };
@@ -189,7 +193,8 @@ namespace UnitTest
                 // This is possible on deprecated platforms too, but we would need to load the map file manually and so on... it's tricky.
                 // Note: depending on where the tests are run from the call stack may differ.
                 SymbolStorage::StackLine stackLine[20];
-                SymbolStorage::DecodeFrames(ai.m_stackFrames, AZ_ARRAY_SIZE(stackLine), stackLine);
+                auto recordFrameCount = AZ::GetMin(ai.m_stackFramesCount, static_cast<unsigned int>(AZ_ARRAY_SIZE(stackLine)));
+                SymbolStorage::DecodeFrames(ai.m_stackFrames, recordFrameCount, stackLine);
                 bool found = false;
                 int foundIndex = 0;  // After finding it for the first time, save the index so it can be reused
 
@@ -511,7 +516,7 @@ namespace UnitTest
             : public ThreadPoolBase<MyThreadPoolAllocator>
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator);
             AZ_TYPE_INFO(MyThreadPoolAllocator, "{28D80F96-19B1-4465-8278-B53989C44CF1}");
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
@@ -743,7 +748,7 @@ namespace UnitTest
         class MyClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator);
 
             MyClass(int data = 303)
                 : m_data(data) {}
@@ -873,7 +878,7 @@ namespace UnitTest
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
-        
+
         void TearDown() override
         {
             AZ_OS_FREE(tr);
@@ -2004,7 +2009,7 @@ namespace UnitTest
                           pool.Create();
                           ThreadPoolSchemaHelper<nullptr_t> threadPool;
                           threadPool.Create();
-            
+
                           printf("---- Single Thread ----\n");
                           // any allocations
                           MAX_SIZE = 4096;
@@ -2013,7 +2018,7 @@ namespace UnitTest
                           // pool allocations
                           MAX_SIZE = 256;
                           allocdealloc(hpha,pool,true,true,true);
-            
+
                           // threads
                           printf("\n---- 4 Threads ----\n");
                           // any allocations

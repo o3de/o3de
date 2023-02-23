@@ -22,7 +22,7 @@ namespace GradientSignal
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(SupportedImageAssetPickerDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SupportedImageAssetPickerDialog, AZ::SystemAllocator);
 
         explicit SupportedImageAssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
 
@@ -36,7 +36,7 @@ namespace GradientSignal
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StreamingImagePropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamingImagePropertyAssetCtrl, AZ::SystemAllocator);
 
         StreamingImagePropertyAssetCtrl(QWidget* parent = nullptr);
 
@@ -58,7 +58,7 @@ namespace GradientSignal
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StreamingImagePropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamingImagePropertyHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override;
         bool IsDefaultHandler() const override;

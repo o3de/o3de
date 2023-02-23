@@ -134,6 +134,7 @@ namespace AZ::Debug
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))
                                                 : nullptr;
+            ai.m_stackFramesCount = m_numStackLevels;
             if (ai.m_stackFrames)
             {
                 Debug::StackRecorder::Record(ai.m_stackFrames, m_numStackLevels, stackSuppressCount + 1);
@@ -455,6 +456,11 @@ namespace AZ::Debug
     //=========================================================================
     void AllocationRecords::SetMode(Mode mode)
     {
+        // If records recording was previously disabled and is now being enabled, some allocations
+        // may not be properly recorded. No need to print out a warning or log here, because an assert will occur
+        // later if that's a problem. There was previously a warning here to catch this situation earlier,
+        // but this warning was frequently being triggered in automated tests, and the assert was not occuring because
+        // the allocations were being properly handled.
         if (mode == RECORD_NO_RECORDS)
         {
             {
@@ -465,12 +471,6 @@ namespace AZ::Debug
             m_requestedBytesPeak = 0;
             m_requestedAllocs = 0;
         }
-
-        AZ_Warning(
-            "Memory", m_mode != RECORD_NO_RECORDS || mode == RECORD_NO_RECORDS,
-            "Records recording was disabled and now it's enabled! You might get assert when you free memory, if a you have allocations "
-            "which were not recorded!");
-
         m_mode = mode;
     }
 

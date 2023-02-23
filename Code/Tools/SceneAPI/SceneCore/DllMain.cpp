@@ -74,7 +74,7 @@ namespace AZ
                 : public AZ::EntityBus::Handler
             {
             public:
-                AZ_CLASS_ALLOCATOR(EntityMonitor, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(EntityMonitor, AZ::SystemAllocator);
 
                 EntityMonitor()
                 {

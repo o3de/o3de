@@ -48,7 +48,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToUnregisteredMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         auto outcome = m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
@@ -57,7 +57,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
@@ -67,7 +67,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToMenuTwice)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
@@ -78,7 +78,7 @@ namespace UnitTest
     
     TEST_F(ActionManagerFixture, AddActionsToMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
@@ -93,7 +93,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RemoveActionFromMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
@@ -113,7 +113,7 @@ namespace UnitTest
     
     TEST_F(ActionManagerFixture, RemoveActionsFromMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
@@ -129,7 +129,7 @@ namespace UnitTest
     
     TEST_F(ActionManagerFixture, RemoveMissingActionsFromMenu)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
@@ -164,7 +164,7 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
@@ -183,7 +183,7 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
@@ -212,7 +212,7 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test2", 42);
@@ -263,7 +263,7 @@ namespace UnitTest
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
 
         // Add an action to the sub-menu, else it will be empty and not be displayed.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
 
@@ -309,7 +309,7 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
 
         // Add an action to the sub-menus, else they will be empty and not be displayed.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu1", "o3de.action.test", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu2", "o3de.action.test", 42);
@@ -391,7 +391,7 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu3", {});
 
         // Add an action to the sub-menus, else they will be empty and not be displayed.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu1", "o3de.action.test", 42);
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu2", "o3de.action.test", 42);
@@ -468,7 +468,7 @@ namespace UnitTest
         m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
         m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
 
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
 
@@ -595,7 +595,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, GetSortKeyOfActionInMenu)
     {
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         // Add the action to the menu.
@@ -619,7 +619,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, GetSortKeyOfActionNotInMenu)
     {
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         // Verify the API fails as the action is registered but was not added to the menu.
@@ -747,8 +747,8 @@ namespace UnitTest
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the menu. HideFromMenusWhenDisabled is set to true by default.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        // Register a new action and add it to the menu. MenuVisibility is set to HideWhenDisabled by default.
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
@@ -779,18 +779,18 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 0);
     }
 
-    TEST_F(ActionManagerFixture, VerifyHideFromMenusWhenDisabledFalse)
+    TEST_F(ActionManagerFixture, VerifyMenuVisibilityAlwaysShow)
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
         QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
-        // Register a new action and add it to the menu. Have HideFromMenusWhenDisabled set to true.
+        // Register a new action and add it to the menu. Have MenuVisibility set to AlwaysShow.
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_hideFromMenusWhenDisabled = false;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
 
@@ -821,6 +821,73 @@ namespace UnitTest
         EXPECT_EQ(menu->actions().size(), 1);
     }
 
+    TEST_F(ActionManagerFixture, VerifyActionIsHiddenWhenChangingMode)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the default mode.
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, "o3de.action.test");
+
+        // Add the action to the menu.
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Register a new mode and switch to it.
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "testMode");
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "testMode");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is no longer in the menu.
+        EXPECT_EQ(menu->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyMenuVisibilityAlwaysShowWhenChangingMode)
+    {
+        // Register menu, get it and verify it's empty.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
+        EXPECT_EQ(menu->actions().size(), 0);
+
+        // Register a new action and add it to the default mode. Have MenuVisibility set to AlwaysShow.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, "o3de.action.test");
+
+        // Add the action to the menu.
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.test", "o3de.action.test", 42);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+
+        // Register a new mode and switch to it.
+        m_actionManagerInterface->RegisterActionContextMode("o3de.context.test", "testMode");
+        m_actionManagerInterface->SetActiveActionContextMode("o3de.context.test", "testMode");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the action is still in the menu.
+        EXPECT_EQ(menu->actions().size(), 1);
+    }
+
     TEST_F(ActionManagerFixture, VerifySubMenuIsHiddenWhenEmptied)
     {
         // Register menus
@@ -829,7 +896,7 @@ namespace UnitTest
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
 
         // Register a new action and add it to the sub-menu.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
 
@@ -878,7 +945,7 @@ namespace UnitTest
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
 
         // Register a new action and add it to the sub-menu.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_menuManagerInterface->AddActionToMenu("o3de.menu.testSubMenu", "o3de.action.test", 42);
 

@@ -157,7 +157,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-        m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+        m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
 
         connect(
             m_ui->m_thumbnailView,
@@ -333,13 +333,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter,
         m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-    connect(m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
+    connect(
+        m_assetBrowserModel,
+        &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::OpenItemForEditing);
+
+    connect(
+        m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestThumbnailviewUpdate,
+            m_ui->m_thumbnailView, &AzAssetBrowser::AssetBrowserThumbnailView::UpdateThumbnailview);
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
-    m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
+    m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -426,8 +432,9 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
     return listener;
 }
 
-bool AzAssetBrowserWindow::TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView) {
-    return m_ui->m_assetBrowserTreeViewWidget == treeView;
+bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
+{
+    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)

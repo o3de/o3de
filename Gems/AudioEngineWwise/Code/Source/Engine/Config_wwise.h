@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h> // This include is needed to include WinSock2.h before including Windows.h
+                                 // As AK/SoundEngine/Common/AkTypes.h eventually includes Windows.h
+
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
 
@@ -31,12 +34,12 @@ namespace Audio::Wwise
     struct ConfigurationSettings
     {
         AZ_TYPE_INFO(ConfigurationSettings, "{6BEEC05E-C5AE-4270-AAAD-08E27A6B5341}");
-        AZ_CLASS_ALLOCATOR(ConfigurationSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConfigurationSettings, AZ::SystemAllocator);
 
         struct PlatformMapping
         {
             AZ_TYPE_INFO(PlatformMapping, "{9D444546-784B-4509-A8A5-8E174E345097}");
-            AZ_CLASS_ALLOCATOR(PlatformMapping, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PlatformMapping, AZ::SystemAllocator);
 
             PlatformMapping() = default;
             ~PlatformMapping() = default;

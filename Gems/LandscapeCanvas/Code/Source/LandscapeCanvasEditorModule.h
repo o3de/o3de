@@ -18,7 +18,7 @@ namespace LandscapeCanvas
     {
     public:
         AZ_RTTI(LandscapeCanvasEditorModule, "{5E539B81-792E-4BE5-BCA2-95C5D826E75B}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(LandscapeCanvasEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LandscapeCanvasEditorModule, AZ::SystemAllocator);
 
         LandscapeCanvasEditorModule();
 

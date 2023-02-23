@@ -787,7 +787,7 @@ namespace AZ
     class ScriptContext
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator);
 
         static const int m_maxDbgName = 512; ///< Max debug name length.
 

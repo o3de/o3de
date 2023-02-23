@@ -39,7 +39,7 @@ namespace EMotionFX
 
         void InstallCapsuleViewportEditFunctions();
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
 
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         MCore::CommandGroup m_commandGroup;

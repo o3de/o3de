@@ -37,7 +37,7 @@ namespace GraphModel
         : public AzToolsFramework::AssetSystemBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ModuleGraphManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleGraphManager, AZ::SystemAllocator);
         AZ_RTTI(Graph, "{68476353-C672-4408-9B34-A409CC63858E}");
 
         explicit ModuleGraphManager(GraphContextPtr graphContext, AZ::SerializeContext* serializeContext = nullptr);

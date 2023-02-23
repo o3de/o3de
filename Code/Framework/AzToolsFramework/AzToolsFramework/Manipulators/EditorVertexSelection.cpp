@@ -17,8 +17,10 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -27,6 +29,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+
 #include <QApplication>
 #include <QDoubleValidator>
 #include <QMessageBox>
@@ -70,6 +73,37 @@ namespace AzToolsFramework
     static const char* const s_deselectVerticesTitle = "Deselect Vertices";
     static const char* const s_deselectVerticesDesc = "Deselect current vertex selection";
 
+    bool IsVertexSelectionEmpty()
+    {
+        auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        bool emptySelection = true;
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [&emptySelection](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                int count = 0;
+                EditorVertexSelectionVariableRequestBus::EventResult(
+                    count, entityComponentIdPair, &EditorVertexSelectionVariableRequests::GetSelectedVerticesCount);
+
+                emptySelection = emptySelection && count == 0;
+            }
+        );
+
+        return emptySelection;
+    }
+
+    void OnVertexSelectionCountChanged()
+    {
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+        }
+    }
+
     void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
     {
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
@@ -82,6 +116,8 @@ namespace AzToolsFramework
             hotKeyManagerInterface,
             "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
 
+        actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+
         // Duplicate Vertices
         {
             constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.duplicate";
@@ -89,6 +125,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_duplicateVerticesTitle;
             actionProperties.m_description = s_duplicateVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -109,6 +146,16 @@ namespace AzToolsFramework
                 }
             );
 
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
         }
 
@@ -119,6 +166,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_deleteVerticesTitle;
             actionProperties.m_description = s_deleteVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -139,6 +187,16 @@ namespace AzToolsFramework
                 }
             );
 
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
         }
 
@@ -149,6 +207,7 @@ namespace AzToolsFramework
             actionProperties.m_name = s_deselectVerticesTitle;
             actionProperties.m_description = s_deselectVerticesDesc;
             actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             actionManagerInterface->RegisterAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -169,6 +228,16 @@ namespace AzToolsFramework
                 }
             );
 
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
         }
     }
@@ -183,6 +252,23 @@ namespace AzToolsFramework
         menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
         menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
         menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
+    }
+
+    void EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface on DisableComponentModeEndOnVertexSelection.");
+
+        // Install an Enabled State Callback to the End Component Mode action to disable it when Vertex Selection is non-empty.
+        actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.componentMode.end",
+            []() -> bool
+            {
+                return IsVertexSelectionEmpty();
+            }
+        );
+        actionManagerInterface->AddActionToUpdater(
+            EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, "o3de.action.componentMode.end");
     }
 
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -762,6 +848,12 @@ namespace AzToolsFramework
                 // centered on current selection)
                 RefreshTranslationManipulator();
 
+                if (!vertexBoxSelectData->m_deltaSelection.empty())
+                {
+                    // update actions that depend on vertex selection count
+                    OnVertexSelectionCountChanged();
+                }
+
                 // restore state once box select has completed
                 vertexBoxSelectData->m_startSelection.clear();
                 vertexBoxSelectData->m_deltaSelection.clear();
@@ -982,6 +1074,20 @@ namespace AzToolsFramework
     void EditorVertexSelectionVariable<Vertex>::ClearVertexSelection()
     {
         EditorVertexSelectionBase<Vertex>::ClearSelected();
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
+    }
+
+    template<typename Vertex>
+    int EditorVertexSelectionVariable<Vertex>::GetSelectedVerticesCount()
+    {
+        if (EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return aznumeric_cast<int>(EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size());
+        }
+
+        return 0;
     }
 
     template<typename Vertex>
@@ -1198,6 +1304,9 @@ namespace AzToolsFramework
             // manipulator at this vertex
             CreateTranslationManipulator(entityComponentIdPair, managerId, vertex, vertexIndex);
         }
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
     }
 
     // configure the selection manipulator for fixed editor selection - this configures the view and action
@@ -1538,10 +1647,10 @@ namespace AzToolsFramework
     template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator)
 
     template class EditorVertexSelectionBase<AZ::Vector2>;
     template class EditorVertexSelectionBase<AZ::Vector3>;

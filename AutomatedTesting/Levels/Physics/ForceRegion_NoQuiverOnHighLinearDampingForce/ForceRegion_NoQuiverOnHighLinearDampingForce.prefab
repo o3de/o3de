@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -71,10 +67,6 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 10512175486999420826
                 },
-                "Component_[10729728356565917095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10729728356565917095
-                },
                 "Component_[11783523334734810042]": {
                     "$type": "EditorForceRegionComponent",
                     "Id": 11783523334734810042,
@@ -90,6 +82,10 @@
                 "Component_[13500036476732578341]": {
                     "$type": "EditorLockComponent",
                     "Id": 13500036476732578341
+                },
+                "Component_[13601221085707996595]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 13601221085707996595
                 },
                 "Component_[17475484965829344677]": {
                     "$type": "EditorEntitySortComponent",
@@ -139,11 +135,6 @@
                                 {
                                     "Name": "Entire object"
                                 }
-                            ]
-                        },
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
                             ]
                         }
                     },
@@ -206,10 +197,6 @@
                 "Component_[1933240123730478370]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 1933240123730478370
-                },
-                "Component_[2433946146395572651]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2433946146395572651
                 },
                 "Component_[3068220161200459190]": {
                     "$type": "EditorOnlyEntityComponent",

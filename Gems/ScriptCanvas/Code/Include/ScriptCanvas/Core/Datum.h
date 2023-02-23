@@ -40,7 +40,7 @@ namespace ScriptCanvas
 
     public:
         AZ_RTTI(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}", SerializationListener);
-        AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator);
 
         enum class eOriginality : int
         {

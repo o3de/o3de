@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class InvertGradientModifierNode : public BaseGradientModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(InvertGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvertGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(InvertGradientModifierNode, "{B98466A1-1980-43B6-909F-671AF3987E3B}", BaseGradientModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

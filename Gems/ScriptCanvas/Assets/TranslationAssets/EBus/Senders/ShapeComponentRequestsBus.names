@@ -153,7 +153,32 @@
                             }
                         }
                     ]
+                },
+                {
+                    "base": "GenerateRandomPointInside",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Generate Random Point Inside"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Generate Random Point Inside is invoked"
+                    },
+                    "details": {
+                        "name": "Generate Random Point Inside",
+                        "tooltip": "Generates a point inside the shape with uniform random sampling"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point",
+                                "tooltip": "The generated point"
+                            }
+                        }
+                    ]
                 }
+
             ]
         }
     ]

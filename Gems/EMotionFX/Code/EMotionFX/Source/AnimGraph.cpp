@@ -31,7 +31,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraph, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraph, AnimGraphAllocator)
 
     AnimGraph::AnimGraph()
     {

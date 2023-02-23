@@ -38,6 +38,8 @@ namespace UnitTests
 
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
 
+            AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
+            AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
             AssetProcessor::UuidManager::Reflect(m_serializeContext.get());
 
             m_uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
@@ -62,11 +64,13 @@ namespace UnitTests
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
 
         MockFileStateCache m_fileStateCache;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
         AzToolsFramework::MetadataManager m_metadataManager;
         AssetProcessor::UuidManager m_uuidManager;
         MockPathConversion m_pathConversion;
         MockVirtualFileIO m_virtualFileIO;
         AZStd::unique_ptr<testing::NiceMock<MockComponentApplication>> m_componentApplication;
+        TraceBusErrorChecker m_errorChecker;
 
         AssetProcessor::IUuidRequests* m_uuidInterface{};
     };
@@ -84,7 +88,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_FALSE(uuid.IsNull());
+        EXPECT_TRUE(uuid);
         // Make sure a metadata file was created
         EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
     }
@@ -93,12 +97,11 @@ namespace UnitTests
     {
         static constexpr const char* TestFile = "c:/somepath/mockfile.txt";
 
-        TraceBusErrorChecker errorHandler;
-        errorHandler.Begin();
+        m_errorChecker.Begin();
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
-        errorHandler.End(1);
+        m_errorChecker.End(1);
 
-        EXPECT_TRUE(uuid.IsNull());
+        EXPECT_FALSE(uuid);
     }
 
     TEST_F(UuidManagerTests, GetUuid_ExistingFileDeleted_Fails)
@@ -109,7 +112,7 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_FALSE(uuid.IsNull());
+        EXPECT_TRUE(uuid);
         // Make sure a metadata file was created
         EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(
             AZStd::string::format("%s%s", TestFile, AzToolsFramework::MetadataManager::MetadataFileExtension).c_str()));
@@ -121,12 +124,11 @@ namespace UnitTests
         m_uuidInterface->FileRemoved((AZStd::string(TestFile) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
         // Check the UUID again, expecting an error
-        TraceBusErrorChecker errorHandler;
-        errorHandler.Begin();
+        m_errorChecker.Begin();
         uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
-        errorHandler.End(1);
+        m_errorChecker.End(1);
 
-        EXPECT_TRUE(uuid.IsNull());
+        EXPECT_FALSE(uuid);
     }
 
     TEST_F(UuidManagerTests, GetUuidTwice_ReturnsSameUuid)
@@ -137,11 +139,12 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_FALSE(uuid.IsNull());
+        ASSERT_TRUE(uuid);
 
         auto uuid2 = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_EQ(uuid, uuid2);
+        ASSERT_TRUE(uuid2);
+        EXPECT_EQ(uuid.GetValue(), uuid2.GetValue());
     }
 
     TEST_F(UuidManagerTests, GetUuid_DifferentFiles_ReturnsDifferentUuid)
@@ -154,11 +157,12 @@ namespace UnitTests
 
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
-        EXPECT_FALSE(uuid.IsNull());
+        ASSERT_TRUE(uuid);
 
         auto uuid2 = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
-        EXPECT_NE(uuid, uuid2);
+        ASSERT_TRUE(uuid2);
+        EXPECT_NE(uuid.GetValue(), uuid2.GetValue());
     }
 
     TEST_F(UuidManagerTests, GetLegacyUuids_UppercaseFileName_ReturnsTwoDifferentUuids)
@@ -167,7 +171,11 @@ namespace UnitTests
 
         MakeFile(TestFile);
 
-        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
+        auto result = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
+
+        ASSERT_TRUE(result);
+
+        auto uuids = result.GetValue();
 
         ASSERT_EQ(uuids.size(), 2);
         EXPECT_NE(*uuids.begin(), *++uuids.begin());
@@ -179,9 +187,10 @@ namespace UnitTests
 
         MakeFile(TestFile);
 
-        auto uuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
+        auto result = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_EQ(uuids.size(), 1);
+        ASSERT_TRUE(result);
+        EXPECT_EQ(result.GetValue().size(), 1);
     }
 
     TEST_F(UuidManagerTests, GetLegacyUuids_DifferentFromCanonicalUuid)
@@ -192,11 +201,13 @@ namespace UnitTests
 
         auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
-        ASSERT_EQ(legacyUuids.size(), 2);
+        ASSERT_TRUE(legacyUuids);
+        ASSERT_EQ(legacyUuids.GetValue().size(), 2);
 
         auto canonicalUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_THAT(legacyUuids, ::testing::Not(::testing::Contains(canonicalUuid)));
+        ASSERT_TRUE(canonicalUuid);
+        EXPECT_THAT(legacyUuids.GetValue(), ::testing::Not(::testing::Contains(canonicalUuid.GetValue())));
     }
 
     TEST_F(UuidManagerTests, MoveFile_UuidRemainsTheSame)
@@ -218,7 +229,10 @@ namespace UnitTests
 
         auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
-        EXPECT_EQ(uuid, movedUuid);
+        ASSERT_TRUE(uuid);
+        ASSERT_TRUE(movedUuid);
+
+        EXPECT_EQ(uuid.GetValue(), movedUuid.GetValue());
     }
 
     TEST_F(UuidManagerTests, MoveFileWithComplexName_UuidRemainsTheSame)
@@ -240,7 +254,10 @@ namespace UnitTests
 
         auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
 
-        EXPECT_EQ(uuid, movedUuid);
+        ASSERT_TRUE(uuid);
+        ASSERT_TRUE(movedUuid);
+
+        EXPECT_EQ(uuid.GetValue(), movedUuid.GetValue());
     }
 
     TEST_F(UuidManagerTests, MetadataRemoved_NewUuidAssigned)
@@ -259,7 +276,10 @@ namespace UnitTests
 
         auto movedUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_NE(uuid, movedUuid);
+        ASSERT_TRUE(uuid);
+        ASSERT_TRUE(movedUuid);
+
+        EXPECT_NE(uuid.GetValue(), movedUuid.GetValue());
     }
 
     TEST_F(UuidManagerTests, MetadataUpdated_NewUuidAssigned)
@@ -283,11 +303,15 @@ namespace UnitTests
             (AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str(),
             (AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
+        m_uuidInterface->FileRemoved((AZStd::string(FileB) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
         m_uuidInterface->FileChanged((AZStd::string(FileA) + AzToolsFramework::MetadataManager::MetadataFileExtension).c_str());
 
         auto newUuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
 
-        EXPECT_NE(uuid, newUuid);
+        ASSERT_TRUE(uuid);
+        ASSERT_TRUE(newUuid);
+
+        EXPECT_NE(uuid.GetValue(), newUuid.GetValue());
     }
 
     TEST_F(UuidManagerTests, RequestUuid_DisabledType_ReturnsLegacyUuid)
@@ -299,7 +323,9 @@ namespace UnitTests
         auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
         auto legacyUuids = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
 
-        EXPECT_THAT(legacyUuids, ::testing::Contains(uuid));
+        ASSERT_TRUE(uuid);
+        ASSERT_TRUE(legacyUuids);
+        EXPECT_THAT(legacyUuids.GetValue(), ::testing::Contains(uuid.GetValue()));
 
         // Make sure no metadata file was created
         EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(
@@ -317,9 +343,9 @@ namespace UnitTests
         auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, FileA.ParentPath(), FileA.Filename()));
         auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, FileB.ParentPath(), FileB.Filename()));
 
-        EXPECT_FALSE(uuidA.IsNull());
-        EXPECT_FALSE(uuidB.IsNull());
-        EXPECT_EQ(uuidA, uuidB);
+        ASSERT_TRUE(uuidA);
+        ASSERT_TRUE(uuidB);
+        EXPECT_EQ(uuidA.GetValue(), uuidB.GetValue());
     }
 
     TEST_F(UuidManagerTests, TwoFilesWithSameRelativePath_EnabledType_ReturnsDifferentUuid)
@@ -333,9 +359,9 @@ namespace UnitTests
         auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(1, FileA.ParentPath(), FileA.Filename()));
         auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(2, FileB.ParentPath(), FileB.Filename()));
 
-        EXPECT_FALSE(uuidA.IsNull());
-        EXPECT_FALSE(uuidB.IsNull());
-        EXPECT_NE(uuidA, uuidB);
+        ASSERT_TRUE(uuidA);
+        ASSERT_TRUE(uuidB);
+        EXPECT_NE(uuidA.GetValue(), uuidB.GetValue());
     }
 
     TEST_F(UuidManagerTests, GetUuid_CorruptedFile_Fails)
@@ -361,11 +387,89 @@ namespace UnitTests
         m_uuidInterface->FileChanged(MetadataFile);
 
         // Try to read the metadata again, expecting an error
-        TraceBusErrorChecker errorChecker;
-        errorChecker.Begin();
         auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
-        errorChecker.End(2);
 
-        EXPECT_TRUE(uuidRetry.IsNull());
+        EXPECT_FALSE(uuidRetry);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_IncompleteMetadataFile_ReturnsAndUpdates)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        MakeFile(TestFile);
+
+        static constexpr AZ::Uuid testUuid{ "{2EE0C7C2-F21E-4254-A180-174992819254}" };
+        AZStd::string contents = AZStd::string::format("{\"UUID\": {\"uuid\": \"%s\"}}", testUuid.ToFixedString().c_str());
+
+        AZ::Utils::WriteFile(contents, MetadataFile.Native());
+
+        auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        ASSERT_TRUE(uuidRetry);
+        EXPECT_EQ(uuidRetry.GetValue(), testUuid);
+
+        auto legacyIds = m_uuidInterface->GetLegacyUuids(AssetProcessor::SourceAssetReference(TestFile));
+
+        ASSERT_TRUE(legacyIds);
+        EXPECT_EQ(legacyIds.GetValue().size(), 1);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_MetadataFileNoUuid_Fails)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath MetadataFile = TestFile.Native() + AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        MakeFile(TestFile);
+
+        AZStd::string contents = AZStd::string::format("{\"UUID\": {\"originalPath\": \" " AZ_STRING_FORMAT " \"}}", AZ_STRING_ARG(TestFile.Filename().Native()));
+
+        AZ::Utils::WriteFile(contents, MetadataFile.Native());
+
+        auto uuidRetry = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        EXPECT_FALSE(uuidRetry);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_DuplicateUuids_Fails)
+    {
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/mockfile.test.txt";
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/somepath/someotherfile.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
+
+        // Assign the same UUID to FileB (note this doesn't fail)
+        AZ::Interface<AzToolsFramework::IUuidUtil>::Get()->CreateSourceUuid(FileB, uuidA.GetValue());
+
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
+
+        EXPECT_FALSE(uuidB);
+    }
+
+    TEST_F(UuidManagerTests, GetUuid_DuplicateUuidsClearedCache_Succeeds)
+    {
+        static constexpr AZ::IO::FixedMaxPath FileA = "c:/somepath/mockfile.test.txt";
+        static constexpr AZ::IO::FixedMaxPath FileB = "c:/somepath/someotherfile.txt";
+
+        MakeFile(FileA);
+        MakeFile(FileB);
+
+        auto uuidA = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileA));
+
+        // Assign the same UUID to FileB
+        AZ::Interface<AzToolsFramework::IUuidUtil>::Get()->CreateSourceUuid(FileB, uuidA.GetValue());
+
+        // Pretend we deleted FileA so there shouldn't be a conflict anymore
+        m_uuidInterface->FileRemoved(AzToolsFramework::MetadataManager::ToMetadataPath(FileA.c_str()));
+
+        auto uuidB = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(FileB));
+
+        ASSERT_TRUE(uuidA);
+        ASSERT_TRUE(uuidB);
+
+        EXPECT_EQ(uuidB.GetValue(), uuidA.GetValue());
     }
 }

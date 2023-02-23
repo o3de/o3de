@@ -314,7 +314,7 @@ struct IMovieCallback
 struct IAnimTrack
 {
     AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}");
-    AZ_CLASS_ALLOCATOR(IAnimTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(IAnimTrack, AZ::SystemAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -625,7 +625,7 @@ struct IAnimNode
 {
 public:
     AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}");
-    AZ_CLASS_ALLOCATOR(IAnimNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(IAnimNode, AZ::SystemAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -1034,7 +1034,7 @@ struct IAnimStringTable
 struct IAnimSequence
 {
     AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}");
-    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator);
 
     static const int kSequenceVersion = 5;
 
@@ -1063,6 +1063,7 @@ struct IAnimSequence
         eSeqFlags_EarlyMovieUpdate    = BIT(15), //!< Turn the 'sys_earlyMovieUpdate' on during the sequence.
         eSeqFlags_LightAnimationSet   = BIT(16), //!< A special unique sequence for light animations
         eSeqFlags_NoMPSyncingNeeded   = BIT(17), //!< this sequence doesn't require MP net syncing
+        eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };
 
     virtual ~IAnimSequence() {};

@@ -40,7 +40,7 @@ namespace AZ
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroupPool, "{D75561AF-C10A-41BC-BABF-63DBFA160388}");
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
             /**
              * Instantiates or returns an existing runtime pool for a given ShaderResourceGroup.

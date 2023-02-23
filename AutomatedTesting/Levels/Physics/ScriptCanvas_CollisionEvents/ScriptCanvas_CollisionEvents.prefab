@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -92,10 +88,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[9432950532896492451]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 9432950532896492451,
@@ -114,10 +106,6 @@
             "Id": "Entity_[334020569918]",
             "Name": "Begin Signal",
             "Components": {
-                "Component_[10086183393590052783]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10086183393590052783
-                },
                 "Component_[11212898224298393352]": {
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 11212898224298393352
@@ -176,10 +164,6 @@
                 "Component_[12405124462018761521]": {
                     "$type": "EditorLockComponent",
                     "Id": 12405124462018761521
-                },
-                "Component_[17303801290637898798]": {
-                    "$type": "SelectionComponent",
-                    "Id": 17303801290637898798
                 },
                 "Component_[17471919493216976961]": {
                     "$type": "EditorVisibilityComponent",
@@ -251,10 +235,6 @@
                 "Component_[17945696094944770262]": {
                     "$type": "EditorLockComponent",
                     "Id": 17945696094944770262
-                },
-                "Component_[18325697466939096425]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18325697466939096425
                 },
                 "Component_[3493262362913959097]": {
                     "$type": "EditorEntitySortComponent",
@@ -333,9 +313,11 @@
                     "$type": "EditorShapeColliderComponent",
                     "Id": 14110900608286705866,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -349,6 +331,10 @@
                             ]
                         }
                     ]
+                },
+                "Component_[283934156241595823]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 283934156241595823
                 },
                 "Component_[3148068961413705897]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -373,10 +359,6 @@
                             31.0
                         ]
                     }
-                },
-                "Component_[6089046069377098239]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6089046069377098239
                 },
                 "Component_[714241131360278670]": {
                     "$type": "EditorEntitySortComponent",
@@ -447,12 +429,17 @@
                     "Configuration": {
                         "entityId": "",
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 2.5
-                        }
+                        "Inertia tensor": [
+                            2.5,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.5,
+                            0.0,
+                            0.0,
+                            0.0,
+                            2.5
+                        ]
                     }
                 },
                 "Component_[17736810712679913703]": {
@@ -463,112 +450,113 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 2499566050349593055
                 },
-                "Component_[2556187931131992823]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2556187931131992823
-                },
                 "Component_[584441947048980638]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 584441947048980638,
-                    "m_name": "collision_events_script.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
+                    "configuration": {
+                        "sourceHandle": {
                             "id": "{80C6B26A-79AA-5734-B254-388DB32E2407}",
                             "path": "D:/Projects/o3de-dev/o3de/AutomatedTesting/Levels/Physics/ScriptCanvas_CollisionEvents/collision_events_script.scriptcanvas"
                         },
-                        "entityId": [
-                            [
-                                {
-                                    "m_id": "{79C630E7-2ED7-40E9-929D-6D88FC32ADD9}"
-                                },
-                                ""
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{80C6B26A-79AA-5734-B254-388DB32E2407}",
+                                "path": "D:/Projects/o3de-dev/o3de/AutomatedTesting/Levels/Physics/ScriptCanvas_CollisionEvents/collision_events_script.scriptcanvas"
+                            },
+                            "entityId": [
+                                [
+                                    {
+                                        "m_id": "{79C630E7-2ED7-40E9-929D-6D88FC32ADD9}"
+                                    },
+                                    ""
+                                ],
+                                [
+                                    {
+                                        "m_id": "{C802DF6D-82C4-4648-81AD-99DB01A03B3B}"
+                                    },
+                                    ""
+                                ],
+                                [
+                                    {
+                                        "m_id": "{F1E1AFD6-DCE6-4A1F-AF22-59F2B7B943CC}"
+                                    },
+                                    ""
+                                ]
                             ],
-                            [
+                            "overrides": [
                                 {
-                                    "m_id": "{C802DF6D-82C4-4648-81AD-99DB01A03B3B}"
+                                    "Datum": {
+                                        "isOverloadedStorage": false,
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[338315537214]",
+                                        "label": "Persist Signal ID"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{79C630E7-2ED7-40E9-929D-6D88FC32ADD9}"
+                                    },
+                                    "VariableName": "Persist Signal ID",
+                                    "InitialValueSource": 1
                                 },
-                                ""
-                            ],
-                            [
                                 {
-                                    "m_id": "{F1E1AFD6-DCE6-4A1F-AF22-59F2B7B943CC}"
+                                    "Datum": {
+                                        "isOverloadedStorage": false,
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[342610504510]",
+                                        "label": "End Signal ID"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{C802DF6D-82C4-4648-81AD-99DB01A03B3B}"
+                                    },
+                                    "VariableName": "End Signal ID",
+                                    "InitialValueSource": 1
                                 },
-                                ""
+                                {
+                                    "Datum": {
+                                        "isOverloadedStorage": false,
+                                        "scriptCanvasType": {
+                                            "m_type": 1
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "EntityId",
+                                        "value": "Entity_[334020569918]",
+                                        "label": "Begin Signal ID"
+                                    },
+                                    "InputControlVisibility": {
+                                        "Value": 850104567
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{F1E1AFD6-DCE6-4A1F-AF22-59F2B7B943CC}"
+                                    },
+                                    "VariableName": "Begin Signal ID",
+                                    "InitialValueSource": 1
+                                }
                             ]
-                        ],
-                        "overrides": [
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[338315537214]",
-                                    "label": "Persist Signal ID"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{79C630E7-2ED7-40E9-929D-6D88FC32ADD9}"
-                                },
-                                "VariableName": "Persist Signal ID",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[342610504510]",
-                                    "label": "End Signal ID"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{C802DF6D-82C4-4648-81AD-99DB01A03B3B}"
-                                },
-                                "VariableName": "End Signal ID",
-                                "InitialValueSource": 1
-                            },
-                            {
-                                "Datum": {
-                                    "scriptCanvasType": {
-                                        "m_type": 1
-                                    },
-                                    "isNullPointer": false,
-                                    "$type": "EntityId",
-                                    "value": "Entity_[334020569918]",
-                                    "label": "Begin Signal ID"
-                                },
-                                "InputControlVisibility": {
-                                    "Value": 850104567
-                                },
-                                "VariableId": {
-                                    "m_id": "{F1E1AFD6-DCE6-4A1F-AF22-59F2B7B943CC}"
-                                },
-                                "VariableName": "Begin Signal ID",
-                                "InitialValueSource": 1
-                            }
-                        ]
-                    },
-                    "sourceHandle": {
-                        "id": "{80C6B26A-79AA-5734-B254-388DB32E2407}",
-                        "path": "D:/Projects/o3de-dev/o3de/AutomatedTesting/Levels/Physics/ScriptCanvas_CollisionEvents/collision_events_script.scriptcanvas"
+                        }
                     }
                 },
                 "Component_[6003927233414867950]": {
                     "$type": "EditorColliderComponent",
                     "Id": 6003927233414867950,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
