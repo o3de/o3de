@@ -29,11 +29,13 @@ namespace AZ::Render
 
         static AZ::RPI::Ptr<SplashScreenPass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
-        // TickBus overrides...
+        //! TickBus overrides...
+        //! Update tick for animation in the splash screen pass.
+        //! Due to deltaTime scalability, it is actually using an abosulte time stamp for delta time.
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // Scope producer functions...
-        void SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph) override;
+        //! Scope producer functions...
+        //! Set up srg indices for images and shader data.
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
 
     private:
@@ -45,25 +47,27 @@ namespace AZ::Render
         void FrameBeginInternal(FramePrepareParams params) override;
         void FrameEndInternal() override;
 
-        bool m_beginTimer = false;  // Flag to begin timing.
-        float m_screenTime = 10.0f; // How long the slash screen lasts. Will be initialized by setreg.
-        float m_lastRealTimeStamp;  // Time stamp in seconds, used to calculate unscaled delta time.
+        //! Flag to begin timing.
+        bool m_beginTimer = false;
+        //! The time that the splash screen will last. Will be set from splash_screen.setreg.
+        float m_durationSeconds = 10.0f;
+        //! Time stamp in seconds, used to calculate unscaled delta time.
+        float m_lastRealTimeStamp;
 
         // Data struct passed to the shader.
         struct SplashScreenParams
         {
             float m_fadingFactor;
-            uint32_t m_flags;
         };
 
-        // Shader connections
+        //! Shader connections
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_splashScreenImage;
         AZ::RHI::ShaderInputNameIndex m_splashScreenImageIndex = "m_splashScreenImage";
 
         SplashScreenParams m_splashScreenParams;
         AZ::RHI::ShaderInputNameIndex m_splashScreenParamsIndex = "m_splashScreenParams";
 
-        // Splash screen settings read from setreg
+        //! Splash screen settings read from setreg
         SplashScreenSettings m_settings;
     };
 }

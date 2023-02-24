@@ -12,6 +12,8 @@
 
 namespace AZ::Render
 {
+    //! Splash screen settings that describe how to render.
+    //! The settings will be retrieved from setting registry: splash_screen.setreg.
     class SplashScreenSettings
     {
     public:
@@ -23,8 +25,14 @@ namespace AZ::Render
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! The image path to be rendered on the screen.
         AZStd::string m_imagePath;
-        float m_lastingTime = 10.0f;
+
+        //! The time that the splash screen will last.
+        //! Number in seconds.
+        float m_durationSeconds = 10.0f;
+
+        //! Fading effect flag.
         bool m_fading = true;
     };
 } // namespace AZ::Render

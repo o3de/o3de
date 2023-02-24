@@ -31,11 +31,6 @@ namespace AZ::Render
         Clear();
     }
 
-    void SplashScreenPass::SetupFrameGraphDependencies(AZ::RHI::FrameGraphInterface frameGraph)
-    {
-        AZ::RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
-    }
-
     void SplashScreenPass::InitializeInternal()
     {
         AZ::RPI::FullscreenTrianglePass::InitializeInternal();
@@ -49,7 +44,7 @@ namespace AZ::Render
         }
 
         m_splashScreenImage = AZ::RPI::LoadStreamingTexture(m_settings.m_imagePath);
-        m_screenTime = m_settings.m_lastingTime;
+        m_durationSeconds = m_settings.m_durationSeconds;
 
         if (!m_splashScreenImage)
         {
@@ -57,7 +52,7 @@ namespace AZ::Render
         }
 
         m_splashScreenImageIndex.Reset();
-        m_splashScreenImageIndex.Reset();
+        m_splashScreenParamsIndex.Reset();
 
         const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
         m_lastRealTimeStamp = aznumeric_cast<float>(currentTimeUs) / 1000000.0f;
@@ -70,7 +65,7 @@ namespace AZ::Render
         m_splashScreenImage = nullptr;
 
         m_splashScreenImageIndex.Reset();
-        m_splashScreenImageIndex.Reset();
+        m_splashScreenParamsIndex.Reset();
     }
 
     void SplashScreenPass::FrameBeginInternal([[maybe_unused]] FramePrepareParams params)
@@ -91,7 +86,7 @@ namespace AZ::Render
     {
         FullscreenTrianglePass::FrameEndInternal();
 
-        if (m_screenTime < 0.0f)
+        if (m_durationSeconds < 0.0f)
         {
             m_beginTimer = false;
 
@@ -124,12 +119,14 @@ namespace AZ::Render
 
         if (m_beginTimer)
         {
-            m_screenTime -= realDeltaTime;
+            m_durationSeconds -= realDeltaTime;
         }
 
         if (m_settings.m_fading)
         {
-            m_splashScreenParams.m_fadingFactor = m_screenTime < 0.0f ? 0.0f : m_screenTime / 10.0f;
+            float leftTimeRatio = m_durationSeconds / m_settings.m_durationSeconds;
+
+            m_splashScreenParams.m_fadingFactor = m_durationSeconds < 0.0f ? 0.0f : leftTimeRatio * leftTimeRatio * leftTimeRatio;
         }
         else
         {
@@ -139,7 +136,7 @@ namespace AZ::Render
         // Skipping the first frame for engine initialization time.
         m_beginTimer = true;
 
-        if (m_screenTime < 0.0f)
+        if (m_durationSeconds < 0.0f)
         {
             AZ::TickBus::Handler::BusDisconnect();
         }

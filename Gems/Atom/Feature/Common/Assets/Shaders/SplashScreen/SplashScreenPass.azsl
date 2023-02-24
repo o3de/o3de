@@ -25,7 +25,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     struct SplashScreenParams
     {
         float m_fadingFactor;
-        uint m_flags;
     } m_splashScreenParams;
 }
 

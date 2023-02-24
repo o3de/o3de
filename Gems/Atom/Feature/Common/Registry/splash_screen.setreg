@@ -7,7 +7,7 @@
                     "$type": "AZ::Render::SplashScreenSettings",
                     // Sample context only.
                     //"ImagePath" : "Textures/SplashScreen.jpg.streamingimage",
-                    "LastingTime" : 10.0,
+                    "DurationSeconds" : 10.0,
                     "Fading" : true
                 }
             }
