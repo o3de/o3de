@@ -735,8 +735,10 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 
     viewportViewsMenuWrapper.AddSeparator();
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
+    viewportViewsMenuWrapper.AddSeparator();
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::HideHelpers);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);

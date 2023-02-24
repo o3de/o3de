@@ -1096,6 +1096,31 @@ void MainWindow::InitActions()
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
+    am->AddAction(AzToolsFramework::HideHelpers, tr("Hide Helpers"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(!AzToolsFramework::OnlyShowHelpersForSelectedEntities() && !AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    false);
+
+                AzToolsFramework::SetHelpersVisible(false);
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
+                    false);
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))

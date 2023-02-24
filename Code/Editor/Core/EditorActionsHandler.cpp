@@ -1209,7 +1209,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
     // Show Helpers
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleHelpers";
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.showHelpers";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Helpers for all entities";
         actionProperties.m_description = "Show/Hide Helpers.";
@@ -1248,7 +1248,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
     // Only Show Helpers for Selected Entities
     {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleSelectedEntityHelpers";
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.showSelectedEntityHelpers";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Helpers for selected entities";
         actionProperties.m_description = "If enabled, shows Helpers for selected entities only.";
@@ -1279,6 +1279,41 @@ void EditorActionsHandler::OnActionRegistrationHook()
             });
 
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier, actionIdentifier);
+    }
+
+    // Hide Helpers
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.view.hideHelpers";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Hide Helpers";
+        actionProperties.m_description = "Hide all helpers";
+        actionProperties.m_category = "View";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
+                    false);
+
+                AzToolsFramework::SetHelpersVisible(false);
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, false);
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            },
+            []
+            {
+                return !AzToolsFramework::HelpersVisible() && !AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+            });
+
+        m_actionManagerInterface->AddActionToUpdater(
+            EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier, actionIdentifier);
     }
 
     // Refresh Style
@@ -1838,8 +1873,10 @@ void EditorActionsHandler::OnMenuBindingHook()
             }
             m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 500);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 600);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 700);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 800);
+            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 700);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.showHelpers", 800);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.showSelectedEntityHelpers", 900);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.hideHelpers", 1000);
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }

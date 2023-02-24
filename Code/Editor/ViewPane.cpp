@@ -579,8 +579,10 @@ void CLayoutViewPane::OnMenuBindingHook()
     // Helpers
     {
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 200);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showSelectedEntityHelpers", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.hideHelpers", 500);
     }
 
     // Size
