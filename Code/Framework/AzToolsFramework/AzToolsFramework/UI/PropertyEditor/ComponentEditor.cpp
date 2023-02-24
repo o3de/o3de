@@ -908,7 +908,7 @@ namespace AzToolsFramework
         return m_components;
     }
 
-    void ComponentEditor::GetComponentAdapterContents(const GetComponentAdapterContentsCallback& callback) const
+    void ComponentEditor::VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const
     {
         callback(m_adapter->GetContents());
     }

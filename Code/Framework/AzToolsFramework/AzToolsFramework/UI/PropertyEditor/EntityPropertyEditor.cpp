@@ -742,7 +742,7 @@ namespace AzToolsFramework
         m_newComponentId = componentId;
     }
 
-    void EntityPropertyEditor::GetComponentEditors(const GetComponentEditorsCallback& callback) const
+    void EntityPropertyEditor::VisitComponentEditors(const VisitComponentEditorsCallback& callback) const
     {
         for (const ComponentEditor* componentEditor : m_componentEditors)
         {

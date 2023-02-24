@@ -11,7 +11,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <Prefab/PrefabTestFixture.h>
 #include <Prefab/Overrides/PrefabOverrideTestFixture.h>
 
 namespace AzToolsFramework
@@ -31,7 +30,7 @@ namespace UnitTest
 
         void GenerateComponentAdapterDoms(AZ::EntityId);
         void ValidateComponentEditorDomContents(
-            const AzToolsFramework::ComponentEditor::GetComponentAdapterContentsCallback& callback);
+            const AzToolsFramework::ComponentEditor::VisitComponentAdapterContentsCallback& callback);
 
         AZStd::unique_ptr<AzToolsFramework::EntityPropertyEditor> m_testEntityPropertyEditor;
     };

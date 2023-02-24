@@ -29,12 +29,12 @@ namespace UnitTest
 
         GenerateComponentAdapterDoms(newEntityId);
 
-        AzToolsFramework::ComponentEditor::GetComponentAdapterContentsCallback callback = [](const AZ::Dom::Value& adapterContents)
+        AzToolsFramework::ComponentEditor::VisitComponentAdapterContentsCallback callback = [](const AZ::Dom::Value& adapterContents)
         {
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
 
             AZ::Dom::Path pathToTranslateProperty(domPathToOverriddenTranslateProperty);
-            [[maybe_unused]] AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
+            AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 3);
 
@@ -64,11 +64,11 @@ namespace UnitTest
 
         GenerateComponentAdapterDoms(newEntityId);
 
-        AzToolsFramework::ComponentEditor::GetComponentAdapterContentsCallback callback = [](const AZ::Dom::Value& adapterContents)
+        AzToolsFramework::ComponentEditor::VisitComponentAdapterContentsCallback callback = [](const AZ::Dom::Value& adapterContents)
         {
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
             AZ::Dom::Path pathToTranslateProperty(domPathToTranslateProperty);
-            [[maybe_unused]] AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
+            AZ::Dom::Value translateRow = adapterContents[pathToTranslateProperty];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 2);
             EXPECT_EQ(translateRow[0][AZ::DocumentPropertyEditor::Nodes::Label::Value.GetName()].GetString(), "Translate");
