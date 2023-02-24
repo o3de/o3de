@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(RenderToTexturePass, "{4FBA3461-A072-4538-84D1-311D2756B27E}", ParentPass);
-            AZ_CLASS_ALLOCATOR(RenderToTexturePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderToTexturePass, SystemAllocator);
 
             RenderToTexturePass(const PassDescriptor& descriptor);
             ~RenderToTexturePass();

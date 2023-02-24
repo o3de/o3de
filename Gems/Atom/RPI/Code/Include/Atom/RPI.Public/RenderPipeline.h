@@ -88,7 +88,7 @@ namespace AZ
             friend class Scene;
 
         public:
-            AZ_CLASS_ALLOCATOR(RenderPipeline, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderPipeline, AZ::SystemAllocator);
 
             static RenderPipelinePtr CreateRenderPipeline(const RenderPipelineDescriptor& desc);
 

@@ -24,7 +24,7 @@ class CEventTrack
     : public TAnimTrack<IEventKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator);
     AZ_RTTI(CEventTrack, "{CA9D004F-7003-46E7-AB85-7D3846E8C10B}", IAnimTrack);
 
     CEventTrack();

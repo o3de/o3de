@@ -21,7 +21,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::BooleanDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(BooleanDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BooleanDataInterface, AZ::SystemAllocator);
 
         BooleanDataInterface(GraphModel::SlotPtr slot);
         ~BooleanDataInterface() = default;

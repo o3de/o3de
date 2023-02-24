@@ -24,8 +24,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphReferenceNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     static const char* sMaskedParameterNamesMember = "maskedParameterNames";
 

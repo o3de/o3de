@@ -19,7 +19,7 @@ namespace PassCanvas
     {
     public:
         AZ_RTTI(PassGraphCompiler, "{4D9407B1-195A-404A-B97A-E2BA22207C87}", AtomToolsFramework::GraphCompiler);
-        AZ_CLASS_ALLOCATOR(PassGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PassGraphCompiler, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(PassGraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);

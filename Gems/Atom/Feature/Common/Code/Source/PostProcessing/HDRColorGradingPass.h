@@ -26,7 +26,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(HDRColorGradingPass, "{E68E31A1-DB24-4AFF-A029-456A8B74C03C}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(HDRColorGradingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HDRColorGradingPass, SystemAllocator);
 
             virtual ~HDRColorGradingPass() = default;
 

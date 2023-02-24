@@ -47,7 +47,7 @@ namespace AZ
             , public CommandListBase
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
 
             static RHI::Ptr<CommandList> Create();
 

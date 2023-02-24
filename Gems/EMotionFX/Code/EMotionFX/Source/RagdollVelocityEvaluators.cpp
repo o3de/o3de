@@ -13,9 +13,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollVelocityEvaluator, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MovingAverageVelocityEvaluator, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(RunningAverageVelocityEvaluator, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollVelocityEvaluator, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MovingAverageVelocityEvaluator, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(RunningAverageVelocityEvaluator, EMotionFX::ActorAllocator)
 
     void RagdollVelocityEvaluator::CalculateVelocities(Physics::RagdollState& outRagdollPose, const Physics::RagdollState& lastRagdollPose, const Physics::RagdollState& currentRagdollPose, float timeDelta)
     {

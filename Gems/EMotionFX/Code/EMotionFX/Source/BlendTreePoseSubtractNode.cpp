@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSubtractNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSubtractNode, AnimGraphAllocator)
 
     BlendTreePoseSubtractNode::BlendTreePoseSubtractNode()
         : AnimGraphNode()

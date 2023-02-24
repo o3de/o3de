@@ -29,7 +29,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(StreamingImageControllerAsset, "{0797F48F-B097-4209-8D6F-DA40DC0FAB42}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(StreamingImageControllerAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImageControllerAsset, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

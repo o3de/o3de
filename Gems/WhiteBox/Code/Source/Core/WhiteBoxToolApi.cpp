@@ -405,7 +405,7 @@ namespace WhiteBox
     // A wrapper for the OpenMesh source data.
     struct WhiteBoxMesh
     {
-        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WhiteBoxMesh, AZ::SystemAllocator);
 
         WhiteBoxMesh() = default;
         WhiteBoxMesh(WhiteBoxMesh&&) = default;

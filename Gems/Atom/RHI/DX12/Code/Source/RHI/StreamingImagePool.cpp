@@ -37,7 +37,7 @@ namespace AZ
             : public ResourcePoolResolver
         {
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePoolResolver, "{C69BD5E1-15CD-4F60-A899-29E9DEDFA056}", ResourcePoolResolver);
 
             void QueuePrologueTransitionBarriers(CommandList& commandList) override

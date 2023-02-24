@@ -30,7 +30,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringBrowseEditCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringBrowseEditCtrl, AZ::SystemAllocator);
 
         PropertyStringBrowseEditCtrl(QWidget* parent = nullptr);
         virtual void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue);
@@ -54,7 +54,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringBrowseEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringBrowseEditHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("StringBrowseEdit"); }
 
@@ -86,7 +86,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringFilePathCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringFilePathCtrl, AZ::SystemAllocator);
 
         PropertyStringFilePathCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
@@ -104,7 +104,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringFilePathHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringFilePathHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("StringFilePath"); }
 
@@ -136,7 +136,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogCtrl, AZ::SystemAllocator);
 
         PropertyMultilineStringDialogCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
@@ -150,7 +150,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultilineStringDialogHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultilineStringDialog"); }
 
@@ -182,7 +182,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectCtrl, AZ::SystemAllocator);
 
         PropertyMultiStringSelectCtrl(QWidget* parent = nullptr);
         void ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue) override;
@@ -214,7 +214,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectDelimitedHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectDelimitedHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectDelimited"); }
 
@@ -248,7 +248,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectVectorHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectVectorHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectVector"); }
 
@@ -282,7 +282,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectSetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyMultiStringSelectSetHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override { return AZ_CRC_CE("MultiStringSelectSet"); }
 

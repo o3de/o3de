@@ -18,7 +18,7 @@ class PropertyHandlerChar
     // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerChar, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerChar, AZ::SystemAllocator);
 
     AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("Char", 0x8cfe579f); }
     bool IsDefaultHandler() const override { return true; }

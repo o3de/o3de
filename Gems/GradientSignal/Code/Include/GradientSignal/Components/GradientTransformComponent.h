@@ -33,7 +33,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientTransformConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientTransformConfig, AZ::SystemAllocator);
         AZ_RTTI(GradientTransformConfig, "{1106FD53-8B3A-4F97-8051-E34AD70199A5}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

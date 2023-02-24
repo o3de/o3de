@@ -18,7 +18,7 @@ namespace AtomToolsFramework
     struct DynamicPropertyGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicPropertyGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicPropertyGroup, AZ::SystemAllocator);
         AZ_TYPE_INFO(DynamicPropertyGroup, "{F2267292-05E0-43AB-8506-725FA30CD5DF}");
 
         static void Reflect(AZ::ReflectContext* context);

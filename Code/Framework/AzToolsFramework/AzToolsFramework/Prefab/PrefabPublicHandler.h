@@ -36,7 +36,7 @@ namespace AzToolsFramework
             : public PrefabPublicInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
 
             void RegisterPrefabPublicHandlerInterface();

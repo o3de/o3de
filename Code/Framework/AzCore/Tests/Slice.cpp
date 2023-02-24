@@ -101,7 +101,7 @@ namespace UnitTest
         AZStd::vector<AZ::Data::AssetId> m_mockAssetIds;
 
     public:
-        AZ_CLASS_ALLOCATOR(SliceTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceTest_MockCatalog, AZ::SystemAllocator);
 
         SliceTest_MockCatalog()
         {
@@ -561,7 +561,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceTest_RecursionDetection_Catalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceTest_RecursionDetection_Catalog, AZ::SystemAllocator);
 
         AZ::Uuid randomUuid = AZ::Uuid::CreateRandom();
 

@@ -152,7 +152,7 @@ namespace TickBusOrderViewer
     {
     public:
         AZ_RTTI(TickBusOrderViewerModule, "{DAE8B6D3-23ED-4547-9D0C-9F42CA812A06}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(TickBusOrderViewerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TickBusOrderViewerModule, AZ::SystemAllocator);
 
         TickBusOrderViewerModule()
             : CryHooksModule()

@@ -26,7 +26,7 @@ namespace AzFramework
     {
     public:
         AZ_TYPE_INFO(AssetBundleManifest, "{8628A669-7B19-4C48-A7CB-F670CC9586FD}");
-        AZ_CLASS_ALLOCATOR(AssetBundleManifest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetBundleManifest, AZ::SystemAllocator);
 
         AssetBundleManifest();
         ~AssetBundleManifest();

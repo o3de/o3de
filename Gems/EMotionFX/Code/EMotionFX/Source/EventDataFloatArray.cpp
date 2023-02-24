@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventDataFloatArray, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventDataFloatArray, MotionEventAllocator)
 
     bool EventDataFloatArray::Equal(const EventData& rhs, bool ignoreEmptyFields) const
     {

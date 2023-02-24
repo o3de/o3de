@@ -142,7 +142,7 @@ namespace AZ
         using IDataSerializerDeleter = AZStd::function<void(IDataSerializer* ptr)>;
         using IDataSerializerPtr = AZStd::unique_ptr<IDataSerializer, IDataSerializerDeleter>;
 
-        AZ_CLASS_ALLOCATOR(SerializeContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SerializeContext, SystemAllocator);
         AZ_RTTI(SerializeContext, "{83482F97-84DA-4FD4-BF9E-7FE34C8E091F}", ReflectContext);
 
         /// Callback to process data conversion.
@@ -236,7 +236,7 @@ namespace AZ
         {
         public:
 
-            AZ_CLASS_ALLOCATOR(ErrorHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ErrorHandler, AZ::SystemAllocator);
 
             ErrorHandler()
                 : m_nErrors(0)
@@ -345,7 +345,7 @@ namespace AZ
         class DataPatchUpgrade
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataPatchUpgrade, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataPatchUpgrade, SystemAllocator);
             AZ_RTTI(DataPatchUpgrade, "{FD1C3109-0883-45FF-A12F-CAF5E323E954}");
 
             DataPatchUpgrade(AZStd::string_view fieldName, unsigned int fromVersion, unsigned int toVersion);
@@ -439,7 +439,7 @@ namespace AZ
         class DataPatchNameUpgrade : public DataPatchUpgrade
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataPatchNameUpgrade, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataPatchNameUpgrade, SystemAllocator);
             AZ_RTTI(DataPatchNameUpgrade, "{9991F242-7D3B-4E76-B3EA-2E09AE14187D}", DataPatchUpgrade);
 
             DataPatchNameUpgrade(unsigned int fromVersion, unsigned int toVersion, AZStd::string_view oldName, AZStd::string_view newName)
@@ -470,7 +470,7 @@ namespace AZ
         class DataPatchTypeUpgrade : public DataPatchUpgrade
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataPatchTypeUpgrade, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataPatchTypeUpgrade, SystemAllocator);
             AZ_RTTI(DataPatchTypeUpgrade, "{E5A2F519-261C-4B81-925F-3730D363AB9C}", DataPatchUpgrade);
 
             DataPatchTypeUpgrade(AZStd::string_view nodeName, unsigned int fromVersion, unsigned int toVersion, AZStd::function<ToT(const FromT& data)> upgradeFunc)

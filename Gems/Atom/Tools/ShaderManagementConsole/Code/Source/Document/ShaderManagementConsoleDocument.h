@@ -26,7 +26,7 @@ namespace ShaderManagementConsole
     {
     public:
         AZ_RTTI(ShaderManagementConsoleDocument, "{C8FAF1C7-8665-423C-B1DD-82016231B17B}", AtomToolsFramework::AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(ShaderManagementConsoleDocument);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -46,6 +46,7 @@ protected:
     void ImportLayouts(QString file, const QStringList& layouts);
     void OnImportBtnClick();
     void OnCloseAllTools();
+    void OnSelectionChanged();
 
 private:
     QString m_importFileStr;

@@ -29,7 +29,7 @@ namespace GraphModel
     class DataType
     {
     public:
-        AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataType, AZ::SystemAllocator);
         AZ_RTTI(DataType, "{B8CBD17E-B8F7-4090-99A7-E9E9970D3EF3}");
 
         static void Reflect(AZ::ReflectContext* reflection);

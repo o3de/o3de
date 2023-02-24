@@ -46,7 +46,7 @@ namespace AZ
                 Count,
             };
 
-            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator);
 
             static RHI::Ptr<NullDescriptorManager> Create();
 

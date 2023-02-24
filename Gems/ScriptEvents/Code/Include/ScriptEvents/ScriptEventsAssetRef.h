@@ -32,7 +32,7 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAssetRef, "{9BF12D72-9FE5-4F0E-A115-B92D99FB1CD7}");
-        AZ_CLASS_ALLOCATOR(ScriptEventsAssetRef, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsAssetRef, AZ::SystemAllocator);
 
         using AssetChangedCB = AZStd::function<void(const AZ::Data::Asset<ScriptEventsAsset>&, void* userData)>;
 

@@ -23,7 +23,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyIntSliderCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyIntSliderCtrl, AZ::SystemAllocator);
 
         explicit PropertyIntSliderCtrl(QWidget* parent = nullptr);
         virtual ~PropertyIntSliderCtrl();
@@ -77,7 +77,7 @@ namespace AzToolsFramework
     {
         using BaseHandler = IntWidgetHandler<ValueType, PropertyIntSliderCtrl, IntSliderHandlerQObject>;
     public:
-        AZ_CLASS_ALLOCATOR(IntSliderHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntSliderHandler, AZ::SystemAllocator);
     protected:
         AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::Slider; }
         QWidget* CreateGUI(QWidget* parent) override;

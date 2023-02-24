@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TagSelector, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TagSelector, AZ::SystemAllocator)
 
     TagSelector::TagSelector(QWidget* parent)
         : QWidget(parent)

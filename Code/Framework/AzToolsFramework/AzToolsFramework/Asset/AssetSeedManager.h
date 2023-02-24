@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
         constexpr static int s_arraySize = 5;
         AZ_TYPE_INFO(AssetFileInfo, "{F1616D53-9A20-4C04-854E-D458A334B86B}");
-        AZ_CLASS_ALLOCATOR(AssetFileInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetFileInfo, AZ::SystemAllocator);
 
         AssetFileInfo(AZ::Data::AssetId assetId, AZStd::string assetRelativePath, uint64_t modTime, AZStd::array<AZ::u32, s_arraySize> hash);
         AssetFileInfo() = default;
@@ -48,7 +48,7 @@ namespace AzToolsFramework
     public:
 
         AZ_TYPE_INFO(AssetFileInfoList, "{61F16042-E381-47E4-8AAA-91BC532F4101}");
-        AZ_CLASS_ALLOCATOR(AssetFileInfoList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetFileInfoList, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         static bool Save(const AssetFileInfoList& assetFileInfoList, const AZStd::string& destinationFilePath);
@@ -70,7 +70,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(AssetSeedManager, "{0DD7913A-EAD2-43DF-9A30-8A6FA6111E98}");
-        AZ_CLASS_ALLOCATOR(AssetSeedManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetSeedManager, AZ::SystemAllocator);
 
         using AssetsInfoList = AZStd::vector<AZ::Data::AssetInfo>;
 

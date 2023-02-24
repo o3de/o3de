@@ -26,7 +26,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator);
 
     void SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
     {

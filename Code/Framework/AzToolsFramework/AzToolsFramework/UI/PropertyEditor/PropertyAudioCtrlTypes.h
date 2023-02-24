@@ -34,7 +34,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(CReflectedVarAudioControl, "{00016E8C-06FB-48D2-B482-1848343094D3}");
-        AZ_CLASS_ALLOCATOR(CReflectedVarAudioControl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CReflectedVarAudioControl, AZ::SystemAllocator);
 
         CReflectedVarAudioControl() = default;
         virtual ~CReflectedVarAudioControl() = default;
