@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/SphereViewportEdit.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace PhysX
 {
@@ -36,7 +36,7 @@ namespace PhysX
 
         void OnManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
 
-        AZ::Vector3 m_colliderOffset;
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+        AZStd::unique_ptr<AzToolsFramework::SphereViewportEdit> m_sphereViewportEdit;
     };
 } //namespace PhysX

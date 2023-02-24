@@ -26,7 +26,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
-#include <AtomToolsFramework/Graph/GraphCompilerRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -66,6 +66,10 @@ namespace MaterialCanvas
         AZ::NonUniformScaleRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(100, 100, 1.0));
 
+        // Avoid z-fighting with the cube model when double-sided rendering is enabled
+        AZ::TransformBus::Event(
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
+
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
@@ -89,13 +93,13 @@ namespace MaterialCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
-        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -216,8 +220,8 @@ namespace MaterialCanvas
         AZ::Data::AssetId assetId;
 
         AZStd::vector<AZStd::string> generatedFiles;
-        AtomToolsFramework::GraphCompilerRequestBus::EventResult(
-            generatedFiles, documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::GetGeneratedFilePaths);
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            generatedFiles, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGeneratedFilePaths);
 
         for (const auto& generatedFile : generatedFiles)
         {

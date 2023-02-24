@@ -59,11 +59,13 @@ namespace AZ
 
         public:
             AZ_RTTI(MaterialTypeAsset, "{CD7803AB-9C4C-4A33-9A14-7412F1665464}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(MaterialTypeAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialTypeAsset, SystemAllocator);
 
             static const char* DisplayName;
             static const char* Group;
             static const char* Extension;
+
+            static constexpr AZ::u32 SubId = 0;
 
             static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
 

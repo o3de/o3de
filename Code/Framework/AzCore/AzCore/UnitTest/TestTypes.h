@@ -108,14 +108,20 @@ namespace UnitTest
 
         LeakDetectionFixture()
         {
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             m_allocatedSizes = GetAllocatedSizes();
         }
 
         ~LeakDetectionFixture() override
         {
             CheckAllocatorsForLeaks();
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 
@@ -135,25 +141,37 @@ namespace UnitTest
         //Benchmark interface
         void SetUp(const ::benchmark::State&) override
         {
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             m_allocatedSizes = GetAllocatedSizes();
         }
         void SetUp(::benchmark::State&) override
         {
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             m_allocatedSizes = GetAllocatedSizes();
         }
 
         void TearDown(const ::benchmark::State&) override
         {
             CheckAllocatorsForLeaks();
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
 
         void TearDown(::benchmark::State&) override
         {
             CheckAllocatorsForLeaks();
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 
@@ -166,25 +184,6 @@ namespace UnitTest
     class ScopedAllocatorBenchmarkEnvironment
         : public AZ::Test::BenchmarkEnvironmentBase
     {
-    public:
-        ScopedAllocatorBenchmarkEnvironment()
-        {
-            // Only create the allocator if it doesn't exist
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                m_ownsAllocator = true;
-            }
-        }
-        ~ScopedAllocatorBenchmarkEnvironment() override
-        {
-            if (m_ownsAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-        }
-    private:
-        bool m_ownsAllocator{};
     };
 #endif
 

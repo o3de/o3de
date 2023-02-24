@@ -19,6 +19,7 @@ namespace AzToolsFramework
         virtual void DuplicateSelectedVertices() = 0;
         virtual void DeleteSelectedVertices() = 0;
         virtual void ClearVertexSelection() = 0;
+        virtual int GetSelectedVerticesCount() = 0;
 
     protected:
         ~EditorVertexSelectionVariableRequests() = default;

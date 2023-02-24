@@ -17,6 +17,7 @@ static constexpr AZ::TypeId HatComponentTypeId{ "{EADEF936-E987-4BF3-9651-A42251
 class HatConfig : public AZ::ComponentConfig
 {
 public:
+    AZ_CLASS_ALLOCATOR(HatConfig, AZ::SystemAllocator)
     AZ_RTTI(HatConfig, "{A3129800-43DF-48CA-9BC3-77632241B8ED}", ComponentConfig);
     float m_brimWidth = 1.f;
 };

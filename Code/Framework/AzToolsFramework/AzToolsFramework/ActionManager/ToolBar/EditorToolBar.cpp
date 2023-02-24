@@ -20,15 +20,12 @@
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
-        : m_toolBar(new QToolBar("", s_defaultParentWidget))
     {
-        m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
-        : m_toolBar(new QToolBar(name.c_str(), s_defaultParentWidget))
+        : m_name(name)
     {
-        m_toolBar->setMovable(false);
     }
 
     void EditorToolBar::AddSeparator(int sortKey)
@@ -118,19 +115,53 @@ namespace AzToolsFramework
         return widgetIterator->second;
     }
 
-    QToolBar* EditorToolBar::GetToolBar()
+    QToolBar* EditorToolBar::GenerateToolBar()
     {
-        return m_toolBar;
+        QToolBar* toolBar = new QToolBar(m_name.c_str(), s_defaultParentWidget);
+        toolBar->setMovable(false);
+
+        m_toolBars.insert(toolBar);
+
+        s_defaultParentWidget->connect(
+            toolBar,
+            &QObject::destroyed,
+            s_defaultParentWidget,
+            [this, toolBar]()
+            {
+                m_toolBars.erase(toolBar);
+            }
+        );
+
+        RefreshToolBars();
+
+        return toolBar;
     }
 
-    const QToolBar* EditorToolBar::GetToolBar() const
+    void EditorToolBar::EnumerateToolBars(AZStd::function<bool(QToolBar*)> handler)
     {
-        return m_toolBar;
+        for (QToolBar* toolBar : m_toolBars)
+        {
+            if(handler(toolBar))
+            {
+                break;
+            }
+        }
     }
 
-    void EditorToolBar::RefreshToolBar()
+    void EditorToolBar::RefreshToolBars()
     {
-        m_toolBar->clear();
+        if (m_toolBars.empty())
+        {
+            return;
+        }
+
+        EnumerateToolBars(
+            [](QToolBar* toolBar) -> bool
+            {
+                toolBar->clear();
+                return false;
+            }
+        );
 
         for (const auto& vectorIterator : m_toolBarItems)
         {
@@ -142,25 +173,48 @@ namespace AzToolsFramework
                         {
                             if (QAction* action = s_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
                             {
-                                if (!action->isEnabled() &&
-                                    s_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                                auto outcome = s_actionManagerInterface->IsActionActiveInCurrentMode(toolBarItem.m_identifier);
+                                bool isActiveInCurrentMode = outcome.IsSuccess() && outcome.GetValue();
+
+                                if (!IsActionVisible(
+                                        s_actionManagerInternalInterface->GetActionToolBarVisibility(toolBarItem.m_identifier),
+                                        isActiveInCurrentMode,
+                                        action->isEnabled()))
                                 {
                                     continue;
                                 }
 
-                                m_toolBar->addAction(action);
+                                EnumerateToolBars(
+                                    [action](QToolBar* toolBar) -> bool
+                                    {
+                                        toolBar->addAction(action);
+                                        return false;
+                                    }
+                                );
                             }
                         }
                         break;
                     case ToolBarItemType::Separator:
                         {
-                            m_toolBar->addSeparator();
+                            EnumerateToolBars(
+                                [](QToolBar* toolBar) -> bool
+                                {
+                                    toolBar->addSeparator();
+                                    return false;
+                                }
+                            );
                         }
                         break;
                     case ToolBarItemType::ActionAndSubMenu:
                     case ToolBarItemType::Widget:
                         {
-                            m_toolBar->addAction(toolBarItem.m_widgetAction);
+                            EnumerateToolBars(
+                                [toolBarItem](QToolBar* toolBar) -> bool
+                                {
+                                    toolBar->addAction(toolBarItem.m_widgetAction);
+                                    return false;
+                                }
+                            );
                         }
                         break;
                     default:

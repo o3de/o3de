@@ -21,7 +21,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAnglePair, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAnglePair, AZ::SystemAllocator);
 
     JointsSubComponentModeAnglePair::JointsSubComponentModeAnglePair(
         const AZStd::string& propertyName, const AZ::Vector3& axis, float max, float min)
@@ -44,7 +44,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
         const AZ::Quaternion localRotation = localTransform.GetRotation();
 
         AZ::Vector3 displacement = m_axis;
@@ -143,7 +143,7 @@ namespace PhysX
     {
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
         const AZ::Quaternion localRotation = localTransform.GetRotation();
 
         AZ::Transform displacementTransform = localTransform;
@@ -244,7 +244,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);

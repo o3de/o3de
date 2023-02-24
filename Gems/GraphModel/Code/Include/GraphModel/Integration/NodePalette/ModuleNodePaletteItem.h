@@ -38,7 +38,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(CreateModuleNodeMimeEvent, "{914F9D88-7B60-408D-A16F-BCCE4CA41EFB}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateModuleNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateModuleNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -92,7 +92,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(ModuleNodePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleNodePaletteItem, AZ::SystemAllocator);
 
         //! Constructor
         //! \param editorId        Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))

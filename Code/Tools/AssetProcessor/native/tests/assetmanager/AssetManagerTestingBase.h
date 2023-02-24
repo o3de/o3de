@@ -20,6 +20,9 @@
 #include <resourcecompiler/rccontroller.h>
 #include <tests/UnitTestUtilities.h>
 #include <QCoreApplication>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <utilities/UuidManager.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 
 namespace AZ::IO
 {
@@ -76,6 +79,9 @@ namespace UnitTests
         void SetUp() override;
         void TearDown() override;
 
+        static constexpr int AssetSubId = 1;
+        static constexpr int ExtraAssetSubId = 2;
+
     protected:
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);
@@ -83,7 +89,7 @@ namespace UnitTests
         AZStd::string MakePath(const char* filename, bool intermediate);
 
         void CheckProduct(const char* relativePath, bool exists = true);
-        void CheckIntermediate(const char* relativePath, bool exists = true);
+        void CheckIntermediate(const char* relativePath, bool exists = true, bool hasMetadata = false);
         void ProcessSingleStep(int expectedJobCount = 1, int expectedFileCount = 1, int jobToRun = 0, bool expectSuccess = true);
 
         void ProcessFileMultiStage(
@@ -108,8 +114,15 @@ namespace UnitTests
             AssetBuilderSDK::ProductOutputFlags outputFlags,
             bool outputExtraFile = false);
 
+        const char* GetJobProcessFailText();
+
+        AZ::IO::Path GetCacheDir();
+        AZ::IO::FixedMaxPath GetIntermediateAssetsDir();
+
         int m_argc = 0;
         char** m_argv{};
+
+        TraceBusErrorChecker m_errorChecker;
 
         AssetProcessor::FileStatePassthrough m_fileStateCache;
 
@@ -123,8 +136,13 @@ namespace UnitTests
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanfolder;
         MockMultiBuilderInfoHandler m_builderInfoHandler;
         AZ::IO::LocalFileIO* m_localFileIo;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
+        AzToolsFramework::MetadataManager m_metadataManager;
+        AssetProcessor::UuidManager m_uuidManager;
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+        AZStd::unique_ptr<testing::NiceMock<MockComponentApplication>> m_componentApplication;
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 

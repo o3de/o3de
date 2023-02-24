@@ -335,7 +335,7 @@ namespace UnitTest
         : public AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyAssetActiveAssetCountHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetActiveAssetCountHandler, AZ::SystemAllocator);
 
         //////////////////////////////////////////////////////////////////////////
         // AssetHandler
@@ -385,7 +385,7 @@ namespace UnitTest
     struct MyAssetHolder
     {
         AZ_TYPE_INFO(MyAssetHolder, "{1DA71115-547B-4f32-B230-F3C70608AD68}");
-        AZ_CLASS_ALLOCATOR(MyAssetHolder, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetHolder, AZ::SystemAllocator);
         Asset<AssetWithCustomData>  m_asset1;
         Asset<AssetWithCustomData>  m_asset2;
     };

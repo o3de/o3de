@@ -8,6 +8,9 @@
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+
 #include <AzCore/Console/IConsole.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -47,6 +50,10 @@ namespace AzToolsFramework
 
         void AssetBrowserFilterModel::SetFilter(FilterConstType filter)
         {
+            if (m_filter.data())
+            {
+                disconnect(m_filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
+            }
             connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
             m_filter = filter;
             m_invalidateFilter = true;
@@ -71,6 +78,21 @@ namespace AzToolsFramework
         QSharedPointer<const StringFilter> AssetBrowserFilterModel::GetStringFilter() const
         {
             return m_stringFilter;
+        }
+
+        QVariant AssetBrowserFilterModel::data(const QModelIndex& index, int role) const
+        {
+            if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
+            {
+                auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
+                if (!m_filter)
+                {
+                    return true;
+                }
+                return m_filter->MatchWithoutPropagation(entry);
+            }
+
+            return QSortFilterProxyModel::data(index, role);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const

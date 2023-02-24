@@ -56,7 +56,7 @@ namespace AZ
             using AuxGeomNormal = AuxGeomPosition;
 
             AZ_TYPE_INFO(FixedShapeProcessor, "{20A11645-F8B1-4BAC-847D-F8F49FD2E339}");
-            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator);
 
             FixedShapeProcessor() = default;
             ~FixedShapeProcessor() = default;

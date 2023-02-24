@@ -35,7 +35,7 @@ if __name__ == '__main__':
             'pluggy',
             'psutil',
             'pyscreenshot',
-            'pytest',
+            'pytest>=7.2.0',
             'pytest-mock',
             'pytest-timeout',
             'six',

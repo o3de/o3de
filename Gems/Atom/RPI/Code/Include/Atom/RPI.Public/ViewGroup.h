@@ -24,7 +24,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(ViewGroup, "{C1AD45ED-03E2-41E0-9DC7-779B4B1842FF}");
-            AZ_CLASS_ALLOCATOR(ViewGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ViewGroup, AZ::SystemAllocator);
 
             struct Descriptor
             {

@@ -134,7 +134,6 @@ Surface EvaluateSurface_EnhancedPBR(
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
     surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), o_emissiveEnabled, o_emissive_useTexture);
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
     

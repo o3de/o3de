@@ -180,7 +180,7 @@ namespace AZ::Reflection
                 , m_serializeContext(serializeContext)
             {
                 m_stack.push_back({ instance, nullptr, typeId });
-                RegisterPrimitiveHandlers<bool, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
+                RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
             template<typename T>
@@ -254,7 +254,10 @@ namespace AZ::Reflection
                 else if (classElement)
                 {
                     AZStd::string_view elementName = classElement->m_name;
-                    if (!elementName.empty())
+
+                    // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
+                    // serialized paths looking like "token1////token2/token3"
+                    if (!elementName.empty() && classElement->m_editData)
                     {
                         path.append("/");
                         path.append(elementName);
@@ -557,6 +560,10 @@ namespace AZ::Reflection
 
                 AZ::Name handlerName;
 
+                // This array node is for caching related GenericValue attributes if any are seen
+                Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
+                const AZ::Name genericValueName = AZ::Name("GenericValue");
+
                 auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
@@ -567,8 +574,10 @@ namespace AZ::Reflection
                     AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If a more specific attribute is already loaded, ignore the new value
-                        if (visitedAttributes.find(name) != visitedAttributes.end())
+                        // If an attribute of the same name is already loaded then ignore the new value
+                        // unless it is a GenericValue attribute since each represents an individual
+                        // pair destined for a combobox and thus multiple are expected
+                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
                         {
                             return;
                         }
@@ -582,7 +591,7 @@ namespace AZ::Reflection
                                              .value_or(visibility);
                         }
 
-                        // See if any registered attributes can read this attribute.
+                        // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
@@ -593,6 +602,12 @@ namespace AZ::Reflection
                                     attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                                 }
                             });
+
+                        // Collect related GenericValue attributes so they can be stored together
+                        if (name == genericValueName && !attributeValue.IsNull())
+                        {
+                            genericValueCache.ArrayPushBack(attributeValue);
+                        }
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -609,6 +624,12 @@ namespace AZ::Reflection
                             {
                                 handlerName = AZ::Name();
                             }
+
+                            if (name == genericValueName)
+                            {
+                                return;
+                            }
+
                             cachedAttributes.push_back({ group, AZStd::move(name), AZStd::move(attributeValue) });
                         }
                     }
@@ -732,6 +753,12 @@ namespace AZ::Reflection
                             labelAttributeValue = labelAttributeBuffer;
                         }
                     }
+                }
+
+                if (genericValueCache.ArraySize() > 0)
+                {
+                    nodeData.m_cachedAttributes.push_back({
+                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
                 if (!nodeData.m_labelOverride.empty())

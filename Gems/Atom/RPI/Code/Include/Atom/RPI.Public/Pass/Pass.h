@@ -112,16 +112,12 @@ namespace AZ
 
                 RHI::FrameGraphBuilder* m_frameGraphBuilder = nullptr;
 
-                // This should include SRGs that are higher level than
-                // the Pass, like per-frame and per-scene SRGs.
-                const ShaderResourceGroupList* m_shaderResourceGroupsToBind = nullptr;
-
                 RHI::Scissor m_scissorState;
                 RHI::Viewport m_viewportState;
             };
 
             AZ_RTTI(Pass, "{EA34FF66-631D-433B-B449-71F5647E7BB5}", AZStd::intrusive_base);
-            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator);
 
             virtual ~Pass();
 

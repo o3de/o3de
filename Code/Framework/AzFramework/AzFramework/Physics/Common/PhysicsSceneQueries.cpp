@@ -23,12 +23,12 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RayCastRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(ShapeCastRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(OverlapRequest, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHit, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHits, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RayCastRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(ShapeCastRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(OverlapRequest, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHit, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneQueryHits, AZ::SystemAllocator);
 
     namespace Internal
     {
@@ -73,7 +73,7 @@ namespace AzPhysics
     {
     public:
         AZ_TYPE_INFO(SceneQueries, "{4EFA3DA5-C0E3-4753-8C55-202228CA527E}");
-        AZ_CLASS_ALLOCATOR(SceneQueries, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneQueries, AZ::SystemAllocator);
 
         SceneQueries() = default;
         ~SceneQueries() = default;
@@ -107,7 +107,7 @@ namespace AzPhysics
             behaviorContext->Class<SceneQueryRequest>("SceneQueryRequest")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Collision", BehaviorValueProperty(&SceneQueryRequest::m_collisionGroup))
                 // Until enum class support for behavior context is done, expose this as an int
@@ -146,7 +146,7 @@ namespace AzPhysics
             behaviorContext->Class<RayCastRequest>("RayCastRequest")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Distance", BehaviorValueProperty(&RayCastRequest::m_distance))
                 ->Property("Start", BehaviorValueProperty(&RayCastRequest::m_start))
@@ -157,7 +157,7 @@ namespace AzPhysics
             behaviorContext->Class<SceneQueries>("SceneQueries")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method(
                     "CreateRayCastRequest",
                     [](const AZ::Vector3& start, const AZ::Vector3& direction, float distance, const AZStd::string& collisionGroup)
@@ -191,7 +191,7 @@ namespace AzPhysics
             behaviorContext->Class<ShapeCastRequest>("ShapeCastRequest")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Distance", BehaviorValueProperty(&ShapeCastRequest::m_distance))
                 ->Property("Start", BehaviorValueProperty(&ShapeCastRequest::m_start))
@@ -295,7 +295,7 @@ namespace AzPhysics
             behaviorContext->Class<OverlapRequest>("OverlapRequest")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Pose", BehaviorValueProperty(&OverlapRequest::m_pose))
                 ;
@@ -378,7 +378,7 @@ namespace AzPhysics
             behaviorContext->Class<SceneQueryHit>("SceneQueryHit")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Distance", BehaviorValueProperty(&SceneQueryHit::m_distance))
                 ->Property("Position", BehaviorValueProperty(&SceneQueryHit::m_position))
@@ -405,9 +405,8 @@ namespace AzPhysics
             behaviorContext->Class<SceneQueryHits>()
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Property("HitArray", BehaviorValueProperty(&SceneQueryHits::m_hits))
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
+                ->Property("HitArray", BehaviorValueGetter(&SceneQueryHits::m_hits), nullptr)
                 ;
         }
     }

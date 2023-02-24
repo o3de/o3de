@@ -22,7 +22,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::AssetEditorNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(WaitForNewGraphAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WaitForNewGraphAction, AZ::SystemAllocator);
         AZ_RTTI(WaitForNewGraphAction, "{0632736B-ACC3-4051-9772-3A7169B375E9}", EditorAutomationAction);
 
         WaitForNewGraphAction();
@@ -48,7 +48,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNewGraphAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNewGraphAction, AZ::SystemAllocator);
         AZ_RTTI(CreateNewGraphAction, "{26A316D4-ADCC-4796-A3C5-E0545EB96C0E}", CompoundAction);
 
         CreateNewGraphAction();
@@ -73,7 +73,7 @@ namespace ScriptCanvas::Developer
         : public CreateNewGraphAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNewFunctionAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNewFunctionAction, AZ::SystemAllocator);
         AZ_RTTI(CreateNewFunctionAction, "{EF730E0B-AA26-4A81-BC48-22FBEB06CBF9}", CreateNewGraphAction);
 
         CreateNewFunctionAction();
@@ -97,7 +97,7 @@ namespace ScriptCanvas::Developer
         : public ProcessUserEventsAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceCloseActiveGraphAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceCloseActiveGraphAction, AZ::SystemAllocator);
         AZ_RTTI(ForceCloseActiveGraphAction, "{39BE4561-49A3-4087-BC70-15773EC2117F}", ProcessUserEventsAction);
 
         ForceCloseActiveGraphAction();

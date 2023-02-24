@@ -41,6 +41,19 @@
             "softMax": 16
         },
         {
+            "name": "affectedByAlpha",
+            "displayName": "Affected by alpha",
+            "description": "How much the emissive surface is attenuated by diffuse alpha.",
+            "type": "Float",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 1,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_emissiveAffectedByAlpha"
+            }
+        },
+        {
             "name": "textureMap",
             "displayName": "Texture",
             "description": "Texture for defining emissive area.",

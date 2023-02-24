@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace AZ
 {
@@ -74,7 +75,7 @@ namespace AZ
         
         AZStd::string MaterialConverterSystemComponent::GetFingerprintInfo() const
         {
-            static constexpr int Version = 1; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
+            static constexpr int Version = 2; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
 
             AZStd::string fingerprintInfo = AZStd::string::format("[MaterialConverter version=%d enabled=%d", Version, IsEnabled());
              
@@ -175,8 +176,13 @@ namespace AZ
             applyOptionalPropertiesFunc("metallic", "useTexture", materialData.GetUseMetallicMap());
 
             handleTexture("roughness", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Roughness);
-            applyOptionalPropertiesFunc("roughness", "factor", materialData.GetRoughnessFactor());
             applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
+            // Both PBR material and non-PBR material can have the RoughnessFactor property
+            AZStd::optional<float> roughness = materialData.GetRoughnessFactor();
+            if (roughness.has_value())
+            {
+                sourceData.SetPropertyValue(Name{"roughness.factor"}, roughness.value());
+            }
 
             handleTexture("emissive", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
             sourceData.SetPropertyValue(Name{"emissive.color"}, toColor(materialData.GetEmissiveColor()));
@@ -197,7 +203,8 @@ namespace AZ
 
         AZStd::string MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            return "Materials/Types/StandardPBR.materialtype";
+            AZStd::string intermediateMaterialTypePath = AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath("Materials/Types/StandardPBR.materialtype");
+            return intermediateMaterialTypePath;
         }
 
         AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const

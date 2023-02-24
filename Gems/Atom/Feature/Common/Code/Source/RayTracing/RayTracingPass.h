@@ -29,7 +29,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RayTracingPass, "{7A68A36E-956A-4258-93FE-38686042C4D9}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(RayTracingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPass, SystemAllocator);
             virtual ~RayTracingPass();
 
             //! Creates a RayTracingPass
@@ -74,6 +74,7 @@ namespace AZ
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;
             bool m_requiresRayTracingMaterialSrg = false;
+            bool m_requiresRayTracingSceneSrg = false;
         };
     }   // namespace RPI
 }   // namespace AZ

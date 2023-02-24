@@ -505,13 +505,19 @@ namespace AzToolsFramework
                     {
                         continue;
                     }
+                    // Source
+                    else if (patchPath == PathMatchingSource)
+                    {
+                        // Ignore nested instance file path changes resulting from source asset renaming
+                        continue;
+                    }
                     else
                     {
                         AZ_Warning(
                             "Prefab",
                             false,
                             "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, "
-                            "ContainerEntity, or LinkId.",
+                            "ContainerEntity, LinkId or Source path.",
                             AZ_STRING_ARG(patchPath));
                     }
                 }

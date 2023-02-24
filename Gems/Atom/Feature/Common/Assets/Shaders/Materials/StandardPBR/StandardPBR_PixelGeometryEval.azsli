@@ -29,8 +29,7 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
-    bool evaluateTangentFrame = ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
 
     // ------- Parallax -------
 

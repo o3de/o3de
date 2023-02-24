@@ -27,5 +27,7 @@ namespace AZ
         virtual void OnMemberMethodCalled(const BehaviorMethod* method) = 0;
     };
 
-    typedef AZ::EBus<BehaviorObjectSignalsInterface> BehaviorObjectSignals;
+    using BehaviorObjectSignals =  AZ::EBus<BehaviorObjectSignalsInterface>;
 }
+
+DECLARE_EBUS_EXTERN(BehaviorObjectSignalsInterface);

@@ -12,6 +12,7 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -43,6 +44,7 @@ namespace AzToolsFramework
             EntryCache::GetInstance()->Clear();
 
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
+            m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             m_fullPath = m_enginePath;
         }
 
@@ -389,6 +391,21 @@ namespace AzToolsFramework
             if (absolutePathView == AZ::IO::PathView(parent->GetFullPath()))
             {
                 return parent;
+            }
+
+            // If the project is not inside the root engine folder
+            if (!m_projectPath.IsRelativeTo(m_enginePath))
+            {
+                // Update the parent to be the project directory if it isn't already
+                if (absolutePathView.IsRelativeTo(m_projectPath) && !parent->m_fullPath.IsRelativeTo(m_projectPath))
+                {
+                    parent->m_fullPath = m_projectPath.ParentPath();
+                }
+                // Update the parent to be the o3de directory if it isn't already
+                else if (absolutePathView.IsRelativeTo(m_enginePath) && !parent->m_fullPath.IsRelativeTo(m_enginePath))
+                {
+                    parent->m_fullPath = m_enginePath.ParentPath();
+                }
             }
 
             // create all missing folders

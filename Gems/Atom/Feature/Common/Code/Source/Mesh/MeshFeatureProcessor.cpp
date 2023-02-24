@@ -324,6 +324,11 @@ namespace AZ
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
+            if (descriptor.m_excludeFromReflectionCubeMaps)
+            {
+                meshDataHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+            }
+
             meshDataHandle->UpdateMaterialChangeIds();
 
             return meshDataHandle;
@@ -577,7 +582,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
@@ -587,6 +592,15 @@ namespace AZ
                     meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
                 }
             }
+        }
+
+        bool MeshFeatureProcessor::GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps;
+            }
+            return false;
         }
 
         void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
@@ -894,14 +908,7 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
-            for (const auto& materialAssignment : m_materialAssignments)
-            {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
-                {
-                    MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect(materialInstance->GetAssetId());
-                }
-            }
+            MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect();
 
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
@@ -1418,23 +1425,8 @@ namespace AZ
                         // characterisation of the full material.
                         Color avgColor = baseColorStreamingImg->GetAverageColor();
 
-                        // We do a simple 'multiply' blend with the base color for now. Warn
-                        // the user if something else was intended.
-                        propertyIndex = material->FindPropertyIndex(s_baseColor_textureBlendMode_Name);
-                        if (propertyIndex.IsValid())
-                        {
-                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
-                                     ->GetPropertyDescriptor(propertyIndex)
-                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                            if (textureBlendMode != s_Multiply_Name)
-                            {
-                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
-                                        "yet supported when requesting BaseColor irradiance source, "
-                                        "using 'Multiply' for deriving the irradiance color.",
-                                        textureBlendMode.GetCStr());
-                            }
-                        }
-                        // 'Multiply' blend mode:
+                        // We do a simple 'multiply' blend with the base color
+                        // Note: other blend modes are currently not supported
                         subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else
@@ -1597,7 +1589,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_excludeFromReflectionCubeMaps)
+            if (m_descriptor.m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }

@@ -1298,16 +1298,23 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
         AZStd::string animgraphFilename;
-        EBUS_EVENT_RESULT(animgraphFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, animgraphId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            animgraphFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, animgraphId);
         bool found;
         if (!animgraphFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, animgraphFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                animgraphFilename.c_str(),
+                filename);
+
             if (found)
             {
                 animgraphFilename = filename;
@@ -1315,10 +1322,16 @@ namespace EMStudio
         }
 
         AZStd::string motionSetFilename;
-        EBUS_EVENT_RESULT(motionSetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, motionSetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            motionSetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, motionSetId);
         if (!motionSetFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, motionSetFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                motionSetFilename.c_str(),
+                filename);
+
             if (found)
             {
                 motionSetFilename = filename;
@@ -2250,7 +2263,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 

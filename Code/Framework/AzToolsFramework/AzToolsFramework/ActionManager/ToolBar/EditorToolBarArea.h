@@ -28,7 +28,7 @@ namespace AzToolsFramework
     class EditorToolBarArea final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorToolBarArea, AZ::SystemAllocator);
         AZ_RTTI(EditorToolBarArea, "{7B55B739-B4E0-41C0-9E71-B526BD62C3FB}");
 
         EditorToolBarArea() = default;
@@ -43,7 +43,7 @@ namespace AzToolsFramework
         bool ContainsToolBar(const AZStd::string& toolBarIdentifier) const;
 
         //! Returns the sort key for the queried toolbar, or AZStd::nullopt if it's not found.
-        AZStd::optional<int> GetToolBarSortKey(const AZStd::string& toolBarIdentifier) const;
+        AZStd::optional<int> GenerateToolBarSortKey(const AZStd::string& toolBarIdentifier) const;
         
         //! Clears the toolbar area and creates a new one from the EditorToolBarArea information.
         void RefreshToolBarArea();

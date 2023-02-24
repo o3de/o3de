@@ -64,6 +64,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3Functor, SystemAllocator)
             AZ_RTTI(Splat3Functor, "{4719BBAD-21A1-4909-88E9-C190208BDD00}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -95,6 +96,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3FunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(Splat3FunctorSourceData, "{658D56CC-D754-471D-BF83-4007FE05C691}", MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -134,6 +136,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(EnableShaderFunctor, SystemAllocator)
             AZ_RTTI(EnableShaderFunctor, "{6ED031DC-DADC-4A47-B858-DDA9748700A6}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -165,6 +168,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(EnableShaderFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(EnableShaderFunctorSourceData, "{3BEBEB62-6341-4F56-8500-8745BF4A9744}", MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -225,6 +229,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(SetShaderOptionFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(SetShaderOptionFunctorSourceData, "{051CD884-FE93-403B-8E27-EC3237BF6CAE}", MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -261,6 +266,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(SaveNameContextTestFunctor, SystemAllocator)
             AZ_RTTI(SaveNameContextTestFunctor, "{FD680069-B430-4278-9E5B-A2B9617627D5}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::ReflectContext* context)
@@ -2509,21 +2515,46 @@ namespace UnitTest
 
         auto saveNameContextFunctor = azrtti_cast<SaveNameContextTestFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
         const MaterialNameContext& nameContext = saveNameContextFunctor->m_nameContext;
-        
-        Name textureMapProperty{"textureMap"};
-        Name textureMapShaderInput{"m_texture"};
-        Name useTextureMapProperty{"useTextureMap"};
-        Name useTextureShaderOption{"o_useTexture"};
-        
-        nameContext.ContextualizeProperty(textureMapProperty);
-        nameContext.ContextualizeProperty(useTextureMapProperty);
-        nameContext.ContextualizeSrgInput(textureMapShaderInput);
-        nameContext.ContextualizeShaderOption(useTextureShaderOption);
 
-        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", useTextureMapProperty.GetStringView());
-        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", useTextureShaderOption.GetStringView());
-        EXPECT_EQ("groupA.groupB.groupC.textureMap", textureMapProperty.GetStringView());
-        EXPECT_EQ("m_groupA_m_groupB_m_texture", textureMapShaderInput.GetStringView());
+        AZStd::string string_textureMapProperty{"textureMap"};
+        AZStd::string string_textureMapShaderInput{"m_texture"};
+        AZStd::string string_useTextureMapProperty{"useTextureMap"};
+        AZStd::string string_useTextureShaderOption{"o_useTexture"};
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", nameContext.GetContextualizedProperty(string_useTextureMapProperty));
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", nameContext.GetContextualizedShaderOption(string_useTextureShaderOption));
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", nameContext.GetContextualizedProperty(string_textureMapProperty));
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", nameContext.GetContextualizedSrgInput(string_textureMapShaderInput));
+
+        nameContext.ContextualizeProperty(string_textureMapProperty);
+        nameContext.ContextualizeProperty(string_useTextureMapProperty);
+        nameContext.ContextualizeSrgInput(string_textureMapShaderInput);
+        nameContext.ContextualizeShaderOption(string_useTextureShaderOption);
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", string_useTextureMapProperty);
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", string_useTextureShaderOption);
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", string_textureMapProperty);
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", string_textureMapShaderInput);
+
+        Name name_textureMapProperty{"textureMap"};
+        Name name_textureMapShaderInput{"m_texture"};
+        Name name_useTextureMapProperty{"useTextureMap"};
+        Name name_useTextureShaderOption{"o_useTexture"};
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", nameContext.GetContextualizedProperty(name_useTextureMapProperty).GetStringView());
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", nameContext.GetContextualizedShaderOption(name_useTextureShaderOption).GetStringView());
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", nameContext.GetContextualizedProperty(name_textureMapProperty).GetStringView());
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", nameContext.GetContextualizedSrgInput(name_textureMapShaderInput).GetStringView());
+
+        nameContext.ContextualizeProperty(name_textureMapProperty);
+        nameContext.ContextualizeProperty(name_useTextureMapProperty);
+        nameContext.ContextualizeSrgInput(name_textureMapShaderInput);
+        nameContext.ContextualizeShaderOption(name_useTextureShaderOption);
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", name_useTextureMapProperty.GetStringView());
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", name_useTextureShaderOption.GetStringView());
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", name_textureMapProperty.GetStringView());
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", name_textureMapShaderInput.GetStringView());
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_InternalMaterialPipelineProperties)

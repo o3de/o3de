@@ -22,7 +22,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CoupleNodesAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CoupleNodesAction, AZ::SystemAllocator);
         AZ_RTTI(CoupleNodesAction, "{DC6B3198-E127-4833-BC44-B27083A36045}", CompoundAction);
 
         CoupleNodesAction(GraphCanvas::NodeId nodeToPickUp, GraphCanvas::ConnectionType connectionType, GraphCanvas::NodeId coupleTarget);
@@ -65,7 +65,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectEndpointsAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectEndpointsAction, AZ::SystemAllocator);
         AZ_RTTI(ConnectEndpointsAction, "{94941CCD-D8FA-4B01-8876-5D32723BD0C2}", CompoundAction);
 
         ConnectEndpointsAction(GraphCanvas::Endpoint startEndpoint, GraphCanvas::Endpoint targetEndpoint);

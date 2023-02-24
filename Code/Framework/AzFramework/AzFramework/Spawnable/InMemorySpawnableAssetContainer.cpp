@@ -201,6 +201,19 @@ namespace AzFramework
                         return false;
                     }
 
+                    if (asset->GetStatus() == AZ::Data::AssetData::AssetStatus::Error)
+                    {
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "Asset '%s' (%s) of type '%s' failed to load while entering game mode",
+                            asset->GetHint().c_str(),
+                            asset->GetId().ToFixedString().c_str(),
+                            classData->m_name);
+
+                        return false;
+                    }
+
                     if (asset->GetStatus() != AZ::Data::AssetData::AssetStatus::NotLoaded)
                     {
                         // Already loaded so no need to do anything.

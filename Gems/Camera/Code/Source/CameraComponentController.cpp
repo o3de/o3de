@@ -118,11 +118,7 @@ namespace Camera
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
 
-            // Connect to the bus the first time we activate the view
-            if (!AZ::RPI::ViewportContextNotificationBus::Handler::BusIsConnectedId(contextName))
-            {
-                AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-            }
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
             // Ensure the Atom camera is updated with our current transform state
             AZ::Transform localTransform;
@@ -139,16 +135,12 @@ namespace Camera
 
     void CameraComponentController::DeactivateAtomView()
     {
-        if (!IsActiveView())
-        {
-            return;
-        }
-
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (atomViewportRequests)
+        if (auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
             atomViewportRequests->PopViewGroup(contextName, m_atomCameraViewGroup);
+
+            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect(contextName);
         }
     }
 
@@ -282,13 +274,8 @@ namespace Camera
         CameraBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect(m_entityId);
         CameraRequestBus::Handler::BusDisconnect(m_entityId);
-
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (atomViewportRequests)
-        {
-            AZ::RPI::ViewProviderBus::Handler::BusDisconnect(m_entityId);
-            m_atomCameraViewGroup->Deactivate();
-        }
+        AZ::RPI::ViewProviderBus::Handler::BusDisconnect(m_entityId);
+        m_atomCameraViewGroup->Deactivate();
        
         DeactivateAtomView();
     }
@@ -306,8 +293,8 @@ namespace Camera
 
     AZ::RPI::ViewportContextPtr CameraComponentController::GetViewportContext()
     {
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (m_atomCameraViewGroup && atomViewportRequests)
+        if (auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            m_atomCameraViewGroup && atomViewportRequests)
         {
             return atomViewportRequests->GetDefaultViewportContext();
         }

@@ -63,7 +63,8 @@ namespace AzQtComponents
         //! Style configuration for the Breadcrumbs class.
         struct Config
         {
-            QString linkColor;      //!< Color for links. Must be a string using the hex format #rrggbb.
+            QString disabledLinkColor;  //!< Color for disabled links. Must be a string using the hex format #rrggbb.
+            QString linkColor;          //!< Color for links. Must be a string using the hex format #rrggbb.
         };
 
         explicit BreadCrumbs(QWidget* parent = nullptr);
@@ -78,6 +79,8 @@ namespace AzQtComponents
 
         //! Returns a string with the current breadcrumb path.
         QString currentPath() const;
+        //! Returns the full path if the current path is not the full path.
+        QString fullPath() const;
         //! Sets the current breadcrumb path without updating the navigation stack.
         void setCurrentPath(const QString& newPath);
 
@@ -124,6 +127,9 @@ namespace AzQtComponents
     public Q_SLOTS:
         //! Pushes a path to be shown in the Breadcrumbs widget.
         void pushPath(const QString& fullPath);
+        //! Pushes a new full path to be displayed in the editable breadcrumbs,
+        //! and a new path to be shown in the breadcrumbs navigation bar.
+        void pushFullPath(const QString& newFullPath, const QString& newPath);
         //! Restores the previous breadcrumb path from the navigation stack if it exists.
         bool back();
         //! Restores the next breadcrumb path from the navigation stack if it exists.
@@ -158,6 +164,7 @@ namespace AzQtComponents
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
+        void changeEvent(QEvent* event) override;
         bool eventFilter(QObject* obj, QEvent* ev) override;
 
     private Q_SLOTS:
@@ -185,6 +192,7 @@ namespace AzQtComponents
         QStackedWidget* m_labelEditStack = nullptr;
 
         QString m_currentPath;
+        QString m_fullPath;
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_backPaths': class 'QStack<QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::BreadCrumbs'
         QStack<QString> m_backPaths;
         QStack<QString> m_forwardPaths;

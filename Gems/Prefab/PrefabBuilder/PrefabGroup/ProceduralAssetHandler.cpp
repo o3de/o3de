@@ -28,7 +28,7 @@ namespace AZ::Prefab
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetTypeInfoHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetTypeInfoHandler, AZ::SystemAllocator);
         AssetTypeInfoHandler();
         ~AssetTypeInfoHandler() override;
         AZ::Data::AssetType GetAssetType() const override;
@@ -66,7 +66,7 @@ namespace AZ::Prefab
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetGroup() const
     {
-        return "Prefab";
+        return "Procedural Prefab";
     }
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetBrowserIcon() const

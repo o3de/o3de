@@ -39,13 +39,14 @@ namespace TestImpact::Console
             }
 
             std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
-            std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
+            std::cout << SuiteSetAsString(options.GetSuiteSet()).c_str() << ", this may take a moment...\n";
             PythonRuntime runtime(
                 PythonRuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
                 options.GetDataFilePath(),
                 options.GetPreviousRunDataFilePath(),
                 options.GetExcludedTests(),
-                options.GetSuiteFilter(),
+                options.GetSuiteSet(),
+                options.GetSuiteLabelExcludeSet(),
                 options.GetExecutionFailurePolicy(),
                 options.GetFailedTestCoveragePolicy(),
                 options.GetTestFailurePolicy(),

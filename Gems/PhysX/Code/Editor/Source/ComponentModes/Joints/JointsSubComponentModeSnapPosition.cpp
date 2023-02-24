@@ -16,18 +16,18 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapPosition, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapPosition, AZ::SystemAllocator);
 
     void JointsSubComponentModeSnapPosition::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         JointsSubComponentModeSnap::Setup(idPair);
 
         PhysX::EditorJointRequestBus::EventResult(
-            m_resetPosition, m_entityComponentId, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Position);
+            m_resetPosition, m_entityComponentId, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParameterNames::Position);
 
         PhysX::EditorJointRequestBus::EventResult(
             m_resetLeadEntity, m_entityComponentId, &PhysX::EditorJointRequests::GetEntityIdValue,
-            JointsComponentModeCommon::ParamaterNames::LeadEntity);
+            JointsComponentModeCommon::ParameterNames::LeadEntity);
 
         m_manipulator->InstallLeftMouseDownCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& /*action*/) mutable
@@ -43,7 +43,7 @@ namespace PhysX
                                                          .GetTranslation();
 
                 PhysX::EditorJointRequestBus::Event(
-                    m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position,
+                    m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Position,
                     newLocalPosition);
 
                 const bool selectedEntityIsNotJointEntity = m_pickedEntity != m_entityComponentId.GetEntityId();
@@ -55,7 +55,7 @@ namespace PhysX
                 if (selectedEntityIsNotJointEntity)
                 {
                     PhysX::EditorJointRequestBus::Event(
-                        m_entityComponentId, &PhysX::EditorJointRequests::SetEntityIdValue, JointsComponentModeCommon::ParamaterNames::LeadEntity,
+                        m_entityComponentId, &PhysX::EditorJointRequests::SetEntityIdValue, JointsComponentModeCommon::ParameterNames::LeadEntity,
                         m_pickedEntity);
                 }
             });
@@ -64,9 +64,9 @@ namespace PhysX
     void JointsSubComponentModeSnapPosition::ResetValues([[maybe_unused]]const AZ::EntityComponentIdPair& idPair)
     {
         PhysX::EditorJointRequestBus::Event(
-            m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position, m_resetPosition);
+            m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Position, m_resetPosition);
         PhysX::EditorJointRequestBus::Event(
-            m_entityComponentId, &PhysX::EditorJointRequests::SetEntityIdValue, JointsComponentModeCommon::ParamaterNames::LeadEntity, m_resetLeadEntity);
+            m_entityComponentId, &PhysX::EditorJointRequests::SetEntityIdValue, JointsComponentModeCommon::ParameterNames::LeadEntity, m_resetLeadEntity);
     }
 
     void JointsSubComponentModeSnapPosition::DisplaySpecificSnapType(

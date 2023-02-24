@@ -379,7 +379,6 @@ namespace AZ
         {
             if (m_systemAssetsInitialized)
             {
-                AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
                 return;
             }
 

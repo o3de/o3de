@@ -84,7 +84,7 @@ namespace AZ
             using StreamBufferViewList = AZStd::fixed_vector<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
 
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
-            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator);
 
             static Data::Instance<ModelLod> FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset);
 

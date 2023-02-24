@@ -26,6 +26,7 @@ set(FILES
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
+    Asset/AssetTypeInfoBus.cpp
     Asset/AssetInternal/WeakAsset.h
     base.h
     Casting/lossy_cast.h
@@ -97,6 +98,9 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
     Docs.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
@@ -252,6 +256,8 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/rapidjson.cpp
+    JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
@@ -410,8 +416,6 @@ set(FILES
     Memory/IAllocator.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/MemoryComponent.cpp
-    Memory/MemoryComponent.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
@@ -468,6 +472,7 @@ set(FILES
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
+    Process/ProcessInfo.h
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
@@ -480,6 +485,7 @@ set(FILES
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
+    RTTI/BehaviorObjectSignals.cpp
     RTTI/ChronoReflection.cpp
     RTTI/ChronoReflection.h
     RTTI/ReflectContext.h
@@ -488,6 +494,7 @@ set(FILES
     RTTI/ReflectionManager.cpp
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfo.cpp
     RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
     Script/lua/lua.h

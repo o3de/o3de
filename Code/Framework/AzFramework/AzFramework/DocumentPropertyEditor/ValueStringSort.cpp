@@ -38,11 +38,7 @@ namespace AZ::DocumentPropertyEditor
 
     RowSortAdapter::SortInfoNode* ValueStringSort::NewSortInfoNode() const
     {
-        auto capturedSortFunction = [this](SortInfoNode* lhs, SortInfoNode* rhs)
-        {
-            return LessThan(lhs, rhs);
-        };
-        return new StringSortNode(capturedSortFunction);
+        return new StringSortNode(this);
     }
 
     void ValueStringSort::CacheDomInfoForNode(const Dom::Value& domValue, RowSortAdapter::SortInfoNode* sortNode) const

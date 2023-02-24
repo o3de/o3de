@@ -24,7 +24,7 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(ReferenceShapeConfig, "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

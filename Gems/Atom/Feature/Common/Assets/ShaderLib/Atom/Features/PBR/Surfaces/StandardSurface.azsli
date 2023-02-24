@@ -61,6 +61,8 @@ class Surface
     // not apply.
     real opacityAffectsSpecularFactor;
 
+    float opacityAffectsEmissiveFactor; //!< Allows emissive to be attenuated by alpha or not.
+
     //! Surface lighting data
     real3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
     real3 specularF0;          //!< Fresnel f0 spectral value of the surface
@@ -93,6 +95,9 @@ void Surface::ApplySpecularAA()
     real kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     real filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     roughnessA2 = filteredRoughnessA2;
+
+    roughnessA = sqrt(roughnessA2);
+    roughnessLinear = sqrt(roughnessA);
 }
 
 void Surface::CalculateRoughnessA()

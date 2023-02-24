@@ -54,15 +54,15 @@ namespace AzToolsFramework
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                AzFramework::PaintBrushMode brushMode = AzFramework::PaintBrushMode::Paintbrush;
+                PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
 
                 if (buttonId == m_eyedropperModeButtonId)
                 {
-                    brushMode = AzFramework::PaintBrushMode::Eyedropper;
+                    brushMode = PaintBrushMode::Eyedropper;
                 }
                 else if (buttonId == m_smoothModeButtonId)
                 {
-                    brushMode = AzFramework::PaintBrushMode::Smooth;
+                    brushMode = PaintBrushMode::Smooth;
                 }
 
                 AzToolsFramework::OpenViewPane(AzToolsFramework::s_paintBrushSettingsName);
@@ -79,7 +79,7 @@ namespace AzToolsFramework
         AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
 
         // Set the initially-active brush mode button.
-        AzFramework::PaintBrushMode brushMode = AzFramework::PaintBrushMode::Paintbrush;
+        PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
         AzToolsFramework::GlobalPaintBrushSettingsRequestBus::BroadcastResult(
             brushMode, &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::GetBrushMode);
         OnPaintBrushModeChanged(brushMode);
@@ -95,7 +95,7 @@ namespace AzToolsFramework
             m_paintBrushControlClusterId);
     }
 
-    void PaintBrushSubModeCluster::OnPaintBrushModeChanged(AzFramework::PaintBrushMode newBrushMode)
+    void PaintBrushSubModeCluster::OnPaintBrushModeChanged(PaintBrushMode newBrushMode)
     {
         // Change the active brush mode button based on the newly-active brush mode.
 
@@ -103,13 +103,13 @@ namespace AzToolsFramework
 
         switch (newBrushMode)
         {
-        case AzFramework::PaintBrushMode::Paintbrush:
+        case PaintBrushMode::Paintbrush:
             buttonId = m_paintModeButtonId;
             break;
-        case AzFramework::PaintBrushMode::Eyedropper:
+        case PaintBrushMode::Eyedropper:
             buttonId = m_eyedropperModeButtonId;
             break;
-        case AzFramework::PaintBrushMode::Smooth:
+        case PaintBrushMode::Smooth:
             buttonId = m_smoothModeButtonId;
             break;
         default:

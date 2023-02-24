@@ -53,7 +53,7 @@ namespace AZ
             friend class StreamingImageController;
         public:
             AZ_INSTANCE_DATA(StreamingImage, "{E48A7FF0-3065-42C6-9673-4FE7C8905629}", Image);
-            AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator);
 
             //! Instantiates or returns an existing streaming image instance using its paired asset.
             static Data::Instance<StreamingImage> FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset);

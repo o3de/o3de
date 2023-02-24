@@ -26,7 +26,7 @@ namespace AzFramework
         friend class AssetCatalog;
     public:
         AZ_TYPE_INFO(AssetRegistry, "{5DBC20D9-7143-48B3-ADEE-CCBD2FA6D443}");
-        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator);
 
         AssetRegistry() = default;
 
@@ -34,7 +34,7 @@ namespace AzFramework
         void UnregisterAsset(AZ::Data::AssetId id);
 
         void RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId);
-        void UnregisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId);
+        void UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id);
 
         void SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies);
         void RegisterAssetDependency(const AZ::Data::AssetId& id, const AZ::Data::ProductDependency& dependency);

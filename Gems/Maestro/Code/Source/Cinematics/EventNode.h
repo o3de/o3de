@@ -18,7 +18,7 @@ class CAnimEventNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimEventNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimEventNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimEventNode, "{F9F306E0-FF9C-4FF4-B1CC-5A96746364FE}", CAnimNode);
 
     CAnimEventNode();

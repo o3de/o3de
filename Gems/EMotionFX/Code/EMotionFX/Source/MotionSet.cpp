@@ -27,9 +27,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSet, MotionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSet::MotionEntry, MotionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSetCallback, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSet, MotionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSet::MotionEntry, MotionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSetCallback, MotionAllocator)
 
 
     MotionSetCallback::MotionSetCallback()
@@ -602,6 +602,10 @@ namespace EMotionFX
     {
 #if defined(EMFX_DEVELOPMENT_BUILD)
         m_isOwnedByRuntime = isOwnedByRuntime;
+        for (MotionSet* set : m_childSets)
+        {
+            set->SetIsOwnedByRuntime(isOwnedByRuntime);
+        }
 #else
         AZ_UNUSED(isOwnedByRuntime);
 #endif

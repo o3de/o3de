@@ -21,7 +21,7 @@ namespace AZ
     namespace Platform
     {
         AZ::IO::FixedMaxPath GetModulePath();
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen);
+        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
         void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     }
 
@@ -29,7 +29,7 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator)
 
         DynamicModuleHandleUnixLike(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)

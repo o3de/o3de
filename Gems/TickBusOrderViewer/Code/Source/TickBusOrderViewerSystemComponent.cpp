@@ -26,7 +26,6 @@ namespace TickBusOrderViewer
                     "TickBusOrderViewer", 
                     "Provides a console command for viewing tick bus order, print_tickbus_handlers.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

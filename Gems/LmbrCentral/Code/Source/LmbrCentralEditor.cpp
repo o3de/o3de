@@ -9,8 +9,6 @@
 
 #include "LmbrCentralEditor.h"
 
-#include "Ai/EditorNavigationAreaComponent.h"
-#include "Ai/EditorNavigationSeedComponent.h"
 #include "Audio/EditorAudioAreaEnvironmentComponent.h"
 #include "Audio/EditorAudioEnvironmentComponent.h"
 #include "Audio/EditorAudioListenerComponent.h"
@@ -43,13 +41,13 @@
 
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderComponent.h>
 #include <Builders/LevelBuilder/LevelBuilderComponent.h>
 #include <Builders/LuaBuilder/LuaBuilderComponent.h>
 #include <Builders/SliceBuilder/SliceBuilderComponent.h>
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
-#include <Builders/DependencyBuilder/DependencyBuilderComponent.h>
 
 namespace LmbrCentral
 {
@@ -80,12 +78,9 @@ namespace LmbrCentral
             EditorSplineComponent::CreateDescriptor(),
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
-            EditorNavigationAreaComponent::CreateDescriptor(),
-            EditorNavigationSeedComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
-            DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
@@ -100,7 +95,8 @@ namespace LmbrCentral
         {
             typeIds.emplace_back(descriptor->GetUuid());
         }
-        EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+        AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+            &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
 
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
@@ -123,18 +119,35 @@ namespace LmbrCentral
     {
         EditorSplineComponentMode::RegisterActions();
         EditorTubeShapeComponentMode::RegisterActions();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::RegisterActions();
+        }
     }
 
     void LmbrCentralEditorModule::OnActionContextModeBindingHook()
     {
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        }
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
     {
         EditorSplineComponentMode::BindActionsToMenus();
         EditorTubeShapeComponentMode::BindActionsToMenus();
+        if (IsShapeComponentTranslationEnabled())
+        {
+            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
+        }
+    }
+
+    void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()
+    {
+        AzToolsFramework::EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection();
     }
 
 } // namespace LmbrCentral

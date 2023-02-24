@@ -23,7 +23,7 @@ namespace EMotionFX
         struct AudioTriggerEvent
         {
             AZ_RTTI(AudioTriggerEvent, "{1AA35052-477B-4F8D-9DE3-6411E96B871D}");
-            AZ_CLASS_ALLOCATOR(AudioTriggerEvent, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AudioTriggerEvent, EMotionFXAllocator);
 
             AudioTriggerEvent() = default;
             virtual ~AudioTriggerEvent() = default;

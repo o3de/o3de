@@ -113,6 +113,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::Div(FloatArgType arg1, FloatArgType arg2)
         {
+            // In Vec1 the second element can be zero, avoid doing division by zero
+            arg2 = NeonDouble::ReplaceSecond(arg2, 1.0f);
             return NeonDouble::Div(arg1, arg2);
         }
 
@@ -348,12 +350,18 @@ namespace AZ
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::Reciprocal(FloatArgType value)
         {
-            return NeonDouble::Reciprocal(value);
+            // In Vec1 the second element can be garbage or 0.
+            // Using (value.x, 1) to avoid divisions by 0.
+            return NeonDouble::Reciprocal(
+                NeonDouble::ReplaceSecond(value, 1.0f));
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::ReciprocalEstimate(FloatArgType value)
         {
-            return NeonDouble::ReciprocalEstimate(value);
+            // In Vec1 the second element can be garbage or 0.
+            // Using (value.x, 1) to avoid divisions by 0.
+            return NeonDouble::ReciprocalEstimate(
+                NeonDouble::ReplaceSecond(value, 1.0f));
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::Mod(FloatArgType value, FloatArgType divisor)

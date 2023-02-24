@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -81,29 +82,46 @@ namespace AZ
 
         RHI::ResultCode BufferView::InvalidateInternal()
         {
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
+        }
+
+        void BufferView::ReleaseView()
+        {
             if (m_nativeBufferView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
                 device.QueueForRelease(new ReleaseContainer<VkBufferView>(
                     device.GetNativeDevice(), m_nativeBufferView, device.GetContext().DestroyBufferView));
                 m_nativeBufferView = VK_NULL_HANDLE;
-
-                if (m_readIndex != ~0u)
-                {
-                    device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
-                }
-
-                if (m_readWriteIndex != ~0u)
-                {
-                    device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
-                }
             }
-            return RHI::ResultCode::Success;
+        }
+
+        void BufferView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
+                m_readIndex = InvalidBindlessIndex;
+            }
+
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
+                m_readWriteIndex = InvalidBindlessIndex;
+            }
         }
 
         void BufferView::ShutdownInternal()
         {
-            InvalidateInternal();
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         RHI::ResultCode BufferView::BuildNativeBufferView(Device& device, const Buffer& buffer, const RHI::BufferViewDescriptor& descriptor)
@@ -120,7 +138,7 @@ namespace AZ
             createInfo.range = descriptor.m_elementCount * descriptor.m_elementSize;
 
             const VkResult result =
-                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeBufferView);
+                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeBufferView);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
