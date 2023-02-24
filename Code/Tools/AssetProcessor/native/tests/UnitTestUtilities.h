@@ -358,7 +358,14 @@ namespace UnitTests
                 QString relPath = AZ::IO::FixedMaxPath(absolutePath.toUtf8().constData()).Filename().FixedMaxPathStringAsPosix().c_str();
                 AssetUtilities::UpdateToCorrectCase(parentPath, relPath);
 
-                *foundFileInfo = AssetProcessor::FileStateInfo(QDir(parentPath).absoluteFilePath(relPath), QDateTime::fromMSecsSinceEpoch(io->ModificationTime(absolutePath.toUtf8().constData())), size, io->IsDirectory(absolutePath.toUtf8().constData()));
+                AZ::IO::FixedMaxPath correctedPath{parentPath.toUtf8().constData()};
+                correctedPath /= relPath.toUtf8().constData();
+
+                *foundFileInfo = AssetProcessor::FileStateInfo(
+                    correctedPath.c_str(),
+                    QDateTime::fromMSecsSinceEpoch(io->ModificationTime(absolutePath.toUtf8().constData())),
+                    size,
+                    io->IsDirectory(absolutePath.toUtf8().constData()));
 
                 return true;
             }
