@@ -114,6 +114,8 @@ namespace UnitTests
             AssetBuilderSDK::ProductOutputFlags outputFlags,
             bool outputExtraFile = false);
 
+        void SetCatalogToUpdateOnJobCompletion();
+
         const char* GetJobProcessFailText();
 
         AZ::IO::Path GetCacheDir();

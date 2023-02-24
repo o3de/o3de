@@ -349,6 +349,18 @@ namespace UnitTests
             "fingerprint");
     }
 
+    void AssetManagerTestingBase::SetCatalogToUpdateOnJobCompletion()
+    {
+        using namespace AssetBuilderSDK;
+        QObject::connect(
+            m_rc.get(),
+            &AssetProcessor::RCController::FileCompiled,
+            [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+            {
+                QMetaObject::invokeMethod(m_rc.get(), "OnAddedToCatalog", Qt::QueuedConnection, Q_ARG(AssetProcessor::JobEntry, entry));
+            });
+    }
+
     AZStd::string AssetManagerTestingBase::MakePath(const char* filename, bool intermediate)
     {
         auto cacheDir = GetCacheDir();
