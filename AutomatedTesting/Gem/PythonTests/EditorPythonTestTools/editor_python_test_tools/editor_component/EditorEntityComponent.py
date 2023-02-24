@@ -1,5 +1,6 @@
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 
+
 class EditorEntityComponent:
     """
     Base class that defines the standard behavior shared between Editor Entity Components
