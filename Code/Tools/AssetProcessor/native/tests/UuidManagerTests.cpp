@@ -495,7 +495,7 @@ namespace UnitTests
 
         // Verify the case of the metadata file is lowercase to start with
         EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase("c:/somepath", relPath));
-        EXPECT_EQ(relPath, QString("mockfile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension);
+        EXPECT_STREQ(relPath.toUtf8().constData(), (QString("mockfile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension).toUtf8().constData());
 
         // Rename the source file from lowercase to uppercase and notify about the old file being removed
         io->Rename(TestFile.c_str(), RenamedFile.c_str());
@@ -509,6 +509,6 @@ namespace UnitTests
 
         // Verify the case of the metadata file is actually updated
         EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase("c:/somepath", relPath));
-        EXPECT_EQ(relPath, QString("MockFile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension);
+        EXPECT_STREQ(relPath.toUtf8().constData(), (QString("MockFile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension).toUtf8().constData());
     }
 }
