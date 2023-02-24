@@ -852,16 +852,10 @@ class AssetProcessorIntermediateAssetSourceDependencyTests
     : public AssetProcessorIntermediateAssetTests
 {
 public:
-    void SetUp() override
+
+    // Helper function - sets up the paths to files used by this test.
+    void GenerateAssetPaths()
     {
-        using namespace AssetBuilderSDK;
-        AssetProcessorIntermediateAssetTests::SetUp();
-
-        // Setup:
-        // Two source assets.
-        // The first emits an intermediate asset job, and that emits a product asset.
-        // The second emits just a product asset, but it has a source dependency on the intermediate asset.
-
         // First, prep the paths and file names in use for the test.
         m_firstFileName = AZ::IO::Path(m_firstFileNameNoExtension.c_str()).ReplaceExtension(m_firstFileExtension.c_str());
         m_firstFilePath = AZ::IO::Path(m_scanfolder.m_scanFolder).Append(m_firstFileName);
@@ -871,29 +865,30 @@ public:
 
         m_intermediateFileName = AZ::IO::Path(m_firstFileNameNoExtension.c_str()).ReplaceExtension(m_intermediateExtension.c_str());
         m_intermediateAssetPath = MakePath(m_intermediateFileName.c_str(), true);
+    }
 
-        // Create the two test source assets.
+    // Helper function - generates the initial files ued by this test.
+    void CreateTestAssets()
+    {
         AZ::Utils::WriteFile("unit test file", m_firstFilePath.c_str());
         AZ::Utils::WriteFile("unit test file", m_secondFilePath.c_str());
+    }
 
-        // Jobs with dependencies need those dependencies to have updated the asset catalog before the job with the dependency runs.
-        SetCatalogToUpdateOnJobCompletion();
-
-        // The priority system can be skipped when manually invoking these jobs, but it's useful to set for tests that may want to run jobs in priority order.
-        const int sourceAPriority = 0;
-
-        // Set up the jobs for these builders.
-
-        // Source A's builder first, this outputs the Intermediate asset.
+    // Creates three builders:
+    //  Source A - Outputs Intermediate A
+    //  Intermediate A - Outputs Product A
+    //  Source B - Outputs Product B, has a source dependency on Intermediate A.
+    void CreateBuilders()
+    {
+        using namespace AssetBuilderSDK;
+        // Source A's builder, this outputs the Intermediate asset.
         m_builderInfoHandler.CreateBuilderDesc(
             QString(m_firstFileExtension.c_str()),
             AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderPattern{ MakeWildcardForExtension(m_firstFileExtension), AssetBuilderPattern::Wildcard } },
-            [sourceAPriority]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+            []([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
             {
                 response.m_createJobOutputs.push_back(JobDescriptor{ "fingerprint", "Source A - Intermediate", CommonPlatformName });
-                // Set this to the lowest priority, so it's processed last.
-                response.m_createJobOutputs.back().m_priority = sourceAPriority;
                 response.m_result = CreateJobsResultCode::Success;
             },
             [this](const ProcessJobRequest& request, ProcessJobResponse& response)
@@ -915,19 +910,17 @@ public:
             },
             "fingerprint");
 
-        // Intermediate A's builder next.
+        // Intermediate A's builder, this outputs a product asset.
         m_builderInfoHandler.CreateBuilderDesc(
             QString(m_intermediateExtension.c_str()),
             AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderPattern{ MakeWildcardForExtension(m_intermediateExtension), AssetBuilderPattern::Wildcard } },
-            [sourceAPriority, this]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+            [this]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
             {
                 for (const auto& platform : request.m_enabledPlatforms)
                 {
                     response.m_createJobOutputs.push_back(
                         JobDescriptor{ "fingerprint", m_intermediateProductJobKey, platform.m_identifier.c_str() });
-                    // Set this to the lowest priority, so it's processed last.
-                    response.m_createJobOutputs.back().m_priority = sourceAPriority;
                 }
                 response.m_result = CreateJobsResultCode::Success;
             },
@@ -950,23 +943,19 @@ public:
             },
             "fingerprint");
 
-        // Source B's builder last. This builder emits the intermediate A as a dependency.
+        // Source B's builder. This builder emits the intermediate A as a dependency.
         m_builderInfoHandler.CreateBuilderDesc(
             QString(m_secondFileExtension.c_str()),
             AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderPattern{ MakeWildcardForExtension(m_secondFileExtension), AssetBuilderPattern::Wildcard } },
-            [sourceAPriority, this](
-                [[maybe_unused]] const CreateJobsRequest& request,
-                CreateJobsResponse& response)
+            [this]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
             {
                 for (const auto& platform : request.m_enabledPlatforms)
                 {
                     response.m_createJobOutputs.push_back(
                         JobDescriptor{ "fingerprint", "Source B - Product", platform.m_identifier.c_str() });
-                    // Set this to higher priority than source_a's priority, so it's processed earlier.
-                    // source_b has to process before source_a, because it has a source dependency on
-                    // the intermediate asset put out by source_a, and this test verifies that.
-                    response.m_createJobOutputs.back().m_priority = sourceAPriority + 1;
+
+                    // Create the dependency on the path to the intermediate asset.
                     response.m_createJobOutputs.back().m_jobDependencyList.push_back(JobDependency(
                         m_intermediateProductJobKey,
                         platform.m_identifier,
@@ -984,10 +973,18 @@ public:
 
                 outputFile.ReplaceExtension(m_SecondProductExtension.c_str());
                 outputFile = AZ::IO::Path(request.m_tempDirPath).Append(outputFile);
-                //AZ::IO::LocalFileIO::GetInstance()->Copy(
-                //    request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
-                m_secondProductPath = GetCacheDir().Append(request.m_platformInfo.m_identifier).Append(m_secondFileName).ReplaceExtension(m_SecondProductExtension.c_str());
 
+                // Store the path to the product asset, so that the test can examine the contents of the product asset.
+                m_secondProductPath = GetCacheDir()
+                                          .Append(request.m_platformInfo.m_identifier)
+                                          .Append(m_secondFileName)
+                                          .ReplaceExtension(m_SecondProductExtension.c_str());
+
+                // The first time this asset is processed, the intermediate asset won't yet exist.
+                // Track that in a way the test can verify.
+                // The second time this asset is processed, the intermediate asset will have been created.
+                // This behavior isn't desireable long term - this test is written to verify existing behavior so
+                // an adjustment to how dependencies are handled for processing assets can be made.
                 bool intermediateAssetExists = (AZ::IO::FileIOBase::GetInstance()->Exists(m_intermediateAssetPath.c_str()));
 
                 AZStd::string toWrite = m_intermediateFileExistsString;
@@ -996,7 +993,6 @@ public:
                     toWrite = m_intermediateFileDoesNotExistString;
                 }
                 AZ::Utils::WriteFile(toWrite.c_str(), outputFile.c_str());
-                
 
                 auto product =
                     JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(m_SecondProductExtension.c_str()), AssetSubId };
@@ -1008,6 +1004,20 @@ public:
                 response.m_resultCode = ProcessJobResult_Success;
             },
             "fingerprint");
+    }
+
+    void SetUp() override
+    {
+        AssetProcessorIntermediateAssetTests::SetUp();
+
+        GenerateAssetPaths();
+        CreateTestAssets();
+
+        // Jobs with dependencies need those dependencies to have updated the asset catalog before the job with the dependency runs.
+        SetCatalogToUpdateOnJobCompletion();
+
+        CreateBuilders();
+
     }
 
     void TearDown() override
@@ -1098,48 +1108,45 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     m_jobDetailsList.clear();
 
     UnitTests::JobSignalReceiver receiver;
-    // Scope for error absorber
-    {
-        UnitTestUtils::AssertAbsorber errorAbsorber;
-        // Using the assert absorber because it lets this test check for warnings, errors, and asserts absorbed.
-        // the error checker just groups them together.
-        // This test wants to verify that only warnings occured.
-        m_errorChecker.Begin();
 
-        // Run the above two jobs - this won't run the intermediate asset job yet
-        QCoreApplication::processEvents(); // Once to get the job started
-        receiver.WaitForFinish(); // Wait for the RCJob to signal it has completed working
-        QCoreApplication::processEvents(); // Once more to trigger the JobFinished event
-        QCoreApplication::processEvents(); // Again to trigger the Finished event
+    // Processing asset B will produce several warnings right now (listed at the end of this block, where they are checked).
+    m_errorChecker.Begin();
 
-        // This absorbs these warnings:
-        //  No job was found to match the job dependency criteria declared by file
-        //  This may be due to a mismatched job key
-        //  Job ordering will not be guaranteed and could result in errors or unexpected output
-        ASSERT_EQ(errorAbsorber.m_numWarningsAbsorbed, 3);
-        ASSERT_EQ(errorAbsorber.m_numErrorsAbsorbed, 0);
-        ASSERT_EQ(errorAbsorber.m_numAssertsAbsorbed, 0);
-        m_errorChecker.End(3);
-        m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
-    }
+    // Process the first asset in the queue, which will be the job for B, because it's a PC job, which takes priority over the Common platform job in the queue.
+    QCoreApplication::processEvents();
+    receiver.WaitForFinish();
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+
+    // This absorbs these warnings:
+    //  No job was found to match the job dependency criteria declared by file
+    //  This may be due to a mismatched job key
+    //  Job ordering will not be guaranteed and could result in errors or unexpected output
+    m_errorChecker.End(3);
+    m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
     auto readResult = AZ::Utils::ReadFile<AZStd::string>(m_secondProductPath.c_str(), AZStd::numeric_limits<size_t>::max());
     EXPECT_TRUE(readResult.IsSuccess());
     EXPECT_EQ(readResult.GetValue().compare(m_intermediateFileDoesNotExistString), 0);
 
+    // Process asset A, which will produce the intermediate asset that B depended on.
     QCoreApplication::processEvents();
     receiver.WaitForFinish();
+
+    // Process events twice after the asset finishes processing.
     QCoreApplication::processEvents();
     QCoreApplication::processEvents();
+
+    // Mark this asset as processed, so AP will move on to the next steps.
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
+    // Need to call process events 4 times, to get the job details list populated with the
+    // intermediate asset job and the job for the B asset that was triggered by the intermediate asset appearing.
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
     QCoreApplication::processEvents();
 
-    QCoreApplication::processEvents();
-
-    QCoreApplication::processEvents();
-
-    QCoreApplication::processEvents();
     // The intermediate job was added to the queue, and the B asset was re-added because the dependency triggered.
     EXPECT_EQ(m_jobDetailsList.size(), 2);
     m_rc->JobSubmitted(m_jobDetailsList[0]);
@@ -1147,16 +1154,18 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     m_jobDetailsList.clear();
     QCoreApplication::processEvents();
 
-    receiver.WaitForFinish();
+    receiver.WaitForFinish(); // Process the intermediate asset.
+
+    // Need to call process events 3 times after completing the last job.
     QCoreApplication::processEvents();
-    //receiver.WaitForFinish();
     QCoreApplication::processEvents();
     QCoreApplication::processEvents();
 
+    receiver.WaitForFinish(); // Process asset B, again.
 
-    receiver.WaitForFinish(); // Wait for the RCJob to signal it has completed working
-    QCoreApplication::processEvents();
-
+    // If the text has changed in the file, then:
+    //  The intermediate asset job has been created
+    //  The B asset has been re-processed
     readResult = AZ::Utils::ReadFile<AZStd::string>(m_secondProductPath.c_str(), AZStd::numeric_limits<size_t>::max());
     EXPECT_TRUE(readResult.IsSuccess());
     EXPECT_EQ(readResult.GetValue().compare(m_intermediateFileExistsString), 0);
