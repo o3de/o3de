@@ -11,6 +11,18 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
 )
 
+# patch all binaries to use the core snap. As we are running in classic mode if we do not do this
+# it will load the binaries from the host filesystem, causing issues when the snap is run on a different environment
+# than the build environement.
+
+#temporary until we have this set up on the build image
+execute_process (COMMAND apt install patchelf
+)
+
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {}\;
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
+)
+
 # build snap
 execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
