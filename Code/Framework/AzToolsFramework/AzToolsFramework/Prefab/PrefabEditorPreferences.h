@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/std/string/string_view.h>
+
 namespace AzToolsFramework::Prefab
 {
     extern const AZStd::string_view EnablePrefabOverridesUxKey;
