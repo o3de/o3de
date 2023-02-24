@@ -411,7 +411,6 @@ namespace AzToolsFramework
         bool AssetEditorWidget::SaveAssetToPath(AZStd::string_view assetPath)
         {
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
-            tab->SaveAsset();
 
             return tab->SaveAssetToPath(assetPath.data());
         }

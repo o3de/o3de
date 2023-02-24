@@ -206,11 +206,13 @@ namespace AzToolsFramework
             m_containerClearButton->setAutoRaise(true);
             m_containerClearButton->setIcon(s_iconClear);
             m_containerClearButton->setToolTip(tr("Remove all elements"));
+            m_containerClearButton->setObjectName("RemoveAllElements");
 
             m_containerAddButton = new QToolButton(this);
             m_containerAddButton->setAutoRaise(true);
             m_containerAddButton->setIcon(s_iconAdd);
             m_containerAddButton->setToolTip(tr("Add new child element"));
+            m_containerAddButton->setObjectName("AddNewChildElement");
 
             m_rightHandSideLayout->insertWidget(0, m_containerAddButton);
             m_rightHandSideLayout->insertWidget(1, m_containerClearButton);
@@ -387,6 +389,7 @@ namespace AzToolsFramework
                 m_elementRemoveButton->setAutoRaise(true);
                 m_elementRemoveButton->setIcon(s_iconRemove);
                 m_elementRemoveButton->setToolTip(tr("Remove this element"));
+                m_elementRemoveButton->setObjectName("RemoveThisElement");
                 m_elementRemoveButton->setDisabled(m_readOnly);
                 m_rightHandSideLayout->insertWidget(m_rightHandSideLayout->count(), m_elementRemoveButton);
                 connect(m_elementRemoveButton, &QToolButton::clicked, this, &PropertyRowWidget::OnClickedRemoveElementButton);

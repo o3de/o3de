@@ -28,8 +28,13 @@ class QtPyAssetEditor(QtPyCommon):
         super().__init__()
         self.asset_editor = editor_main_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
         self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
-        self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
+        self.asset_editor_tab_widget = self.asset_editor_widget.findChild(QtWidgets.QWidget, "AssetEditorTabWidget")
         self.menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
+        
+    def find_row_container(self, tabIndex = 0):
+        # These can only be retrieved after a tab has been created, they do not exist at __init__ time.     
+        self.asset_editor_tab = self.asset_editor_tab_widget.widget(tabIndex)
+        self.asset_editor_row_container = self.asset_editor_tab.findChild(QtWidgets.QWidget, "ContainerForRows")
 
     def add_method_to_script_event(self, method_name: str) -> None:
         """
@@ -40,8 +45,11 @@ class QtPyAssetEditor(QtPyCommon):
 
         returns none
         """
+        
+        self.find_row_container()
+        
         add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(
-            QtWidgets.QToolButton, "")
+            QtWidgets.QToolButton, "AddNewChildElement")
 
         assert add_event is not None, "Failed to add new method to script event."
 
@@ -61,6 +69,9 @@ class QtPyAssetEditor(QtPyCommon):
 
         Returns: None
         """
+        
+        self.find_row_container()
+        
         children = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Name")
 
         method_name_field = ""
@@ -94,10 +105,11 @@ class QtPyAssetEditor(QtPyCommon):
         Refer to github issue #12262. If it has been resolved and this comment still exists please update
         the QToolButton name
         """
+        self.find_row_container()
         methods = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT)
         for method in methods:
-            if method.findChild(QtWidgets.QToolButton, ""):
-                method.findChild(QtWidgets.QToolButton, "").click()
+            if method.findChild(QtWidgets.QToolButton, "RemoveThisElement"):
+                method.findChild(QtWidgets.QToolButton, "RemoveThisElement").click()
 
     def save_script_event_file(self, file_path: str) -> None:
         """
@@ -125,8 +137,9 @@ class QtPyAssetEditor(QtPyCommon):
 
         returns: None
         """
-        label = self.asset_editor.findChild(QtWidgets.QLabel, "textEdit")
-        saved = helper.wait_for_condition(lambda: "*" not in label.text(), WAIT_TIME_SEC_3)
+        self.find_row_container()
+        label_text = self.asset_editor_tab_widget.tabText(0)
+        saved = helper.wait_for_condition(lambda: "*" not in label_text, WAIT_TIME_SEC_3)
         exists = helper.wait_for_condition(lambda: os.path.exists(file_path), WAIT_TIME_SEC_3)
 
         assert saved, "Save file failed. Save action not detected in UI (* in label)."
