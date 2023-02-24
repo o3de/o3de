@@ -129,7 +129,7 @@ namespace Multiplayer
     {
         if (index >= m_spawnPoints.size())
         {
-            return AZ::Failure(AZStd::string::format("Out-of-bounds spawn index %i; total spawn points: %i", index, m_spawnPoints.size()));
+            return AZ::Failure(AZStd::string::format("Out-of-bounds spawn index %i; total spawn points: %i", index, aznumeric_cast<uint32_t>(m_spawnPoints.size())));
         }
 
         m_spawnIndex = index;
