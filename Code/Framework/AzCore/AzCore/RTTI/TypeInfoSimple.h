@@ -135,7 +135,7 @@ namespace AZ
 {
     //! TypeName
 
-    // Deleted GetO3deTypeName(...) function to provide the symbol for a function called GetO3deTypeName
+    // Unimplemented GetO3deTypeName(...) function to provide the symbol for a function called GetO3deTypeName
     // whenever the provided type does not have an overload
     void GetO3deTypeName(...) = delete;
 
@@ -154,38 +154,16 @@ namespace AZ
     constexpr bool HasUnqualifiedGetO3deTypeName_v<T, AZStd::enable_if_t<
         AZStd::is_same_v<decltype(GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TypeNameString>> > = true;
 
-    // Base variable template which is false whenever a type doesn't have a GetO3deTypeName
-    // member function
-    template <class T, class = void>
-    inline constexpr bool HasMemberGetO3deTypeName_v = false;
-    // Check if there is a function available called `R <type>::GetO3deTypeName(AZStd::type_identity<T>)` and has a return
-    // value that isn't void
-    // This is used as a customization point to allow code to opt in to AzTypeInfo using member functions
-    // NOTE: The AZStd::type_identity parameter is to make sure that typeinfo is only retrieved from the exact class
-    // and not from any derived class
-    // i.e
-    //  ```
-    // struct Component{};
-    // struct MeshComponent : Component {};
-    // ```
-    // Requesting Calling `MeshComponent::GetO3deTypeName` should NOT return the type info for the base class
+    // True if the class has an overload available via ordinary name nookup or ADL
     template <class T>
-    inline constexpr bool HasMemberGetO3deTypeName_v<T, AZStd::enable_if_t<
-        AZStd::is_same_v<decltype(T::GetO3deTypeName(AZStd::type_identity<T>{})), AZ::TypeNameString>>> = true;
-
-    template <class T>
-    using HasMemberGetO3deTypeName = AZStd::bool_constant<HasMemberGetO3deTypeName_v<T>>;
-
-    // True if the class has an overload as a member function or an overload available in its namespace.
-    template <class T>
-    inline constexpr bool HasGetO3deTypeName_v = HasMemberGetO3deTypeName_v<T> || HasUnqualifiedGetO3deTypeName_v<T>;
+    inline constexpr bool HasGetO3deTypeName_v = HasUnqualifiedGetO3deTypeName_v<T>;
 }
 
 namespace AZ
 {
     //! Type Uuid
 
-    // Deleted GetO3deTypeId(...) function to provide the symbol for a function called GetO3deTypeId
+    // Unimplemented GetO3deTypeId(...) function to provide the symbol for a function called GetO3deTypeId
     // whenever the provided type does not have an overload
     void GetO3deTypeId(...) = delete;
 
@@ -204,36 +182,17 @@ namespace AZ
     constexpr bool HasUnqualifiedGetO3deTypeId_v<T, AZStd::enable_if_t<
         AZStd::is_same_v<decltype(GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TypeId>> > = true;
 
-    // Base variable template which is false whenever a type doesn't have a GetO3deTypeId
-    // member function
-    template <class T, class = void>
-    inline constexpr bool HasMemberGetO3deTypeId_v = false;
-    // Check if there is a function available called `R <type>::GetO3deTypeId(AZStd::type_identity<T>)` and has a return
-    // value that isn't void
-    // This is used as a customization point to allow code to opt in to AzTypeInfo using member functions
-    // NOTE: The AZStd::type_identity parameter is to make sure that typeinfo is only retrieved from the exact class
-    // and not from any derived class
-    // i.e
-    //  ```
-    // struct Component{};
-    // struct MeshComponent : Component {};
-    // ```
-    // Requesting Calling `MeshComponent::GetO3deTypeId` should NOT return the type info for the base class
+    // True if the class has an overload available via ordinary name nookup or ADL
     template <class T>
-    inline constexpr bool HasMemberGetO3deTypeId_v<T, AZStd::enable_if_t<
-        AZStd::is_same_v<decltype(T::GetO3deTypeId(AZStd::type_identity<T>{})), AZ::TypeId>>> = true;
-
-    // True if the class has an overload as a member function or an overload available in its namespace.
-    template <class T>
-    inline constexpr bool HasGetO3deTypeId_v = HasMemberGetO3deTypeId_v<T> || HasUnqualifiedGetO3deTypeId_v<T>;
+    inline constexpr bool HasGetO3deTypeId_v = HasUnqualifiedGetO3deTypeId_v<T>;
 }
 
 namespace AZ
 {
     //! Template Uuid
 
-    //! Deleted set of GetO3deClassTemplateId functions
-    //! which provides a callable symbol when GetAzTemplateId() function overload is not available
+    //! Unimplemented  of GetO3deClassTemplateId function
+    //! which provides a symbolfor name lookup when GetAzTemplateId() function overload is not available
     //! The return type is void to distinguish it from actual overloads which return AZ::Uuid
     //! This function should be overloaded for class template (not types)
     //! using the signature of `AZ::TemplateId GetO3deClassTemplateId(decltype(GetTemplateIdentity<ActualType>()))`
@@ -250,50 +209,13 @@ namespace AZ
     inline constexpr bool HasUnqualifiedGetO3deClassTemplateId_v<T, AZStd::enable_if_t <
         AZStd::is_same_v<decltype(GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<T>{})), AZ::TemplateId > >> = true;
 
-    template <class T, class = void>
-    inline constexpr bool HasMemberGetO3deClassTemplateId_v = false;
-
-    // Specialization for a class T that provides GetO3deClassTemplateId as a static member function
-    template <class T>
-    inline constexpr bool HasMemberGetO3deClassTemplateId_v<T, AZStd::enable_if_t<
-        AZStd::is_same_v<decltype(T::GetO3deClassTemplateId(AZStd::type_identity<T>{})), AZ::TemplateId>> > = true;
-
     // True if the class has an overload as a member function or an overload available in its namespace.
     template <class T>
-    inline constexpr bool HasGetO3deClassTemplateId_v = HasMemberGetO3deClassTemplateId_v<T> || HasUnqualifiedGetO3deClassTemplateId_v<T>;
+    inline constexpr bool HasGetO3deClassTemplateId_v = HasUnqualifiedGetO3deClassTemplateId_v<T>;
 }
 
 namespace AZ
 {
-    // Make a call to retrieve the O3DE type associated with the type
-    // Needs to be a template in order prevent evaluation of both
-    // if blocks
-    template <class T>
-    constexpr AZ::TypeNameString CallGetO3deTypeName()
-    {
-        if constexpr (HasMemberGetO3deTypeName_v<T>)
-        {
-            return T::GetO3deTypeName(AZStd::type_identity<T>{});
-        }
-        else
-        {
-            return GetO3deTypeName(Adl{}, AZStd::type_identity<T>{});
-        }
-    }
-
-    template <class T>
-    constexpr AZ::TypeId CallGetO3deTypeId()
-    {
-        if constexpr (HasMemberGetO3deTypeId_v<T>)
-        {
-            return T::GetO3deTypeId(AZStd::type_identity<T>{});
-        }
-        else
-        {
-            return GetO3deTypeId(Adl{}, AZStd::type_identity<T>{});
-        }
-    }
-
     /**
     * Since O3DE fully support cross shared libraries (DLL) operation, it does not rely on typeid, static templates, etc.
     * to generate the same result in different compilations. A unique ID for each type is required.
@@ -353,7 +275,7 @@ namespace AZ
                 // Calculate the uuid only once
                 if (s_canonicalTypeId.IsNull())
                 {
-                    s_canonicalTypeId = CallGetO3deTypeId<ValueTypeNoQualifiers>();
+                    s_canonicalTypeId = GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
 
                     // If the T parameter is a pointer mixin the pointer id
                     if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
@@ -406,7 +328,7 @@ namespace AZ
             }
             else if constexpr (HasGetO3deTypeId_v<ValueTypeNoQualifiers>)
             {
-                static const AZ::TypeId s_pointeeTypeId = CallGetO3deTypeId<ValueTypeNoQualifiers>();
+                static const AZ::TypeId s_pointeeTypeId = GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
 
                 // Calculate the uuid only once
                 return s_pointeeTypeId;
@@ -431,14 +353,7 @@ namespace AZ
 
             if constexpr (HasGetO3deClassTemplateId_v<ValueTypeNoQualifiers>)
             {
-                if constexpr (HasMemberGetO3deClassTemplateId_v<ValueTypeNoQualifiers>)
-                {
-                    return ValueTypeNoQualifiers::GetO3deClassTemplateId(AZStd::type_identity<ValueTypeNoQualifiers>{});
-                }
-                else
-                {
-                    return GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
-                }
+                return GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
             }
             else
             {
@@ -479,7 +394,7 @@ namespace AZ
                 // Calculate the type name only once on startup
                 if (s_typeNameString.empty())
                 {
-                    AZ::TypeNameString typeName = CallGetO3deTypeName<ValueTypeNoQualifiers>();
+                    AZ::TypeNameString typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
 
                     // First calculate the type qualifiers of the pointee type
                     if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
@@ -566,15 +481,26 @@ namespace AZ
     }
 }
 
+// Macro which uses the friend keyword to declare and the GetO3deTypeName and GetO3deTypeId
+// functions as non-members.
+// This allows avoiding needed to support checking for static member versions of these
+// functions and in order to query the type name and type id
+// There is one caveat though and that is friends functions are found using ordinary name lookup
+// and can only be found via ADL
+// Therefore given a class "Namespace::MyClass" which opts into TypeInfo
+// a call such as `AZ::GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<Namespace::MyClass>{});` will not find
+// the GetO3deTypeName overload
+// The call to GetO3deTypeName must be made unqualified without any namespace(such AZ::)
+// `GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<Namespace::MyClass>{});`
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName, _ClassUuid) \
-    static constexpr AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_ClassName>) \
+    friend constexpr AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>) \
     { \
         constexpr AZStd::string_view displayName(_DisplayName); \
         constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
             : AZ::TypeNameString(#_ClassName); \
         return typeName; \
     } \
-    static constexpr AZ::TypeId GetO3deTypeId(AZStd::type_identity<_ClassName>) \
+    friend constexpr AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>) \
     { \
         constexpr AZ::TypeId typeId{ _ClassUuid }; \
         return typeId; \
@@ -586,7 +512,7 @@ namespace AZ
     } \
     static AZ::TypeId TYPEINFO_Uuid() \
     { \
-        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_ClassName>{}); \
     }
 
 // NOTE: This the same macro logic as the `AZ_MACRO_SPECIALIZE`, but it must used instead of
@@ -636,12 +562,13 @@ namespace AZ
     (_Identifier, _DisplayName, _ClassUuid AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) __VA_ARGS__))
 #define AZ_TYPE_INFO(_Identifier, _ClassUuid, ...) AZ_TYPE_INFO_WITH_NAME(_Identifier, #_Identifier, _ClassUuid, __VA_ARGS__)
 
-// Helper macro that declares the TypeInfo static members as part of a class
+// Helper macro that declares the TYPEINFO_Name and TYPEINFO_Uuid static members as part of a class
 // This pairs with the AZ_TYPE_INFO_IMPL/AZ_TYPE_INFO_IMPL_INLINE where an implemenation can be provided
 // in a translation unit(.cpp) or a an inline(.inl) file in order to help reduce compile times
+// https://godbolt.org/z/EGPvKr7xM
 #define AZ_TYPE_INFO_DECL(_ClassName) \
-    static AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_ClassName>); \
-    static AZ::TypeId GetO3deTypeId(AZStd::type_identity<_ClassName>); \
+    friend AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
+    friend AZ::TypeId GetO3deTypeId(AZ::Adl,AZStd::type_identity<_ClassName>); \
     static const char* TYPEINFO_Name(); \
     static AZ::TypeId TYPEINFO_Uuid();
 
@@ -689,9 +616,12 @@ namespace AZ
 #define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_15(...) AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_1(__VA_ARGS__)
 #define AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST(...) AZ_TYPE_INFO_MACRO_CALL_NEW(AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
+// Provides implementation for non-member GetO3deTypeName and GetO3deTypeId friend functions
+// as the static member TYPEINFO_Name and TYPEINFO_Uuid functions
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_0(_ClassName, _DisplayName, _ClassUuid, _Inline, _TemplateParamsInParen) \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeNameString _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeName(AZStd::type_identity<_ClassName>) \
+    _Inline AZ::TypeNameString GetO3deTypeName( \
+        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         constexpr AZStd::string_view displayName(_DisplayName); \
         constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
@@ -699,7 +629,8 @@ namespace AZ
         return typeName; \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeId(AZStd::type_identity<_ClassName>) \
+    _Inline AZ::TypeId GetO3deTypeId( \
+        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         constexpr AZ::TypeId typeId{ _ClassUuid }; \
         return typeId; \
@@ -713,7 +644,7 @@ namespace AZ
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
     { \
-        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_ClassName>{}); \
     }
 
 

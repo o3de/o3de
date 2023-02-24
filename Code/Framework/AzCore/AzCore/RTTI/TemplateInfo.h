@@ -255,16 +255,41 @@ namespace AZ::AzGenericTypeInfo
 
 
     //! Helper Macro for adding GetO3deTypeName/GetO3deTypeId/GetO3deClassTemplateId and GetO3deTemplateId overloads for use with AZ::TypeInfo
-    //! Because these are function overloads, they DO NOT need to be in the AZ namespace
+    //! Supported namespaces where there overloads can be added are the namespaces where the type is declared within
+    //! and the AZ namespace. For example the overloads for a class PhysX::WorldSystem, can be placed in either the PhysX
+    //! namespace or the AZ namespace
+
+    // Declares but does not define the GetO3de* type info overloads
+#define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
+    AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
+        decltype(AZ::AzGenericTypeInfo::Internal::GetTemplateIdentity<_TemplateName>()));
+
+#define AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, ...) \
+    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
+    AZ::TypeNameString GetO3deTypeName(AZ::Adl, \
+        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>); \
+    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
+    AZ::TypeId GetO3deTypeId(AZ::Adl, \
+        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>); \
+    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
+    constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
+        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);
+
+#define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(_TemplateName, ...) \
+    AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
+    AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, __VA_ARGS__)
+
 #define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _PrefixUuid, _PostfixUuid, _FunctionSpecifier) \
     _FunctionSpecifier AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
         decltype(AZ::AzGenericTypeInfo::Internal::GetTemplateIdentity<_TemplateName>())) \
     { \
-        if constexpr (constexpr AZ::TypeId prefixUuid{_PrefixUuid}; !prefixUuid.IsNull()) \
+        constexpr AZ::TypeId prefixUuid{_PrefixUuid}; \
+        constexpr AZ::TypeId postfixUuid{_PostfixUuid}; \
+        if constexpr (!prefixUuid.IsNull()) \
         { \
             return prefixUuid; \
         } \
-        else if constexpr (constexpr AZ::TypeId postfixUuid{_PostfixUuid}; !postfixUuid.IsNull()) \
+        else if constexpr (!postfixUuid.IsNull()) \
         { \
             return postfixUuid; \
         } \
@@ -273,10 +298,6 @@ namespace AZ::AzGenericTypeInfo
             return AZ::TemplateId{}; \
         } \
     }
-
-#define AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
-    AZ::TemplateId GetO3deTemplateId(AZ::Adl, \
-        decltype(AZ::AzGenericTypeInfo::Internal::GetTemplateIdentity<_TemplateName>()));
 
 #define AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _PrefixUuid, _PostfixUuid, _Inline, ...) \
     template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
@@ -306,11 +327,13 @@ namespace AZ::AzGenericTypeInfo
         AZ::TypeId s_canonicalTypeId; \
         if (s_canonicalTypeId.IsNull()) \
         { \
-            if constexpr (constexpr AZ::TypeId prefixUuid{_PrefixUuid}; !prefixUuid.IsNull()) \
+            constexpr AZ::TypeId prefixUuid{_PrefixUuid}; \
+            constexpr AZ::TypeId postfixUuid{_PostfixUuid}; \
+            if constexpr (!prefixUuid.IsNull()) \
             { \
                 s_canonicalTypeId = prefixUuid + AZ_TYPE_INFO_INTERNAL_TEMPLATE_UUID_EXPANSION(__VA_ARGS__); \
             } \
-            else if constexpr (constexpr AZ::TypeId postfixUuid{_PostfixUuid}; !postfixUuid.IsNull()) \
+            else if constexpr (!postfixUuid.IsNull()) \
             { \
                 s_canonicalTypeId = AZ_TYPE_INFO_INTERNAL_TEMPLATE_UUID_EXPANSION(__VA_ARGS__) + postfixUuid; \
             } \
@@ -325,11 +348,13 @@ namespace AZ::AzGenericTypeInfo
     _Inline constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
         AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>) \
     { \
-        if constexpr (constexpr AZ::TypeId prefixUuid{_PrefixUuid}; !prefixUuid.IsNull()) \
+        constexpr AZ::TypeId prefixUuid{_PrefixUuid}; \
+        constexpr AZ::TypeId postfixUuid{_PostfixUuid}; \
+        if constexpr (!prefixUuid.IsNull()) \
         { \
             return prefixUuid; \
         } \
-        else if constexpr (constexpr AZ::TypeId postfixUuid{_PostfixUuid}; !postfixUuid.IsNull()) \
+        else if constexpr (!postfixUuid.IsNull()) \
         { \
             return postfixUuid; \
         } \
@@ -338,17 +363,6 @@ namespace AZ::AzGenericTypeInfo
             return AZ::TemplateId{}; \
         } \
     }
-
-#define AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, ...) \
-    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
-    AZ::TypeNameString GetO3deTypeName(AZ::Adl, \
-        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>); \
-    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
-    AZ::TypeId GetO3deTypeId(AZ::Adl, \
-        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>); \
-    template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
-    constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
-        AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);
 
 #define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID(_TemplateName, _DisplayName, _PrefixUuid, _PostfixUuid, _Inline, ...) \
     AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _PrefixUuid, _PostfixUuid, inline constexpr) \
@@ -361,17 +375,12 @@ namespace AZ::AzGenericTypeInfo
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID(_TemplateName, _DisplayName, , _TemplateUuid,, __VA_ARGS__)
 
 
-#define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(_TemplateName, ...) \
-    AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName) \
-    AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID_DECL(_TemplateName, __VA_ARGS__)
-
-
 // Adds the static member function of GetO3deTypeName and GetO3deTypeId to the specified class template
 // which allows instantiations of the class template to opt-in to AzTypeInfo
 // This macro requires the same kind of placeholder arguments as the AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID macro
 // eg. AZ_CLASS_TYPE_INFO_INTRUSIVE_TEMPLATE_WITH_NAME(Foo, "Foo", "{XXXXXXX-...}", AZ_TYPE_INFO_CLASS)
 #define AZ_CLASS_TYPE_INFO_INTRUSIVE_TEMPLATE_WITH_NAME(_TemplateName, _DisplayName, _TemplateUuid, ...) \
-    static AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_TemplateName>) \
+    friend AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_TemplateName>) \
     { \
         static AZ::TypeNameString s_canonicalTypeName; \
         if (s_canonicalTypeName.empty()) \
@@ -389,12 +398,13 @@ namespace AZ::AzGenericTypeInfo
         } \
         return s_canonicalTypeName; \
     } \
-    static AZ::TypeId GetO3deTypeId(AZStd::type_identity<_TemplateName>) \
+    friend AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_TemplateName>) \
     { \
         static AZ::TypeId s_canonicalTypeId; \
         if (s_canonicalTypeId.IsNull()) \
         { \
-            if constexpr (constexpr AZ::TypeId templateUuid{_TemplateUuid}; !templateUuid.IsNull()) \
+            constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
+            if constexpr (!templateUuid.IsNull()) \
             { \
                 s_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes< __VA_ARGS__ >::GetCanonicalTypeId(); \
             } \
@@ -405,9 +415,10 @@ namespace AZ::AzGenericTypeInfo
         } \
         return s_canonicalTypeId; \
     } \
-    static constexpr AZ::TemplateId GetO3deClassTemplateId(AZStd::type_identity<_TemplateName>) \
+    friend constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, AZStd::type_identity<_TemplateName>) \
     { \
-        if constexpr (constexpr AZ::TypeId templateUuid{_TemplateUuid}; !templateUuid.IsNull()) \
+        constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
+        if constexpr (!templateUuid.IsNull()) \
         { \
             return templateUuid; \
         } \
@@ -418,12 +429,12 @@ namespace AZ::AzGenericTypeInfo
     } \
     static const char* TYPEINFO_Name() \
     { \
-        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZStd::type_identity<_TemplateName>{}); \
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<_TemplateName>{}); \
         return s_typeName.c_str(); \
     } \
     static AZ::TypeId TYPEINFO_Uuid() \
     { \
-        return GetO3deTypeId(AZStd::type_identity<_TemplateName>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_TemplateName>{}); \
     }
 
 // Allows a Class Template to opt-in to providing an overload for GetO3deTemplateId
@@ -454,7 +465,8 @@ namespace AZ::AzGenericTypeInfo
 
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1(_ClassName, _DisplayName, _ClassUuid, _TemplateParamsInParen, _Inline, ...) \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeNameString _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeName(AZStd::type_identity<_ClassName>) \
+    _Inline AZ::TypeNameString GetO3deTypeName( \
+        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         static AZ::TypeNameString s_canonicalTypeName; \
         if (s_canonicalTypeName.empty()) \
@@ -473,12 +485,14 @@ namespace AZ::AzGenericTypeInfo
         return s_canonicalTypeName; \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deTypeId(AZStd::type_identity<_ClassName>) \
+    _Inline AZ::TypeId GetO3deTypeId( \
+        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         static AZ::TypeId s_canonicalTypeId; \
         if (s_canonicalTypeId.IsNull()) \
         { \
-            if constexpr (AZ::TypeId templateUuid{_TemplateUuid}; !templateUuid.IsNull()) \
+            constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
+            if constexpr (!templateUuid.IsNull()) \
             { \
                 s_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes< __VA_ARGS__ >::GetCanonicalTypeId(); \
             } \
@@ -490,9 +504,11 @@ namespace AZ::AzGenericTypeInfo
         return s_canonicalTypeId; \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::GetO3deClassTemplateId(AZStd::type_identity<_ClassName>) \
+    _Inline AZ::TypeId GetO3deClassTemplateId( \
+        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
-        if constexpr (constexpr AZ::TypeId templateUuid{_TemplateUuid}; !templateUuid.IsNull()) \
+        constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
+        if constexpr (!templateUuid.IsNull()) \
         { \
             return templateUuid; \
         } \
@@ -510,7 +526,7 @@ namespace AZ::AzGenericTypeInfo
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
     { \
-        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_ClassName>{}); \
     }
 
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_2 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1

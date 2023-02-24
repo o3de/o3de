@@ -264,18 +264,18 @@ namespace AZ
     template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
     static AZ::ComponentDescriptor* CreateDescriptor()                                                                                  \
     { \
-        static const AZ::TypeNameString s_typeName = AZ::CallGetO3deTypeName<_ComponentClass>(); \
-        static const AZ::TypeId s_typeId = AZ::CallGetO3deTypeId<_ComponentClass>(); \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
         AZ::ComponentDescriptor* descriptor = nullptr; \
         AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
         if (descriptor) \
         { \
             /* Compare strings first, then pointers. */ \
-            if (descriptor->GetName() != s_typeName) \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
             { \
                 AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
                     "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
-                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName.c_str()); \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
                 return nullptr; \
             } \
             return descriptor; \
