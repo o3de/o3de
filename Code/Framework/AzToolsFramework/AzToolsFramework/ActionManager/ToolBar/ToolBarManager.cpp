@@ -346,7 +346,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QToolBar* ToolBarManager::GetToolBar(const AZStd::string& toolBarIdentifier)
+    QToolBar* ToolBarManager::GenerateToolBar(const AZStd::string& toolBarIdentifier)
     {
         auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBars.end())
@@ -354,7 +354,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return toolBarIterator->second.GetToolBar();
+        return toolBarIterator->second.GenerateToolBar();
     }
     
     ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const
@@ -436,7 +436,7 @@ namespace AzToolsFramework
             auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
             if (toolBarIterator != m_toolBars.end())
             {
-                toolBarIterator->second.RefreshToolBar();
+                toolBarIterator->second.RefreshToolBars();
             }
         }
 

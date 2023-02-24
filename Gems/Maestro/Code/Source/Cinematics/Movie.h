@@ -239,7 +239,7 @@ private:
     int m_captureFrame;
     bool m_bEndCapture;
     ICaptureKey m_captureKey;
-    AZ::TimeMs m_fixedTimeStepBackUp;
+    AZ::TimeUs m_fixedTimeStepBackUp;
     float m_maxTimeStepForMovieSystemBackUp;
     ICVar* m_cvar_capture_frame_once;
     ICVar* m_cvar_capture_folder;
