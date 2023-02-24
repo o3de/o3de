@@ -148,7 +148,7 @@ namespace AzToolsFramework
         return m_menuVisibility;
     }
 
-    ActionVisibility EditorAction::GetToolBarVisibility() const
+    ActionVisibility EditorAction::GenerateToolBarVisibility() const
     {
         return m_toolBarVisibility;
     }
