@@ -51,8 +51,8 @@ namespace Physics
             AZStd::vector<AZ::ComponentDescriptor*> descriptors(physxDescriptors.begin(), physxDescriptors.end());
             descriptors.insert(descriptors.end(), physxEditorDescriptors.begin(), physxEditorDescriptors.end());
 
-            descriptors.emplace_back( UnitTest::TestColliderComponent::CreateDescriptor());
-            descriptors.emplace_back( UnitTest::TestMeshColliderComponent::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestColliderComponent::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestMeshColliderComponent::CreateDescriptor());
 
             AddComponentDescriptors(descriptors);
 

@@ -30,11 +30,9 @@ namespace UnitTest
         : public ToolsApplicationFixture<false>
     {
     protected:
-        using EntityPtr = AZ::Entity*;
-
         AZ::ComponentId m_colliderComponentId;
 
-        EntityPtr CreateColliderComponent()
+        AZ::Entity* CreateEntityWithTestColliderComponent()
         {
             AZ::Entity* entity = nullptr;
             AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
@@ -69,7 +67,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
+        CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
@@ -98,7 +96,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelDownShouldSetPreviousMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
+        CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
@@ -127,7 +125,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey1ShouldSetOffsetMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
+        CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
@@ -145,7 +143,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey2ShouldSetRotationMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
         EnterComponentMode<TestColliderComponent>();
 
@@ -164,7 +162,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey3ShouldSetSizeMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
         EnterComponentMode<TestColliderComponent>();
 
@@ -183,7 +181,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetSphereRadius)
     {
         // Given there is a sphere collider in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         float radius = 5.0f;
         colliderEntity->FindComponent<TestColliderComponent>()->SetShapeType(Physics::ShapeType::Sphere);
         colliderEntity->FindComponent<TestColliderComponent>()->SetSphereRadius(radius);
@@ -205,7 +203,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetCapsuleSize)
     {
         // Given there is a capsule collider in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         float height = 10.0f;
         float radius = 2.5f;
         colliderEntity->FindComponent<TestColliderComponent>()->SetShapeType(Physics::ShapeType::Capsule);
@@ -230,8 +228,8 @@ namespace UnitTest
 
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetOffset)
     {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        // Given there is a collider component in component mode.
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AZ::Vector3 offset(5.0f, 6.0f, 7.0f);
         colliderEntity->FindComponent<TestColliderComponent>()->SetColliderOffset(offset);
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
@@ -250,8 +248,8 @@ namespace UnitTest
 
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetRotation)
     {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        // Given there is a collider component in component mode.
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AZ::Quaternion rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), 45.0f);
         colliderEntity->FindComponent<TestColliderComponent>()->SetColliderRotation(rotation);
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
@@ -271,7 +269,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, ClickingOffsetButtonShouldSetOffsetMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         // Given
@@ -306,7 +304,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, ClickingRotationButtonShouldSetRotationMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         // Given
@@ -341,7 +339,7 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, ClickingDimensionsButtonShouldSetDimensionsMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         EnterComponentMode<TestColliderComponent>();
 
         // Given

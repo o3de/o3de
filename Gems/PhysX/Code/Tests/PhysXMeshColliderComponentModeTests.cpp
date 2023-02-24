@@ -19,11 +19,9 @@ namespace UnitTest
         : public ToolsApplicationFixture<false>
     {
     protected:
-        using EntityPtr = AZ::Entity*;
-
         AZ::ComponentId m_meshColliderComponentId;
 
-        EntityPtr CreateMeshColliderComponent()
+        AZ::Entity* CreateEntityWithTestMeshColliderComponent()
         {
             AZ::Entity* entity = nullptr;
             AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
@@ -57,8 +55,8 @@ namespace UnitTest
 
     TEST_F(PhysXMeshColliderComponentModeTest, PressingKeyRShouldResetAssetScale)
     {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateMeshColliderComponent();
+        // Given there is a mesh collider component in component mode.
+        auto colliderEntity = CreateEntityWithTestMeshColliderComponent();
         AZ::Vector3 assetScale(10.0f, 10.0f, 10.0f);
         colliderEntity->FindComponent<TestMeshColliderComponent>()->SetAssetScale(assetScale);
 
@@ -81,7 +79,7 @@ namespace UnitTest
 
     TEST_F(PhysXMeshColliderComponentModeManipulatorTest, AssetScaleManipulatorsScaleInCorrectDirection)
     {
-        auto colliderEntity = CreateMeshColliderComponent();
+        auto colliderEntity = CreateEntityWithTestMeshColliderComponent();
         colliderEntity->FindComponent<TestMeshColliderComponent>()->SetAssetScale(AZ::Vector3::CreateOne());
         EnterComponentMode<TestMeshColliderComponent>();
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
@@ -108,8 +106,8 @@ namespace UnitTest
         const auto assetScale = colliderEntity->FindComponent<TestMeshColliderComponent>()->GetAssetScale();
         // need quite a large tolerance because using screen co-ordinates limits precision
         const float tolerance = 0.01f;
-        EXPECT_NEAR(assetScale.GetX(), 1.0f + xDelta * worldToScreenMultiplier, tolerance);
-        EXPECT_NEAR(assetScale.GetY(), 1.0f, tolerance);
-        EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
+        EXPECT_THAT(assetScale.GetX(), ::testing::FloatNear(1.0f + xDelta * worldToScreenMultiplier, tolerance));
+        EXPECT_THAT(assetScale.GetY(), ::testing::FloatNear(1.0f, tolerance));
+        EXPECT_THAT(assetScale.GetZ(), ::testing::FloatNear(1.0f, tolerance));
     }
 } // namespace UnitTest

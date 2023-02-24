@@ -227,7 +227,7 @@ namespace PhysXEditorTests
         AZ::Vector3 boxDimensions(3.0f, 4.0f, 5.0f);
         AZ::Vector3 translationOffset(2.0f, -5.0f, 3.0f);
 
-        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale);
 
         // turn off the shape visibility, so that only the shape collider component debug draws
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
@@ -246,7 +246,7 @@ namespace PhysXEditorTests
         AZ::Vector3 boxDimensions(6.0f, 2.0f, 7.0f);
         AZ::Vector3 translationOffset(4.0f, 1.0f, 6.0f);
 
-        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale);
 
         const AZStd::vector<AZ::Vector3> samplePoints =
             boxShapeEntity->FindComponent<PhysX::EditorShapeColliderComponent>()->GetSamplePoints();
@@ -353,7 +353,7 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(-0.5f, -0.1f, 0.7f, 0.5f);
         const float radius = 2.0f;
         const float height = 7.5f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -370,7 +370,7 @@ namespace PhysXEditorTests
         const float radius = 2.5f;
         const float height = 9.0f;
         EntityPtr editorEntity =
-            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+            CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, AZStd::nullopt, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -388,7 +388,7 @@ namespace PhysXEditorTests
         const float radius = 1.5f;
         const float height = 6.0f;
         EntityPtr editorEntity =
-            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+            CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, nonUniformScale);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -405,8 +405,8 @@ namespace PhysXEditorTests
         const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
         const float radius = 2.5f;
         const float height = 9.0f;
-        EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
-            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            transform, positionOffset, rotationOffset, radius, height, nonUniformScale, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 

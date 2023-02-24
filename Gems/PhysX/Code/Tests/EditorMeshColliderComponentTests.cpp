@@ -70,7 +70,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.IsSuccess());
     }
 
-    TEST_F(PhysXEditorFixture, EditorMeshColliderComponent_ColliderPlusMultipleColliderComponents_EntityIsValid)
+    TEST_F(PhysXEditorFixture, EditorMeshColliderComponent_WithOtherColliderComponents_EntityIsValid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("MeshColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorMeshColliderComponent>();
@@ -148,7 +148,7 @@ namespace PhysXEditorTests
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(
-            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), RigidBodyType::Dynamic);
+            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), AZStd::nullopt, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -182,7 +182,7 @@ namespace PhysXEditorTests
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(
-            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), RigidBodyType::Dynamic);
+            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), AZStd::nullopt, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -216,7 +216,7 @@ namespace PhysXEditorTests
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(
-            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), RigidBodyType::Static);
+            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), AZStd::nullopt, RigidBodyType::Static);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -252,7 +252,7 @@ namespace PhysXEditorTests
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(
-            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), RigidBodyType::Dynamic);
+            AZ::Transform::CreateIdentity(), meshAssetData->CreateMeshAsset(), AZ::Vector3::CreateZero(), AZStd::nullopt, RigidBodyType::Dynamic);
 
         EXPECT_EQ(errorHandler.GetExpectedErrorCount(), 1);
 

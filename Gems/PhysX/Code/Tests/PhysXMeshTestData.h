@@ -12,7 +12,7 @@
 
 namespace PhysXMeshTestData
 {
-    // A sphere mesh exported in FBX Setttings as a sphere primitive.
+    // A sphere mesh exported in FBX Settings as a sphere primitive.
     constexpr AZStd::string_view SpherePrimitive = 
         R"(<ObjectStream version="3">)"
         R"(    <Class name="MeshAssetData" version="2" type="{958C8530-DF1F-4B68-800B-E92056708127}">)"
@@ -54,7 +54,7 @@ namespace PhysXMeshTestData
         R"(</ObjectStream>)"
     ;
 
-    // A sphere mesh exported in FBX Setttings as a convex mesh.
+    // A sphere mesh exported in FBX Settings as a convex mesh.
     constexpr AZStd::string_view SphereConvex =
         R"(<ObjectStream version="3">)"
         R"(    <Class name="MeshAssetData" version="2" type="{958C8530-DF1F-4B68-800B-E92056708127}">)"
@@ -95,7 +95,7 @@ namespace PhysXMeshTestData
         R"(</ObjectStream>)"
     ;
 
-    // A sphere mesh exported in FBX Setttings as a triangle mesh.
+    // A sphere mesh exported in FBX Settings as a triangle mesh.
     constexpr AZStd::string_view SphereTriangleMesh = 
         R"(<ObjectStream version="3">)"
         R"(    <Class name="MeshAssetData" version="2" type="{958C8530-DF1F-4B68-800B-E92056708127}">)"

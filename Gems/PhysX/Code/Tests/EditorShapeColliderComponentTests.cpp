@@ -107,7 +107,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::HasIncompatibleServices);
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderPlusMultipleColliderComponents_EntityIsValid)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_WithOtherColliderComponents_EntityIsValid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorShapeColliderComponent>();
@@ -175,27 +175,27 @@ namespace PhysXEditorTests
         EXPECT_TRUE(aabb.GetMin().IsClose(-0.5f * boxDimensions));
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorStaticBodyGeometry)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_BoxShapeColliderWithTranslationOffset_CorrectEditorStaticBodyGeometry)
     {
         AZ::Transform transform(AZ::Vector3(2.0f, -6.0f, 5.0f), AZ::Quaternion(0.3f, -0.3f, 0.1f, 0.9f), 1.6f);
         AZ::Vector3 nonUniformScale(2.0f, 2.5f, 0.5f);
         AZ::Vector3 boxDimensions(5.0f, 8.0f, 6.0f);
         AZ::Vector3 translationOffset(-4.0f, 3.0f, -1.0f);
-        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale);
 
         AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         EXPECT_THAT(aabb.GetMin(), UnitTest::IsClose(AZ::Vector3(-25.488f, -10.16f, -11.448f)));
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(1.136f, 18.32f, 16.584f)));
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectEditorDynamicBodyGeometry)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_BoxShapeColliderWithTranslationOffset_CorrectEditorDynamicBodyGeometry)
     {
         AZ::Transform transform(AZ::Vector3(-5.0f, -1.0f, 3.0f), AZ::Quaternion(0.7f, 0.5f, -0.1f, 0.5f), 1.2f);
         AZ::Vector3 nonUniformScale(1.5f, 1.5f, 4.0f);
         AZ::Vector3 boxDimensions(6.0f, 4.0f, 1.0f);
         AZ::Vector3 translationOffset(6.0f, -5.0f, -4.0f);
         EntityPtr editorEntity =
-            CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset, RigidBodyType::Dynamic);
+            CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
         editorEntity->Activate();
@@ -205,13 +205,13 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(-7.592f, 26.0f, 6.672f)));
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeStaticBodyGeometry)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_BoxShapeColliderWithTranslationOffset_CorrectRuntimeStaticBodyGeometry)
     {
         AZ::Transform transform(AZ::Vector3(7.0f, 2.0f, 4.0f), AZ::Quaternion(0.4f, -0.8f, 0.4f, 0.2f), 2.5f);
         AZ::Vector3 nonUniformScale(0.8f, 2.0f, 1.5f);
         AZ::Vector3 boxDimensions(1.0f, 4.0f, 7.0f);
         AZ::Vector3 translationOffset(6.0f, -1.0f, -2.0f);
-        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset);
+        EntityPtr editorEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale, RigidBodyType::Static);
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AZ::Aabb aabb = GetSimulatedBodyAabb(gameEntity->GetId());
@@ -219,14 +219,14 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsClose(AZ::Vector3(12.4f, 15.02f, 31.895f)));
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_BoxShapeColliderWithTranslationOffset_CorrectRuntimeDynamicBodyGeometry)
     {
         AZ::Transform transform(AZ::Vector3(4.0f, 4.0f, 2.0f), AZ::Quaternion(0.1f, 0.3f, 0.9f, 0.3f), 0.8f);
         AZ::Vector3 nonUniformScale(2.5f, 1.0f, 2.0f);
         AZ::Vector3 boxDimensions(4.0f, 2.0f, 7.0f);
         AZ::Vector3 translationOffset(-2.0f, 7.0f, -1.0f);
         EntityPtr editorEntity =
-            CreateBoxShapeColliderEditorEntity(transform, nonUniformScale, boxDimensions, translationOffset, RigidBodyType::Dynamic);
+            CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale, RigidBodyType::Dynamic);
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AZ::Aabb aabb = GetSimulatedBodyAabb(gameEntity->GetId());
@@ -253,6 +253,7 @@ namespace PhysXEditorTests
             AZ::Transform(AZ::Vector3(2.0f, -5.0f, -6.0f), AZ::Quaternion(0.7f, 0.1f, 0.7f, 0.1f), 0.4f),
             3.5f,
             AZ::Vector3(1.0f, 3.0f, -1.0f),
+            AZStd::nullopt,
             RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
@@ -284,6 +285,7 @@ namespace PhysXEditorTests
             AZ::Transform(AZ::Vector3(2.0f, 2.0f, -5.0f), AZ::Quaternion(0.9f, 0.3f, 0.3f, 0.1f), 5.0f),
             0.4f,
             AZ::Vector3(4.0f, 7.0f, 3.0f),
+            AZStd::nullopt,
             RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -314,6 +316,7 @@ namespace PhysXEditorTests
             1.0f,
             5.0f,
             AZ::Vector3(2.0f, 9.0f, -5.0f),
+            AZStd::nullopt,
             RigidBodyType::Dynamic);
 
         editorEntity->Deactivate();
@@ -347,6 +350,7 @@ namespace PhysXEditorTests
             0.4f,
             3.0f,
             AZ::Vector3(2.0f, -7.0f, 7.0f),
+            AZStd::nullopt,
             RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
