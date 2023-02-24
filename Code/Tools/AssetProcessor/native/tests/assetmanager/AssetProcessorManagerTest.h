@@ -79,8 +79,6 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(
         SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName_UpdatesWhenTheyAppear);
     friend class GTEST_TEST_CLASS_NAME_(
-        SourceFileDependenciesTest, SourceDependencyIsIntermediateAsset_NotInitiallyAvailable_DependencyResolvesWhenAvailable);
-    friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardMissingFiles_ByName_UpdatesWhenTheyAppear);
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK);
 
