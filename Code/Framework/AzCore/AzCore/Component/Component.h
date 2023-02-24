@@ -263,30 +263,24 @@ namespace AZ
     template<class Comp, class Void> friend class AZ::HasComponentRequiredServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
     static AZ::ComponentDescriptor* CreateDescriptor()                                                                                  \
-    {                                                                                                                                   \
-            AZ::ComponentDescriptor* descriptor = nullptr;                                                                              \
-            AZ::ComponentDescriptorBus::EventResult(descriptor, AZ::AzTypeInfo<_ComponentClass>::Uuid(), &AZ::ComponentDescriptor::GetDescriptor); \
-            if (descriptor)                                                                                                             \
-            {                                                                                                                           \
-                /* Compare strings first, then pointers.  If we compare pointers first, different strings will give the wrong error message */ \
-                if (strcmp(descriptor->GetName(), AZ::AzTypeInfo<_ComponentClass>::Name()) != 0)                                        \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n"            \
-                        "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s",                                            \
-                        AZ::AzTypeInfo<_ComponentClass>::Uuid().ToFixedString().c_str(), descriptor->GetName(), AZ::AzTypeInfo<_ComponentClass>::Name());          \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                if (descriptor->GetName() != AZ::AzTypeInfo<_ComponentClass>::Name())                                                   \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "The same component UUID (%s) / name (%s) was registered twice.  This isn't allowed, " \
-                             "it can cause lifetime management issues / crashes.\nThis situation can happen by declaring a component "  \
-                             "in a header and registering it from two different Gems.\n",                                               \
-                        AZ::AzTypeInfo<_ComponentClass>::Uuid().ToFixedString().c_str(), descriptor->GetName());              \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                return descriptor;                                                                                                      \
-            }                                                                                                                           \
-            return aznew DescriptorType;                                                                                                \
+    { \
+        static const AZ::TypeNameString s_typeName = AZ::CallGetO3deTypeName<_ComponentClass>(); \
+        static const AZ::TypeId s_typeId = AZ::CallGetO3deTypeId<_ComponentClass>(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != s_typeName) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName.c_str()); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
     }
 
     /**

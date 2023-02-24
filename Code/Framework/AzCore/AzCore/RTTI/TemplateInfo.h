@@ -418,11 +418,12 @@ namespace AZ::AzGenericTypeInfo
     } \
     static const char* TYPEINFO_Name() \
     { \
-        return AZ::AzTypeInfo<_TemplateName>::Name(); \
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZStd::type_identity<_TemplateName>{}); \
+        return s_typeName.c_str(); \
     } \
     static AZ::TypeId TYPEINFO_Uuid() \
     { \
-        return AZ::AzTypeInfo<_TemplateName>::Uuid(); \
+        return GetO3deTypeId(AZStd::type_identity<_TemplateName>{}); \
     }
 
 // Allows a Class Template to opt-in to providing an overload for GetO3deTemplateId
@@ -503,12 +504,13 @@ namespace AZ::AzGenericTypeInfo
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline const char* _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
     { \
-        return AZ::AzTypeInfo<_ClassName>::Name(); \
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZStd::type_identity<_ClassName>{}); \
+        return s_typeName.c_str(); \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
     { \
-        return AZ::AzTypeInfo<_ClassName>::Uuid(); \
+        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
     }
 
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_2 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1

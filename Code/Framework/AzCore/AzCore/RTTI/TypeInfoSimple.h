@@ -265,6 +265,35 @@ namespace AZ
 
 namespace AZ
 {
+    // Make a call to retrieve the O3DE type associated with the type
+    // Needs to be a template in order prevent evaluation of both
+    // if blocks
+    template <class T>
+    constexpr AZ::TypeNameString CallGetO3deTypeName()
+    {
+        if constexpr (HasMemberGetO3deTypeName_v<T>)
+        {
+            return T::GetO3deTypeName(AZStd::type_identity<T>{});
+        }
+        else
+        {
+            return GetO3deTypeName(Adl{}, AZStd::type_identity<T>{});
+        }
+    }
+
+    template <class T>
+    constexpr AZ::TypeId CallGetO3deTypeId()
+    {
+        if constexpr (HasMemberGetO3deTypeId_v<T>)
+        {
+            return T::GetO3deTypeId(AZStd::type_identity<T>{});
+        }
+        else
+        {
+            return GetO3deTypeId(Adl{}, AZStd::type_identity<T>{});
+        }
+    }
+
     /**
     * Since O3DE fully support cross shared libraries (DLL) operation, it does not rely on typeid, static templates, etc.
     * to generate the same result in different compilations. A unique ID for each type is required.
@@ -324,14 +353,7 @@ namespace AZ
                 // Calculate the uuid only once
                 if (s_canonicalTypeId.IsNull())
                 {
-                    if constexpr (HasMemberGetO3deTypeId_v<ValueTypeNoQualifiers>)
-                    {
-                        s_canonicalTypeId = ValueTypeNoQualifiers::GetO3deTypeId(AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
-                    else
-                    {
-                        s_canonicalTypeId = GetO3deTypeId(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
+                    s_canonicalTypeId = CallGetO3deTypeId<ValueTypeNoQualifiers>();
 
                     // If the T parameter is a pointer mixin the pointer id
                     if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
@@ -384,21 +406,9 @@ namespace AZ
             }
             else if constexpr (HasGetO3deTypeId_v<ValueTypeNoQualifiers>)
             {
-                static AZ::TypeId s_pointeeTypeId;
+                static const AZ::TypeId s_pointeeTypeId = CallGetO3deTypeId<ValueTypeNoQualifiers>();
 
                 // Calculate the uuid only once
-                if (s_pointeeTypeId.IsNull())
-                {
-                    if constexpr (HasMemberGetO3deTypeId_v<ValueTypeNoQualifiers>)
-                    {
-                        s_pointeeTypeId = ValueTypeNoQualifiers::GetO3deTypeId(AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
-                    else
-                    {
-                        s_pointeeTypeId = GetO3deTypeId(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
-                }
-
                 return s_pointeeTypeId;
             }
             else
@@ -469,15 +479,7 @@ namespace AZ
                 // Calculate the type name only once on startup
                 if (s_typeNameString.empty())
                 {
-                    AZ::TypeNameString typeName{};
-                    if constexpr (HasMemberGetO3deTypeName_v<ValueTypeNoQualifiers>)
-                    {
-                        typeName = ValueTypeNoQualifiers::GetO3deTypeName(AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
-                    else
-                    {
-                        typeName = GetO3deTypeName(Adl{}, AZStd::type_identity<ValueTypeNoQualifiers>{});
-                    }
+                    AZ::TypeNameString typeName = CallGetO3deTypeName<ValueTypeNoQualifiers>();
 
                     // First calculate the type qualifiers of the pointee type
                     if constexpr (AZStd::is_pointer_v<TypeNoQualifiers>)
@@ -564,16 +566,6 @@ namespace AZ
     }
 }
 
-#define AZ_TYPE_INFO_INTERNAL_CLASS_GETTERS(_ClassName) \
-    static const char* TYPEINFO_Name() \
-    { \
-        return AZ::AzTypeInfo<_ClassName>::Name(); \
-    } \
-    static AZ::TypeId TYPEINFO_Uuid() \
-    { \
-        return AZ::AzTypeInfo<_ClassName>::Uuid(); \
-    }
-
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName, _ClassUuid) \
     static constexpr AZ::TypeNameString GetO3deTypeName(AZStd::type_identity<_ClassName>) \
     { \
@@ -587,7 +579,15 @@ namespace AZ
         constexpr AZ::TypeId typeId{ _ClassUuid }; \
         return typeId; \
     } \
-    AZ_TYPE_INFO_INTERNAL_CLASS_GETTERS(_ClassName);
+    static const char* TYPEINFO_Name() \
+    { \
+        constexpr AZStd::string_view displayName(_DisplayName); \
+        return !displayName.empty() ? displayName.data() : #_ClassName; \
+    } \
+    static AZ::TypeId TYPEINFO_Uuid() \
+    { \
+        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
+    }
 
 // NOTE: This the same macro logic as the `AZ_MACRO_SPECIALIZE`, but it must used instead of
 // `AZ_MACRO_SPECIALIZE` macro as the C preprocessor macro expansion will not expand a macro with the same
@@ -707,12 +707,13 @@ namespace AZ
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline const char* _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
     { \
-        return AZ::AzTypeInfo<_ClassName>::Name(); \
+        constexpr AZStd::string_view displayName(_DisplayName); \
+        return !displayName.empty() ? displayName.data() : #_ClassName; \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
     { \
-        return AZ::AzTypeInfo<_ClassName>::Uuid(); \
+        return GetO3deTypeId(AZStd::type_identity<_ClassName>{}); \
     }
 
 

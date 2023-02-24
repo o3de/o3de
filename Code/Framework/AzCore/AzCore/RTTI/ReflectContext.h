@@ -223,11 +223,6 @@ namespace AZ
     public:
         using ContextDeleter = void(*)(void* contextData);
 
-        static const AZ::Name s_typeField;
-        static constexpr AZStd::string_view s_typeName = "AZ::Attribute";
-        static const AZ::Name s_instanceField;
-        static const AZ::Name s_attributeField;
-
         AZ_RTTI(AZ::Attribute, "{2C656E00-12B0-476E-9225-5835B92209CC}");
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
@@ -277,10 +272,30 @@ namespace AZ
         virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)
         {
             AZ::Dom::Value result(AZ::Dom::Type::Object);
-            result[s_typeField] = Dom::Value(s_typeName, false);
+            result[s_typeField] = Dom::Value(GetTypeName(), false);
             result[s_instanceField] = AZ::Dom::Utils::ValueFromType(instance);
             result[s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
             return result;
+        }
+
+        static const char* GetTypeName()
+        {
+            return "AZ::Attribute";
+        }
+
+        static AZ::Name GetTypeField()
+        {
+            return s_typeField;
+        }
+
+        static AZ::Name GetInstanceField()
+        {
+            return s_instanceField;
+        }
+
+        static AZ::Name GetAttributeField()
+        {
+            return s_attributeField;
         }
 
         bool m_describesChildren = false;
@@ -290,6 +305,9 @@ namespace AZ
         AZStd::unique_ptr<void, ContextDeleter> m_contextData; ///< a generic value you can use to store extra data associated with the attribute
 
         static void DefaultDelete(void*) { }
+        static const AZ::Name s_typeField;
+        static const AZ::Name s_instanceField;
+        static const AZ::Name s_attributeField;
     };
 
     typedef AZ::u32 AttributeId;
