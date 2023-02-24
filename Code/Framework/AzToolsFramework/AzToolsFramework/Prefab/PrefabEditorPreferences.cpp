@@ -11,7 +11,7 @@
 
 namespace AzToolsFramework::Prefab
 {
-    static constexpr AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
+    static constexpr AZStd::string_view OutlinerOverrideManagement = "/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement";
     static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
     static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
@@ -27,15 +27,15 @@ namespace AzToolsFramework::Prefab
         return isHotReloadingEnabled;
     }
 
-    bool IsPrefabOverridesUxEnabled()
+    bool IsOutlinerOverrideManagementEnabled()
     {
-        bool prefabOverridesUxEnabled = false;
+        bool isOutlinerOverrideManagementEnabled = false;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(prefabOverridesUxEnabled, EnablePrefabOverridesUxKey);
+            registry->Get(isOutlinerOverrideManagementEnabled, OutlinerOverrideManagement);
         }
 
-        return prefabOverridesUxEnabled;
+        return isOutlinerOverrideManagementEnabled;
     }
 
     bool IsInspectorOverrideManagementEnabled()
