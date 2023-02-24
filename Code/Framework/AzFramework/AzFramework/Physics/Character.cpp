@@ -12,8 +12,8 @@
 
 namespace Physics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CharacterColliderNodeConfiguration, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CharacterColliderConfiguration, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CharacterColliderNodeConfiguration, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CharacterColliderConfiguration, AZ::SystemAllocator)
 
     void CharacterColliderNodeConfiguration::Reflect(AZ::ReflectContext* context)
     {

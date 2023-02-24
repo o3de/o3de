@@ -44,7 +44,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool canBeReordered READ CanBeReordered);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
-        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator)
 
         enum class DragImageType
         {

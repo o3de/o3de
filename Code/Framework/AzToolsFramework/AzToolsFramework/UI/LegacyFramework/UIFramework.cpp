@@ -135,7 +135,7 @@ namespace AzToolsFramework
         : public QApplication
     {
     public:
-        AZ_CLASS_ALLOCATOR(AZQtApplication, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AZQtApplication, AZ::SystemAllocator);
         AZQtApplication(int& argc, char** argv)
             : QApplication(argc, argv)
         {

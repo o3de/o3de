@@ -350,7 +350,6 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

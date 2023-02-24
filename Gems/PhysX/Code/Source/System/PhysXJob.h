@@ -18,7 +18,7 @@ namespace PhysX
         : public AZ::Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXJob, AZ::ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXJob, AZ::ThreadPoolAllocator);
 
         PhysXJob(physx::PxBaseTask& pxTask, AZ::JobContext* context = nullptr);
         ~PhysXJob() = default;

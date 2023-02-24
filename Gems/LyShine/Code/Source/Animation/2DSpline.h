@@ -532,7 +532,7 @@ namespace UiSpline
         : public spline::CBaseSplineInterpolator<Vec2, UiSpline::BezierSpline<Vec2, UiSpline::SplineKeyEx<Vec2> > >
     {
     public:
-        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator)
 
         virtual int GetNumDimensions()
         {

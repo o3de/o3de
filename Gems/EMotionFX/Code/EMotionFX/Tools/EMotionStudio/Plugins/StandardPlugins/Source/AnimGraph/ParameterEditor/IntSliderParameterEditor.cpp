@@ -16,7 +16,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(IntSliderParameterEditor, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(IntSliderParameterEditor, EMStudio::UIAllocator)
 
     IntSliderParameterEditor::IntSliderParameterEditor(EMotionFX::AnimGraph* animGraph, const EMotionFX::ValueParameter* valueParameter, const AZStd::vector<MCore::Attribute*> attributes)
         : ValueParameterEditor(animGraph, valueParameter, attributes)

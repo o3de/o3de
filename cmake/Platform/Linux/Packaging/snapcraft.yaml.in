@@ -1,5 +1,5 @@
 name: o3de
-version: '${O3DE_INSTALL_VERSION_STRING}'
+version: '${CPACK_PACKAGE_VERSION}'
 summary: O3DE Engine
 description: |
   Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations. 
@@ -42,25 +42,25 @@ parts:
      - cmake
 
 layout:
-  /etc/o3de/${O3DE_INSTALL_VERSION_STRING}/downloaded_packages:
-    bind: $SNAP/${O3DE_INSTALL_VERSION_STRING}/python/downloaded_packages
-  /etc/o3de/${O3DE_INSTALL_VERSION_STRING}/runtime:
-    bind: $SNAP/${O3DE_INSTALL_VERSION_STRING}/python/runtime
+  /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
+    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/downloaded_packages
+  /etc/o3de/${CPACK_PACKAGE_VERSION}/runtime:
+    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/runtime
 
 apps:
   o3de:
-    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/o3de
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
     environment:
-      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
   editor:
-    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/Editor
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
   assetprocessor:
-    command: ${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default/AssetProcessor
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/AssetProcessor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${O3DE_INSTALL_VERSION_STRING}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
       DISABLE_WAYLAND: 1
     

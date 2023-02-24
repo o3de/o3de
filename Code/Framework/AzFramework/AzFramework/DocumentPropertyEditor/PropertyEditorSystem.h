@@ -16,7 +16,7 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         AZ_RTTI(PropertyEditorSystem, "{5DD4E43F-B17C-463E-8D4C-5A1E22DD452D}", PropertyEditorSystemInterface);
-        AZ_CLASS_ALLOCATOR(PropertyEditorSystem, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEditorSystem, AZ::OSAllocator);
 
         PropertyEditorSystem();
         ~PropertyEditorSystem();

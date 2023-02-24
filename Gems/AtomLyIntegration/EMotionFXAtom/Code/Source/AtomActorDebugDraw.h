@@ -39,7 +39,7 @@ namespace AZ::Render
     class AtomActorDebugDraw
     {
     public:
-        AZ_CLASS_ALLOCATOR(AtomActorDebugDraw, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AtomActorDebugDraw, AZ::SystemAllocator)
 
         struct TrajectoryPathParticle
         {
@@ -48,7 +48,7 @@ namespace AZ::Render
 
         struct TrajectoryTracePath
         {
-            AZ_CLASS_ALLOCATOR(AtomActorDebugDraw::TrajectoryTracePath, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AtomActorDebugDraw::TrajectoryTracePath, AZ::SystemAllocator)
             AZStd::vector<TrajectoryPathParticle> m_traceParticles;
             const EMotionFX::ActorInstance* m_actorInstance = nullptr;
             float m_timePassed = 0.0f;

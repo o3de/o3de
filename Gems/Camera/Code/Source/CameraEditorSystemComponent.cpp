@@ -45,7 +45,6 @@ namespace Camera
                     "Camera Editor Commands", "Performs global camera requests")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Game")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }

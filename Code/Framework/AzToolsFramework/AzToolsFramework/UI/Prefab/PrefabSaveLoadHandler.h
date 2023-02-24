@@ -49,7 +49,7 @@ namespace AzToolsFramework
         class PrefabUserSettings : public AZ::UserSettings
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUserSettings, AZ::SystemAllocator);
             AZ_RTTI(PrefabUserSettings, "{E17A6128-E2C3-4501-B1AD-B8BB0D315602}", AZ::UserSettings);
 
             AZStd::string m_saveLocation;
@@ -69,7 +69,7 @@ namespace AzToolsFramework
             , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator);
 
             PrefabSaveHandler();
             ~PrefabSaveHandler();

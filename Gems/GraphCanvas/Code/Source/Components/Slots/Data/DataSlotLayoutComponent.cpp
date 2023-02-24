@@ -32,7 +32,7 @@ namespace GraphCanvas
         : public SceneEventFilter
     {
     public:
-        AZ_CLASS_ALLOCATOR(DataSlotGraphicsEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotGraphicsEventFilter, AZ::SystemAllocator);
 
         DataSlotGraphicsEventFilter(DataSlotLayout* dataSlotLayout)
             : SceneEventFilter(nullptr)

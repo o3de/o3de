@@ -117,7 +117,7 @@ namespace UnitTest
     class TestEditorVertexSelectionVariable : public AzToolsFramework::EditorVertexSelectionVariable<AZ::Vector3>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestEditorVertexSelectionVariable, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestEditorVertexSelectionVariable, AZ::SystemAllocator)
 
         void ShowVertexDeletionWarning() override
         {

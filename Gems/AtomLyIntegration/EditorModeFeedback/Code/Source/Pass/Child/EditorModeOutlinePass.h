@@ -26,7 +26,7 @@ namespace AZ
             };
 
             AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackChildPassBase);
-            AZ_CLASS_ALLOCATOR(EditorModeOutlinePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModeOutlinePass, SystemAllocator);
 
             virtual ~EditorModeOutlinePass() = default;
 

@@ -22,7 +22,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RPI::MSAAResolveFullScreenPass, "{998FCF6D-5441-4C59-89EC-795CFB803912}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(RPI::MSAAResolveFullScreenPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RPI::MSAAResolveFullScreenPass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<MSAAResolveFullScreenPass> Create(const RPI::PassDescriptor& descriptor);

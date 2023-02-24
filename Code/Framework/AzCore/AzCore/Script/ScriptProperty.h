@@ -127,7 +127,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyNil,AZ::SystemAllocator,0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyNil, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyNil, "{ACAD23F6-5E75-460E-BD77-1B477750264F}", ScriptProperty);
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -152,7 +152,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyBoolean, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyBoolean, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyBoolean, "{EA7335F8-5B9F-4744-B805-FEF9240451BD}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -184,7 +184,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyNumber, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyNumber, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyNumber, "{5BCDFDEB-A75D-4E83-BB74-C45299CB9826}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -216,7 +216,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyString, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyString, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyString, "{A0229C6D-B010-47E7-8985-EE220FC7BFAF}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -250,7 +250,7 @@ namespace AZ
         friend class AzFramework::ScriptPropertyMarshaler;
         friend class AzToolsFramework::Components::ScriptEditorComponent;
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClass, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyGenericClass, "{80618224-814C-44D4-A7B8-14B5A36F96ED}", FunctionalScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -321,7 +321,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyNumberArray, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyNumberArray, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyNumberArray, "{76609A01-46CA-442E-8BA6-251D529886AF}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -352,7 +352,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyBooleanArray, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyBooleanArray, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyBooleanArray, "{3A83958C-26C7-4A59-B6D7-A7805B0EC756}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -383,7 +383,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyStringArray, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyStringArray, AZ::SystemAllocator);
         AZ_RTTI(AzFramework::ScriptPropertyStringArray, "{899993A5-D717-41BB-B89B-04A27952CA6D}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -416,7 +416,7 @@ namespace AZ
     public:
         typedef AZStd::vector<AZ::DynamicSerializableField> ValueArrayType;
 
-        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassArray, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassArray, AZ::SystemAllocator);
         AZ_RTTI(AZ::ScriptPropertyGenericClassArray, "{28E986DD-CF7C-404D-9BEE-EEE067180CD1}", ScriptProperty);        
         
         static void Reflect(AZ::ReflectContext* reflection);
@@ -463,7 +463,7 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptPropertyAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptPropertyAsset, AZ::SystemAllocator);
         AZ_RTTI(AZ::ScriptPropertyAsset, "{4D4B7176-A6E1-4BB9-A7B0-5977EC724CCB}", ScriptProperty);
         
         static void Reflect(AZ::ReflectContext* reflection);

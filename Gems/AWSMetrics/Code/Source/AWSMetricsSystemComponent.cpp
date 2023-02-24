@@ -64,7 +64,6 @@ namespace AWSMetrics
             {
                 ec->Class<AWSMetricsSystemComponent>("AWSMetrics", "Generate and submit metrics to the metrics analytics pipeline")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

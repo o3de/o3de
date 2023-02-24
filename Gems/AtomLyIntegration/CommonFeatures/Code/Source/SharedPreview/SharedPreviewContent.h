@@ -23,7 +23,7 @@ namespace AZ
         class SharedPreviewContent final : public AtomToolsFramework::PreviewContent
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedPreviewContent, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewContent, AZ::SystemAllocator);
 
             SharedPreviewContent(
                 RPI::ScenePtr scene,

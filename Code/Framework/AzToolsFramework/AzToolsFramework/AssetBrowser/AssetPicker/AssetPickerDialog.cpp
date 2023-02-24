@@ -170,7 +170,7 @@ namespace AzToolsFramework
                     this, &AssetPickerDialog::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
                     &AssetBrowserTableView::UpdateSizeSlot);
 
-                m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+                m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
                 m_tableModel->UpdateTableModelMaps();
             }
 

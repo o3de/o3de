@@ -123,7 +123,7 @@ namespace AzPhysics
         "configuration.\n <b>CCD cannot be enabled if the rigid body is Kinematic, set the rigid body as Dynamic "
         "to allow changes to be made.</b>";
 
-    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator);
 
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {

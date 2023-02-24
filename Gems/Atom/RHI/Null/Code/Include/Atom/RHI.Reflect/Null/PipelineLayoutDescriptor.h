@@ -22,7 +22,7 @@ namespace AZ
             using Base = RHI::PipelineLayoutDescriptor;
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{1A456415-2028-42E5-A771-61A0E41CF39D}", Base);
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();

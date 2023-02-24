@@ -29,7 +29,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BufferPoolResolver, "{ECC51B75-62AD-4C86-8CAB-D6B492BD2340}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator);
 
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor);
 

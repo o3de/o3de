@@ -42,7 +42,6 @@ namespace RemoteTools
             {
                 ec->Class<RemoteToolsSystemComponent>("RemoteTools", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -316,7 +315,7 @@ namespace RemoteTools
         const AzFramework::RemoteToolsEndpointInfo& target, const AzFramework::RemoteToolsMessage& msg)
     {
         AZ::SerializeContext* serializeContext;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         // Messages targeted at our own application just transfer right over to the inbox.
         if (target.IsSelf())
@@ -461,7 +460,7 @@ namespace RemoteTools
         if (m_entryRegistry[key].m_tmpInboundBufferPos == totalBufferSize)
         {
             AZ::SerializeContext* serializeContext;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             // Deserialize the complete buffer
             AZ::IO::MemoryStream msgBuffer(m_entryRegistry[key].m_tmpInboundBuffer.data(), totalBufferSize, totalBufferSize);

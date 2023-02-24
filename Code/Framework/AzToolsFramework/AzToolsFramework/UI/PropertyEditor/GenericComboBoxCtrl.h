@@ -36,7 +36,7 @@ namespace AzToolsFramework
         Q_OBJECT
     public:
         AZ_RTTI(GenericComboBoxCtrlBase, "{879D010E-743F-45FB-9D97-2DAD2C25ACBA}");
-        AZ_CLASS_ALLOCATOR(GenericComboBoxCtrlBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GenericComboBoxCtrlBase, AZ::SystemAllocator);
 
         GenericComboBoxCtrlBase(QWidget* pParent = nullptr);
         ~GenericComboBoxCtrlBase() override = default;
@@ -78,7 +78,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI((GenericComboBoxCtrl, "{FA7EC12F-1DA3-4734-ABDE-CBFD99450571}", T), GenericComboBoxCtrlBase);
-        AZ_CLASS_ALLOCATOR(GenericComboBoxCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GenericComboBoxCtrl, AZ::SystemAllocator);
 
         using GenericType = T;
 
@@ -92,6 +92,7 @@ namespace AzToolsFramework
         void addElements(const AZStd::vector<AZStd::pair<T, AZStd::string>>& genericValues);
         void addElement(const AZStd::pair<T, AZStd::string>& genericValue);
         void setElements(const AZStd::vector<AZStd::pair<T, AZStd::string>>& genericValues);
+        void clearElements();
 
         void SetWarning(const AZStd::string& warningText);
 
@@ -127,7 +128,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::PropertyHandler<T, GenericComboBoxCtrlBase>
     {
     public:
-        AZ_CLASS_ALLOCATOR(GenericComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GenericComboBoxHandler, AZ::SystemAllocator);
 
         using ComboBoxCtrl = GenericComboBoxCtrlBase;
         GenericComboBoxHandler() = default;

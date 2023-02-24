@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceTracePass, "{70FD45E9-8363-4AA1-A514-3C24AC975E53}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceTracePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceTracePass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceTracePass> Create(const RPI::PassDescriptor& descriptor);
