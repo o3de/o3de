@@ -20,7 +20,7 @@ namespace AZ
     namespace Render
     {
         //! The errors met in initializing the frame capture.
-        //! It used for script Ebus calls to provide a richer debug environment.
+        //! It is used for script Ebus calls to provide a richer debug environment.
         struct FrameCaptureError
         {
             AZ_TYPE_INFO(FrameCaptureError, "{9459AC1D-B0EE-4D89-9EEC-6A65790C76BF}");
@@ -48,7 +48,7 @@ namespace AZ
             //! @param imagePath The output file path. 
             //! @param windowHandle The handle to the AzFrameWork::NativeWindow that is being captured
             //! @return value is the frame capture Id, on failure it will return InvalidFrameCaptureId
-            virtual AZ::Outcome<FrameCaptureId, FrameCaptureError> CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) = 0;
+            virtual AZ::Outcome<FrameCaptureId, FrameCaptureError> CaptureScreenshotForWindow(const AZStd::string& imagePath, AzFramework::NativeWindowHandle windowHandle) = 0;
 
             //! Similar to CaptureScreenshotForWindow except it's capturing the screen shot for default window 
             //! @param imagePath The output file path. 
