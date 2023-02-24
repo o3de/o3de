@@ -62,58 +62,6 @@
             return false;
         }
 
-        AZStd::optional<OverrideType> PrefabOverrideHandler::GetEntityOverrideType(AZ::Dom::Path path, LinkId linkId) const
-        {
-            AZStd::optional<OverrideType> overrideType = {};
-
-            AZStd::optional<PatchType> patchType = GetPatchType(path, linkId);
-            if (patchType.has_value())
-            {
-                switch (patchType.value())
-                {
-                case PatchType::Add:
-                    overrideType = OverrideType::AddEntity;
-                    break;
-                case PatchType::Remove:
-                    overrideType = OverrideType::RemoveEntity;
-                    break;
-                case PatchType::Edit:
-                    overrideType = OverrideType::EditEntity;
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            return overrideType;
-        }
-
-        AZStd::optional<OverrideType> PrefabOverrideHandler::GetComponentOverrideType(AZ::Dom::Path path, LinkId linkId) const
-        {
-            AZStd::optional<OverrideType> overrideType = {};
-
-            AZStd::optional<PatchType> patchType = GetPatchType(path, linkId);
-            if (patchType.has_value())
-            {
-                switch (patchType.value())
-                {
-                case PatchType::Add:
-                    overrideType = OverrideType::AddComponent;
-                    break;
-                case PatchType::Remove:
-                    overrideType = OverrideType::RemoveComponent;
-                    break;
-                case PatchType::Edit:
-                    overrideType = OverrideType::EditComponent;
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            return overrideType;
-        }
-
         AZStd::optional<PatchType> PrefabOverrideHandler::GetPatchType(AZ::Dom::Path path, LinkId linkId) const
         {
             AZStd::optional<PatchType> patchType = {};

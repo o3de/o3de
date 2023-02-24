@@ -69,27 +69,65 @@ namespace AzToolsFramework
 
         AZStd::optional<OverrideType> PrefabOverridePublicHandler::GetEntityOverrideType(AZ::EntityId entityId)
         {
+            AZStd::optional<OverrideType> overrideType = {};
+
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(entityId);
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
-                return m_prefabOverrideHandler.GetEntityOverrideType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                AZStd::optional<PatchType> patchType = m_prefabOverrideHandler.GetPatchType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                if (patchType.has_value())
+                {
+                    switch (patchType.value())
+                    {
+                    case PatchType::Add:
+                        overrideType = OverrideType::AddEntity;
+                        break;
+                    case PatchType::Remove:
+                        overrideType = OverrideType::RemoveEntity;
+                        break;
+                    case PatchType::Edit:
+                        overrideType = OverrideType::EditEntity;
+                        break;
+                    default:
+                        break;
+                    }
+                }
             }
 
-            return {};
+            return overrideType;
         }
 
         AZStd::optional<OverrideType> PrefabOverridePublicHandler::GetComponentOverrideType(const AZ::Component& component)
         {
+            AZStd::optional<OverrideType> overrideType = {};
+
             AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetPathAndLinkIdFromFocusedPrefab(component.GetEntityId());
             if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
             {
                 pathAndLinkIdPair.first /= PrefabDomUtils::ComponentsName;
                 pathAndLinkIdPair.first /= component.GetSerializedIdentifier();
 
-                return m_prefabOverrideHandler.GetComponentOverrideType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                AZStd::optional<PatchType> patchType = m_prefabOverrideHandler.GetPatchType(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
+                if (patchType.has_value())
+                {
+                    switch (patchType.value())
+                    {
+                    case PatchType::Add:
+                        overrideType = OverrideType::AddComponent;
+                        break;
+                    case PatchType::Remove:
+                        overrideType = OverrideType::RemoveComponent;
+                        break;
+                    case PatchType::Edit:
+                        overrideType = OverrideType::EditComponent;
+                        break;
+                    default:
+                        break;
+                    }
+                }
             }
 
-            return {};
+            return overrideType;
         }
 
         bool PrefabOverridePublicHandler::RevertOverrides(AZ::EntityId entityId)
