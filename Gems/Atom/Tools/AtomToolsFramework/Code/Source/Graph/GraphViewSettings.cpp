@@ -53,14 +53,12 @@ namespace AtomToolsFramework
             {
                 editContext->Class<GraphViewSettingsPtr>("GraphViewSettingsPtr", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
 
                 editContext->Class<GraphViewSettings>("Graph View Config", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Basic Interactions")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

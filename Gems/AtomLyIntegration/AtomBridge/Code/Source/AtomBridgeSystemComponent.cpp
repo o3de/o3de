@@ -50,7 +50,6 @@ namespace AZ
                 {
                     ec->Class<AtomBridgeSystemComponent>("AtomBridge", "[Description of functionality provided by this System Component]")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
                 }
