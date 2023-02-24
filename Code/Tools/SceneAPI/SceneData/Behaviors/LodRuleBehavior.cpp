@@ -25,7 +25,9 @@
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISkinGroup.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Behaviors/LodRuleBehavior.h>
+#include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ICustomPropertyData.h>
 
 namespace AZ
 {
@@ -35,11 +37,11 @@ namespace AZ
         {
             static AZStd::fixed_vector < AZ::Crc32, LodRule::m_maxLods > s_lodVirtualTypeKeys =
             {
-                AZ_CRC("LODMesh1", 0xcbea988c),
-                AZ_CRC("LODMesh2", 0x52e3c936),
-                AZ_CRC("LODMesh3", 0x25e4f9a0),
-                AZ_CRC("LODMesh4", 0xbb806c03),
-                AZ_CRC("LODMesh5", 0xcc875c95)
+                AZ_CRC_CE("LODMesh1"),
+                AZ_CRC_CE("LODMesh2"),
+                AZ_CRC_CE("LODMesh3"),
+                AZ_CRC_CE("LODMesh4"),
+                AZ_CRC_CE("LODMesh5")
             };
 
             void LodRuleBehavior::Activate()
@@ -67,7 +69,7 @@ namespace AZ
 
             void LodRuleBehavior::InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target)
             {
-                //Initialize Mesh Groups. 
+                //Initialize Mesh Groups and Skin Groups.
                 if (target.RTTI_IsTypeOf(DataTypes::IMeshGroup::TYPEINFO_Uuid()) || target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))
                 {
                     AZStd::shared_ptr<LodRule> lodRule = nullptr;
@@ -91,7 +93,13 @@ namespace AZ
                             break;
                         }
                     }
- 
+
+                    // use custom property o3de_lod_index (if any)
+                    if (!lodRule)
+                    {
+                        lodRule = CreateLodRuleUsingCustomProperty(scene);
+                    }
+
                     if(lodRule) 
                     {
                         DataTypes::IGroup* group = azrtti_cast<DataTypes::IGroup*>(&target);
@@ -200,16 +208,113 @@ namespace AZ
 
             void LodRuleBehavior::GetVirtualTypeName(AZStd::string& name, Crc32 type)
             {
-                if (type == AZ_CRC("LODMesh1", 0xcbea988c)) { name = "LODMesh1"; }
-                else if (type == AZ_CRC("LODMesh2", 0x52e3c936)) { name = "LODMesh2"; }
-                else if (type == AZ_CRC("LODMesh3", 0x25e4f9a0)) { name = "LODMesh3"; }
-                else if (type == AZ_CRC("LODMesh4", 0xbb806c03)) { name = "LODMesh4"; }
-                else if (type == AZ_CRC("LODMesh5", 0xcc875c95)) { name = "LODMesh5"; }
+                if (type == AZ_CRC_CE("LODMesh1")) { name = "LODMesh1"; }
+                else if (type == AZ_CRC_CE("LODMesh2")) { name = "LODMesh2"; }
+                else if (type == AZ_CRC_CE("LODMesh3")) { name = "LODMesh3"; }
+                else if (type == AZ_CRC_CE("LODMesh4")) { name = "LODMesh4"; }
+                else if (type == AZ_CRC_CE("LODMesh5")) { name = "LODMesh5"; }
             }
 
             void LodRuleBehavior::GetAllVirtualTypes(AZStd::set<Crc32>& types)
             {
                 AZStd::copy(s_lodVirtualTypeKeys.begin(), s_lodVirtualTypeKeys.end(), AZStd::inserter(types, types.begin()));
+            }
+
+            void LodRuleBehavior::SelectLodMeshesUsingCustomProperty(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection, size_t lodLevel) const
+            {
+                const int lodIndex = aznumeric_cast<int>(lodLevel);
+
+                const Containers::SceneGraph& graph = scene.GetGraph();
+                auto contentStorage = graph.GetContentStorage();
+                auto nameStorage = graph.GetNameStorage();
+
+                auto keyValueView = Containers::Views::MakePairView(nameStorage, contentStorage);
+                auto filteredView = Containers::Views::MakeFilterView(keyValueView, Containers::DerivedTypeFilter<DataTypes::IMeshData>());
+                for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
+                {
+                    auto keyValueIterator = it.GetBaseIterator();
+                    Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
+
+                    bool selectNode = false;
+                    if (graph.HasNodeChild(index))
+                    {
+                        // check for a user defined custom property named 'o3de_lod_index' to override the removeNode logic
+                        index = graph.GetNodeChild(index);
+                        while (index.IsValid())
+                        {
+                            if (graph.HasNodeContent(index))
+                            {
+                                AZStd::shared_ptr<const SceneAPI::DataTypes::ICustomPropertyData> customPropertyData =
+                                    azrtti_cast<const SceneAPI::DataTypes::ICustomPropertyData*>(graph.GetNodeContent(index));
+
+                                if (customPropertyData)
+                                {
+                                    const auto o3deLodIndexIt = customPropertyData->GetPropertyMap().find("o3de_lod_index");
+                                    if (o3deLodIndexIt != customPropertyData->GetPropertyMap().end())
+                                    {
+                                        const AZStd::any& o3deLodIndexAny = o3deLodIndexIt->second;
+                                        if (!o3deLodIndexAny.empty() && o3deLodIndexAny.is<int>())
+                                        {
+                                            const int* o3deLodIndex = AZStd::any_cast<int>(&o3deLodIndexAny);
+                                            if (lodIndex == *o3deLodIndex)
+                                            {
+                                                selectNode = true;
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            AZ_Error("SceneData", false,
+                                                "The 'o3de_lod_index' custom property value type must be a number."
+                                                "This will need to be fixed in the DCC tool and re-export the file asset.");
+                                        }
+                                    }
+                                }
+                            }
+                            index = graph.GetNodeSibling(index);
+                        }
+                    }
+
+                    auto nodePath = it->first.GetPath();
+                    if (selectNode)
+                    {
+                        selection.AddSelectedNode(AZStd::move(nodePath));
+                    }
+                    else
+                    {
+                        selection.RemoveSelectedNode(AZStd::move(nodePath));
+                    }
+                }
+
+                if (selection.GetSelectedNodeCount() > 0)
+                {
+                    selection.AddSelectedNode("RootNode");
+                }
+            }
+
+            AZStd::shared_ptr<LodRule> LodRuleBehavior::CreateLodRuleUsingCustomProperty(const Containers::Scene& scene) const
+            {
+                AZStd::shared_ptr<LodRule> lodRule = AZStd::make_shared<LodRule>();
+                for (size_t lodLevel = 0; lodLevel < LodRule::m_maxLods; ++lodLevel)
+                {
+                    SceneNodeSelectionList selection;
+                    SelectLodMeshesUsingCustomProperty(scene, selection, lodLevel);
+                    if (selection.GetSelectedNodeCount() > 0)
+                    {
+                        lodRule->AddLod();
+                        selection.CopyTo(lodRule->GetNodeSelectionList(lodLevel));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (lodRule->GetLodCount() > 0)
+                {
+                    return lodRule;
+                }
+                return {};
             }
         } // namespace SceneData
     } // namespace SceneAPI
