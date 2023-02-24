@@ -88,7 +88,6 @@ namespace Vegetation
                 editContext->Class<VegetationSystemComponent>("Vegetation System", "Reflects types and defines required services for dynamic vegetation systems to function")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

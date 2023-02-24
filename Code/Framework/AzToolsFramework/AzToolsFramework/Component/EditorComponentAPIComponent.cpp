@@ -180,10 +180,6 @@ namespace AzToolsFramework
                             }
                             break;
                         default:
-                            if (!AzToolsFramework::AppearsInSystemComponentMenu(*componentClass))
-                            {
-                                return true;
-                            }
                             break;
                         }
                         for (int i = 0; i < typesCount; ++i)
@@ -320,10 +316,6 @@ namespace AzToolsFramework
                         }
                         break;
                     default:
-                        if (AzToolsFramework::AppearsInSystemComponentMenu(*componentClass))
-                        {
-                            typeNameList.push_back(componentClass->m_editData->m_name);
-                        }
                         break;
                     }
 

@@ -41,7 +41,6 @@ namespace AWSGameLift
             {
                 ec->Class<AWSGameLiftServerSystemComponent>("AWSGameLiftServer", "Create the GameLift server manager which manages the server process for hosting a game session via GameLiftServerSDK.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
