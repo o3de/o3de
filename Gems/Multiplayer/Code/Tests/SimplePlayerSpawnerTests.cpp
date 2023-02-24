@@ -50,7 +50,7 @@ namespace Multiplayer
         void CreateSimplePlayerSpawner(AZ::Entity& entity, AZStd::vector<AZ::EntityId> spawnPoints)
         {
             auto spawner = entity.CreateComponent<SimplePlayerSpawnerComponent>();
-            spawner->GetSpawnPoints() = spawnPoints;
+            spawner->m_spawnPoints = spawnPoints;
             entity.Init();
             entity.Activate();
         }
@@ -88,23 +88,22 @@ namespace Multiplayer
         EXPECT_EQ(numSpawnPoints, 3);
 
         AZ::Transform nextSpawnPoint;
-        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::RoundRobinNextSpawnPoint);
-        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 1);
+        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::GetAndAdvanceNextSpawnPoint);
+        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 1.0f);
 
-        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::RoundRobinNextSpawnPoint);
-        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 2);
+        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::GetAndAdvanceNextSpawnPoint);
+        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 2.0f);
 
-        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::RoundRobinNextSpawnPoint);
-        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 3);
+        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::GetAndAdvanceNextSpawnPoint);
+        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 3.0f);
 
         // Ran through each spawn point; make sure the spawner goes back to spawn point #1
-        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::RoundRobinNextSpawnPoint);
-        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 1);
+        SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::GetAndAdvanceNextSpawnPoint);
+        EXPECT_EQ(nextSpawnPoint.GetTranslation().GetX(), 1.0f);
 
-        AZ::Outcome<uint32_t, AZStd::string> spawnPointIndexOutcome;
-        SimplePlayerSpawnerRequestBus::BroadcastResult(spawnPointIndexOutcome, &SimplePlayerSpawnerRequests::GetNextSpawnPointIndex);
-        EXPECT_TRUE(spawnPointIndexOutcome.IsSuccess());
-        EXPECT_EQ(spawnPointIndexOutcome.GetValue(), 1); // Spawn point #2 (aka index 1)
+        uint32_t spawnPointIndex;
+        SimplePlayerSpawnerRequestBus::BroadcastResult(spawnPointIndex, &SimplePlayerSpawnerRequests::GetNextSpawnPointIndex);
+        EXPECT_EQ(spawnPointIndex, 1); // Spawn point #2 (aka index 1)
     }
 
     TEST_F(SimplePlayerSpawnerTests, NoSpawnPoints)
@@ -120,10 +119,5 @@ namespace Multiplayer
         AZ::Transform nextSpawnPoint;
         SimplePlayerSpawnerRequestBus::BroadcastResult(nextSpawnPoint, &SimplePlayerSpawnerRequests::GetNextSpawnPoint);
         EXPECT_EQ(nextSpawnPoint, AZ::Transform::CreateIdentity());
-
-        // No spawn points. Getting the next spawn point index should return a failure outcome.
-        AZ::Outcome<uint32_t, AZStd::string> spawnPointIndexOutcome;
-        SimplePlayerSpawnerRequestBus::BroadcastResult(spawnPointIndexOutcome, &SimplePlayerSpawnerRequests::GetNextSpawnPointIndex);
-        EXPECT_FALSE(spawnPointIndexOutcome.IsSuccess());
     }
 } // namespace Multiplayer
