@@ -199,7 +199,7 @@ def _run_enable_gem_in_project(args: argparse) -> int:
                                      gem_path=args.gem_path,
                                      project_name=args.project_name,
                                      project_path=args.project_path,
-                                     enable_gem_file=args.enabled_gem_file,
+                                     enabled_gem_file=args.enabled_gem_file,
                                      force=args.force,
                                      dry_run=args.dry_run,
                                      optional=args.optional
