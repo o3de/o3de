@@ -26,6 +26,7 @@
 #include <Tests/PhysXTestCommon.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestUtil.h>
+#include <Tests/PhysXTestEnvironment.h>
 
 #include <System/PhysXSystem.h>
 
@@ -41,8 +42,7 @@ namespace PhysX
         GameplayTestBasis(
             AzPhysics::SceneHandle sceneHandle,
             float gravityMultiplier = DefaultGravityMultiplier,
-            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight,
-            const AZ::Transform& floorTransform = DefaultFloorTransform)
+            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight)
             : m_sceneHandle(sceneHandle)
         {
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -50,15 +50,12 @@ namespace PhysX
                 m_testScene = physicsSystem->GetScene(m_sceneHandle);
             }
             AZ_Assert(m_testScene != nullptr, "GameplayTestBasis: the Test scene is null.");
-            SetUp(gravityMultiplier, groundDetectionBoxHeight, floorTransform);
+            SetUp(gravityMultiplier, groundDetectionBoxHeight);
         }
 
         void SetUp(float gravityMultiplier = DefaultGravityMultiplier,
-            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight,
-            const AZ::Transform& floorTransform = DefaultFloorTransform)
+            float groundDetectionBoxHeight = DefaultGroundDetectionBoxHeight)
         {
-            m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
-
             m_controllerEntity = AZStd::make_unique<AZ::Entity>("CharacterEntity");
 
             // Transform Setup
@@ -98,6 +95,12 @@ namespace PhysX
             }
         }
 
+        //! Function to add the ground for tests where the ground is needed
+        void AddGround(const AZ::Transform& floorTransform = DefaultFloorTransform)
+        {
+            m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
+        }
+
         //! Function to remove the ground for tests where the ground can interfere with the intent of the test. 
         void RemoveGround()
         {
@@ -117,7 +120,7 @@ namespace PhysX
     {
         const float expectedGravityMultiplier = 2.5f;
 
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
         basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier);
         EXPECT_THAT(basis.m_gameplayController->GetGravityMultiplier(), testing::FloatEq(expectedGravityMultiplier));
     }
@@ -126,7 +129,7 @@ namespace PhysX
     {
         const float expectedGravityMultiplier = 2.5f;
 
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         int duration = 10;
@@ -142,7 +145,7 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySets)
     {
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
         const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
@@ -155,21 +158,29 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySetsWhileMoving)
     {
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
         const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
         basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
-        basis.Update(10);
-        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
 
+        for (int i = 0; i < 20; i++)
+        {
+            basis.Update();
+            auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
+            std::cerr << endVelocity.GetZ() << std::endl;
+            
+        }
+           
+        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();        
+        
         EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ() + originalVelocity.GetZ(), 0.001f));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
     {
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
         const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
         const float expectedHeight = 10.0f;
@@ -182,7 +193,8 @@ namespace PhysX
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GroundDetectedWhileMoving)
     {
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
+        basis.AddGround();
 
         const AZ::Transform startingPosition = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 0.1f));
 
@@ -209,10 +221,7 @@ namespace PhysX
 
     TEST_P(PhysXDefaultWorldTestWithParamFixture, CharacterGameplayController_EntityFallsUnderGravity)
     {
-        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight, DefaultFloorTransform);
-
-        // Remove the Ground so we can can test falling without worrying about accidental collisions with objects.
-        basis.RemoveGround();        
+        GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);     
         
         // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
         const auto startPosition = basis.m_controller->GetPosition();
