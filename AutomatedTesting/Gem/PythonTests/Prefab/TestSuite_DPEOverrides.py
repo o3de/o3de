@@ -10,16 +10,16 @@ import pytest
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationOverridesDisabled(EditorTestSuite):
+class TestAutomationOverridesEnabled(EditorTestSuite):
 
-    # These tests will execute with Prefab Overrides/Inspector DPE/Inspector Overrides disabled
+    # These tests will execute with Prefab Overrides/Inspector DPE/Inspector Overrides enabled
     EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOverridesUx=false",
-         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=false",
-         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=false"])
+        [f"--regset=/O3DE/Preferences/Prefabs/EnableOverridesUx=true",
+         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=true",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=true"])
 
     # Add Entity Tests
     class test_AddEntity_UnderAnotherEntity(EditorBatchedTest):
@@ -53,7 +53,7 @@ class TestAutomationOverridesDisabled(EditorTestSuite):
 
     class test_CreatePrefab_WithNestedEntities(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_WithNestedEntities as test_module
-    
+
     class test_CreatePrefab_WithNestedEntitiesAndNestedPrefabs(EditorBatchedTest):
         from .tests.create_prefab import CreatePrefab_WithNestedEntitiesAndNestedPrefabs as test_module
 
@@ -128,7 +128,7 @@ class TestAutomationOverridesDisabled(EditorTestSuite):
 
     class test_OpenLevel_ContainingTwoEntities(EditorBatchedTest):
         from .tests.open_level import OpenLevel_ContainingTwoEntities as test_module
-        
+
     # Prefab Notifications Tests
 
     class test_PrefabNotifications_PropagationNotificationsReceived(EditorBatchedTest):
@@ -141,38 +141,3 @@ class TestAutomationOverridesDisabled(EditorTestSuite):
 
     class test_ReparentEntity_UnderEntityHierarchies(EditorBatchedTest):
         from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module
-
-
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationOverrides(EditorTestSuite):
-
-    # These tests will execute with Prefab Overrides/Inspector DPE/Inspector Overrides enabled
-    EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOverridesUx=true",
-         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=true",
-         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=true"])
-
-    # Overrides Tests
-
-    class test_AddEntity_UnderUnfocusedInstanceAsOverride(EditorBatchedTest):
-        from .tests.overrides import AddEntity_UnderUnfocusedInstanceAsOverride as test_module
-
-    class test_DeleteEntity_UnderImmediateInstance(EditorBatchedTest):
-        from .tests.overrides import DeleteEntity_UnderImmediateInstance as test_module
-
-    class test_DeleteEntity_UnderNestedInstance(EditorBatchedTest):
-        from .tests.overrides import DeleteEntity_UnderNestedInstance as test_module
-
-    class test_DeletePrefab_UnderImmediateInstance(EditorBatchedTest):
-        from .tests.overrides import DeletePrefab_UnderImmediateInstance as test_module
-
-    class test_DeletePrefab_UnderNestedInstance(EditorBatchedTest):
-        from .tests.overrides import DeletePrefab_UnderNestedInstance as test_module
-
-    class test_EditEntity_UnderImmediateInstance(EditorBatchedTest):
-        from .tests.overrides import EditEntity_UnderImmediateInstance as test_module
-
-    class test_EditEntity_UnderNestedInstance(EditorBatchedTest):
-        from .tests.overrides import EditEntity_UnderNestedInstance as test_module
