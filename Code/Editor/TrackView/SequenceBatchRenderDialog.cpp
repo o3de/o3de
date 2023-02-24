@@ -74,6 +74,10 @@ namespace
 
     const char customResFormat[] = "Custom(%1 x %2)...";
 
+    const char debugInfo[] = "debuginfo";
+
+    const char format[] = "format";
+
     const int kBatchRenderFileVersion = 2; // This version number should be incremented every time available options like the list of formats,
     // the list of buffers change.
 
@@ -466,7 +470,10 @@ void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 
     // Set up a new render item.
     SRenderItem item;
-    SetUpNewRenderItem(item);
+    if (!SetUpNewRenderItem(item))
+    {
+        return;
+    }
 
     // Check a duplication before updating.
     for (size_t i = 0; i < m_renderItems.size(); ++i)
@@ -1509,6 +1516,10 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // folder
             item.folder = itemNode->getAttr("folder");
 
+            itemNode->getAttr(debugInfo, item.disableDebugInfo);
+
+            item.imageFormat = itemNode->getAttr(format);
+
             // cvars
             for (int k = 0; k < itemNode->getChildCount(); ++k)
             {
@@ -1560,6 +1571,10 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
 
             // folder
             itemNode->setAttr("folder", item.folder.toUtf8().data());
+
+            itemNode->setAttr(debugInfo, item.disableDebugInfo);
+
+            itemNode->setAttr(format, item.imageFormat.toUtf8().data());
 
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)
