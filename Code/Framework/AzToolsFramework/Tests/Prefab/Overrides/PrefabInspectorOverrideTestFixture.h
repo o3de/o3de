@@ -11,12 +11,8 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <Prefab/Overrides/PrefabOverrideTestFixture.h>
-
-namespace AzToolsFramework
-{
-    class EntityPropertyEditor;
-}
 
 namespace UnitTest
 {

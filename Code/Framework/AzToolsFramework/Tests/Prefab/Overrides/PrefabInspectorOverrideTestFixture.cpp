@@ -7,7 +7,6 @@
  */
 
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
-#include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <Prefab/Overrides/PrefabInspectorOverrideTestFixture.h>
 
