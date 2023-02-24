@@ -306,7 +306,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         result.m_metallic = GetMetallicInput(inputs.m_metallicMap, inputs.m_sampler, transformedUv[inputs.m_metallicMapUvIndex], inputs.m_metallicFactor, inputs.m_metallic_useTexture);
         result.m_roughness = GetRoughnessInput(inputs.m_roughnessMap, MaterialSrg::m_sampler, transformedUv[inputs.m_roughnessMapUvIndex], inputs.m_roughnessFactor, inputs.m_roughnessLowerBound, inputs.m_roughnessUpperBound, inputs.m_roughness_useTexture);
 
-        result.m_emissiveLighting = GetEmissiveInput(inputs.m_emissiveMap, inputs.m_sampler, transformedUv[inputs.m_emissiveMapUvIndex], inputs.m_emissiveIntensity, inputs.m_emissiveColor.rgb, inputs.m_emissiveEnabled, inputs.m_emissive_useTexture);
+        result.m_emissiveLighting = GetEmissiveInput(inputs.m_emissiveMap, inputs.m_sampler, transformedUv[inputs.m_emissiveMapUvIndex], inputs.m_emissiveIntensity, inputs.m_emissiveColor.rgb, 0.0, 1.0, inputs.m_emissiveEnabled, inputs.m_emissive_useTexture);
         result.m_diffuseAmbientOcclusion = GetOcclusionInput(inputs.m_diffuseOcclusionMap, inputs.m_sampler, transformedUv[inputs.m_diffuseOcclusionMapUvIndex], inputs.m_diffuseOcclusionFactor, inputs.m_diffuseOcclusion_useTexture);
         result.m_specularOcclusion = GetOcclusionInput(inputs.m_specularOcclusionMap, MaterialSrg::m_sampler, transformedUv[inputs.m_specularOcclusionMapUvIndex], inputs.m_specularOcclusionFactor, inputs.m_specularOcclusion_useTexture);
     
@@ -369,6 +369,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         inputs.m_emissiveMapUvIndex = srgLayerPrefix##m_emissiveMapUvIndex;                                            \
         inputs.m_emissiveIntensity = srgLayerPrefix##m_emissiveIntensity;                                              \
         inputs.m_emissiveColor = srgLayerPrefix##m_emissiveColor;                                                      \
+        inputs.m_emissiveAffectedByAlpha = srgLayerPrefix##m_emissiveAffectedByAlpha;                                  \
         inputs.m_emissiveEnabled = optionsLayerPrefix##o_emissiveEnabled;                                              \
         inputs.m_emissive_useTexture = optionsLayerPrefix##o_emissive_useTexture;                                      \
                                                                                                                        \

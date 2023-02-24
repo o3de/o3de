@@ -69,7 +69,6 @@ namespace AZ
                     {
                         ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                     }

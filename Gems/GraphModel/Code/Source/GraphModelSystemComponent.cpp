@@ -63,7 +63,6 @@ namespace GraphModel
             {
                 ec->Class<GraphModelSystemComponent>("GraphModel", "A generic node graph data model")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

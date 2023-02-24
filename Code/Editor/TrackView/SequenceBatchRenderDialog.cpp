@@ -74,6 +74,10 @@ namespace
 
     const char customResFormat[] = "Custom(%1 x %2)...";
 
+    const char debugInfo[] = "debuginfo";
+
+    const char format[] = "format";
+
     const int kBatchRenderFileVersion = 2; // This version number should be incremented every time available options like the list of formats,
     // the list of buffers change.
 
@@ -466,7 +470,10 @@ void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 
     // Set up a new render item.
     SRenderItem item;
-    SetUpNewRenderItem(item);
+    if (!SetUpNewRenderItem(item))
+    {
+        return;
+    }
 
     // Check a duplication before updating.
     for (size_t i = 0; i < m_renderItems.size(); ++i)
@@ -1146,12 +1153,12 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
             // Use a placeholder for the input file, will expand it with replace.
             QString inputFileDefine = "__input_file__";
 
-            QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 '-vf crop=%6:%7:0:0'")
+            QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 'crop=%6:%7:0:0'")
                 .arg(inputFileDefine).arg(outputFile.c_str()).arg("libvpx-vp9")
                 .arg(10240).arg(renderItem.fps).arg(getResWidth(renderItem.resW)).arg(getResHeight(renderItem.resH));
 
             // Create the input file string, leave the %06d unexpanded for the mpeg tool.
-            inputFile += "%06d.";
+            inputFile += "_%06d.";
             inputFile += imageFormat;
 
             // Replace the input file
@@ -1509,6 +1516,10 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // folder
             item.folder = itemNode->getAttr("folder");
 
+            itemNode->getAttr(debugInfo, item.disableDebugInfo);
+
+            item.imageFormat = itemNode->getAttr(format);
+
             // cvars
             for (int k = 0; k < itemNode->getChildCount(); ++k)
             {
@@ -1560,6 +1571,10 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
 
             // folder
             itemNode->setAttr("folder", item.folder.toUtf8().data());
+
+            itemNode->setAttr(debugInfo, item.disableDebugInfo);
+
+            itemNode->setAttr(format, item.imageFormat.toUtf8().data());
 
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)

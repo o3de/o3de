@@ -879,7 +879,6 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
                 "Script System", "Initializes and maintains script contexts")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
         }
     }

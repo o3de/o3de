@@ -43,7 +43,7 @@ namespace AzToolsFramework
         bool ContainsToolBar(const AZStd::string& toolBarIdentifier) const;
 
         //! Returns the sort key for the queried toolbar, or AZStd::nullopt if it's not found.
-        AZStd::optional<int> GetToolBarSortKey(const AZStd::string& toolBarIdentifier) const;
+        AZStd::optional<int> GenerateToolBarSortKey(const AZStd::string& toolBarIdentifier) const;
         
         //! Clears the toolbar area and creates a new one from the EditorToolBarArea information.
         void RefreshToolBarArea();

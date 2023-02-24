@@ -16,7 +16,6 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 
-#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
 #include <TerrainRenderer/Vector2i.h>
 #include <TerrainRenderer/ClipmapBounds.h>
@@ -31,9 +30,7 @@ namespace Terrain
         TerrainMacroMaterialManager() = default;
         ~TerrainMacroMaterialManager() = default;
 
-        void Initialize(
-            const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+        void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         void Reset();
         bool IsInitialized();
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
@@ -43,7 +40,7 @@ namespace Terrain
 
     private:
 
-        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
+        static constexpr auto InvalidImageIndex = AZStd::numeric_limits<uint32_t>::max();
         static constexpr float MacroMaterialGridSize = 64.0f;
         static constexpr uint16_t MacroMaterialsPerTile = 4;
 
@@ -128,7 +125,6 @@ namespace Terrain
         int32_t m_tiles1D{ 0 };
         ClipmapBounds m_macroMaterialTileBounds;
 
-        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         AZ::Render::GpuBufferHandler m_materialDataBuffer;
         AZ::Render::GpuBufferHandler m_materialRefGridDataBuffer;
 

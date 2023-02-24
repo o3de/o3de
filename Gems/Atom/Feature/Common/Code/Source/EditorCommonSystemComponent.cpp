@@ -44,7 +44,6 @@ namespace AZ
                 {
                     ec->Class<EditorCommonSystemComponent>("Common", "Configures editor- and tool-specific functionality for common render features.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
