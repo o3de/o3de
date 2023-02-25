@@ -36,12 +36,29 @@ namespace PhysX
 
     }
 
+    void ArticulationLinkData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ArticulationLinkData>()
+                ->Version(1)
+                ->Field("ShapeConfiguration", &ArticulationLinkData::m_shapeConfiguration)
+                ->Field("ColliderConfiguration", &ArticulationLinkData::m_colliderConfiguration)
+                ->Field("EntityId", &ArticulationLinkData::m_entityId)
+                ->Field("ChildLinks", &ArticulationLinkData::m_childLinks)
+            ;
+        }
+    }
+
     void ArticulatedBodyComponent::Reflect(AZ::ReflectContext* context)
     {
+        ArticulationLinkData::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ArticulatedBodyComponent, AZ::Component>()
                 ->Version(1)
+                ->Field("ArticulationLinkData", &ArticulatedBodyComponent::m_articulationLinkData)
                 ;
         }
     }
@@ -424,5 +441,6 @@ namespace PhysX
             //}
         }
     }
+
 
 } // namespace PhysX

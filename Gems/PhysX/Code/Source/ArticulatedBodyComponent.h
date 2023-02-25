@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include "AzFramework/Physics/Common/PhysicsEvents.h"
+#include "AzFramework/Physics/Shape.h"
 
 namespace physx
 {
@@ -30,6 +31,18 @@ namespace AzPhysics
 namespace PhysX
 {
     class StaticRigidBody;
+
+    struct ArticulationLinkData
+    {
+        AZ_TYPE_INFO(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
+        Physics::ColliderConfiguration m_colliderConfiguration;
+        AZ::EntityId m_entityId;
+        AZStd::vector<ArticulationLinkData> m_childLinks;
+    };
 
     class ArticulatedBodyComponent final
         : public AZ::Component
@@ -48,6 +61,7 @@ namespace PhysX
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+        ArticulationLinkData m_articulationLinkData;
 
     private:
         void CreateRigidBody();
@@ -67,5 +81,6 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+
     };
 } // namespace PhysX

@@ -10,6 +10,7 @@
 
 #include <Source/ArticulatedBodyComponent.h>
 #include <Source/EditorArticulatedBodyComponent.h>
+#include "EditorColliderComponent.h"
 
 namespace PhysX
 {
@@ -65,6 +66,48 @@ namespace PhysX
 
     void EditorArticulatedBodyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<ArticulatedBodyComponent>();
+        AZ::TransformInterface* thisTransform = GetEntity()->GetTransform();
+        if (thisTransform)
+        {
+            bool isRootArticulation = true;
+            {
+                AZ::EntityId parentId = thisTransform->GetParentId();
+                if (parentId.IsValid())
+                {
+                    AZ::Entity* parentEntity = nullptr;
+
+                    AZ::ComponentApplicationBus::BroadcastResult(
+                        parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
+
+                    if (parentEntity && parentEntity->FindComponent<EditorArticulatedBodyComponent>())
+                    {
+                        isRootArticulation = false;
+                    }
+                }
+            }
+
+            AZStd::vector<AZ::EntityId> children = GetEntity()->GetTransform()->GetChildren();
+
+
+            EditorColliderComponent* collider = GetEntity()->FindComponent<EditorColliderComponent>();
+
+            const EditorProxyShapeConfig& shapeConfigProxy = collider->GetShapeConfiguration();
+            const Physics::ColliderConfiguration& colliderConfig = collider->GetColliderConfiguration();
+
+            ArticulationLinkData thisLink;
+            thisLink.m_colliderConfiguration = colliderConfig;
+            thisLink.m_shapeConfiguration = shapeConfigProxy.CloneCurrent();
+
+            ArticulatedBodyComponent* component = gameEntity->CreateComponent<ArticulatedBodyComponent>();
+
+            component->m_articulationLinkData.m_colliderConfiguration;
+            component->m_articulationLinkData.m_shapeConfiguration;
+
+            component->m_articulationLinkData.m_childLinks.emplace_back(thisLink);
+        }
+        else
+        {
+            gameEntity->CreateComponent<ArticulatedBodyComponent>();
+        }
     }
 } // namespace PhysX
