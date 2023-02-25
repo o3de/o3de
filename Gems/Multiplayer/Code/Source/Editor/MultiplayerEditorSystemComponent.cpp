@@ -38,10 +38,13 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <QMenu>
 #include <QAction>
+
+#ifdef _WIN32
+#include <tlhelp32.h>
+#endif
 
 namespace Multiplayer
 {
@@ -284,6 +287,29 @@ namespace Multiplayer
 
         return false;
     }
+
+    /*!
+    \brief Check if a process is running
+    \param [in] processName Name of process to check if is running
+    \returns \c True if the process is running, or \c False if the process is not running
+    
+    bool IsProcessRunning(const wchar_t* processName)
+    {
+        bool exists = false;
+        PROCESSENTRY32 entry;
+        entry.dwSize = sizeof(PROCESSENTRY32);
+
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+        if (Process32First(snapshot, &entry))
+            while (Process32Next(snapshot, &entry))
+                if (!wcsicmp(entry.szExeFile, processName))
+                    exists = true;
+
+        CloseHandle(snapshot);
+        return exists;
+    }
+    */
 
     bool MultiplayerEditorSystemComponent::LaunchEditorServer()
     {
@@ -576,7 +602,33 @@ namespace Multiplayer
                     remoteAddress.c_str()) return;
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
+            #ifdef _WIN32
+                // Find and terminate all ServerLaunchers.exe processes before launching a new one for the editor
+                PROCESSENTRY32 entry;
+                entry.dwSize = sizeof(PROCESSENTRY32);
+                HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+                if (Process32First(snapshot, &entry))
+                {
+                    // Build a wide-char string of the server executable name. IE: L"MultiplayerSample.ServerLauncher.exe"
+                    const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                    const AZStd::wstring serverExeFilenameUnicode(serverExeFilename.begin(), serverExeFilename.end());
+
+                    while (Process32Next(snapshot, &entry))
+                    {
+                        if (!_wcsicmp(entry.szExeFile, serverExeFilenameUnicode.c_str()))
+                        {
+                            // Terminate the previously existing server launcher
+                            HANDLE serverLauncherProcess = OpenProcess(PROCESS_TERMINATE, false, entry.th32ProcessID);
+                            TerminateProcess(serverLauncherProcess, 1);
+                            CloseHandle(serverLauncherProcess);
+                        }
+                    }
+                }
+                CloseHandle(snapshot);
+            #endif
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...");
+
             // Launch the editor-server
             if (!LaunchEditorServer())
             {
