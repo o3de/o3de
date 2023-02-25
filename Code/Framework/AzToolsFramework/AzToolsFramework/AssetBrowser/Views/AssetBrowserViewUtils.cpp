@@ -31,7 +31,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        void AssetBrowserViewUtils::RenameEntry(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.size() != 1)
             {
@@ -45,7 +45,7 @@ namespace AzToolsFramework
             if (connectedToAssetProcessor)
             {
                 using namespace AZ::IO;
-                AssetBrowserEntry* item = entries[0];
+                const AssetBrowserEntry* item = entries[0];
                 bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
                 Path toPath;
                 Path fromPath;
@@ -104,14 +104,14 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::AfterRename(QString newVal, AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::AfterRename(QString newVal, const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.size() != 1)
             {
                 return;
             }
             using namespace AZ::IO;
-            AssetBrowserEntry* item = entries[0];
+            const AssetBrowserEntry* item = entries[0];
             bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath());
             Path toPath;
@@ -215,7 +215,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.empty())
             {
@@ -310,7 +310,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::MoveEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::MoveEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.empty())
             {
@@ -384,7 +384,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::DuplicateEntries(const AZStd::vector<AssetBrowserEntry*>& entries)
+        void AssetBrowserViewUtils::DuplicateEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)
         {
             for (auto entry : entries)
             {

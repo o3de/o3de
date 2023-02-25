@@ -345,13 +345,13 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries)
+        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries)
         {
             for (const auto& index : indexes)
             {
                 if (index.isValid())
                 {
-                    AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                    const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     entries.push_back(item);
                 }
             }

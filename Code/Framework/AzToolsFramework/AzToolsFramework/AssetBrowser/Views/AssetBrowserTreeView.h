@@ -66,7 +66,7 @@ namespace AzToolsFramework
             //! Gets the selected entries.  if includeProducts is false, it will only
             //! count sources and folders - many common operations such as deleting, renaming, etc,
             //! can only work on sources and folders.
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
 

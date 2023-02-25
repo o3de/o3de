@@ -369,7 +369,7 @@ void AzAssetBrowserWindow::AddCreateMenu()
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
                                                                                  : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
-    AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
+    const AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
     if (!entry || selectedAssets.size() != 1)
     {
         return;

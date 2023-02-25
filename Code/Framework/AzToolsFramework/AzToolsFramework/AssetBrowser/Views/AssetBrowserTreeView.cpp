@@ -180,7 +180,7 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
+        AZStd::vector<const AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
@@ -189,7 +189,7 @@ namespace AzToolsFramework
                 sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
             }
 
-            AZStd::vector<AssetBrowserEntry*> entries;
+            AZStd::vector<const AssetBrowserEntry*> entries;
             m_assetBrowserModel->SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
 
             if (!includeProducts)
@@ -198,7 +198,7 @@ namespace AzToolsFramework
                     AZStd::remove_if(
                         entries.begin(),
                         entries.end(),
-                        [&](AssetBrowserEntry* entry) -> bool
+                        [&](const AssetBrowserEntry* entry) -> bool
                         {
                             return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
                         }),
