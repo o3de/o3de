@@ -10,7 +10,6 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/ranges/ranges_to.h>
 
 namespace AZ::UuidInternal
 {
@@ -278,7 +277,7 @@ namespace AZ
     template<class StringType>
     constexpr StringType Uuid::ToString(bool isBrackets, bool isDashes) const
     {
-        return AZStd::ranges::to<StringType>(ToFixedString(isBrackets, isDashes));
+        return StringType{ AZStd::string_view(ToFixedString(isBrackets, isDashes)) };
     }
 
     /// For inplace version we require resize, data and size members.

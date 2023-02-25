@@ -718,7 +718,7 @@ TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmi
     // 4. The Asset Processor is run again.
     // Expected, and what this test verifies: The intermediate asset is removed, because it is no longer a product of the source asset.
     // Before the regression fix: The intermediate asset was not being removed.
-    
+
     using namespace AssetBuilderSDK;
 
     // Given:
@@ -4743,7 +4743,7 @@ void JobDependencyTest::SetUp()
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
     m_mockApplicationManager->BusDisconnect();
 
-    m_data->m_mockBuilderInfoHandler.CreateBuilderDescInfoRef("test builder", m_data->m_builderUuid.ToString<QString>(), { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, m_data->m_assetBuilderConfig);
+    m_data->m_mockBuilderInfoHandler.CreateBuilderDescInfoRef("test builder", m_data->m_builderUuid.ToFixedString().c_str(), { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, m_data->m_assetBuilderConfig);
     m_data->m_mockBuilderInfoHandler.BusConnect();
 
     QString watchFolderPath = m_assetRootDir.absoluteFilePath("subfolder1");
@@ -4842,7 +4842,7 @@ void ChainJobDependencyTest::SetUp()
             jobDependencyPath = QString("%1.txt").arg(i - 1);
         }
 
-        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(QString("test builder %1").arg(i), AZ::Uuid::CreateRandom().ToString<QString>(), { AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*%d.txt", i), AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(QString("test builder %1").arg(i), AZ::Uuid::CreateRandom().ToFixedString().c_str(), { AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*%d.txt", i), AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
             UnitTests::MockMultiBuilderInfoHandler::AssetBuilderExtraInfo{ "", "", jobDependencyPath, "", {} });
     }
 
