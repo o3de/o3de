@@ -44,9 +44,9 @@ namespace AzToolsFramework
 
             //! Gets the component override type on the given component. Overrides can come from any ancestor prefab but
             //! this function specifically checks for overrides from the focused prefab.
-            //! @param component The component for which to get the override type.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
             //! @return an override type if an override exists on the given component.
-            AZStd::optional<OverrideType> GetComponentOverrideType(const AZ::Component& component) override;
+            AZStd::optional<OverrideType> GetComponentOverrideType(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
             //! Revert overrides on the entity matching the given id from the focused prefab. Returns false if no overrides are present.
             //! @param entityId The id of the entity on which overrides should be reverted.
@@ -54,14 +54,19 @@ namespace AzToolsFramework
             bool RevertOverrides(AZ::EntityId entityId) override;
 
             //! Revert overrides on the given component from the focused prefab. Returns false if no overrides are present.
-            //! @param component The component on which overrides should be reverted.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
             //! @return Whether overrides are successfully reverted on the component.
-            bool RevertComponentOverrides(const AZ::Component& component) override;
+            bool RevertComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
             //! Fetches the path to the entity matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
             //! @param entityId The id of the entity to use to fetch the path.
             //! @return The path and link id pair.
             AZStd::pair<AZ::Dom::Path, LinkId> GetPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId);
+
+            //! Fetches the path to the component matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
+            //! @return The path and link id pair.
+            AZStd::pair<AZ::Dom::Path, LinkId> GetComponentPathAndLinkIdFromFocusedPrefab(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
             PrefabOverrideHandler m_prefabOverrideHandler;
 

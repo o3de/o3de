@@ -923,7 +923,7 @@ namespace AzToolsFramework
             {
                 if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
                 {
-                    prefabOverridePublicInterface->RevertComponentOverrides(*component);
+                    prefabOverridePublicInterface->RevertComponentOverrides(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
                 }
             });
 
@@ -1832,7 +1832,8 @@ namespace AzToolsFramework
             const AZ::Component* component = componentEditor.GetAdapterComponent();
             AZ_Assert(component, "Adapter component should not be null");
             AZStd::string iconOverlayPath;
-            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(*component); overrideType.has_value())
+            AZ::EntityComponentIdPair entityComponentIdPair(component->GetEntityId(), component->GetId());
+            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair); overrideType.has_value())
             {
                 if (overrideType == AzToolsFramework::Prefab::OverrideType::AddComponent)
                 {
