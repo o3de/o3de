@@ -83,10 +83,8 @@ namespace AZ
     #define AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, _Inline) \
         _Inline AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>) \
         { \
-            constexpr AZStd::string_view displayName(_DisplayName); \
-            constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
-                : AZ::TypeNameString(#_ClassName); \
-            return typeName; \
+            constexpr AZ::TypeNameString displayName(_DisplayName); \
+            return displayName; \
         } \
         _Inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>) \
         { \
@@ -114,21 +112,21 @@ namespace AZ
         AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_HELPER(_ClassName, _DisplayName, _ClassUuid, inline)
 
     //! Add GetO3deTypeName and GetO3deTypeId overloads for built-in types
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(char, "char", "{3AB0037F-AF8D-48ce-BCA0-A170D18B2C03}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(AZ::s8, "AZ::s8", "{58422C0E-1E47-4854-98E6-34098F6FE12D}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(short, "short", "{B8A56D56-A10D-4dce-9F63-405EE243DD3C}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(int, "int", "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(long, "long", "{8F24B9AD-7C51-46cf-B2F8-277356957325}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(AZ::s64, "AZ::s64", "{70D8A282-A1EA-462d-9D04-51EDE81FAC2F}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(unsigned char, "unsigned char", "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(unsigned short, "unsigned short", "{ECA0B403-C4F8-4b86-95FC-81688D046E40}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(unsigned int, "unsigned int", "{43DA906B-7DEF-4ca8-9790-854106D3F983}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(unsigned long, "unsigned long", "{5EC2D6F7-6859-400f-9215-C106F5B10E53}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(AZ::u64, "AZ::u64", "{D6597933-47CD-4fc8-B911-63F3E2B0993A}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(float, "float", "{EA2C3E90-AFBE-44d4-A90D-FAAF79BAF93D}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(double, "double", "{110C4B14-11A8-4e9d-8638-5051013A56AC}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(bool, "bool", "{A0CA880C-AFE4-43cb-926C-59AC48496112}");
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME(void, "void", "{C0F1AFAD-5CB3-450E-B0F5-ADB5D46B0E22}");
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(char);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::s8);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(short);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(int);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(long);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::s64);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned char);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned short);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned int);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(unsigned long);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(AZ::u64);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(float);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(double);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(bool);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZE_WITH_NAME_DECL(void);
 }
 
 namespace AZ
@@ -495,10 +493,8 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_0(_ClassName, _DisplayName, _ClassUuid) \
     friend constexpr AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>) \
     { \
-        constexpr AZStd::string_view displayName(_DisplayName); \
-        constexpr AZ::TypeNameString typeName = !displayName.empty() ? AZ::TypeNameString(displayName) \
-            : AZ::TypeNameString(#_ClassName); \
-        return typeName; \
+        constexpr AZ::TypeNameString displayName(_DisplayName); \
+        return displayName; \
     } \
     friend constexpr AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<_ClassName>) \
     { \
@@ -507,8 +503,7 @@ namespace AZ
     } \
     static const char* TYPEINFO_Name() \
     { \
-        constexpr AZStd::string_view displayName(_DisplayName); \
-        return !displayName.empty() ? displayName.data() : #_ClassName; \
+        return _DisplayName; \
     } \
     static AZ::TypeId TYPEINFO_Uuid() \
     { \
@@ -563,10 +558,10 @@ namespace AZ
 #define AZ_TYPE_INFO(_Identifier, _ClassUuid, ...) AZ_TYPE_INFO_WITH_NAME(_Identifier, #_Identifier, _ClassUuid, __VA_ARGS__)
 
 // Helper macro that declares the TYPEINFO_Name and TYPEINFO_Uuid static members as part of a class
-// This pairs with the AZ_TYPE_INFO_IMPL/AZ_TYPE_INFO_IMPL_INLINE where an implemenation can be provided
+// This pairs with the AZ_TYPE_INFO_WITH_NAME_IMPL/AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE where an implemenation can be provided
 // in a translation unit(.cpp) or a an inline(.inl) file in order to help reduce compile times
 // https://godbolt.org/z/EGPvKr7xM
-#define AZ_TYPE_INFO_DECL(_ClassName) \
+#define AZ_TYPE_INFO_WITH_NAME_DECL(_ClassName) \
     friend AZ::TypeNameString GetO3deTypeName(AZ::Adl, AZStd::type_identity<_ClassName>); \
     friend AZ::TypeId GetO3deTypeId(AZ::Adl,AZStd::type_identity<_ClassName>); \
     static const char* TYPEINFO_Name(); \
@@ -638,8 +633,7 @@ namespace AZ
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline const char* _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
     { \
-        constexpr AZStd::string_view displayName(_DisplayName); \
-        return !displayName.empty() ? displayName.data() : #_ClassName; \
+        return _DisplayName; \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \

@@ -272,7 +272,7 @@ namespace AZ::AzGenericTypeInfo
     AZ::TypeId GetO3deTypeId(AZ::Adl, \
         AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>); \
     template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
-    constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
+    AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
         AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>);
 
 #define AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL(_TemplateName, ...) \
@@ -345,7 +345,7 @@ namespace AZ::AzGenericTypeInfo
         return s_canonicalTypeId; \
     } \
     template <AZ_TYPE_INFO_INTERNAL_TEMPLATE_TYPE_EXPANSION(__VA_ARGS__)> \
-    _Inline constexpr AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
+    _Inline AZ::TemplateId GetO3deClassTemplateId(AZ::Adl, \
         AZStd::type_identity<_TemplateName<AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION(__VA_ARGS__)>>) \
     { \
         constexpr AZ::TypeId prefixUuid{_PrefixUuid}; \
@@ -463,17 +463,17 @@ namespace AZ::AzGenericTypeInfo
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_14 AZ_CLASS_TYPE_INFO_INTRUSIVE_TEMPLATE_WITH_NAME
 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_15 AZ_CLASS_TYPE_INFO_INTRUSIVE_TEMPLATE_WITH_NAME
 
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1(_ClassName, _DisplayName, _ClassUuid, _TemplateParamsInParen, _Inline, ...) \
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1(_TemplateName, _DisplayName, _TemplateUuid, _Inline, _TemplateParamsInParen) \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeNameString GetO3deTypeName( \
-        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
+        AZ::Adl, AZStd::type_identity<_TemplateName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         static AZ::TypeNameString s_canonicalTypeName; \
         if (s_canonicalTypeName.empty()) \
         { \
             AZ::TypeNameString typeName{ _DisplayName "<" }; \
             bool prependSeparator = false; \
-            for (AZStd::string_view templateParamName : { AZ::Internal::AggregateTypes< __VA_ARGS__ >::TypeName() }) \
+            for (AZStd::string_view templateParamName : { AZ::Internal::AggregateTypes< AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION _TemplateParamsInParen >::TypeName() }) \
             { \
                 typeName += prependSeparator ? AZ::Internal::TypeNameSeparator : ""; \
                 typeName += templateParamName; \
@@ -486,7 +486,7 @@ namespace AZ::AzGenericTypeInfo
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId GetO3deTypeId( \
-        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
+        AZ::Adl, AZStd::type_identity<_TemplateName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         static AZ::TypeId s_canonicalTypeId; \
         if (s_canonicalTypeId.IsNull()) \
@@ -494,7 +494,7 @@ namespace AZ::AzGenericTypeInfo
             constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
             if constexpr (!templateUuid.IsNull()) \
             { \
-                s_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes< __VA_ARGS__ >::GetCanonicalTypeId(); \
+                s_canonicalTypeId = templateUuid + AZ::Internal::AggregateTypes< AZ_TYPE_INFO_INTERNAL_TEMPLATE_ARGUMENT_EXPANSION _TemplateParamsInParen >::GetCanonicalTypeId(); \
             } \
             else \
             { \
@@ -505,7 +505,7 @@ namespace AZ::AzGenericTypeInfo
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
     _Inline AZ::TypeId GetO3deClassTemplateId( \
-        AZ::Adl, AZStd::type_identity<_ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
+        AZ::Adl, AZStd::type_identity<_TemplateName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen>) \
     { \
         constexpr AZ::TypeId templateUuid{_TemplateUuid}; \
         if constexpr (!templateUuid.IsNull()) \
@@ -518,31 +518,31 @@ namespace AZ::AzGenericTypeInfo
         } \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline const char* _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
+    _Inline const char* _TemplateName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Name() \
     { \
-        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZStd::type_identity<_ClassName>{}); \
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<_TemplateName>{}); \
         return s_typeName.c_str(); \
     } \
     AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsInParen \
-    _Inline AZ::TypeId _ClassName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
+    _Inline AZ::TypeId _TemplateName AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsInParen ::TYPEINFO_Uuid() \
     { \
-        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_ClassName>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<_TemplateName>{}); \
     }
 
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_2 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_3 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_4 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_5 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_6 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_7 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_8 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_9 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_10 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_11 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_12 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_13 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_14 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
-#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_15 #define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_2 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_3 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_4 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_5 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_6 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_7 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_8 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_9 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_10 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_11 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_12 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_13 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_14 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
+#define AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_15 AZ_TYPE_INFO_INTERNAL_WITH_NAME_IMPL_1
 
 // Used to declare that a template argument is a "typename" with AZ_TYPE_INFO_TEMPLATE.
 #define AZ_TYPE_INFO_TYPENAME AZ_TYPE_INFO_INTERNAL_TYPENAME
@@ -614,3 +614,27 @@ namespace AZ::AzGenericTypeInfo
 #define AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL_INLINE(_TemplateName, _DisplayName, _TemplateUuid, ...) \
     AZ_TEMPLATE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _TemplateUuid,, inline) \
     AZ_TYPE_INFO_INTERNAL_BOTHFIX_UUID(_TemplateName, _DisplayName, _TemplateUuid,, inline, __VA_ARGS__)
+
+// Helper macro for explicitly instantiating the GetO3deTypeName, GetO3deTypeId and GetO3deClassTemplateId functions
+// for a full template specialization
+// @param TemplateName the name of the template to add an explicit instantiation for
+// @params __VA_ARGS__ The actual types that are being explicitly instantiated(i.e char, AZ::Entity, etc..)
+// Any arguments that contains commas in them can be wrapped in parentheses.
+// Any wrapped arguments are unwrapped as single argument
+// ex. Template with zero arguments that contains commas
+// namespace AZStd
+// {
+//     AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(char_traits, char);
+// }
+// ex. Template with an argument that contains commas
+// namespace AZStd
+// {
+//     AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(vector, (pair<char, char>), allocator);
+// }
+#define AZ_TYPE_INFO_TEMPLATE_WITH_NAME_INSTANTIATE(TemplateName, ...) \
+        template AZ::TypeNameString GetO3deTypeName( \
+            AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>); \
+        template AZ::TypeId GetO3deTypeId( \
+            AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>); \
+        template AZ::TemplateId GetO3deClassTemplateId( \
+            AZ::Adl, AZStd::type_identity<TemplateName<AZ_FOR_EACH_WITH_SEPARATOR(AZ_UNWRAP, AZ_COMMA_SEPARATOR, __VA_ARGS__)>>);

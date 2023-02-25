@@ -158,12 +158,12 @@ AZ_POP_DISABLE_WARNING \
     AZ_RTTI_SIMPLE_TEMPLATE_ID TemplateParamsInParen \
     Inline_ AZ::TypeId ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen ::RTTI_Type() \
     { \
-        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<ClassName_>{}); \
+        return GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen>{}); \
     } \
     AZ_RTTI_SIMPLE_TEMPLATE_ID TemplateParamsInParen \
     Inline_ const char* ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen ::RTTI_TypeName() \
     { \
-        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<ClassName_>{}); \
+        static const AZ::TypeNameString s_typeName = GetO3deTypeName(AZ::Adl{}, AZStd::type_identity<ClassName_ AZ_RTTI_TEMPLATE_ARGUMENT_LIST TemplateParamsInParen>{}); \
         return s_typeName.c_str(); \
     }
 
