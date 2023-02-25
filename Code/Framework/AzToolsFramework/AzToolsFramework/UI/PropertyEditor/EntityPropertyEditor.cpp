@@ -905,13 +905,13 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::OnComponentIconClicked(const AZ::Component* component, const QPoint& position)
+    void EntityPropertyEditor::OnComponentIconClicked(const QPoint& position)
     {
-        if (!component)
-        {
-            return;
-        }
+        auto componentEditor = qobject_cast<ComponentEditor*>(sender());
+        AZ_Assert(componentEditor, "sender() was not convertible to a ComponentEditor*");
 
+        const AZStd::vector<AZ::Component*>& components = componentEditor->GetComponents();
+        AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
         QMenu menu;
 
         QAction* revertAction = menu.addAction(QObject::tr("Revert Overrides"));
@@ -919,11 +919,13 @@ namespace AzToolsFramework
             revertAction,
             &QAction::triggered,
             this,
-            [component]
+            [components]
             {
-                if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                if (auto prefabOverridePublicInterface =
+                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
                 {
-                    prefabOverridePublicInterface->RevertComponentOverrides(AZ::EntityComponentIdPair(component->GetEntityId(), component->GetId()));
+                    prefabOverridePublicInterface->RevertComponentOverrides(
+                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
                 }
             });
 
@@ -1829,11 +1831,13 @@ namespace AzToolsFramework
     {
         if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
         {
-            const AZ::Component* component = componentEditor.GetAdapterComponent();
-            AZ_Assert(component, "Adapter component should not be null");
+            // Get icon path based on current component override state
             AZStd::string iconOverlayPath;
-            AZ::EntityComponentIdPair entityComponentIdPair(component->GetEntityId(), component->GetId());
-            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair); overrideType.has_value())
+            const AZStd::vector<AZ::Component*>& components = componentEditor.GetComponents();
+            AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
+            AZ::EntityComponentIdPair entityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId());
+            if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair);
+                overrideType.has_value())
             {
                 if (overrideType == AzToolsFramework::Prefab::OverrideType::AddComponent)
                 {
@@ -1844,7 +1848,7 @@ namespace AzToolsFramework
                     iconOverlayPath = ":/OverrideResources/component_modified_as_override.svg";
                 }
             }
-                
+
             AZStd::string prevIconOverlayPath(componentEditor.property("IconOverlayPath").toString().toUtf8());
             if (prevIconOverlayPath != iconOverlayPath)
             {

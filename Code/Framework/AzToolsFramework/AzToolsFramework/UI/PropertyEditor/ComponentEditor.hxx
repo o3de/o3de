@@ -96,7 +96,6 @@ namespace AzToolsFramework
         IPropertyEditor* GetPropertyEditor();
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
-        const AZ::Component* GetAdapterComponent() const;
 
         const AZ::Uuid& GetComponentType() const { return m_componentType; }
 
@@ -120,7 +119,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
-        void OnComponentIconClicked(const AZ::Component* component, const QPoint& position);
+        void OnComponentIconClicked(const QPoint& position);
 
     private:
         /// Set up header for this component type.

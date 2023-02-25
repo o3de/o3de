@@ -201,7 +201,12 @@ namespace AzToolsFramework
 
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            m_adapter->SetComponent(componentInstance);
+            if (!aggregateInstance)
+            {
+                // Set the adapter component to this instance.
+                // Note: multiple selection with DPE is not yet supported
+                m_adapter->SetComponent(componentInstance);
+            }
         }
         else
         {
@@ -758,13 +763,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::OnIconLabelClicked(const QPoint& position)
     {
-        const AZ::Component* component = GetAdapterComponent();
-        if (!component && !m_components.empty())
-        {
-            component = m_components[0];
-        }
-
-        emit OnComponentIconClicked(component, position);
+        emit OnComponentIconClicked(position);
     }
 
     void ComponentEditor::UpdateExpandability()
@@ -918,11 +917,6 @@ namespace AzToolsFramework
     const AZStd::vector<AZ::Component*>& ComponentEditor::GetComponents() const
     {
         return m_components;
-    }
-
-    const AZ::Component* ComponentEditor::GetAdapterComponent() const
-    {
-        return m_adapter ? m_adapter->GetComponent() : nullptr;
     }
 
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)

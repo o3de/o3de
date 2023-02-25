@@ -353,7 +353,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
 
-        void OnComponentIconClicked(const AZ::Component* component, const QPoint& position);
+        void OnComponentIconClicked(const QPoint& position);
 
         AZ::Component* ExtractMatchingComponent(AZ::Component* component, AZ::Entity::ComponentArrayType& availableComponents);
 
