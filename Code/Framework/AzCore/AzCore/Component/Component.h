@@ -44,9 +44,10 @@ namespace AZ
     public:
 
         /**
-         * Adds run-time type information to the component.
+         * Forward declare run-time type information to the component.
          */
-        AZ_RTTI(AZ::Component, "{EDFCB2CF-F75D-43BE-B26B-F35821B29247}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(Component);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         /**
          * Initializes a component's internals.

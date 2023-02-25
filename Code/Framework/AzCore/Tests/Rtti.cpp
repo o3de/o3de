@@ -543,8 +543,8 @@ namespace UnitTest
         static_assert(AZ::HasGetO3deTypeName_v<IntVector>);
         static_assert(AZ::HasGetO3deTypeId_v<IntVector>);
 
-        constexpr auto vectorTemplateId = GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<IntVector>{});
-        static_assert(!vectorTemplateId.IsNull());
+        auto vectorTemplateId = GetO3deClassTemplateId(AZ::Adl{}, AZStd::type_identity<IntVector>{});
+        EXPECT_FALSE(vectorTemplateId.IsNull());
 
         static_assert(AZ::HasGetO3deClassTemplateId_v<IntVector>);
     }

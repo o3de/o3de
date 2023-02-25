@@ -104,7 +104,8 @@ namespace AZ
     class ReflectContext
     {
     public:
-        AZ_RTTI(ReflectContext, "{B18D903B-7FAD-4A53-918A-3967B3198224}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(ReflectContext);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         ReflectContext();
         virtual ~ReflectContext() = default;
@@ -223,7 +224,9 @@ namespace AZ
     public:
         using ContextDeleter = void(*)(void* contextData);
 
-        AZ_RTTI(AZ::Attribute, "{2C656E00-12B0-476E-9225-5835B92209CC}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(Attribute);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
         { }

@@ -14,6 +14,27 @@ DECLARE_EBUS_INSTANTIATION(BehaviorContextEvents);
 
 namespace AZ
 {
+    // Definitions for TypeInfo and RTTI functions
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorContext, "BehaviorContext", "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(BehaviorContext, ReflectContext);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorEBusHandler, "BehaviorEBusHandler", "{10FBCB9D-8A0D-47E9-8A51-CBD9BFBBF60D}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(BehaviorEBusHandler);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorObject, "BehaviorObject", "{2813CDFB-0A4A-411C-9216-72A7B644D1DD}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorParameter, "BehaviorParameter", "{BD7B664E-5B8C-4B51-84F3-DE89B271E075}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorArgument, "BehaviorArgument", "{B1680AE9-4DBE-4803-B12F-1E99A32990B7}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BehaviorAzEventDescription, "BehaviorAzEventDescription", "{B5D95E87-FA17-41C7-AC90-7258A520FE82}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(InputRestriction, "InputRestriction", "{9DF4DDBE-63BE-4749-9921-52C82BF5E307}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(BranchOnResultInfo, "BranchOnResultInfo", "{C063AB6F-462F-485F-A911-DE3A8946A019}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(CheckedOperationInfo, "CheckedOperationInfo", "{9CE9560F-ECAB-46EF-B341-3A86973E71CD}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(OverloadArgumentGroupInfo, "OverloadArgumentGroupInfo", "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ExplicitOverloadInfo, "ExplicitOverloadInfo", "{B6064A17-E907-4CB5-8EAE-C4888E468CD5}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(EventHandlerCreationFunctionHolder, "EventHandlerCreationFunctionHolder", "{40F7C5D8-8DA0-4979-BC8C-0A52EDA80633}");
+
     bool MethodReturnsAzEventByReferenceOrPointer(const AZ::BehaviorMethod& method)
     {
         const AZ::BehaviorParameter* resultParameter = method.GetResult();

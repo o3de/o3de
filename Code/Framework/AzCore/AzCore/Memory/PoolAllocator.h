@@ -26,7 +26,7 @@ namespace AZ
         : public IAllocator
     {
     public:
-        AZ_TYPE_INFO_DECL(PoolSchema);
+        AZ_TYPE_INFO_WITH_NAME_DECL(PoolSchema);
 
         PoolSchema();
         ~PoolSchema();

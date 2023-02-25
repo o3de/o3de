@@ -58,7 +58,7 @@ namespace AZ
 
     struct BehaviorObject // same as DynamicSerializableField, make sure we merge them... so we can store the object easily
     {
-        AZ_TYPE_INFO(BehaviorObject, "{2813cdfb-0a4a-411c-9216-72a7b644d1dd}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorObject);
 
         BehaviorObject();
         BehaviorObject(void* address, const Uuid& typeId);
@@ -79,7 +79,7 @@ namespace AZ
      */
     struct BehaviorParameter
     {
-        AZ_TYPE_INFO(BehaviorParameter, "{BD7B664E-5B8C-4B51-84F3-DE89B271E075}")
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorParameter);
         /// Temporary POD buffer when we convert parameters on the stack.
         typedef AZStd::static_buffer_allocator<32, 32> TempValueParameterAllocator;
 
@@ -157,6 +157,8 @@ namespace AZ
 
     struct BehaviorArgument : public BehaviorParameter
     {
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorArgument);
+
         BehaviorArgument();
         BehaviorArgument(const BehaviorArgument&) = default;
         BehaviorArgument(BehaviorArgument&&);
@@ -213,8 +215,6 @@ namespace AZ
         template<typename T>
         void StoreInTempDataEvenIfNonTrivial(T&& value);
     };
-
-    AZ_TYPE_INFO_SPECIALIZE(AZ::BehaviorArgument, "{B1680AE9-4DBE-4803-B12F-1E99A32990B7}")
 
     /**
     * Class that handles a single default value. The Value type is verified to match parameter signature
@@ -295,7 +295,7 @@ namespace AZ
      */
     struct BehaviorAzEventDescription
     {
-        AZ_TYPE_INFO(BehaviorAzEventDescription, "{B5D95E87-FA17-41C7-AC90-7258A520FE82}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorAzEventDescription);
         AZStd::string m_eventName;
         AZStd::vector<AZStd::string> m_parameterNames;
     };
@@ -378,7 +378,7 @@ namespace AZ
 
     struct InputRestriction
     {
-        AZ_TYPE_INFO(InputRestriction, "{9DF4DDBE-63BE-4749-9921-52C82BF5E307}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(InputRestriction);
         AZ_CLASS_ALLOCATOR(InputRestriction, AZ::SystemAllocator);
 
         bool m_listExcludes = true;
@@ -393,7 +393,7 @@ namespace AZ
 
     struct BranchOnResultInfo
     {
-        AZ_TYPE_INFO(BranchOnResultInfo, "{C063AB6F-462F-485F-A911-DE3A8946A019}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(BranchOnResultInfo);
         AZ_CLASS_ALLOCATOR(BranchOnResultInfo, AZ::SystemAllocator);
 
         AZStd::string m_trueName = "True";
@@ -408,7 +408,7 @@ namespace AZ
 
     struct CheckedOperationInfo
     {
-        AZ_TYPE_INFO(CheckedOperationInfo, "{9CE9560F-ECAB-46EF-B341-3A86973E71CD}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(CheckedOperationInfo);
         AZ_CLASS_ALLOCATOR(CheckedOperationInfo, AZ::SystemAllocator);
 
         AZStd::string m_safetyCheckName;
@@ -433,7 +433,7 @@ namespace AZ
 
     struct OverloadArgumentGroupInfo
     {
-        AZ_TYPE_INFO(OverloadArgumentGroupInfo, "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(OverloadArgumentGroupInfo);
         AZ_CLASS_ALLOCATOR(OverloadArgumentGroupInfo, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_parameterGroupNames;
@@ -446,7 +446,7 @@ namespace AZ
 
     struct ExplicitOverloadInfo
     {
-        AZ_TYPE_INFO(ExplicitOverloadInfo, "{AEFEFC42-3ED8-43A9-AE1F-6D8F32A280D2}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(ExplicitOverloadInfo);
         AZ_CLASS_ALLOCATOR(ExplicitOverloadInfo, AZ::SystemAllocator);
 
         AZStd::string m_name;
@@ -502,7 +502,7 @@ namespace AZ
 
     struct EventHandlerCreationFunctionHolder
     {
-        AZ_TYPE_INFO(EventHandlerCreationFunctionHolder, "{40F7C5D8-8DA0-4979-BC8C-0A52EDA80633}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(EventHandlerCreationFunctionHolder);
         AZ_CLASS_ALLOCATOR(EventHandlerCreationFunctionHolder, AZ::SystemAllocator);
 
         EventHandlerCreationFunction m_function;
@@ -1387,7 +1387,8 @@ namespace AZ
     class BehaviorEBusHandler
     {
     public:
-        AZ_RTTI(BehaviorEBusHandler, "{10fbcb9d-8a0d-47e9-8a51-cbd9bfbbf60d}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorEBusHandler);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         // Since we can share hooks we should probably pass the event name
         typedef void(*GenericHookType)(void* /*userData*/, const char* /*eventName*/, int /*eventIndex*/, BehaviorArgument* /*result*/, int /*numParameters*/, BehaviorArgument* /*parameters*/);
@@ -1741,7 +1742,8 @@ namespace AZ
 
     public:
         AZ_CLASS_ALLOCATOR(BehaviorContext, SystemAllocator);
-        AZ_RTTI(BehaviorContext, "{ED75FE05-9196-4F69-A3E5-1BDF5FF034CF}", ReflectContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL(BehaviorContext);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         bool IsTypeReflected(AZ::Uuid typeId) const override;
 
