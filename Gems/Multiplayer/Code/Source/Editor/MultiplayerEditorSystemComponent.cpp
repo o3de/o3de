@@ -580,7 +580,7 @@ namespace Multiplayer
             }
 
             #ifdef _WIN32
-                // Find and terminate all ServerLaunchers.exe processes before launching a new one for the editor
+                // Find and terminate all ServerLauncher processes before launching a new one for the editor
                 PROCESSENTRY32 entry;
                 entry.dwSize = sizeof(PROCESSENTRY32);
                 HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
@@ -595,6 +595,8 @@ namespace Multiplayer
                         if (!_wcsicmp(entry.szExeFile, serverExeFilenameUnicode.c_str()))
                         {
                             // Terminate the previously existing server launcher
+                            AZ_Warning("MultiplayerEditorSystemComponent", false, "Editor found and terminated an existing server launcher before launching its own. Set editorsv_launch = false to disable automatic launching and connect to hand-opened server instead.")
+
                             HANDLE serverLauncherProcess = OpenProcess(PROCESS_TERMINATE, false, entry.th32ProcessID);
                             TerminateProcess(serverLauncherProcess, 1);
                             CloseHandle(serverLauncherProcess);
