@@ -2174,15 +2174,14 @@ void EditorActionsHandler::UpdateRecentFileActions()
     // Update all names
     for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
     {
-        if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
-        {
-            continue;
-        }
-
         AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", counter + 1);
 
         if (index < recentFilesSize)
         {
+            if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
+            {
+                continue;
+            }
             QString displayName;
             recentFiles->GetDisplayName(displayName, index, sCurDir);
 
