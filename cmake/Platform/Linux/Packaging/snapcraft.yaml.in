@@ -39,6 +39,7 @@ parts:
      - libfontconfig1
      - libunwind-dev
      - libssl3
+     - libffi7
     stage-snaps:
      - cmake
 
