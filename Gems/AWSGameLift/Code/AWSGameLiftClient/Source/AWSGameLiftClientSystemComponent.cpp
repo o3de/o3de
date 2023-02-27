@@ -12,9 +12,6 @@
 #include <Multiplayer/Session/SessionConfig.h>
 
 #include <AWSCoreBus.h>
-
-#include <AWSGameLiftClientLocalTicketTracker.h>
-#include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
 
 #include <Request/AWSGameLiftAcceptMatchRequest.h>
