@@ -227,12 +227,16 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails)
     {
         rcController.JobSubmitted(jobDetails);
+        UnitTests::JobSignalReceiver receiver;
+        WaitForNextJobToProcess(receiver);
+    }
 
-        JobSignalReceiver receiver;
-        QCoreApplication::processEvents(); // Once to get the job started
+    void AssetManagerTestingBase::WaitForNextJobToProcess(UnitTests::JobSignalReceiver &receiver)
+    {
+        QCoreApplication::processEvents(); // RCController::DispatchJobsImpl : Once to get the job started
         receiver.WaitForFinish(); // Wait for the RCJob to signal it has completed working
-        QCoreApplication::processEvents(); // Once more to trigger the JobFinished event
-        QCoreApplication::processEvents(); // Again to trigger the Finished event
+        QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
+        QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event
     }
 
     AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(

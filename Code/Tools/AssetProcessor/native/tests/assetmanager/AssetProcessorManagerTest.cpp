@@ -1060,10 +1060,7 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     m_errorChecker.Begin();
 
     // Process the first asset in the queue, which will be the job for B, because it's a PC job, which takes priority over the Common platform job in the queue.
-    QCoreApplication::processEvents();
-    receiver.WaitForFinish();
-    QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
+    WaitForNextJobToProcess(receiver);
 
     // This absorbs these warnings:
     //  No job was found to match the job dependency criteria declared by file
@@ -1077,21 +1074,23 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     EXPECT_EQ(readResult.GetValue().compare(m_intermediateFileDoesNotExistString), 0);
 
     // Process asset A, which will produce the intermediate asset that B depended on.
-    QCoreApplication::processEvents();
-    receiver.WaitForFinish();
-
-    // Process events twice after the asset finishes processing.
-    QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
+    WaitForNextJobToProcess(receiver);
 
     // Mark this asset as processed, so AP will move on to the next steps.
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
     // Need to call process events 4 times, to get the job details list populated with the
     // intermediate asset job and the job for the B asset that was triggered by the intermediate asset appearing.
+    QCoreApplication::processEvents(); // RCController::DispatchJobsImpl
+    // The second process event updates a lot of general AssetProcessor systems:
+    //  AssetProcessorManager::ScheduleNextUpdate, AssetProcessorManager::ProcessFilesToExamineQueue,
+    //  AssetProcessorManager::QueueIdleCheck, AssetProcessorManager::ProcessBuilders, and more.
     QCoreApplication::processEvents();
+    // The third process event also updates several AssetProcessor systems that the previous step updates,
+    // but the main events this is run for is two calls to AssetProcessorManager::AssetToProcess
+    // which puts Cache/Intermediate Assets/firstfile.a_intermediate and secondfile.b_source in m_jobDetailsList
     QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
+    // Make sure the job requests are populated and ready to go, without this, RCJob::PopulateProcessJobRequest sometimes crashes accessing job info.
     QCoreApplication::processEvents();
 
     // The intermediate job was added to the queue, and the B asset was re-added because the dependency triggered.
@@ -1099,17 +1098,15 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     m_rc->JobSubmitted(m_jobDetailsList[0]);
     m_rc->JobSubmitted(m_jobDetailsList[1]);
     m_jobDetailsList.clear();
-    QCoreApplication::processEvents();
 
-    receiver.WaitForFinish(); // Process the intermediate asset.
+    // Process the itnermediate asset.
+    WaitForNextJobToProcess(receiver);
 
-    // Need to call process events 3 times after completing the last job.
-    QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
-    QCoreApplication::processEvents();
-
+    // Run the second job in the queue, make sure the job gets dispatched.
+    // Specifically not calling WaitForNextJobToProcess because this needs to be called a bit differently.
+    QCoreApplication::processEvents(); // RCController::DispatchJobsImpl
     receiver.WaitForFinish(); // Process asset B, again.
-
+    
     // If the text has changed in the file, then:
     //  The intermediate asset job has been created
     //  The B asset has been re-processed

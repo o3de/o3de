@@ -85,6 +85,7 @@ namespace UnitTests
     protected:
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);
+        void WaitForNextJobToProcess(UnitTests::JobSignalReceiver& receiver);
 
         AZStd::string MakePath(const char* filename, bool intermediate);
 
