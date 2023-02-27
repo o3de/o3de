@@ -2172,7 +2172,7 @@ void EditorActionsHandler::UpdateRecentFileActions()
     int counter = 0;
 
     // Update all names
-    for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
+    for (int index = 0; (index < maxRecentFiles) && (index < recentFilesSize); ++index)
     {
         if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
         {
