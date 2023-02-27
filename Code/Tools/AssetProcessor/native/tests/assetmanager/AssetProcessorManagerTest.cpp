@@ -881,67 +881,21 @@ public:
     void CreateBuilders()
     {
         using namespace AssetBuilderSDK;
+
         // Source A's builder, this outputs the Intermediate asset.
-        m_builderInfoHandler.CreateBuilderDesc(
-            QString(m_firstFileExtension.c_str()),
-            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
-            { AssetBuilderPattern{ MakeWildcardForExtension(m_firstFileExtension), AssetBuilderPattern::Wildcard } },
-            []([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
-            {
-                response.m_createJobOutputs.push_back(JobDescriptor{ "fingerprint", "Source A - Intermediate", CommonPlatformName });
-                response.m_result = CreateJobsResultCode::Success;
-            },
-            [this](const ProcessJobRequest& request, ProcessJobResponse& response)
-            {
-                m_firstUUID = request.m_sourceFileUUID;
-                AZ::IO::Path outputFile = request.m_sourceFile;
-
-                outputFile.ReplaceExtension(m_intermediateExtension.c_str());
-                AZ::IO::LocalFileIO::GetInstance()->Copy(
-                    request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
-                auto product =
-                    JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(m_intermediateExtension.c_str()), AssetSubId };
-
-                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
-
-                product.m_dependenciesHandled = true;
-                response.m_outputProducts.push_back(product);
-                response.m_resultCode = ProcessJobResult_Success;
-            },
-            "fingerprint");
-
+        CreateBuilder(
+            m_firstFileExtension.c_str(),
+            MakeWildcardForExtension(m_firstFileExtension).c_str(),
+            m_intermediateExtension.c_str(),
+            true,
+            ProductOutputFlags::IntermediateAsset);
         // Intermediate A's builder, this outputs a product asset.
-        m_builderInfoHandler.CreateBuilderDesc(
-            QString(m_intermediateExtension.c_str()),
-            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
-            { AssetBuilderPattern{ MakeWildcardForExtension(m_intermediateExtension), AssetBuilderPattern::Wildcard } },
-            [this]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
-            {
-                for (const auto& platform : request.m_enabledPlatforms)
-                {
-                    response.m_createJobOutputs.push_back(
-                        JobDescriptor{ "fingerprint", m_intermediateProductJobKey, platform.m_identifier.c_str() });
-                }
-                response.m_result = CreateJobsResultCode::Success;
-            },
-            [this](const ProcessJobRequest& request, ProcessJobResponse& response)
-            {
-                m_intermediateUUID = request.m_sourceFileUUID;
-                AZ::IO::Path outputFile = request.m_sourceFile;
-
-                outputFile.ReplaceExtension(m_firstProductExtension.c_str());
-                AZ::IO::LocalFileIO::GetInstance()->Copy(
-                    request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
-                auto product =
-                    JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(m_firstProductExtension.c_str()), AssetSubId };
-
-                product.m_outputFlags = ProductOutputFlags::ProductAsset;
-
-                product.m_dependenciesHandled = true;
-                response.m_outputProducts.push_back(product);
-                response.m_resultCode = ProcessJobResult_Success;
-            },
-            "fingerprint");
+        CreateBuilder(
+            m_intermediateExtension.c_str(),
+            MakeWildcardForExtension(m_intermediateExtension).c_str(),
+            m_firstProductExtension.c_str(),
+            false,
+            ProductOutputFlags::ProductAsset);
 
         // Source B's builder. This builder emits the intermediate A as a dependency.
         m_builderInfoHandler.CreateBuilderDesc(
@@ -957,7 +911,7 @@ public:
 
                     // Create the dependency on the path to the intermediate asset.
                     response.m_createJobOutputs.back().m_jobDependencyList.push_back(JobDependency(
-                        m_intermediateProductJobKey,
+                        m_intermediateExtension.c_str(),
                         platform.m_identifier,
                         JobDependencyType::Order,
                         { m_intermediateAssetPath.c_str(),
@@ -968,7 +922,6 @@ public:
             },
             [this](const ProcessJobRequest& request, ProcessJobResponse& response)
             {
-                m_secondUUID = request.m_sourceFileUUID;
                 AZ::IO::Path outputFile = request.m_sourceFile;
 
                 outputFile.ReplaceExtension(m_SecondProductExtension.c_str());
@@ -1017,7 +970,6 @@ public:
         SetCatalogToUpdateOnJobCompletion();
 
         CreateBuilders();
-
     }
 
     void TearDown() override
@@ -1036,12 +988,10 @@ protected:
     AZStd::string m_firstFileNameNoExtension = "firstfile";
     AZ::IO::Path m_firstFileName;
     AZ::IO::Path m_firstFilePath;
-    AZ::Uuid m_firstUUID;
 
     AZStd::string m_intermediateExtension = "a_intermediate";
     AZ::IO::Path m_intermediateFileName;
     AZ::IO::Path m_intermediateAssetPath;
-    AZ::Uuid m_intermediateUUID;
 
     AZStd::string m_firstProductExtension = "a_product";
 
@@ -1049,12 +999,9 @@ protected:
     AZStd::string m_secondFileNameNoExtension = "secondfile";
     AZ::IO::Path m_secondFileName;
     AZ::IO::Path m_secondFilePath;
-    AZ::Uuid m_secondUUID;
 
     AZStd::string m_SecondProductExtension = "b_product";
     AZ::IO::Path m_secondProductPath;
-
-    AZStd::string m_intermediateProductJobKey = "Intermediate A1 - Product";
 
     AZStd::string m_intermediateFileExistsString = "Intermediate file exists.";
     AZStd::string m_intermediateFileDoesNotExistString = "Intermediate file does not exist.";
