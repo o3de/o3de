@@ -1059,14 +1059,7 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
-
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    !AzToolsFramework::HelpersVisible());
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
@@ -1084,14 +1077,7 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-
                 AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    !AzToolsFramework::OnlyShowHelpersForSelectedEntities());
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
@@ -1109,14 +1095,7 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    false);
-
                 AzToolsFramework::SetHelpersVisible(false);
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    false);
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);

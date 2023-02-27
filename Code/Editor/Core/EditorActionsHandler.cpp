@@ -214,7 +214,6 @@ void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
-    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier);
@@ -1191,9 +1190,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
             []
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
-                    AzToolsFramework::IconsVisible());
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             },
@@ -1220,17 +1216,12 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []
+            [this]
             {
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
+                AzToolsFramework::SetHelpersVisible(true);
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
 
-                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    !AzToolsFramework::HelpersVisible());
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
@@ -1258,17 +1249,12 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []
+            [this]
             {
-                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(true);
+                AzToolsFramework::SetHelpersVisible(false);
 
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    !AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
@@ -1278,7 +1264,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
             });
 
-        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
     // Hide Helpers
@@ -1293,16 +1279,12 @@ void EditorActionsHandler::OnActionRegistrationHook()
             EditorIdentifiers::MainWindowActionContextIdentifier,
             actionIdentifier,
             actionProperties,
-            []
+            [this]
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    false);
-
                 AzToolsFramework::SetHelpersVisible(false);
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, false);
+
+                m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
 
                 AzToolsFramework::EditorSettingsAPIBus::Broadcast(
                     &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
@@ -1312,8 +1294,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 return !AzToolsFramework::HelpersVisible() && !AzToolsFramework::OnlyShowHelpersForSelectedEntities();
             });
 
-        m_actionManagerInterface->AddActionToUpdater(
-            EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier, actionIdentifier);
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier, actionIdentifier);
     }
 
     // Refresh Style
@@ -1872,11 +1853,8 @@ void EditorActionsHandler::OnMenuBindingHook()
                 }
             }
             m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 500);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 600);
-            m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportMenuIdentifier, 700);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.showHelpers", 800);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.showSelectedEntityHelpers", 900);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportMenuIdentifier, "o3de.action.view.hideHelpers", 1000);
+            m_menuManagerInterface->AddSubMenuToMenu(
+                EditorIdentifiers::ViewportMenuIdentifier, EditorIdentifiers::ViewportHelpersMenuIdentifier, 600);
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }
@@ -2122,11 +2100,6 @@ void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
 void EditorActionsHandler::OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
 {
     m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::IconsStateChangedUpdaterIdentifier);
-}
-
-void EditorActionsHandler::OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
-{
-    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnEntityPickModeStarted()
