@@ -106,7 +106,8 @@ namespace AzToolsFramework
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
 
         // Subscribe to document property editor change events
-        void ConnectPropertyChangeHandler(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler& handler);
+        void ConnectPropertyChangeHandler(
+            const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback);
 
     Q_SIGNALS:
         void OnExpansionContractionDone();

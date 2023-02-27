@@ -965,9 +965,9 @@ namespace AzToolsFramework
     }
 
     void ComponentEditor::ConnectPropertyChangeHandler(
-        const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler& handler)
+        const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback)
     {
-        m_propertyChangeHandler = handler;
+        m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(callback);
         m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
     }
 }

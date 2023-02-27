@@ -905,7 +905,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityPropertyEditor::OnComponentIconClicked(const QPoint& position)
+    void EntityPropertyEditor::OnComponentOverrideContextMenu(const QPoint& position)
     {
         auto componentEditor = qobject_cast<ComponentEditor*>(sender());
         AZ_Assert(componentEditor, "sender() was not convertible to a ComponentEditor*");
@@ -1891,18 +1891,18 @@ namespace AzToolsFramework
                     componentEditor,
                     &ComponentEditor::OnComponentIconClicked,
                     this,
-                    &EntityPropertyEditor::OnComponentIconClicked);
+                    &EntityPropertyEditor::OnComponentOverrideContextMenu);
 
                 // Subscribe to DPE property changes to keep the component icon updated based on override state
-                auto propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                auto propertyChanged = 
                     [this, componentEditor](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
                     {
                         if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
                         {
                             UpdateOverrideVisualization(*componentEditor);
                         }
-                    });
-                componentEditor->ConnectPropertyChangeHandler(propertyChangeHandler);
+                    };
+                componentEditor->ConnectPropertyChangeHandler(propertyChanged);
             }
 
             //move spacer to bottom of editors

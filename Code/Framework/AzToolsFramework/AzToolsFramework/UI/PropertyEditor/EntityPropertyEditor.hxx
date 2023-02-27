@@ -353,8 +353,6 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
 
-        void OnComponentIconClicked(const QPoint& position);
-
         AZ::Component* ExtractMatchingComponent(AZ::Component* component, AZ::Entity::ComponentArrayType& availableComponents);
 
         void SetEntityIconToDefault();
@@ -692,6 +690,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();

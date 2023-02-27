@@ -61,7 +61,7 @@ namespace AzToolsFramework
             //! Fetches the path to the entity matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
             //! @param entityId The id of the entity to use to fetch the path.
             //! @return The path and link id pair.
-            AZStd::pair<AZ::Dom::Path, LinkId> GetPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId);
+            AZStd::pair<AZ::Dom::Path, LinkId> GetEntityPathAndLinkIdFromFocusedPrefab(AZ::EntityId entityId);
 
             //! Fetches the path to the component matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
             //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
