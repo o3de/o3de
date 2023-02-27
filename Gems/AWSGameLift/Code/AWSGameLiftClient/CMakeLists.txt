@@ -40,6 +40,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
+            Gem::Multiplayer.Common.Static
             3rdParty::AWSNativeSDK::GameLiftClient
         PUBLIC
             Gem::AWSGameLift.Client.Static
