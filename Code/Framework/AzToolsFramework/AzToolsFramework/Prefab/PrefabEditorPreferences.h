@@ -8,8 +8,14 @@
 
 #pragma once
 
+#include <AzCore/std/string/string_view.h>
+
 namespace AzToolsFramework::Prefab
 {
+	extern const AZStd::string_view EnablePrefabOverridesUxKey;
+    extern const AZStd::string_view InspectorOverrideManagementKey;
+    extern const AZStd::string_view HotReloadToggleKey;
+    
     //! Checks if hot reloading for prefab files is enabled.
     bool IsHotReloadingEnabled();
 

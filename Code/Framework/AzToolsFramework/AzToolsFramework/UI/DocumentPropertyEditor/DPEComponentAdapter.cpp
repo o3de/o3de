@@ -78,9 +78,11 @@ namespace AZ::DocumentPropertyEditor
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+
+        // Set the component alias before calling SetValue(). Otherwise, an empty alias will be sent to the PrefabAdapter.
+        m_componentAlias = componentInstance->GetSerializedIdentifier();
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
-        m_componentAlias = componentInstance->GetSerializedIdentifier();
     }
 
     void ComponentAdapter::DoRefresh()

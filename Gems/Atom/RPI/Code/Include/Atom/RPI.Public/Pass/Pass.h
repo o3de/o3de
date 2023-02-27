@@ -68,7 +68,7 @@ namespace AZ
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
         const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = 16;
+        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
                 

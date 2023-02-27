@@ -58,7 +58,7 @@ namespace AzToolsFramework
             {
                 if (!relativePathFromEntity.empty())
                 {
-                    pathAndLinkIdPair.first /= relativePathFromEntity;
+                    pathAndLinkIdPair.first /= AZ::Dom::Path(relativePathFromEntity);
                 }
                 return m_prefabOverrideHandler.AreOverridesPresent(pathAndLinkIdPair.first, pathAndLinkIdPair.second);
             }
