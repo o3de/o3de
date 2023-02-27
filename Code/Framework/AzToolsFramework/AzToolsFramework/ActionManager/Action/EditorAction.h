@@ -61,7 +61,7 @@ namespace AzToolsFramework
         AZStd::string GetHotKey() const;
         void SetHotKey(const AZStd::string& hotKey);
         ActionVisibility GetMenuVisibility() const;
-        ActionVisibility GetToolBarVisibility() const;
+        ActionVisibility GenerateToolBarVisibility() const;
 
         //! Returns the pointer to the action.
         QAction* GetAction();

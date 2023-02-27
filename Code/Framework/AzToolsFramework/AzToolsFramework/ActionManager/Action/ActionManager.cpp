@@ -861,7 +861,7 @@ namespace AzToolsFramework
             return ActionVisibility::OnlyInActiveMode;
         }
 
-        return actionIterator->second->GetToolBarVisibility();
+        return actionIterator->second->GenerateToolBarVisibility();
     }
 
     QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier)

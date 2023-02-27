@@ -400,8 +400,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    StringDlg.cpp
-    StringDlg.h
     ToolbarCustomizationDialog.ui
     ToolbarCustomizationDialog.cpp
     ToolbarCustomizationDialog.h
