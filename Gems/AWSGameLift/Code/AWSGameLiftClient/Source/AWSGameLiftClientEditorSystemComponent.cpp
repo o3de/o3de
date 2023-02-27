@@ -33,7 +33,6 @@ namespace AWSGameLift
             {
                 editContext->Class<AWSGameLiftClientEditorSystemComponent>("AWSGameLiftClientEditor", "Create the GameLift client manager that handles communication between game clients and the GameLift service.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
