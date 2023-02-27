@@ -163,19 +163,20 @@ namespace PhysX
         const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
-
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 10; i++)
         {
+            auto setVelocity = originalVelocity + expectedVelocity + AZ::Vector3(0.0f, 0.0f, float(i));
+            basis.m_gameplayController->SetFallingVelocity(setVelocity);
             basis.Update();
+
             auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
-            std::cerr << endVelocity.GetZ() << std::endl;
-            
+            const auto gravity = basis.m_testScene->GetGravity();
+
+            // The expected velocity should be decelerated by gt when g is gravity acceleration and t is the length of time
+            const float expectedDeceleration = gravity.GetZ() * basis.m_timeStep;
+
+            EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(setVelocity.GetZ() + expectedDeceleration, 0.001f));
         }
-           
-        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();        
-        
-        EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ() + originalVelocity.GetZ(), 0.001f));
     }
 
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
