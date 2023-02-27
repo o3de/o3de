@@ -249,12 +249,12 @@ namespace AZ
                 RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-Zi", "-Zss" });
             }
 
-            unsigned char md5[RHI::Md5NumBytes];
+            unsigned char sha1[RHI::Sha1NumBytes];
             RHI::PrependArguments args;
             args.m_sourceFile = shaderSourceFile.c_str();
             args.m_prependFile = PlatformShaderHeader;
             args.m_destinationFolder = tempFolder.c_str();
-            args.m_digest = &md5;
+            args.m_digest = &sha1;
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash
             // -Fd "Write debug information to the given file, or automatically named file in directory when ending in '\\'"
@@ -264,7 +264,7 @@ namespace AZ
             if (graphicsDevMode || shaderBuildArguments.m_generateDebugInfo)
             {
                 // prepare .pdb filename:
-                AZStd::string md5hex = RHI::ByteToHexString(md5);
+                AZStd::string md5hex = RHI::ByteToHexString(sha1);
                 AZStd::string symbolDatabaseFilePath = dxcInputFile.c_str();  // mutate from source
                 AZStd::string pdbFileName = md5hex + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
                 AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, pdbFileName.c_str(), "pdb");
