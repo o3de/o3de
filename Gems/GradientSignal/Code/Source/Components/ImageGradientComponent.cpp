@@ -132,7 +132,7 @@ namespace GradientSignal
             "Failed to load ImageGradientConfig information.");
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonImageGradientConfigSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonImageGradientConfigSerializer, AZ::SystemAllocator);
 
     bool DoesFormatSupportTerrarium(AZ::RHI::Format format)
     {

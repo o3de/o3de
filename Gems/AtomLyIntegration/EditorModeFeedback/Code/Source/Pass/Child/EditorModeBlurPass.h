@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackChildPassBase);
-            AZ_CLASS_ALLOCATOR(EditorModeBlurPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModeBlurPass, SystemAllocator);
 
             virtual ~EditorModeBlurPass() = default;
 

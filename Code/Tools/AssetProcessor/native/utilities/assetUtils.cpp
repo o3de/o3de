@@ -874,7 +874,7 @@ namespace AssetUtilities
         return AZ::Uuid::CreateName(lowerVersion.c_str());
     }
 
-    AZ::Uuid GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
     {
         if (!sourceAsset)
         {
@@ -892,7 +892,7 @@ namespace AssetUtilities
         return {};
     }
 
-    AZStd::unordered_set<AZ::Uuid> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
     {
         auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
 

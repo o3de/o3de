@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ContainerTypeLineEdit, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ContainerTypeLineEdit, AZ::SystemAllocator);
 
         ContainerTypeLineEdit(int index, QWidget* parent = nullptr);
         ~ContainerTypeLineEdit();

@@ -46,7 +46,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(View, "{C3FFC8DE-83C4-4E29-8216-D55BE0ACE3E4}");
-            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator);
 
             enum UsageFlags : uint32_t         //bitwise operators are defined for this (see below)
             {

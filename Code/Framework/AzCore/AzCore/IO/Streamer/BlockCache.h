@@ -32,7 +32,7 @@ namespace AZ::IO
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::BlockCacheConfig, "{70120525-88A4-40B6-A75B-BAA7E8FD77F3}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator);
 
         ~BlockCacheConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(

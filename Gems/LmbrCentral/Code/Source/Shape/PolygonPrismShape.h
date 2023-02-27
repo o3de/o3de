@@ -42,7 +42,7 @@ namespace LmbrCentral
         , private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PolygonPrismShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PolygonPrismShape, AZ::SystemAllocator)
         AZ_RTTI(PolygonPrismShape, "{BDB453DE-8A51-42D0-9237-13A9193BE724}")
 
         PolygonPrismShape();

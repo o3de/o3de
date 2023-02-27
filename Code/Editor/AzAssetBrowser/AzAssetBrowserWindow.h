@@ -45,7 +45,7 @@ class AzAssetBrowserWindow : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator);
 
     explicit AzAssetBrowserWindow(QWidget* parent = nullptr);
     virtual ~AzAssetBrowserWindow();
@@ -56,7 +56,7 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
-    bool TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView);
+    bool ViewWidgetBelongsTo(QWidget* viewWidget);
 
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);

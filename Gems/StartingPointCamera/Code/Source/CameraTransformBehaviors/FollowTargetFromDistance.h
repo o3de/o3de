@@ -31,7 +31,7 @@ namespace Camera
     public:
         ~FollowTargetFromDistance() override = default;
         AZ_RTTI(FollowTargetFromDistance, "{E6BEDB2C-6812-4369-8C0F-C1E72F380E50}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(FollowTargetFromDistance, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FollowTargetFromDistance, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

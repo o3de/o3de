@@ -21,7 +21,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeLinearFloat, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeLinearFloat, AZ::SystemAllocator);
 
     JointsSubComponentModeLinearFloat::JointsSubComponentModeLinearFloat(
         const AZStd::string& propertyName, float exponent, float max, float min)

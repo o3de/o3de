@@ -22,7 +22,7 @@ class CConsoleTrack
     : public TAnimTrack<IConsoleKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CConsoleTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CConsoleTrack, AZ::SystemAllocator);
     AZ_RTTI(CConsoleTrack, "{5D61289C-DE66-40E6-8C2D-A6CBF41A6EF4}", IAnimTrack);
 
     //////////////////////////////////////////////////////////////////////////

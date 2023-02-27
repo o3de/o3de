@@ -81,7 +81,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(ArgumentBuffer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ArgumentBuffer, AZ::SystemAllocator);
             AZ_RTTI(ArgumentBuffer, "FEFE8823-7772-4EA0-9241-65C49ADFF6B3", Base);
 
             ArgumentBuffer() = default;

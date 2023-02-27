@@ -26,7 +26,11 @@
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -332,6 +336,32 @@ namespace UnitTest
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+            
+            // If the new action manager is enabled, reset it between test runs.
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+                if (auto actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get())
+                {
+                    actionManagerInternalInterface->Reset();
+                }
+                if (auto hotKeyManagerInternalInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInternalInterface>::Get())
+                {
+                    hotKeyManagerInternalInterface->Reset();
+                }
+                if (auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get())
+                {
+                    menuManagerInternalInterface->Reset();
+                }
+                if (auto toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get())
+                {
+                    toolBarManagerInternalInterface->Reset();
+                }
+            }
 
             // Reset back to Default Handler to prevent having a handler with dangling "this" pointer
             EditorInteractionSystemViewportSelectionRequestBus::Event(

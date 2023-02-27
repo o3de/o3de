@@ -494,22 +494,23 @@ namespace AssetProcessor
                     if (fileExists)
                     {
                         auto canonicalUuid = AssetUtilities::GetSourceUuid(sourceAsset);
-                        assetId = AZ::Data::AssetId(canonicalUuid, combined.m_subID);
 
-                        if (canonicalUuid.IsNull())
+                        if (!canonicalUuid)
                         {
-                            // Error is already handled by GetSourceUuid
+                            AZ_Error("AssetCatalog", false, "%s", canonicalUuid.GetError().c_str());
                             return true;
                         }
 
-                        if (canonicalUuid != combined.m_sourceGuid)
+                        assetId = AZ::Data::AssetId(canonicalUuid.GetValue(), combined.m_subID);
+
+                        if (canonicalUuid.GetValue() != combined.m_sourceGuid)
                         {
                             // Canonical UUID does not match stored UUID, this entry needs to be updated
                             sourceEntriesToUpdate.emplace_back(
                                 combined.m_sourceID,
                                 combined.m_scanFolderID,
                                 combined.m_sourceName.c_str(),
-                                canonicalUuid, // Updated UUID
+                                canonicalUuid.GetValue(), // Updated UUID
                                 combined.m_analysisFingerprint.c_str());
                         }
                     }
@@ -544,17 +545,22 @@ namespace AssetProcessor
 
                     if (fileExists)
                     {
-                        auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-                        legacySourceAssetIds.reserve(legacySourceUuids.size());
+                        auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
 
-                        for (const auto& legacyUuid : legacySourceUuids)
+                        if (legacySourceUuidsOutcome)
                         {
-                            AZ::Data::AssetId legacySourceAssetId(legacyUuid, combined.m_subID);
+                            auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
+                            legacySourceAssetIds.reserve(legacySourceUuids.size());
 
-                            if (legacySourceAssetId != assetId)
+                            for (const auto& legacyUuid : legacySourceUuids)
                             {
-                                legacySourceAssetIds.emplace(legacySourceAssetId);
-                                currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                                AZ::Data::AssetId legacySourceAssetId(legacyUuid, combined.m_subID);
+
+                                if (legacySourceAssetId != assetId)
+                                {
+                                    legacySourceAssetIds.emplace(legacySourceAssetId);
+                                    currentRegistry.RegisterLegacyAssetMapping(legacySourceAssetId, assetId);
+                                }
                             }
                         }
                     }
@@ -1738,13 +1744,14 @@ namespace AssetProcessor
             return false;
         }
 
-        AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
-        if (sourceUUID.IsNull())
+        auto sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
+
+        if (!sourceUUID)
         {
             return false;
         }
 
-        AZ::Data::AssetId sourceAssetId(sourceUUID, 0);
+        AZ::Data::AssetId sourceAssetId(sourceUUID.GetValue(), 0);
 
         assetInfo.m_assetId = sourceAssetId;
         assetInfo.m_relativePath = sourceAsset.RelativePath().c_str();

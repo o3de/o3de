@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListNode, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceMaterialsListNode, "{41A168E4-6C30-40FA-889A-D2B58724A1D9}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);

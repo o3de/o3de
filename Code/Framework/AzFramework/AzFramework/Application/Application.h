@@ -60,7 +60,7 @@ namespace AzFramework
         };
 
         AZ_RTTI(Application, "{0BD2388B-F435-461C-9C84-D0A96CAF32E4}", AZ::ComponentApplication);
-        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator);
 
         // Publicized types & methods from base ComponentApplication.
         using AZ::ComponentApplication::Descriptor;

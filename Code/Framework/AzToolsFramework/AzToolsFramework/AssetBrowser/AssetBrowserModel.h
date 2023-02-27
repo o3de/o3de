@@ -50,7 +50,7 @@ namespace AzToolsFramework
                 EntryRole = Qt::UserRole + 100,
             };
 
-            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator);
 
             explicit AssetBrowserModel(QObject* parent = nullptr);
             ~AssetBrowserModel();

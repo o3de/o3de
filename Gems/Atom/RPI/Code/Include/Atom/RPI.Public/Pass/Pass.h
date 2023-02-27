@@ -68,7 +68,7 @@ namespace AZ
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
         const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = 16;
+        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
                 
@@ -117,7 +117,7 @@ namespace AZ
             };
 
             AZ_RTTI(Pass, "{EA34FF66-631D-433B-B449-71F5647E7BB5}", AZStd::intrusive_base);
-            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator);
 
             virtual ~Pass();
 

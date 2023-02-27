@@ -25,7 +25,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DepthOfFieldCopyFocusDepthToCpuPass, "{EA00AD76-92FC-4223-AB7D-87F588AB5394}", Pass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldCopyFocusDepthToCpuPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldCopyFocusDepthToCpuPass, SystemAllocator);
 
             //! Creates an DepthOfFieldCopyFocusDepthToCpuPass
             static RPI::Ptr<DepthOfFieldCopyFocusDepthToCpuPass> Create(const RPI::PassDescriptor& descriptor);

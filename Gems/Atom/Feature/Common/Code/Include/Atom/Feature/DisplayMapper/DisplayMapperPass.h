@@ -62,7 +62,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DisplayMapperPass, "{B022D9D6-BDFA-4435-B27C-466DC4C91D18}", RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(DisplayMapperPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperPass, SystemAllocator);
             virtual ~DisplayMapperPass();
 
             //! Creates a DisplayMapperPass

@@ -128,7 +128,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code (from .ui files)
-            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator);
             BaseLogPanel(QWidget* pParent = nullptr);
             virtual ~BaseLogPanel();
 
@@ -269,7 +269,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator);
             LogPanelLayout(QWidget* pParent);
             virtual ~LogPanelLayout();
             virtual void addItem(QLayoutItem*);
@@ -293,7 +293,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator);
             LogPanelItemDelegate(QWidget* pParent, int messageColumn);
             virtual ~LogPanelItemDelegate();
 
@@ -323,7 +323,7 @@ Q_SIGNALS:
         {
         public:
             AZ_RTTI(SavedState, "{38930360-DB02-445A-9CA0-3D1FB07B8236}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator);
             AZStd::vector<LogPanel::TabSettings> m_tabSettings;
 
             SavedState() {}

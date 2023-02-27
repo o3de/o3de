@@ -23,7 +23,7 @@ class CLookAtTrack
     : public TAnimTrack<ILookAtKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CLookAtTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CLookAtTrack, AZ::SystemAllocator);
     AZ_RTTI(CLookAtTrack, "{30A5C53C-F158-4CCE-A7A0-1A902D13B91C}", IAnimTrack);
 
     CLookAtTrack()

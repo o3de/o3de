@@ -68,7 +68,7 @@ namespace
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(HexagonIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HexagonIcon, AZ::SystemAllocator);
 
         HexagonIcon()
         {
@@ -96,7 +96,7 @@ namespace
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(CheckerboardIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CheckerboardIcon, AZ::SystemAllocator);
 
         CheckerboardIcon()
         {
@@ -119,7 +119,7 @@ namespace
         : public GraphCanvas::TintableIcon
     {
     public:
-        AZ_CLASS_ALLOCATOR(TriColorCheckerboardIcon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TriColorCheckerboardIcon, AZ::SystemAllocator);
 
         TriColorCheckerboardIcon()
         {

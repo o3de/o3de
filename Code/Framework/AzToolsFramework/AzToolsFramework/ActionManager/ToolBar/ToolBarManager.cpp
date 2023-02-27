@@ -43,6 +43,8 @@ namespace AzToolsFramework
 
         AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
+
+        Reset();
     }
 
     void ToolBarManager::Reflect(AZ::ReflectContext* context)
@@ -344,7 +346,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QToolBar* ToolBarManager::GetToolBar(const AZStd::string& toolBarIdentifier)
+    QToolBar* ToolBarManager::GenerateToolBar(const AZStd::string& toolBarIdentifier)
     {
         auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBars.end())
@@ -352,7 +354,7 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        return toolBarIterator->second.GetToolBar();
+        return toolBarIterator->second.GenerateToolBar();
     }
     
     ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const
@@ -434,7 +436,7 @@ namespace AzToolsFramework
             auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
             if (toolBarIterator != m_toolBars.end())
             {
-                toolBarIterator->second.RefreshToolBar();
+                toolBarIterator->second.RefreshToolBars();
             }
         }
 
@@ -482,6 +484,18 @@ namespace AzToolsFramework
 
         return AZ::Failure(AZStd::string::format(
             "ToolBar Manager - Could not serialize toolbar \"%.s\" - serialization error.", toolBarIdentifier.c_str()));
+    }
+
+    void ToolBarManager::Reset()
+    {
+        // Reset all stored values that are registered by the environment after initialization.
+        m_toolBars.clear();
+        m_toolBarAreas.clear();
+
+        m_actionsToToolBarsMap.clear();
+
+        m_toolBarsToRefresh.clear();
+        m_toolBarAreasToRefresh.clear();
     }
 
     void ToolBarManager::OnSystemTick()

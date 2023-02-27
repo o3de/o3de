@@ -105,7 +105,6 @@ namespace AZ
                     ("TaskGraph", "System component to create the default executor")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ;
             }
         }

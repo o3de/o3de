@@ -31,7 +31,7 @@ namespace AzFramework
         public AZ::IO::IStreamerStackConfig
     {
         AZ_RTTI(AzFramework::RemoteStorageDriveConfig, "{A37AC957-AC1F-4CAC-BB7B-0CAD5ABAD416}", AZ::IO::IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(RemoteStorageDriveConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteStorageDriveConfig, AZ::SystemAllocator);
 
         ~RemoteStorageDriveConfig() override = default;
         AZStd::shared_ptr<AZ::IO::StreamStackEntry> AddStreamStackEntry(

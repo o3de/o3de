@@ -100,7 +100,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(HairSharedBufferAllocation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HairSharedBufferAllocation, AZ::SystemAllocator);
             explicit HairSharedBufferAllocation(RHI::VirtualAddress virtualAddress)
                 : m_virtualAddress(virtualAddress)
             {}

@@ -26,7 +26,7 @@ namespace AZ
             using Base = RHI::Scope;
         public:
             AZ_RTTI(Scope, "{DE4C74AA-FD4C-4BC3-80DC-F405B72E4327}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             static RHI::Ptr<Scope> Create();
 

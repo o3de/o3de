@@ -11,7 +11,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(LineEditValidatable, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(LineEditValidatable, AZ::SystemAllocator)
 
     const QRegExp LineEditValidatable::s_defaultRegExp = QRegExp("(^[^{}\"%<>:\\\\/|?*]*$)");
 
