@@ -32,7 +32,6 @@ namespace AWSCore
             {
                 ec->Class<AWSCoreEditorSystemComponent>("AWSCoreEditor", "Adds supporting for working with AWS features in the Editor")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

@@ -85,7 +85,6 @@ namespace GradientSignal
             {
                 editContext->Class<GradientSignalEditorSystemComponent>("GradientSignalEditorSystemComponent", "Handles registration of the gradient preview data widget handler")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

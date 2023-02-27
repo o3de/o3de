@@ -91,7 +91,6 @@ namespace Vegetation
                 editContext->Class<InstanceSystemComponent>("Vegetation Instance System", "Manages and processes requests to create and destroy vegetation instance render nodes")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(0, &InstanceSystemComponent::m_configuration, "Configuration", "")

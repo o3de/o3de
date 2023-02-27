@@ -276,6 +276,18 @@ namespace AZ::DocumentPropertyEditor
                 return {};
             }
 
+            // This case is for handling legacy EnumValueKey attributes
+            if constexpr (AZStd::is_same_v<GenericValueType, AZ::u64>)
+            {
+                using EnumConstantBaseType = AZ::SerializeContextEnumInternal::EnumConstantBase;
+                if (auto data = azdynamic_cast<AttributeData<AZStd::unique_ptr<EnumConstantBaseType>>*>(attribute); data != nullptr)
+                {
+                    EnumConstantBaseType* value = static_cast<EnumConstantBaseType*>(data->Get(instance).get());
+                    return ValueToDom(
+                        AZStd::make_pair(value->GetEnumValueAsUInt(), value->GetEnumValueName()));
+                }
+            }
+
             AZ::AttributeReader reader(instance, attribute);
             if (GenericValuePair value; reader.Read<GenericValuePair>(value))
             {
@@ -296,7 +308,7 @@ namespace AZ::DocumentPropertyEditor
             auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
             if (opaqueValue->is<GenericValueType>() && genericValue)
             {
-                AZStd::make_pair<GenericValueType, AZStd::string>(*genericValue, value[EntryDescriptionKey].GetString());
+                return AZStd::make_pair(*genericValue, value[EntryDescriptionKey].GetString());
             }
 
             return {};
@@ -375,9 +387,7 @@ namespace AZ::DocumentPropertyEditor
                 if (opaqueValue->is<GenericValueType>() && genericValue)
                 {
                     result.emplace_back(
-                        AZStd::make_pair<GenericValueType, AZStd::string>(
-                            *genericValue,
-                            entryDom[EntryDescriptionKey].GetString()));
+                        AZStd::make_pair(*genericValue, entryDom[EntryDescriptionKey].GetString()));
                 }
             }
 
