@@ -11,6 +11,11 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
 )
 
+# make sure that all executables have the correct permissions
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod +x {}\;
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
+)
+
 # patch all binaries to use the core snap. As we are running in classic mode if we do not do this
 # it will load the binaries from the host filesystem, causing issues when the snap is run on a different environment
 # than the build environement.
