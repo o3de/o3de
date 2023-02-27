@@ -244,7 +244,7 @@ namespace AZ::Render
                 vertices[i].StoreToFloat4(&pointArray.at(i).x); // StoreToFloat4 is faster and w is ignored by the shader.
             }
             data.SetEndIndex(data.GetStartIndex() + clippedCount);
-            direction.StoreToFloat3(data.m_direction.data());
+            direction.GetNormalized().StoreToFloat3(data.m_direction.data());
         }
 
         UpdateBounds(handle);
@@ -289,7 +289,7 @@ namespace AZ::Render
         else
         {
             AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-            bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal.GetNormalized()));
+            bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal));
         }
     }
 
