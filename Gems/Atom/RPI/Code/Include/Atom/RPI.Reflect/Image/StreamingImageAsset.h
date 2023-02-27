@@ -13,7 +13,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
-#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
