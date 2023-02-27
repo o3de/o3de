@@ -8,8 +8,6 @@
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/SrgSemantics.azsli>
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {

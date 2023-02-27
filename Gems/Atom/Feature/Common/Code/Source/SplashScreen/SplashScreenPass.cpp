@@ -74,7 +74,9 @@ namespace AZ::Render
 
         if (m_beginTimer)
         {
-            // This is not ideal to stop other systems. It may cause conflicts when multiple sources are trying to set the value.
+            // Scale the tick time to 0 to stop other system from updating until splash screen finishes.
+            // This is not ideal. It may cause conflicts when multiple sources are trying to set the value.
+            // We should replace this with some control from the core system about when to render the splash screen.
             if (auto* timeSystem = AZ::Interface<ITime>::Get())
             {
                 timeSystem->SetSimulationTickScale(0.0f);
