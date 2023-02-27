@@ -138,6 +138,11 @@ namespace AzQtComponents
         return m_currentPath;
     }
 
+    QString BreadCrumbs::fullPath() const
+    {
+        return m_fullPath;
+    }
+
     void BreadCrumbs::setCurrentPath(const QString& newPath)
     {
         // clean up the path to use all the first separator in the list of separators
@@ -317,6 +322,20 @@ namespace AzQtComponents
         emitButtonSignals(buttonStates);
     }
 
+    void BreadCrumbs::pushFullPath(const QString& newFullPath, const QString& newPath)
+    {
+        pushPath(newPath);
+
+        const QString sanitizedPath = toCommonSeparators(newFullPath);
+
+        if (sanitizedPath == m_currentPath)
+        {
+            return;
+        }
+
+        m_fullPath = sanitizedPath;
+    }
+
     bool BreadCrumbs::back()
     {
         if (!isBackAvailable())
@@ -434,6 +453,7 @@ namespace AzQtComponents
             return;
         }
         m_labelEditStack->setCurrentWidget(m_lineEdit);
+        m_lineEdit->setText(m_fullPath);
         m_lineEdit->selectAll();
         m_lineEdit->setFocus();
     }

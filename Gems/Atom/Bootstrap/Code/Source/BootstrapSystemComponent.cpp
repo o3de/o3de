@@ -69,7 +69,6 @@ namespace AZ
                     {
                         ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                     }
@@ -402,7 +401,7 @@ namespace AZ
                     if (xrSystem)
                     {
                         // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
-                        // what's being rendered into XR device. XR render pipeline uses low end render pipeline.
+                        // what's being rendered into XR device. XR render pipeline uses multiview render pipeline.
                         AZ::ApplicationTypeQuery appType;
                         ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
                         if (appType.IsGame())

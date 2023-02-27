@@ -75,7 +75,7 @@ namespace TestImpact
         //! @param jobCallback The client callback to be called when each job changes state.
         //! @param stdContentCallback
         //! @return The result of the run sequence and the jobs with their associated payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename Job>> Execute(
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> Execute(
             const AZStd::vector<typename Job::Info>& jobs,
             PayloadMapProducer payloadMapProducer,
             StdOutputRouting stdOutRouting,
@@ -110,7 +110,7 @@ namespace TestImpact
         AZStd::optional<StdContentCallback> StdContentCallback)
     {
         AZStd::vector<ProcessInfo> processes;
-        AZStd::unordered_map<Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>> metas;
+        AZStd::unordered_map<typename Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>> metas;
         AZStd::vector<Job> jobs;
         jobs.reserve(jobInfos.size());
         processes.reserve(jobInfos.size());

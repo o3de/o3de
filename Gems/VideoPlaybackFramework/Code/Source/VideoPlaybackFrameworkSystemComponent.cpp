@@ -76,7 +76,6 @@ namespace VideoPlaybackFramework
             {
                 ec->Class<VideoPlaybackFrameworkSystemComponent>("VideoPlaybackFramework", "Interface framework to play back video during gameplay.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
