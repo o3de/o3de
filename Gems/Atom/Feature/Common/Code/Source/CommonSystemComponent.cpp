@@ -154,7 +154,6 @@ namespace AZ
                 {
                     ec->Class<CommonSystemComponent>("CommonSystemComponent", "System Component for common render features")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
                 }

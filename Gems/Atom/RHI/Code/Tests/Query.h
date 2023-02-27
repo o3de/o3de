@@ -18,7 +18,7 @@ namespace UnitTest
         : public AZ::RHI::Query
     {
     public:
-        AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
         
     private:
         AZ::RHI::ResultCode BeginInternal(AZ::RHI::CommandList& commandList, AZ::RHI::QueryControlFlags flags) override;
@@ -30,7 +30,7 @@ namespace UnitTest
         : public AZ::RHI::QueryPool
     {
     public:
-        AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
 
         AZStd::vector<AZ::RHI::Interval> m_calledIntervals;
 

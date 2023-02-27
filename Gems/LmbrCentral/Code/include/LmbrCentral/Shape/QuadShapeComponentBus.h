@@ -24,7 +24,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuadShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QuadShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(LmbrCentral::QuadShapeConfig, "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}", ShapeComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

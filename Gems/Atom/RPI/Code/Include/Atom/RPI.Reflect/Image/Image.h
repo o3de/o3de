@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(Image, "{4E4B1092-1BEE-4DC4-BE4B-8FBC83B0F48C}");
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
             virtual ~Image() = default;
 

@@ -41,7 +41,7 @@ namespace AZ
             : public ScopeProducer
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator);
 
             template <typename UserDataParam>
             ScopeProducerFunction(

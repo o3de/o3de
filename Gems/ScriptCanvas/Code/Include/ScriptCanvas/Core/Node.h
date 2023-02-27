@@ -138,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {

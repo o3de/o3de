@@ -31,7 +31,7 @@ namespace LUAEditor
 {
     struct FindOperationImpl
     {
-        AZ_CLASS_ALLOCATOR(FindOperationImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindOperationImpl, AZ::SystemAllocator);
 
         QTextCursor m_cursor;
         QString m_searchString;

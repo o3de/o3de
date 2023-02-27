@@ -25,7 +25,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(CreateGraphCanvasNodeMimeEvent, "{7171A847-7405-459F-A031-CC9AE50745B6}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateGraphCanvasNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateGraphCanvasNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -78,7 +78,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(CreateCommentNodeMimeEvent, "{1060EE7B-DBC2-4B7F-BC4C-4AB4651A3812}", CreateGraphCanvasNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -107,7 +107,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommentNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentNodePaletteTreeItem, AZ::SystemAllocator);
         CommentNodePaletteTreeItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
             : DraggableNodePaletteTreeItem(nodeName, editorId)
         {
@@ -129,7 +129,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(CreateNodeGroupNodeMimeEvent, "{1451A2F2-640B-4CB3-BF48-DD77E97EC900}", CreateGraphCanvasNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateNodeGroupNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -158,7 +158,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodeGroupNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupNodePaletteTreeItem, AZ::SystemAllocator);
         NodeGroupNodePaletteTreeItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
             : DraggableNodePaletteTreeItem(nodeName, editorId)
         {}

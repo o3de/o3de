@@ -23,7 +23,7 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAdjustNodeGroup, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAdjustNodeGroup, EMotionFX::CommandAllocator)
 
     //--------------------------------------------------------------------------------
     // CommandAnimGraphAdjustNodeGroup

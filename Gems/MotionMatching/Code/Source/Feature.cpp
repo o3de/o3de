@@ -26,7 +26,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator)
 
     Feature::ExtractFeatureContext::ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
         : m_featureMatrix(featureMatrix)

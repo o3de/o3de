@@ -27,7 +27,7 @@ namespace ScriptCanvasEditor
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(TargetManagerModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetManagerModel, AZ::SystemAllocator);
 
         TargetManagerModel();
 
@@ -56,7 +56,7 @@ namespace ScriptCanvasEditor
         static AZStd::intrusive_ptr<LiveLoggingUserSettings> FindSettingsInstance();
 
         AZ_RTTI(LiveLoggingUserSettings, "{2E32C949-5766-480D-B569-781BE9166B2E}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(LiveLoggingUserSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingUserSettings, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -81,7 +81,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingWindowSession, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingWindowSession, AZ::SystemAllocator);
         
         LiveLoggingWindowSession(QWidget* parent = nullptr);
         ~LiveLoggingWindowSession() override;

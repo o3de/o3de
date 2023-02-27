@@ -272,14 +272,14 @@ namespace AzToolsFramework
             return SourceFileDetails();
         }
 
-        void AssetBrowserComponent::HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId)
+        void AssetBrowserComponent::HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId, const bool initialFilenameChange)
         {
             if (assetPath.empty())
             {
                 return;
             }
 
-            m_assetBrowserModel->HandleAssetCreatedInEditor(assetPath, creatorBusId);
+            m_assetBrowserModel->HandleAssetCreatedInEditor(assetPath, creatorBusId, initialFilenameChange);
         }
 
         void AssetBrowserComponent::AddFile(const AZ::s64& fileId) 

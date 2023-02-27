@@ -159,7 +159,7 @@ namespace AzPhysics
     using SceneQueryRequests = AZStd::vector<AZStd::shared_ptr<SceneQueryRequest>>;
 
     //! Casts a ray from a starting pose along a direction returning objects that intersected with the ray.
-    struct RayCastRequest :
+    struct RayCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -181,7 +181,7 @@ namespace AzPhysics
     };
 
     //! Sweeps a shape from a starting pose along a direction returning objects that intersected with the shape.
-    struct ShapeCastRequest :
+    struct ShapeCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -228,7 +228,7 @@ namespace AzPhysics
     } // namespace ShapeCastRequestHelpers
 
     //! Searches a region enclosed by a specified shape for any overlapping objects in the scene.
-    struct OverlapRequest :
+    struct OverlapRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -269,8 +269,6 @@ namespace AzPhysics
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(SceneQueryHit, "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}");
         static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~SceneQueryHit() = default;
 
         explicit operator bool() const { return IsValid(); }
         bool IsValid() const { return m_resultFlags != SceneQuery::ResultFlags::Invalid; }

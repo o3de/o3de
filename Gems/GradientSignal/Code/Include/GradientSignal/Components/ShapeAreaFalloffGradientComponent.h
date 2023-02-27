@@ -29,7 +29,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeAreaFalloffGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ShapeAreaFalloffGradientConfig, "{8FB7C786-D8A7-41C4-A703-020020EB4A4F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

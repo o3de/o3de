@@ -16,7 +16,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -532,13 +532,10 @@ namespace LandscapeCanvasEditor
         {
             static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
 
-            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
-            AzToolsFramework::ActionContextProperties contextProperties;
-            contextProperties.m_name = "O3DE Landscape Canvas";
-
-            // Register a custom action context to allow duplicated shortcut hotkeys to work
-            actionManagerInterface->RegisterActionContext("", LandscapeCanvasActionContextIdentifier, contextProperties, this);
+            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->AssignWidgetToActionContext(LandscapeCanvasActionContextIdentifier, this);
+            }
         }
     }
 

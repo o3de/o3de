@@ -55,7 +55,7 @@ namespace AssetProcessor
     //! essentially a plain data holder, but with helper funcs
     struct AssetRecognizer
     {
-        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
 
         AssetRecognizer() = default;
@@ -301,6 +301,7 @@ namespace AssetProcessor
         // uses const + mutability since its a cache.
         void CacheIntermediateAssetsScanFolderId() const; 
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
+        void ReadMetaDataFromSettingsRegistry();
 
     protected:
 
@@ -316,7 +317,6 @@ namespace AssetProcessor
 
         void ReadEnabledPlatformsFromSettingsRegistry();
         bool ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
-        void ReadMetaDataFromSettingsRegistry();
 
         int GetProjectScanFolderOrder() const;
 

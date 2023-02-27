@@ -27,7 +27,16 @@ namespace AZ
 
         BufferPoolDescriptor::BufferPoolDescriptor()
         {
-            m_bufferPoolPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            if (auto device = RHI::RHISystemInterface::Get()->GetDevice())
+            {
+                m_bufferPoolPageSizeInBytes =
+                    RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            }
+            else
+            {
+                m_bufferPoolPageSizeInBytes = RHI::DefaultValues::Memory::BufferPoolPageSizeInBytes;
+            }
+            
         }
     }
 }

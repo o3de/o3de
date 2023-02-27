@@ -997,11 +997,12 @@ namespace AzToolsFramework
         // insert after the found index; even if nothing were found and priorIndex is -1,
         // insert one after it, at position 0
         m_columnLayout->insertWidget(priorColumnIndex + 1, columnWidget);
+        columnWidget->show();
+    }
 
-        if (isVisible())
-        {
-            columnWidget->show();
-        }
+    AZ::Name DPERowWidget::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
+    {
+        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
     }
 
     QWidget* DPERowWidget::CreateWidgetForHandler(
@@ -1012,7 +1013,7 @@ namespace AzToolsFramework
         if (handlerId)
         {
             auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = AZ::Name(handlerId->m_name);
+            auto handlerName = GetNameForHandlerId(handlerId);
             auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
             if (!handlerPool)
             {
@@ -1053,7 +1054,7 @@ namespace AzToolsFramework
     void DPERowWidget::ReleaseHandler(HandlerInfo& handler)
     {
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = AZ::Name(handler.handlerId->m_name);
+        auto handlerName = GetNameForHandlerId(handler.handlerId);
         auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
         if (handlerPool)
         {
@@ -1325,10 +1326,8 @@ namespace AzToolsFramework
                 m_layout->insertWidget(foundIndex + 1, widgetToAdd);
             }
         }
-        if (isVisible())
-        {
-            widgetToAdd->show();
-        }
+
+        widgetToAdd->show();
     }
 
     void DocumentPropertyEditor::SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName)

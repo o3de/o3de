@@ -36,7 +36,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Scope, "328CA015-A73A-4A64-8C10-798C021575B3", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             enum class BarrierSlot : uint32_t
             {

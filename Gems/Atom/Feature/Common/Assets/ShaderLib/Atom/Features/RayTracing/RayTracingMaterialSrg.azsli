@@ -8,6 +8,14 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingSceneSrg.azsli and RayTracingFeatureProcessor.h files
+//        that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
+
 ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
 {
     Sampler LinearSampler
@@ -55,6 +63,8 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     #define TEXTURE_FLAG_ROUGHNESS      (1 << 3)
     #define TEXTURE_FLAG_EMISSIVE       (1 << 4)
 
+#if !USE_BINDLESS_SRG
     // unbounded array of Material textures
     Texture2D m_materialTextures[];
+#endif
 }

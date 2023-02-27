@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class SlopeAlignmentModifierNode : public BaseAreaModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlopeAlignmentModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlopeAlignmentModifierNode, AZ::SystemAllocator);
         AZ_RTTI(SlopeAlignmentModifierNode, "{3F5771DF-C2A0-4B52-9A91-96253A640A7C}", BaseAreaModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

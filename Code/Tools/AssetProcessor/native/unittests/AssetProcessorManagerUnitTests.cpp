@@ -2271,7 +2271,7 @@ namespace AssetProcessor
 
             // note, uuid does not include watch folder name.  This is a quick test to make sure that the source file UUID actually makes it into the CreateJobRequest.
             // the ProcessJobRequest is populated frmo the CreateJobRequest.
-            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath)));
+            EXPECT_EQ(builder->GetLastCreateJobRequest().m_sourceFileUUID, AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath)).GetValueOr(AZ::Uuid()));
             QString watchedFolder(AssetUtilities::NormalizeFilePath(builder->GetLastCreateJobRequest().m_watchFolder.c_str()));
             QString expectedWatchedFolder(m_sourceRoot.absoluteFilePath("subfolder3"));
             EXPECT_EQ(QString::compare(watchedFolder, expectedWatchedFolder, Qt::CaseInsensitive), 0); // verify watchfolder
@@ -2672,7 +2672,7 @@ namespace AssetProcessor
         EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));
         EXPECT_TRUE(CreateDummyFile(sourceFileCPath, ""));
 
-        sourceFileBUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceFileBPath));
+        sourceFileBUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(sourceFileBPath)).GetValueOr(AZ::Uuid());
 
         EXPECT_FALSE(sourceFileBUuid.IsNull());
 

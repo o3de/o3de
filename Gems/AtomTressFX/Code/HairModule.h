@@ -22,7 +22,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(HairModule, "{0EF06CF0-8011-4668-A31F-A6851583EBDC}", AZ::Module);
-                AZ_CLASS_ALLOCATOR(HairModule, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairModule, AZ::SystemAllocator);
 
                 HairModule();
 

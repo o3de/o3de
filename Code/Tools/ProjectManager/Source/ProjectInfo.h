@@ -45,6 +45,7 @@ namespace O3DE::ProjectManager
         // From project.json
         QString m_projectName;
         QString m_displayName;
+        QString m_version;
         QString m_engineName;
         QString m_enginePath;
         QString m_id;

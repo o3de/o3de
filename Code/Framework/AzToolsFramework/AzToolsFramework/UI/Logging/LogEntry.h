@@ -46,7 +46,7 @@ namespace AzToolsFramework
                 AZStd::string m_value;
             };
             
-            AZ_CLASS_ALLOCATOR(LogEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogEntry, AZ::SystemAllocator);
 
             using FieldStorage = AZStd::unordered_map<AZ::Crc32, Field>;
 

@@ -73,7 +73,7 @@ namespace AWSCore
 
     public:
 
-        AZ_CLASS_ALLOCATOR(ServiceClientJobConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceClientJobConfig, AZ::SystemAllocator);
 
         using ServiceClientJobConfigType = ServiceClientJobConfig<ServiceTraitsType>;
 

@@ -41,7 +41,7 @@ namespace NvCloth
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(MeshNodeHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshNodeHandler, AZ::SystemAllocator);
 
             MeshNodeHandler() = default;
             

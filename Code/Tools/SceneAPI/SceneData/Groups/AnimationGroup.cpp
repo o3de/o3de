@@ -45,7 +45,7 @@ namespace AZ
 
         namespace SceneData
         {            
-            AZ_CLASS_ALLOCATOR_IMPL(AnimationGroup, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(AnimationGroup, SystemAllocator);
 
             AnimationGroup::AnimationGroup()
                 : m_id(Uuid::CreateRandom())

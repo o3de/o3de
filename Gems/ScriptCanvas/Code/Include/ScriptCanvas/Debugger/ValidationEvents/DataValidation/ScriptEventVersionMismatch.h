@@ -25,7 +25,7 @@ namespace ScriptCanvas
         , public FocusOnEntityEffect
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptEventVersionMismatch, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventVersionMismatch, AZ::SystemAllocator);
         AZ_RTTI(ScriptEventVersionMismatch, "{4968A689-B45A-40B6-BB3C-B1D35557D692}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
         
         ScriptEventVersionMismatch(AZ::u32 nodeVersion, const ScriptEvents::ScriptEvent& definition, AZ::EntityId nodeId)

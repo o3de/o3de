@@ -40,7 +40,7 @@ namespace Terrain
 
     struct MeshConfiguration
     {
-        AZ_CLASS_ALLOCATOR(MeshConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MeshConfiguration, AZ::SystemAllocator);
         AZ_RTTI(MeshConfiguration, "{D94D831B-67C0-46C5-9707-AACD2716A2C0}");
 
         MeshConfiguration() = default;

@@ -41,7 +41,7 @@ namespace AZ
         {
             friend class PipelineStatePool;
         public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<PipelineState> Create();
 

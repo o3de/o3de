@@ -19,7 +19,7 @@ namespace LmbrCentral
     class SplineCommon
     {
     public:
-        AZ_CLASS_ALLOCATOR(SplineCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SplineCommon, AZ::SystemAllocator);
         AZ_RTTI(SplineCommon, "{91A31D7E-F63A-4AA8-BC50-909B37F0AD8B}");
 
         SplineCommon();

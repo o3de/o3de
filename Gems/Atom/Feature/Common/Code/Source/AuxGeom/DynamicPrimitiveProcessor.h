@@ -52,7 +52,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(DynamicPrimitiveProcessor, "{30391207-E4CB-4FCC-B407-05E361CF6815}");
-            AZ_CLASS_ALLOCATOR(DynamicPrimitiveProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DynamicPrimitiveProcessor, AZ::SystemAllocator);
 
             DynamicPrimitiveProcessor() = default;
             ~DynamicPrimitiveProcessor() = default;

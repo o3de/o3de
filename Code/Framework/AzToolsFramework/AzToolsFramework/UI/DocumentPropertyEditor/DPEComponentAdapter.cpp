@@ -6,10 +6,13 @@
  *
  */
 
+#include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
-
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QtCore/QTimer>
-
 namespace AZ::DocumentPropertyEditor
 {
     ComponentAdapter::ComponentAdapter() = default;
@@ -71,9 +74,13 @@ namespace AZ::DocumentPropertyEditor
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
         m_componentInstance = componentInstance;
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_componentInstance->GetEntityId());
+        m_entityId = m_componentInstance->GetEntityId();
+        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+
+        // Set the component alias before calling SetValue(). Otherwise, an empty alias will be sent to the PrefabAdapter.
+        m_componentAlias = componentInstance->GetSerializedIdentifier();
         AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
         SetValue(m_componentInstance, instanceTypeId);
     }
@@ -111,9 +118,7 @@ namespace AZ::DocumentPropertyEditor
                         else
                         {
                             AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode,
-                                &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch,
-                                "Modify Entity Property");
+                                m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
                         }
 
                         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -138,4 +143,19 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
+    void ComponentAdapter::OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath)
+    {
+        if (!serializedPath.empty())
+        {
+            AZ::Dom::Path relativePathFromEntity(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
+            relativePathFromEntity /= m_componentAlias;
+            relativePathFromEntity /= AZ::Dom::Path(serializedPath);
+
+            auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
+            if (prefabAdapterInterface != nullptr)
+            {
+                prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, relativePathFromEntity, m_entityId);
+            }
+        }
+    }
 } // namespace AZ::DocumentPropertyEditor

@@ -44,7 +44,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 namespace ConsoleConstants
 {
     static constexpr const char* ButtonIcon = ":/controls/img/cvar_dark.bmp";
-    static constexpr const char* SearchIcon = ":/stylesheet/img/search.png";
+    static constexpr const char* SearchIcon = ":/stylesheet/img/search.svg";
     static constexpr const char* ClearIcon = ":/stylesheet/img/lineedit-clear.png";
     static constexpr const char* MenuIcon = ":/Menu/menu.svg";
 } // namespace ConsoleConstants

@@ -17,7 +17,7 @@ namespace AzGameFramework
         : public AzFramework::Application
     {
     public:
-        AZ_CLASS_ALLOCATOR(GameApplication, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameApplication, AZ::SystemAllocator);
 
         GameApplication();
         GameApplication(int argc, char** argvS);

@@ -43,7 +43,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(AsyncUploadQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AsyncUploadQueue, AZ::SystemAllocator);
 
             AZ_DISABLE_COPY_MOVE(AsyncUploadQueue);
 

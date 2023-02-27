@@ -17,7 +17,7 @@ namespace UnitTest
         : public AZ::RHI::PhysicalDevice
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
 
         static AZ::RHI::PhysicalDeviceList Enumerate();
 
@@ -29,7 +29,7 @@ namespace UnitTest
         : public AZ::RHI::Device
     {
     public:
-        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
 
         Device();
 
@@ -66,7 +66,7 @@ namespace UnitTest
 
         void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
 
-        AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) override
+        AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
         {
             return AZ::RHI::ShadingRateImageValue{};
         }

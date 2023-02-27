@@ -28,7 +28,7 @@ namespace GraphCanvas
         friend class EntityIdGraphicsEventFilter;
 
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdNodePropertyDisplay, AZ::SystemAllocator);
         EntityIdNodePropertyDisplay(EntityIdDataInterface* dataInterface);
         virtual ~EntityIdNodePropertyDisplay();
     

@@ -24,8 +24,6 @@ namespace AzToolsFramework
     public:
         //! Get the height of the capsule shape.
         virtual float GetHeight() const = 0;
-        //! Get the rotation of the capsule shape relative to the manipulator space.
-        virtual AZ::Quaternion GetRotationOffset() const = 0;
         //! Set the height of the capsule shape.
         virtual void SetHeight(float height) = 0;
 

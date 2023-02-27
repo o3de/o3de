@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PhysicsSetup, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PhysicsSetup, EMotionFX::ActorAllocator)
 
     const char* PhysicsSetup::s_colliderConfigTypeVisualNames[5] =
     {

@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::IndirectBufferWriter;
         public:
-            AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferWriter, "{A83429FE-19AD-423C-BEEA-884AA31DCD77}", Base);
 
             static RHI::Ptr<IndirectBufferWriter> Create();

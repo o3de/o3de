@@ -20,7 +20,7 @@ namespace AZ
             : public RHI::RayTracingShaderTable
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingShaderTable> Create();
 

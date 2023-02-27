@@ -22,7 +22,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT // AUTOMOC
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdQLineEdit, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdQLineEdit, AZ::SystemAllocator);
 
         explicit EntityIdQLineEdit(QWidget* parent = nullptr);
         ~EntityIdQLineEdit() override;

@@ -26,7 +26,7 @@ class CSoundTrack
     : public TAnimTrack<ISoundKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CSoundTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CSoundTrack, AZ::SystemAllocator);
     AZ_RTTI(CSoundTrack, "{B87D8805-F583-4154-B554-45518BC487F4}", IAnimTrack);
 
     void GetKeyInfo(int key, const char*& description, float& duration) override;

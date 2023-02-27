@@ -59,7 +59,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationAndroid, AZ::SystemAllocator);
         ApplicationAndroid();
         ~ApplicationAndroid() override;
 
