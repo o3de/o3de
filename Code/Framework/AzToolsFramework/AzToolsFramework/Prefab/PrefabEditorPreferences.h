@@ -12,7 +12,7 @@
 
 namespace AzToolsFramework::Prefab
 {
-	extern const AZStd::string_view EnablePrefabOverridesUxKey;
+    extern const AZStd::string_view EnablePrefabOverridesUxKey;
     extern const AZStd::string_view InspectorOverrideManagementKey;
     extern const AZStd::string_view HotReloadToggleKey;
     
