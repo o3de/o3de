@@ -22,7 +22,7 @@ namespace GradientSignal
     class SmoothStep final
     {
     public:
-        AZ_CLASS_ALLOCATOR(SmoothStep, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SmoothStep, AZ::SystemAllocator);
         AZ_RTTI(SmoothStep, "{F392F061-BF40-43C5-89F6-7323D6EF11F4}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -29,7 +29,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DitherGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DitherGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(DitherGradientConfig, "{8F519317-4E83-4CF0-BEC9-C5F3F3198F20}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_useSystemPointsPerUnit = true;

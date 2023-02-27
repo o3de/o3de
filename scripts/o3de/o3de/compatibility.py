@@ -12,10 +12,68 @@ from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import pathlib
 import logging
-from o3de import manifest, utils, cmake
+from o3de import manifest, utils, cmake, validation
 
 logger = logging.getLogger('o3de.compatibility')
 logging.basicConfig(format=utils.LOG_FORMAT)
+
+def get_most_compatible_project_engine_path(project_path:pathlib.Path, 
+                                            project_json_data:dict = None, 
+                                            user_project_json_data:dict = None, 
+                                            engines_json_data:dict = None) -> pathlib.Path or None:
+    """
+    Returns the most compatible engine path for a project based on the project's 
+    'engine' field and taking into account <project_path>/user/project.json overrides
+    :param project_path: Path to the project
+    :param project_json_data: Json data to use to avoid reloading project.json  
+    :param user_project_json_data: Json data to use to avoid reloading <project_path>/user/project.json  
+    :param engines_json_data: Json data to use for engines instead of opening each file, useful for speed 
+    """
+    if not project_json_data:
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f'Failed to load project.json data from {project_path}. '
+            'Please verify the path is correct, the file exists and is formatted correctly.')
+        return None
+    
+    # take into account any user project.json overrides 
+    if not isinstance(user_project_json_data, dict):
+        user_project_json_path = pathlib.Path(project_path) / 'user' / 'project.json'
+        if user_project_json_path.is_file():
+            user_project_json_data = manifest.get_json_data_file(user_project_json_path, 'project', validation.always_valid)
+            if user_project_json_data:
+                project_json_data.update(user_project_json_data)
+                user_engine_path = project_json_data.get('engine_path', '')
+                if user_engine_path:
+                    return pathlib.Path(user_engine_path)
+
+    project_engine = project_json_data.get('engine')
+    if not project_engine:
+        # The project has not been registered to an engine yet
+        return None
+
+    if not engines_json_data:
+        engines_json_data = manifest.get_engines_json_data_by_path()
+
+    most_compatible_engine_path = None
+    most_compatible_engine_version = None
+    for engine_path, engine_json_data in engines_json_data.items():
+        engine_name = engine_json_data.get('engine_name')
+        engine_version = engine_json_data.get('version')
+        if not engine_version:
+            # use a default version number in case version is missing or empty
+            engine_version = '0.0.0'
+
+        if has_compatible_version([project_engine], engine_name, engine_version):
+            if not most_compatible_engine_path:
+                most_compatible_engine_path = pathlib.Path(engine_path)
+                most_compatible_engine_version = Version(engine_version)
+            elif Version(engine_version) > most_compatible_engine_version:
+                most_compatible_engine_path = pathlib.Path(engine_path)
+                most_compatible_engine_version = Version(engine_version)
+    
+    return most_compatible_engine_path
+
 
 def get_project_engine_incompatible_objects(project_path:pathlib.Path, engine_path:pathlib.Path = None) -> set:
     """
@@ -73,7 +131,10 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     return get_incompatible_gem_version_specifiers(gem_json_data, all_gems_json_data, checked_specifiers=set())
 
 
-def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, all_gems_json_data:dict = None) -> set:
+def get_gem_project_incompatible_objects(gem_path:pathlib.Path, 
+                                        gem_json_data:dict, 
+                                        project_path:pathlib.Path
+                                        ) -> set:
     """
     Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
@@ -100,8 +161,10 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
         logger.error(f'Failed to load engine.json data based on the engine field in project.json or detect the engine from the current folder')
         return set(f'engine.json (missing)') 
 
-    if not isinstance(all_gems_json_data, dict):
-        all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, include_manifest_gems=True)
+    # Include the gem_path for the gem we are adding so it 
+    # and any gems in 'external_subdirectories' it has will be considered 
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, 
+        external_subdirectories=[gem_path], include_manifest_gems=True)
 
     # compatibility will be based on the engine the project uses and the gems visible to
     # the engine and project

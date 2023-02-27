@@ -26,7 +26,7 @@ namespace MultiplayerCompression
         : public AzNetworking::ICompressor
     {
     public:
-        AZ_CLASS_ALLOCATOR(LZ4Compressor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LZ4Compressor, AZ::SystemAllocator);
 
         LZ4Compressor() = default;
 

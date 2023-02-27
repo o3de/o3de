@@ -39,7 +39,7 @@ class WatchesFilterModel
     : public QSortFilterProxyModel
 {
 public:
-    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(WatchesFilterModel, AZ::SystemAllocator);
     WatchesFilterModel(QObject* pParent)
         : QSortFilterProxyModel(pParent)
     {

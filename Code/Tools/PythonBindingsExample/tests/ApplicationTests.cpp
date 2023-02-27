@@ -48,9 +48,9 @@ namespace PythonBindingsExample
 
     AZStd::unique_ptr<PythonBindingsExample::Application> PythonBindingsExampleTest::s_application;
 
-    TEST_F(PythonBindingsExampleTest, Application_Run_Succeeds)
+    TEST_F(PythonBindingsExampleTest, Application_Run_WithoutParameters_Returns_False)
     {
-        EXPECT_TRUE(s_application->Run());
+        EXPECT_FALSE(s_application->Run());
     }
 
     TEST_F(PythonBindingsExampleTest, Application_RunWithParameters_Works)

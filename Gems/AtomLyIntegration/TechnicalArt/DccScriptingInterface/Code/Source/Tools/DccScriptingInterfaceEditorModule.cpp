@@ -26,7 +26,7 @@ namespace DccScriptingInterface
     {
     public:
         AZ_RTTI(DccScriptingInterfaceEditorModule, "{F6CEC69D-14DB-48F8-9AFC-D56D0602D79F}", DccScriptingInterfaceModuleInterface);
-        AZ_CLASS_ALLOCATOR(DccScriptingInterfaceEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DccScriptingInterfaceEditorModule, AZ::SystemAllocator);
 
         DccScriptingInterfaceEditorModule()
         {

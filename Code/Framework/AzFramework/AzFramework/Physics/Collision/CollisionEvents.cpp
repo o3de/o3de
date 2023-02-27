@@ -15,9 +15,9 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TriggerEvent, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(Contact, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionEvent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(TriggerEvent, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(Contact, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionEvent, AZ::SystemAllocator);
 
     /*static*/ void TriggerEvent::Reflect(AZ::ReflectContext* context)
     {

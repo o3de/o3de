@@ -47,6 +47,13 @@ namespace LmbrCentral
         EXPECT_NEAR(height, expectedHeight, ManipulatorTolerance);
     }
 
+    void ExpectSphereRadius(AZ::EntityId entityId, float expectedRadius)
+    {
+        float radius = 0.0f;
+        SphereShapeComponentRequestsBus::EventResult(radius, entityId, &SphereShapeComponentRequests::GetRadius);
+        EXPECT_NEAR(radius, expectedRadius, ManipulatorTolerance);
+    }
+
     void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset)
     {
         AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();

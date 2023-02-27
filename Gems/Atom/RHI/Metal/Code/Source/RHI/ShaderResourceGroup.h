@@ -35,7 +35,7 @@ namespace AZ
         {
             using Base = RHI::ShaderResourceGroup;
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
             static RHI::Ptr<ShaderResourceGroup> Create();
 

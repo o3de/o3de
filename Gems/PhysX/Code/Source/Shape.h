@@ -30,7 +30,7 @@ namespace PhysX
         , public AZStd::enable_shared_from_this<Shape>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);
         AZ_RTTI(Shape, "{A84BCCA2-7F29-4E17-830F-911E7BB3E80C}", Physics::Shape);
 
         Shape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration);
@@ -45,6 +45,7 @@ namespace PhysX
         // Physics::Shape overrides...
         void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
         AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
+        Physics::MaterialId GetMaterialId() const override;
         void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) override;
         AzPhysics::CollisionLayer GetCollisionLayer() const override;
         void SetCollisionGroup(const AzPhysics::CollisionGroup& group) override;

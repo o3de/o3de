@@ -185,7 +185,6 @@ namespace UnitTest
                     editContext->Class<Inspector_TestComponent3>("InspectorTestComponent3", "Component 3 for AZ Tools Framework Unit Tests")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::Category, "Inspector Test Components")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")

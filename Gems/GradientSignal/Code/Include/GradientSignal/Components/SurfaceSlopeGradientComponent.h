@@ -37,7 +37,7 @@ namespace GradientSignal
             SMOOTH_STEP
         };
 
-        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceSlopeGradientConfig, "{691E0F23-37E9-434F-A1D1-E8DE5B4A3405}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_slopeMin = 0.0f;

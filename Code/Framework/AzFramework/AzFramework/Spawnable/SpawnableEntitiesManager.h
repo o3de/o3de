@@ -31,7 +31,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(AzFramework::SpawnableEntitiesManager, "{6E14333F-128C-464C-94CA-A63B05A5E51C}");
-        AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator);
 
         using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
         
@@ -97,7 +97,7 @@ namespace AzFramework
 
         struct Ticket final
         {
-            AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
 
             AZStd::atomic_int64_t m_referenceCount{ 1 };

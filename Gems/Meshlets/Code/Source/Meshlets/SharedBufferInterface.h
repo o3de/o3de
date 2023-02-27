@@ -103,7 +103,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedBufferAllocation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedBufferAllocation, AZ::SystemAllocator);
             explicit SharedBufferAllocation(RHI::VirtualAddress virtualAddress)
                 : m_virtualAddress(virtualAddress)
             {}

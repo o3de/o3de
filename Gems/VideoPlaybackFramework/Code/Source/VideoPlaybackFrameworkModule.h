@@ -18,7 +18,7 @@ namespace VideoPlaybackFramework
     {
     public:
         AZ_RTTI(VideoPlaybackFrameworkModule, "{5FCBDEE8-C3EC-45DD-9B71-B37D1F7A299A}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(VideoPlaybackFrameworkModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VideoPlaybackFrameworkModule, AZ::SystemAllocator);
 
         VideoPlaybackFrameworkModule();
 

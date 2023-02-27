@@ -874,7 +874,7 @@ namespace AssetUtilities
         return AZ::Uuid::CreateName(lowerVersion.c_str());
     }
 
-    AZ::Uuid GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
     {
         if (!sourceAsset)
         {
@@ -892,7 +892,7 @@ namespace AssetUtilities
         return {};
     }
 
-    AZStd::unordered_set<AZ::Uuid> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
     {
         auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
 
@@ -1466,6 +1466,28 @@ namespace AssetUtilities
         } while (db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(source.m_sourceName.c_str()).c_str(), sources));
 
         return source;
+    }
+
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        auto topLevelSourceDbEntry = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSourceDbEntry)
+        {
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+        if(!db->GetScanFolderByScanFolderID(topLevelSourceDbEntry->m_scanFolderPK, scanfolderForTopLevelSource))
+        {
+            return {};
+        }
+
+        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+        fullPath /= topLevelSourceDbEntry->m_sourceName;
+
+        return fullPath;
     }
 
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(

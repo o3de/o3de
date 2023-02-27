@@ -179,6 +179,11 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserThumbnailView::UpdateThumbnailview()
+        {
+            m_thumbnailViewWidget->RefreshThumbnailview();
+        }
+
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()
         {
             if (!m_assetTreeView)

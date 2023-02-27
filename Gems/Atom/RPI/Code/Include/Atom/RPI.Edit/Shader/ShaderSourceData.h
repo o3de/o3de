@@ -33,7 +33,7 @@ namespace AZ
         struct ShaderSourceData
         {
             AZ_TYPE_INFO(AZ::RPI::ShaderSourceData, "{B7F00402-872B-4F82-A210-E1A79A366686}");
-            AZ_CLASS_ALLOCATOR(ShaderSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderSourceData, AZ::SystemAllocator);
 
             static constexpr char Extension[] = "shader";
 

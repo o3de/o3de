@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class ThresholdGradientModifierNode : public BaseGradientModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThresholdGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ThresholdGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(ThresholdGradientModifierNode, "{3AFD613A-E5E4-4359-9E20-335F202AAB99}", BaseGradientModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

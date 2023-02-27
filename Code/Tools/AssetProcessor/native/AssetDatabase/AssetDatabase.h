@@ -31,7 +31,7 @@ namespace AssetProcessor
         : public AzToolsFramework::AssetDatabase::AssetDatabaseConnection
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator);
 
         AssetDatabaseConnection();
         ~AssetDatabaseConnection();

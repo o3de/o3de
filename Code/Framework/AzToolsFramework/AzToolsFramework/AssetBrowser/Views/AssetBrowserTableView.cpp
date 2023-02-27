@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 
 AZ_PUSH_DISABLE_WARNING(
@@ -31,12 +32,15 @@ namespace AzToolsFramework
         const float MaxHeaderResizeProportion = .75f;
         const float DefaultHeaderResizeProportion = .5f;
 
+        static constexpr const char* const TableViewMainViewName = "AssetBrowserTableView_main";
+
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : AzQtComponents::TableView(parent)
             , m_delegate(new SearchEntryDelegate(this))
         {
             setSortingEnabled(false);
             setItemDelegate(m_delegate);
+            connect(m_delegate, &EntryDelegate::RenameEntry, this, &AssetBrowserTableView::AfterRename);
             setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.
@@ -53,6 +57,45 @@ namespace AzToolsFramework
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+            QAction* deleteAction = new QAction("Delete Action", this);
+            deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                deleteAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DeleteEntries();
+                });
+            addAction(deleteAction);
+
+            QAction* renameAction = new QAction("Rename Action", this);
+            renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                renameAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    RenameEntry();
+                });
+            addAction(renameAction);
+
+            QAction* duplicateAction = new QAction("Duplicate Action", this);
+            duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                duplicateAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    DuplicateEntries();
+                });
+            addAction(duplicateAction);
         }
 
         AssetBrowserTableView::~AssetBrowserTableView()
@@ -89,7 +132,56 @@ namespace AzToolsFramework
             }
         }
 
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
+        QString& AssetBrowserTableView::GetName()
+        {
+            return m_name;
+        }
+
+        void AssetBrowserTableView::SetIsAssetBrowserMainView()
+        {
+            SetName(TableViewMainViewName);
+        }
+
+        bool AssetBrowserTableView::GetIsAssetBrowserMainView()
+        {
+            return GetName() == TableViewMainViewName;
+        }
+
+        void AssetBrowserTableView::DeleteEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot delete product files.
+
+            AssetBrowserViewUtils::DeleteEntries(entries, this);
+        }
+
+        void AssetBrowserTableView::MoveEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot move product files.
+
+            AssetBrowserViewUtils::MoveEntries(entries, this);
+        }
+
+        void AssetBrowserTableView::DuplicateEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            AssetBrowserViewUtils::DuplicateEntries(entries);
+        }
+
+        void AssetBrowserTableView::RenameEntry()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            AssetBrowserViewUtils::RenameEntry(entries, this);
+        }
+
+        void AssetBrowserTableView::AfterRename(QString newVal)
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            AssetBrowserViewUtils::AfterRename(newVal, entries, this);
+        }
+
+        AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets(bool includeProducts) const
         {
             QModelIndexList sourceIndexes;
             for (const auto& index : selectedIndexes())
@@ -102,6 +194,19 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> entries;
             AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+            if (!includeProducts)
+            {
+                entries.erase(
+                    AZStd::remove_if(
+                        entries.begin(),
+                        entries.end(),
+                        [&](AssetBrowserEntry* entry) -> bool
+                        {
+                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                        }),
+                    entries.end());
+            }
+
             return entries;
         }
 

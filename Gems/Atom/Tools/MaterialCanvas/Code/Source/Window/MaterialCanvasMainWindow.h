@@ -32,7 +32,7 @@ namespace MaterialCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 

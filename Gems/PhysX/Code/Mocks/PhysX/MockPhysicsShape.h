@@ -25,7 +25,8 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetContactOffset, float ());
         MOCK_CONST_METHOD3(GetGeometry, void(AZStd::vector<AZ::Vector3>&, AZStd::vector<AZ::u32>&, const AZ::Aabb*));
         MOCK_CONST_METHOD0(GetLocalPose, AZStd::pair<AZ::Vector3, AZ::Quaternion> ());
-        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material> ());
+        MOCK_CONST_METHOD0(GetMaterial, AZStd::shared_ptr<Physics::Material>());
+        MOCK_CONST_METHOD0(GetMaterialId, Physics::MaterialId());
         MOCK_METHOD0(GetNativePointer, void* ());
         MOCK_CONST_METHOD0(GetNativePointer, const void*());
         MOCK_CONST_METHOD0(GetRestOffset, float ());

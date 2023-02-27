@@ -802,15 +802,14 @@ namespace AZ
         return true;
     }
 
-    bool SettingsRegistryImpl::MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey,
+    AZ::Outcome<void, AZStd::string> SettingsRegistryImpl::MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>* scratchBuffer)
     {
         using namespace rapidjson;
 
         if (path.empty())
         {
-            AZ_Error("Settings Registry", false, "Path provided for MergeSettingsFile is empty.");
-            return false;
+            return AZ::Failure("Path provided for MergeSettingsFile is empty.");
         }
 
         AZStd::vector<char> buffer;
@@ -819,7 +818,7 @@ namespace AZ
             scratchBuffer = &buffer;
         }
 
-        bool result = false;
+        AZ::Outcome<void, AZStd::string> result;
         if (path[path.length()] == 0)
         {
             result = MergeSettingsFileInternal(path.data(), format, rootKey, *scratchBuffer);
@@ -838,7 +837,9 @@ namespace AZ
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Unable to read registry file."), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), AZStd::move(pathValue), m_settings.GetAllocator());
-                return false;
+                return AZ::Failure(AZStd::string::format(
+                    R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
+                    static_cast<int>(path.length()), path.data()));
             }
             AZ::IO::FixedMaxPathString filePath(path);
             result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey, *scratchBuffer);
@@ -1314,7 +1315,7 @@ namespace AZ
         }
     }
 
-    bool SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
+    AZ::Outcome<void, AZStd::string>  SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>& scratchBuffer)
     {
         using namespace AZ::IO;
@@ -1325,33 +1326,30 @@ namespace AZ
         FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr, path);
         if (!fileReader.IsOpen())
         {
-            AZ_Error("Settings Registry", false, R"(Unable to open registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to open registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Unable to open registry file "%s".)", path));
         }
 
         u64 fileSize = fileReader.Length();
         if (fileSize == 0)
         {
-            AZ_Warning("Settings Registry", false, R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path);
             pointer.Create(m_settings, m_settings.GetAllocator())
                 .SetObject()
                 .AddMember(StringRef("Error"), StringRef("registry file is 0 bytes."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path));
         }
 
         scratchBuffer.clear();
         scratchBuffer.resize_no_construct(fileSize + 1);
         if (fileReader.Read(fileSize, scratchBuffer.data()) != fileSize)
         {
-            AZ_Error("Settings Registry", false, R"(Unable to read registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to read registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Unable to read registry file "%s".)", path));
         }
         scratchBuffer[fileSize] = 0;
 
@@ -1360,18 +1358,22 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
+            AZ::Outcome<void, AZStd::string> result;
             auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
-                    path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+                result = AZ::Failure(AZStd::string::format(
+                    R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
+                    path,
+                    GetParseError_En(jsonPatch.GetParseError()),
+                    jsonPatch.GetErrorOffset()));
             }
             else
             {
                 using ErrorString = AZStd::fixed_string<4096>;
                 auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
-                AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
+                result = AZ::Failure(jsonError.c_str());
 
                 if (nativeUI)
                 {
@@ -1385,7 +1387,7 @@ namespace AZ
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator())
                 .AddMember(StringRef("Message"), StringRef(GetParseError_En(jsonPatch.GetParseError())), m_settings.GetAllocator())
                 .AddMember(StringRef("Offset"), aznumeric_cast<uint64_t>(jsonPatch.GetErrorOffset()), m_settings.GetAllocator());
-            return false;
+            return result;
         }
 
         JsonMergeApproach mergeApproach;
@@ -1398,25 +1400,24 @@ namespace AZ
             mergeApproach = JsonMergeApproach::JsonMergePatch;
             if (!jsonPatch.IsObject())
             {
-                AZ_Error("Settings Registry", false, R"(Attempting to merge the settings registry file "%s" where the root element is a)"
-                    R"( non-JSON Object using the JSON MergePatch approach. The JSON MergePatch algorithm would therefore)"
-                    R"( overwrite all settings at the supplied root-key path and therefore merging has been)"
-                    R"( disallowed to prevent field destruction.)" "\n"
-                    R"(To merge the supplied settings registry file, the settings within it must be placed within a JSON Object '{}')"
-                    R"( in order to allow moving of its fields using the root-key as an anchor.)", path);
-
                 AZStd::scoped_lock lock(LockForWriting());
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Cannot merge registry file with a root which is not a JSON Object,"
                         " an empty root key and a merge approach of JsonMergePatch. Otherwise the Settings Registry would be overridden."
                         " See RFC 7386 for more information"), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-                return false;
+
+                return AZ::Failure(AZStd::string::format( R"(Attempting to merge the settings registry file "%s" where the root element is a)"
+                    R"( non-JSON Object using the JSON MergePatch approach. The JSON MergePatch algorithm would therefore)"
+                    R"( overwrite all settings at the supplied root-key path and therefore merging has been)"
+                    R"( disallowed to prevent field destruction.)" "\n"
+                    R"(To merge the supplied settings registry file, the settings within it must be placed within a JSON Object '{}')"
+                    R"( in order to allow moving of its fields using the root-key as an anchor.)", path));
             }
             break;
         default:
             AZ_Assert(false, "Provided format for merging settings into the Setting Registry is unsupported.");
-            return false;
+            return AZ::Failure("Provided format for merging settings into the Setting Registry is unsupported.");
         }
 
         // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
@@ -1482,23 +1483,23 @@ namespace AZ
             }
             else
             {
-                AZ_Error("Settings Registry", false, R"(Failed to root path "%.*s" is invalid.)",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data());
                 AZStd::scoped_lock lock(LockForWriting());
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Invalid root key."), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-                return false;
+
+                return AZ::Failure(AZStd::string::format(R"(Failed to root path "%.*s" is invalid.)",
+                    aznumeric_cast<int>(rootKey.length()), rootKey.data()));
             }
         }
         if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
         {
-            AZ_Error("Settings Registry", false, R"(Failed to fully merge registry file "%s".)", path);
             AZStd::scoped_lock lock(LockForWriting());
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Failed to fully merge registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            
+           return AZ::Failure(AZStd::string::format(R"(Failed to fully merge registry file "%s".)", path));
         }
 
         {
@@ -1514,7 +1515,7 @@ namespace AZ
 
         SignalNotifier(rootKey, anchorType);
 
-        return true;
+        return AZ::Success();
     }
 
     void SettingsRegistryImpl::SetNotifyForMergeOperations(bool notify)

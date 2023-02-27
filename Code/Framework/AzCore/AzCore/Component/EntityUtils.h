@@ -26,7 +26,7 @@ namespace AZ
          */
         struct SerializableEntityContainer
         {
-            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator);
             AZ_TYPE_INFO(SerializableEntityContainer, "{E98CF1B5-6B72-46C5-AB87-3DB85FD1B48D}");
 
             AZStd::vector<AZ::Entity*> m_entities;

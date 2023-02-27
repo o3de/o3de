@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -35,6 +36,8 @@
 #include <AzToolsFramework/Component/EditorLevelComponentAPIComponent.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
+#include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
+#include <AzToolsFramework/ComponentModes/SphereComponentMode.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
@@ -81,6 +84,7 @@
 #include <Entity/EntityUtilityComponent.h>
 #include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -90,6 +94,7 @@ AZ_POP_DISABLE_WARNING
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMap>
+
 
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
@@ -304,6 +309,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
+                azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
             });
 
         return components;
@@ -311,6 +317,15 @@ namespace AzToolsFramework
 
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
+        // GameApplications can run without an engine, but ToolsApplications need an engine
+        // NOTE: we do not check 'FilePathKey_EngineRootFolder' because that might have been
+        // set to the project's path which is not enough for ToolsApplications
+        if (AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).empty())
+        {
+            ReportBadEngineRoot();
+            return;
+        }
+
         Application::Start(descriptor, startupParameters);
         if (!m_isStarted)
         {
@@ -396,6 +411,8 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorBaseComponentMode::Reflect(context);
 
         BoxComponentMode::Reflect(context);
+        CapsuleComponentMode::Reflect(context);
+        SphereComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);

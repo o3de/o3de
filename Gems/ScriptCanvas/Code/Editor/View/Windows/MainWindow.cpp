@@ -82,7 +82,7 @@
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -445,13 +445,10 @@ namespace ScriptCanvasEditor
         {
             static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
 
-            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-
-            AzToolsFramework::ActionContextProperties contextProperties;
-            contextProperties.m_name = "O3DE Script Canvas";
-
-            // Register a custom action context to allow duplicated shortcut hotkeys to work
-            actionManagerInterface->RegisterActionContext("", ScriptCanvasActionContextIdentifier, contextProperties, this);
+            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasActionContextIdentifier, this);
+            }
         }
 
         // Custom Actions
@@ -688,6 +685,16 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusDisconnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
+
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasActionContextIdentifier, this);
+            }
+        }
 
         Clear();
 
@@ -1694,6 +1701,15 @@ namespace ScriptCanvasEditor
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
+                    if (isValidFileName)
+                    {
+                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
+                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
+                        {
+                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
+                            return false;
+                        }
+                    }
                 }
                 else
                 {

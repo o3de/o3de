@@ -11,7 +11,7 @@
 
 namespace PythonCoverage
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PythonCoverageEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PythonCoverageEditorModule, AZ::SystemAllocator);
 
     PythonCoverageEditorModule::PythonCoverageEditorModule()
     {

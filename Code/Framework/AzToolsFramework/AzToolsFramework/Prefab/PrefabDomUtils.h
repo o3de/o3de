@@ -39,6 +39,7 @@ namespace AzToolsFramework
             inline static constexpr const char* PathMatchingInstances = "/Instances";
             inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
             inline static constexpr const char* PathMatchingLinkId = "/LinkId";
+            inline static constexpr const char* PathMatchingSource = "/Source";
 
             /**
             * Find Prefab value from given parent value and target value's name.

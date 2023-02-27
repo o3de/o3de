@@ -44,7 +44,7 @@ namespace AZStd
     {
     public:
         AZ_TYPE_INFO(AZStd::any, "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}");
-        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator);
 
         /// Typed used to identify other types (acquired via azrtti_typeid<Type>())
         using type_id = AZ::Uuid;

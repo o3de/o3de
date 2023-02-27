@@ -49,7 +49,7 @@ namespace GraphCanvas
     class NodePaletteTreeDelegate : public IconDecoratedNameDelegate
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteTreeDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteTreeDelegate, AZ::SystemAllocator);
 
         NodePaletteTreeDelegate(QWidget* parent = nullptr);
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -81,7 +81,7 @@ namespace GraphCanvas
         friend class NodePaletteDockWidget;
 
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteWidget, AZ::SystemAllocator);
 
         NodePaletteWidget(QWidget* parent);
         ~NodePaletteWidget();

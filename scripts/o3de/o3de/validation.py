@@ -14,6 +14,10 @@ import uuid
 from o3de import utils
 
 
+def always_valid(json_data: dict) -> bool:
+    return True
+
+
 def valid_o3de_json_dict(json_data: dict, key: str) -> bool:
     return key in json_data
 

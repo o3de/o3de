@@ -58,7 +58,7 @@ namespace AZ
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");
-            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator);
 
             //! Returns the shader instance associated with the provided asset.
             static Data::Instance<Shader> FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName);

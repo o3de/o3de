@@ -19,7 +19,7 @@ namespace AZ
             : public ResourcePoolResolver
         {
         public:
-            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator);
             AZ_RTTI(ImagePoolResolver, "{305EFAFB-9319-4AB7-99DD-0AA361C22CED}", ResourcePoolResolver);
 
             ImagePoolResolver(Device& device, ImagePool* imagePool)

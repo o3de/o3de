@@ -34,7 +34,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator);
 
             explicit AssetBrowserThumbnailView(QWidget* parent = nullptr);
             ~AssetBrowserThumbnailView() override;
@@ -52,6 +52,9 @@ namespace AzToolsFramework
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
             void showInFolderTriggered(const AssetBrowserEntry* entry);
+
+        public Q_SLOTS:
+            void UpdateThumbnailview();
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;

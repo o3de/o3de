@@ -88,7 +88,7 @@ namespace AZ
         {
             using Base = RPI::PassData;
             AZ_RTTI(DisplayMapperPassData, "{2F7576F1-41C1-408A-96BF-F4B8ED280CBC}", Base);
-            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator);
 
             DisplayMapperPassData() = default;
             virtual ~DisplayMapperPassData() = default;

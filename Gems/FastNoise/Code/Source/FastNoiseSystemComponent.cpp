@@ -25,7 +25,6 @@ namespace FastNoiseGem
             {
                 ec->Class<FastNoiseSystemComponent>("FastNoise", "System component for Fast Noise gradient gem")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

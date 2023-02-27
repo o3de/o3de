@@ -27,7 +27,7 @@ namespace WhiteBox
     static const char* const RestoreEdgeUndoRedoDesc = "Restore an edge to split two connected polygons";
     static const char* const RestoreVertexUndoRedoDesc = "Restore a vertex to split two connected edges";
 
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator)
 
     void EdgeRestoreMode::Refresh()
     {

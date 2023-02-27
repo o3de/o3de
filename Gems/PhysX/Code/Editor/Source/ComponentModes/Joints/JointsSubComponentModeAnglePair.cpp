@@ -21,7 +21,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAnglePair, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAnglePair, AZ::SystemAllocator);
 
     JointsSubComponentModeAnglePair::JointsSubComponentModeAnglePair(
         const AZStd::string& propertyName, const AZ::Vector3& axis, float max, float min)

@@ -45,7 +45,7 @@ namespace Audio
     {
     public:
         AZ_RTTI(NullAudioSystem, "{27F054BF-B51C-472C-9ECF-BBBB710C5AC1}", IAudioSystem);
-        AZ_CLASS_ALLOCATOR(Audio::NullAudioSystem, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(Audio::NullAudioSystem, AZ::SystemAllocator)
 
         NullAudioSystem()
         {

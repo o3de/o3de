@@ -28,6 +28,7 @@
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -68,7 +69,6 @@ namespace AZ
                     {
                         ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                     }
@@ -242,6 +242,7 @@ namespace AZ
                 TickBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
+                m_xrVrsTexture = nullptr;
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
@@ -378,6 +379,20 @@ namespace AZ
                 const bool loadDefaultRenderPipeline = !xrSystem || xrSystem->GetRHIXRRenderingInterface()->IsDefaultRenderPipelineNeeded();
 
                 AZ::RHI::MultisampleState multisampleState;
+
+                if (xrSystem)
+                {
+                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
+                    if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion) &&
+                        !m_xrVrsTexture)
+                    {
+                        // Need to fill the contents of the Variable shade rating image.
+                        const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
+                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
+
+                        m_xrVrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
+                    }
+                }
 
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)

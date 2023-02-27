@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::BloomParentPass, "{072861A3-A87A-439D-BD8B-D2BDD8D31799}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(BloomParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomParentPass, SystemAllocator);
             virtual ~BloomParentPass() = default;
 
             //! Creates a BloomParentPass
