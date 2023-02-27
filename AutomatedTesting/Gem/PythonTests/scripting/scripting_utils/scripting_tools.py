@@ -61,6 +61,11 @@ def initialize_sc_editor_objects(self):
     self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
 
 
+def initialize_sc_asseteditor_objects(self):
+    # This will only work after the script canvas asset tab has been created.
+    self.asset_editor_tab = self.asset_editor_tab_widget.widget(0)
+    self.asset_editor_row_container = self.asset_editor_tab.findChild(QtWidgets.QWidget, "ContainerForRows")
+
 def initialize_asset_editor_object(self):
     """
     function for initializing qt objects needed for testing around asset editor
@@ -71,7 +76,7 @@ def initialize_asset_editor_object(self):
     """
     self.asset_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, ASSET_EDITOR_UI)
     self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
-    self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
+    self.asset_editor_tab_widget = self.asset_editor_widget.findChild(QtWidgets.QWidget, "AssetEditorTabWidget")
     self.asset_editor_menu_bar = self.asset_editor_widget.findChild(QtWidgets.QMenuBar)
 
 
@@ -283,13 +288,14 @@ def create_script_event(self):
     """
     action = pyside_utils.find_child_by_pattern(self.asset_editor_menu_bar, {"type": QtWidgets.QAction, "text": SCRIPT_EVENT_UI})
     action.trigger()
+    initialize_sc_asseteditor_objects(self)
     result = helper.wait_for_condition(
         lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT) is not None, WAIT_TIME_3
     )
     Report.result(Tests.new_event_created, result)
 
     # Add new child event
-    add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "")
+    add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(QtWidgets.QToolButton, "AddNewChildElement")
     add_event.click()
     result = helper.wait_for_condition(
         lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_3
@@ -297,7 +303,7 @@ def create_script_event(self):
     Report.result(Tests.child_event_created, result)
 
 def create_script_event_parameter(self):
-    add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "")
+    add_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "Parameters").findChild(QtWidgets.QToolButton, "AddNewChildElement")
     add_param.click()
     result = helper.wait_for_condition(
         lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is not None, WAIT_TIME_3
@@ -305,7 +311,7 @@ def create_script_event_parameter(self):
     Report.result(Tests.parameter_created, result)
 
 def remove_script_event_parameter(self):
-    remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "")
+    remove_param = self.asset_editor_row_container.findChild(QtWidgets.QFrame, "[0]").findChild(QtWidgets.QToolButton, "RemoveThisElement")
     remove_param.click()
     result = helper.wait_for_condition(
         lambda: self.asset_editor_widget.findChild(QtWidgets.QFrame, "[0]") is None, WAIT_TIME_3
@@ -324,7 +330,7 @@ def add_empty_parameter_to_script_event(self, number_of_parameters):
     helper.wait_for_condition(
         lambda: self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT) is not None, WAIT_TIME_3)
     parameters = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT)
-    add_parameter = parameters.findChild(QtWidgets.QToolButton, "")
+    add_parameter = parameters.findChild(QtWidgets.QToolButton, "AddNewChildElement")
 
     for _ in range(number_of_parameters):
         add_parameter.click()

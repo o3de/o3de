@@ -71,6 +71,7 @@ def InputBindings_Add_Remove_Input_Events():
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
+        import azlmbr.legacy.general as general
 
         def open_asset_editor():
             general.open_pane("Asset Editor")
@@ -91,6 +92,7 @@ def InputBindings_Add_Remove_Input_Events():
         app = QtWidgets.QApplication.instance()
         asset_editor = editor_window.findChild(QtWidgets.QDockWidget, "Asset Editor")
         asset_editor_widget = asset_editor.findChild(QtWidgets.QWidget, "m_assetEditorWidget")
+        asset_editor_tab_widget = asset_editor_widget.findChild(QtWidgets.QWidget, "AssetEditorTabWidget")
 
         # 4) Create a new .inputbindings file and add event groups
         # Get the action File->New->Input Bindings and trigger it
@@ -98,9 +100,10 @@ def InputBindings_Add_Remove_Input_Events():
         action.trigger()
 
         # Add event groups
-        input_event_groups = asset_editor_widget.findChild(QtWidgets.QFrame, "Input Event Groups")
+        input_bindings_tab = asset_editor_tab_widget.widget(0) 
+        input_event_groups = input_bindings_tab.findChild(QtWidgets.QFrame, "Input Event Groups")
         # First QToolButton is +, Second QToolButton is Delete
-        add_button = input_event_groups.findChildren(QtWidgets.QToolButton, "")[0]
+        add_button = input_event_groups.findChild(QtWidgets.QToolButton, "AddNewChildElement")
         add_button.click()
         add_button.click()
         add_button.click()
@@ -111,32 +114,32 @@ def InputBindings_Add_Remove_Input_Events():
         Report.result(Tests.event_groups_added, success)
 
         # 6) Delete one event group
-        event = asset_editor_widget.findChildren(QtWidgets.QFrame, "<Unspecified Event>")[0]
-        delete_button = event.findChildren(QtWidgets.QToolButton, "")[0]
+        event = input_bindings_tab.findChildren(QtWidgets.QFrame, "<Unspecified Event>")[0]
+        delete_button = event.findChild(QtWidgets.QToolButton, "RemoveThisElement")
         delete_button.click()
 
         # 7) Ensure one event group is deleted
         # NOTE: Here when we delete an input group a new "Input Event Groups" QFrame is generated from which
         # the QLabel showing the no of elements is being rendered, so we are taking the 2nd QFrame
         # with name "Input Event Groups" to verify the number of elements
-        def get_elements_label_text(asset_editor_widget):
-            input_event_groups = asset_editor_widget.findChildren(QtWidgets.QFrame, "Input Event Groups")
+        def get_elements_label_text(input_bindings_tab):
+            input_event_groups = input_bindings_tab.findChildren(QtWidgets.QFrame, "Input Event Groups")
             if len(input_event_groups) > 1:
+                input_event_group = input_event_groups[1]
                 input_event_group = input_event_groups[1]
                 no_of_elements_label = input_event_group.findChild(QtWidgets.QLabel, "DefaultLabel")
                 return no_of_elements_label.text()
             return ""
 
         success = await pyside_utils.wait_for_condition(lambda: "2 elements" in
-                                                                get_elements_label_text(asset_editor_widget), 2.0)
+                                                                get_elements_label_text(input_bindings_tab), 2.0)
         Report.result(Tests.single_event_group_deleted, success)
 
         # 8) Click on Delete button to delete all the Event Groups
         # First QToolButton child of active input_event_groups is +, Second QToolButton is Delete
-        input_event_groups = asset_editor_widget.findChildren(QtWidgets.QFrame, "Input Event Groups")[1]
-        delete_all_button = input_event_groups.findChildren(QtWidgets.QToolButton, "")[1]
+        delete_all_button = input_bindings_tab.findChild(QtWidgets.QToolButton, "RemoveAllElements")
         pyside_utils.click_button_async(delete_all_button)
-
+        
         # Clicking the Delete All button will prompt the user if they are sure they want to
         # delete all the entries, so we wait for this modal dialog and then accept it
         active_modal_widget = await pyside_utils.wait_for_modal_widget()
@@ -146,7 +149,7 @@ def InputBindings_Add_Remove_Input_Events():
 
         # 9) Verify if all the elements are deleted
         success = await pyside_utils.wait_for_condition(lambda: "0 elements" in
-                                                                get_elements_label_text(asset_editor_widget), 2.0)
+                                                                get_elements_label_text(input_bindings_tab), 2.0)
         Report.result(Tests.all_event_groups_deleted, success)
 
         # 10) Close Asset Editor
