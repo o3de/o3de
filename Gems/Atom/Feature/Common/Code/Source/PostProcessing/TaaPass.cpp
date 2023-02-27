@@ -134,13 +134,18 @@ namespace AZ::Render
         // Make sure the attachments have images when the pass first loads.
         for (auto i : { 0, 1 })
         {
-            if (m_accumulationAttachments[0] && !m_accumulationAttachments[i]->m_importedResource)
+            if (m_accumulationAttachments[i])
             {
-                attachmentsValid &= UpdateAttachmentImage(i);
+                attachmentsValid = UpdateAttachmentImage(i);
+                if (!attachmentsValid)
+                {
+                    break;
+                }
             }
             else
             {
                 attachmentsValid = false;
+                break;
             }
         }
         if (!attachmentsValid)
@@ -199,7 +204,7 @@ namespace AZ::Render
         if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
         {
             // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
-            return false;
+            return true;
         }
         
         Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
