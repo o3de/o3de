@@ -32,6 +32,7 @@ class TestScriptCanvas(EditorTestSuite):
     class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
         import NodePalette_HappyPath_CanSelectNode as test_module
 
+    @pytest.mark.xfail(reason="keyboard shortcuts are not behaving properly: https://github.com/o3de/o3de/issues/14802")
     class test_EditMenu_Default_UndoRedo(EditorBatchedTest):
         import EditMenu_Default_UndoRedo as test_module
 
@@ -77,6 +78,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.skip(reason="a Qt checkbox does not trigger the events needed to properly pass the test.")
     def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
         from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -86,6 +88,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.skip(reason="a Qt checkbox does not trigger the events needed to properly pass the test.")
     def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
         from . import ScriptEvents_AllParamDatatypes_CreationSuccess as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -248,6 +251,7 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
+    @pytest.mark.xfail(reason="keyboard shortcuts are not behaving properly: https://github.com/o3de/o3de/issues/14802")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
         var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
         expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
