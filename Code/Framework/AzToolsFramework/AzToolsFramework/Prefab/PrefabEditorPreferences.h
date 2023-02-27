@@ -12,9 +12,9 @@
 
 namespace AzToolsFramework::Prefab
 {
-    extern const AZStd::string_view EnablePrefabOverridesUxKey;
-    extern const AZStd::string_view InspectorOverrideManagementKey;
     extern const AZStd::string_view HotReloadToggleKey;
+    extern const AZStd::string_view OutlinerOverrideManagementKey;
+    extern const AZStd::string_view InspectorOverrideManagementKey;
     
     //! Checks if hot reloading for prefab files is enabled.
     bool IsHotReloadingEnabled();
