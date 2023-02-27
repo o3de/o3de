@@ -424,7 +424,7 @@ namespace AZ
                 m_configuration.m_modelAsset = modelAsset;
                 RecomputeAssetQuality();
 
-                if (const AZStd::unordered_set<AZ::Name>& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
+                if (const auto& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
                 {
                     m_configuration.m_qualityLevel = RPI::AssetQualityLowest;
                     for (const AZ::Name& tag : modelTags)
