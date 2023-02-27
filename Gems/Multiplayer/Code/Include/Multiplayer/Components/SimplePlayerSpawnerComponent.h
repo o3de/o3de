@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
-#include <Multiplayer/Components/SimplePlayerSpawnerComponentBus.h>
+#include <Multiplayer/Components/ISimplePlayerSpawner.h>
 namespace Multiplayer
 {
     /*!
@@ -21,7 +21,7 @@ namespace Multiplayer
     class SimplePlayerSpawnerComponent
         : public AZ::Component
         , public IMultiplayerSpawner
-        , public SimplePlayerSpawnerRequestBus::Handler
+        , public ISimplePlayerSpawner
     {
     public:
         AZ_COMPONENT(Multiplayer::SimplePlayerSpawnerComponent, "{0A6D0132-3FD2-4F13-B537-2B1DA99E34E9}");
@@ -35,8 +35,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         ////////////////////////////////////////////////////////////////////////
-        // SimplePlayerSpawnerRequestBus::Handler implementation...
-        AZ::Transform GetAndAdvanceNextSpawnPoint() override;
+        // ISimplePlayerSpawner implementation...
         AZ::Transform GetNextSpawnPoint() const override;
         const AZStd::vector<AZ::EntityId>& GetSpawnPoints() const override;
         uint32_t GetSpawnPointCount() const override;

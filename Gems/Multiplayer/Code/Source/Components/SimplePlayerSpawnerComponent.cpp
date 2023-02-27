@@ -19,12 +19,12 @@ namespace Multiplayer
     void SimplePlayerSpawnerComponent::Activate()
     {
         AZ::Interface<IMultiplayerSpawner>::Register(this);
-        SimplePlayerSpawnerRequestBus::Handler::BusConnect();
+        AZ::Interface<ISimplePlayerSpawner>::Register(this);
     }
 
     void SimplePlayerSpawnerComponent::Deactivate()
     {
-        SimplePlayerSpawnerRequestBus::Handler::BusDisconnect();
+        AZ::Interface<ISimplePlayerSpawner>::Unregister(this);
         AZ::Interface<IMultiplayerSpawner>::Unregister(this);
     }
 
@@ -72,13 +72,6 @@ namespace Multiplayer
     void SimplePlayerSpawnerComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("MultiplayerSpawnerService"));
-    }
-
-    AZ::Transform SimplePlayerSpawnerComponent::GetAndAdvanceNextSpawnPoint()
-    {
-        const AZ::Transform nextSpawnPoint = GetNextSpawnPoint();
-        m_spawnIndex = ++m_spawnIndex % m_spawnPoints.size();
-        return nextSpawnPoint;
     }
 
     AZ::Transform SimplePlayerSpawnerComponent::GetNextSpawnPoint() const
@@ -141,7 +134,10 @@ namespace Multiplayer
         [[maybe_unused]] uint64_t userId, [[maybe_unused]] const MultiplayerAgentDatum& agentDatum)
     {
         const PrefabEntityId prefabEntityId(AZ::Name(m_playerSpawnable.m_spawnableAsset.GetHint().c_str()));
-        const AZ::Transform transform = GetAndAdvanceNextSpawnPoint();
+
+        const AZ::Transform transform = GetNextSpawnPoint();
+        m_spawnIndex = ++m_spawnIndex % m_spawnPoints.size();
+
         INetworkEntityManager::EntityList entityList =
             GetNetworkEntityManager()->CreateEntitiesImmediate(prefabEntityId, NetEntityRole::Authority, transform);
 
