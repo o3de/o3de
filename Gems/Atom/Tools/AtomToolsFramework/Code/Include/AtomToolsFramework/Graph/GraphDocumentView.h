@@ -22,7 +22,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphDocumentView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphDocumentView, AZ::SystemAllocator);
 
         GraphDocumentView(
             const AZ::Crc32& toolId, const AZ::Uuid& documentId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);

@@ -27,7 +27,7 @@ namespace AZ
         {
             if (auto* timeSystem = AZ::Interface<ITime>::Get())
             {
-                timeSystem->SetSimulationTickDeltaOverride(static_cast<AZ::TimeMs>(value));
+                timeSystem->SetSimulationTickDeltaOverride(static_cast<AZ::TimeUs>(value));
             }
         }
 
@@ -194,9 +194,17 @@ namespace AZ
         }
     }
 
-    TimeMs TimeSystem::GetSimulationTickDeltaOverride() const
+    void TimeSystem::SetSimulationTickDeltaOverride(TimeUs timeUs)
     {
-        return AZ::TimeUsToMs(m_simulationTickDeltaOverride);
+        if (timeUs != m_simulationTickDeltaOverride)
+        {
+            m_simulationTickDeltaOverride = timeUs;
+        }
+    }
+
+    TimeUs TimeSystem::GetSimulationTickDeltaOverride() const
+    {
+        return m_simulationTickDeltaOverride;
     }
 
     void TimeSystem::SetSimulationTickScale(float scale)

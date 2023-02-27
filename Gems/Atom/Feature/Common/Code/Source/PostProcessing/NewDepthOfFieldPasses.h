@@ -50,7 +50,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::NewDepthOfFieldParentPass, "{71F4998B-447C-4BAC-A5BE-2D2850FABB57}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(NewDepthOfFieldParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NewDepthOfFieldParentPass, SystemAllocator);
             virtual ~NewDepthOfFieldParentPass() = default;
 
             static RPI::Ptr<NewDepthOfFieldParentPass> Create(const RPI::PassDescriptor& descriptor);
@@ -74,7 +74,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::NewDepthOfFieldTileReducePass, "{2E072695-0847-43A6-9BE4-D6D85CFFBA41}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(NewDepthOfFieldTileReducePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NewDepthOfFieldTileReducePass, SystemAllocator);
             virtual ~NewDepthOfFieldTileReducePass() = default;
 
             static RPI::Ptr<NewDepthOfFieldTileReducePass> Create(const RPI::PassDescriptor& descriptor);
@@ -98,7 +98,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::NewDepthOfFieldFilterPass, "{F8A98E53-1A50-4178-A6EB-2BD0148C038B}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(NewDepthOfFieldFilterPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NewDepthOfFieldFilterPass, SystemAllocator);
             virtual ~NewDepthOfFieldFilterPass() = default;
 
             static RPI::Ptr<NewDepthOfFieldFilterPass> Create(const RPI::PassDescriptor& descriptor);

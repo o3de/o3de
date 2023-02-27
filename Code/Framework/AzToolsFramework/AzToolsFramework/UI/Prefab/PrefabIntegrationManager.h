@@ -51,7 +51,7 @@ namespace AzToolsFramework
             , private ActionManagerRegistrationNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator);
 
             PrefabIntegrationManager();
             ~PrefabIntegrationManager();

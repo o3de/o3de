@@ -16,7 +16,7 @@ namespace AWSCore
     {
     public:
         AZ_RTTI(AWSCoreResourceMappingToolModule, "{9D16F400-009C-47FF-A186-E48BEB73D94D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSCoreResourceMappingToolModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSCoreResourceMappingToolModule, AZ::SystemAllocator);
 
         AWSCoreResourceMappingToolModule()
         {

@@ -186,7 +186,7 @@ namespace AZ
         : public Internal::PoolAllocatorHelper<PoolSchema>
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator);
 
         using Base = Internal::PoolAllocatorHelper<PoolSchema>;
 
@@ -206,7 +206,7 @@ namespace AZ
         : public ThreadPoolBase<ThreadPoolAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator);
 
         using Base = ThreadPoolBase<ThreadPoolAllocator>;
 

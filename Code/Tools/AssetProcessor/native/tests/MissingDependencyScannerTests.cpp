@@ -90,7 +90,7 @@ namespace AssetProcessor
             SourceDatabaseEntry sourceEntry;
             sourceEntry.m_sourceName = sourceName;
             sourceEntry.m_scanFolderPK = scanFolderPK;
-            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
 
             EXPECT_FALSE(sourceEntry.m_sourceGuid.IsNull());
 
@@ -204,7 +204,7 @@ namespace AssetProcessor
         SourceDatabaseEntry sourceEntry;
         sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
         sourceEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
-        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
         ASSERT_TRUE(m_data->m_dbConn->SetSource(sourceEntry));
 
         JobDatabaseEntry jobEntry;

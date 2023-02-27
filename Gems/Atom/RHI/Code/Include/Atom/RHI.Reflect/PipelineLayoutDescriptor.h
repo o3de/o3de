@@ -82,7 +82,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{F2901A0F-9700-49E9-A266-55DCF1E39CF9}");
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();

@@ -52,7 +52,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ShaderResourceGroupLayout, "{1F92C651-9B83-4379-AB5C-5201F1B2C278}");
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupLayout, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupLayout, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             static Ptr<ShaderResourceGroupLayout> Create();

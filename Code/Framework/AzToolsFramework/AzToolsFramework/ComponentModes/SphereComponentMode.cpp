@@ -31,7 +31,7 @@ namespace AzToolsFramework
         sphereViewportEdit->InstallSetSphereRadius(AZStd::move(setSphereRadius));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(SphereComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SphereComponentMode, AZ::SystemAllocator)
 
         void SphereComponentMode::Reflect(AZ::ReflectContext* context)
     {

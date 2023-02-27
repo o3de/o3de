@@ -34,7 +34,7 @@ namespace PhysX
     {
     public:
         AZ_RTTI(PhysX::Module, "{160C59B1-FA68-4CDC-8562-D1204AB78FC1}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator)
 
         Module()
             : AZ::Module()

@@ -58,7 +58,7 @@ AZ_CVAR(float, ed_iconFarDist, 40.f, nullptr, AZ::ConsoleFunctorFlags::Null, "Di
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorHelpers, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorHelpers, AZ::SystemAllocator)
 
     static const int IconSize = 36; // icon display size (in pixels)
 

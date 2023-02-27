@@ -82,7 +82,7 @@ namespace ScriptCanvasEditor
 
         public:
 
-            AZ_CLASS_ALLOCATOR(CommandListDataModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandListDataModel, AZ::SystemAllocator);
 
             enum ColumnIndex
             {
@@ -177,7 +177,7 @@ namespace ScriptCanvasEditor
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CommandListDataProxyModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandListDataProxyModel, AZ::SystemAllocator);
 
             CommandListDataProxyModel(CommandListDataModel* commandListData, QObject* parent = nullptr);
 

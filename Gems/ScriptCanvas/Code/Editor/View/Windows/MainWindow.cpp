@@ -1701,6 +1701,15 @@ namespace ScriptCanvasEditor
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
+                    if (isValidFileName)
+                    {
+                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
+                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
+                        {
+                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
+                            return false;
+                        }
+                    }
                 }
                 else
                 {

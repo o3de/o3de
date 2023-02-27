@@ -55,7 +55,6 @@ namespace Achievements
             {
                 ec->Class<AchievementDetails>("AchievementDetails", "Struct to hold platform agnostic achievement details for query results")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -100,7 +99,6 @@ namespace Achievements
             {
                 ec->Class<AchievementsSystemComponent>("Achievements", "Platform agnostic interface for retrieving achievement details and unlocking achievements")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }

@@ -29,7 +29,7 @@ namespace EMotionFX
     {
         namespace Group
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ActorGroup, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ActorGroup, AZ::SystemAllocator)
 
             ActorGroup::ActorGroup()
                 : m_id(AZ::Uuid::CreateRandom())

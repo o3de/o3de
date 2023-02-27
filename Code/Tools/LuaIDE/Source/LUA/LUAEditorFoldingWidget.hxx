@@ -24,7 +24,7 @@ namespace LUAEditor
         static const int c_borderSize{3};
 
     public:
-        AZ_CLASS_ALLOCATOR(FoldingWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FoldingWidget, AZ::SystemAllocator);
 
         FoldingWidget(QWidget *pParent = nullptr);
         virtual ~FoldingWidget();

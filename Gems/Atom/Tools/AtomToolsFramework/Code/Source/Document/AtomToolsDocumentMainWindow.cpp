@@ -365,7 +365,9 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
                   "Auto Save Interval",
                   "How often (in milliseconds) auto save occurs",
-                  aznumeric_cast<AZ::s64>(250)) });
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
         inspector->AddGroup(
             m_documentSystemSettingsGroup->m_name,

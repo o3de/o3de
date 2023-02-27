@@ -15,7 +15,7 @@
 
 namespace Multiplayer
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator)
 
     MultiplayerEditorModule::MultiplayerEditorModule()
         : MultiplayerModule()

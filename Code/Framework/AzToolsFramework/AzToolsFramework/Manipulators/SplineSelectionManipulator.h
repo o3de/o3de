@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(SplineSelectionManipulator, "{3E6B2206-E910-48C9-BDB6-F45B539C00F4}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(SplineSelectionManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SplineSelectionManipulator, AZ::SystemAllocator);
 
         SplineSelectionManipulator(const SplineSelectionManipulator&) = delete;
         SplineSelectionManipulator& operator=(const SplineSelectionManipulator&) = delete;

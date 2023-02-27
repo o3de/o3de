@@ -27,9 +27,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSet, MotionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSet::MotionEntry, MotionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionSetCallback, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSet, MotionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSet::MotionEntry, MotionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionSetCallback, MotionAllocator)
 
 
     MotionSetCallback::MotionSetCallback()

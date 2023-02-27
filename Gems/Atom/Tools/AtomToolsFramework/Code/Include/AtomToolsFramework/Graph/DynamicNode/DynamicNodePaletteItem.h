@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(CreateDynamicNodeMimeEvent, "{9FF18F29-50B9-46A2-B661-9FD81BF9BD2F}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateDynamicNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateDynamicNodeMimeEvent, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         CreateDynamicNodeMimeEvent() = default;
@@ -37,7 +37,7 @@ namespace AtomToolsFramework
     class DynamicNodePaletteItem : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicNodePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNodePaletteItem, AZ::SystemAllocator);
 
         //! Constructor
         //! @param toolId Unique ID of the client system editor (ex: AZ_CRC_CE("MaterialCanvas"))

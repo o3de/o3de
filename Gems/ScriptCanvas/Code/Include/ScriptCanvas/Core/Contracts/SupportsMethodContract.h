@@ -18,7 +18,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(SupportsMethodContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SupportsMethodContract, AZ::SystemAllocator);
         AZ_RTTI(SupportsMethodContract, "{9C7BD7CB-D11C-4683-8691-F2593D1C294A}", Contract);
 
         SupportsMethodContract() = default;

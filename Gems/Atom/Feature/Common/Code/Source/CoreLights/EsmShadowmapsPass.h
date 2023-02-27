@@ -42,7 +42,7 @@ namespace AZ
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(EsmShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EsmShadowmapsPass, SystemAllocator);
             AZ_RTTI(EsmShadowmapsPass, "453E9AF0-C38F-4EBC-9871-8471C3D5369A", RPI::ParentPass);
 
             struct FilterParameter

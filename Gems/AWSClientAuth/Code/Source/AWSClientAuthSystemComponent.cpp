@@ -39,7 +39,6 @@ namespace AWSClientAuth
             {
                 ec->Class<AWSClientAuthSystemComponent>("AWSClientAuth", "Provides Client Authentication and Authorization implementations")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
             AWSClientAuth::LWAProviderSetting::Reflect(*serialize);

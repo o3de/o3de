@@ -256,7 +256,7 @@ namespace AZ
      * create a component.
      */
     #define AZ_COMPONENT_BASE(_ComponentClass, ...)                                                                                     \
-    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator, 0)                                                                         \
+    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator)                                                                            \
     template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
     template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
@@ -523,7 +523,7 @@ namespace AZ
          * Specifies that this class should use the AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator);
 
         /**
          * Calls the static function AZ::ComponentDescriptor::Reflect if the user provided it.

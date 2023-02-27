@@ -19,7 +19,7 @@ namespace AZ
             : public RPI::RenderPassData
         {
             AZ_RTTI(RayTracingPassData, "{26C2E2FD-D30A-4142-82A3-0167BC94B3EE}", RPI::RenderPassData);
-            AZ_CLASS_ALLOCATOR(RayTracingPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPassData, SystemAllocator);
 
             RayTracingPassData() = default;
             virtual ~RayTracingPassData() = default;

@@ -26,7 +26,7 @@ namespace AWSCore
         using AwsApiClientJobType = AwsApiClientJob<ClientType>;
 
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(AwsApiClientJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiClientJob, AZ::SystemAllocator);
 
         using IConfig = IAwsApiClientJobConfig<ClientType>;
         using Config = AwsApiClientJobConfig<ClientType>;

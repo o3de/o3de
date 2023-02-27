@@ -19,7 +19,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMirrorPoseNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMirrorPoseNode, AnimGraphAllocator)
 
     BlendTreeMirrorPoseNode::BlendTreeMirrorPoseNode()
         : AnimGraphNode()

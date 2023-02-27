@@ -25,7 +25,7 @@ class CAnimSceneNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimSceneNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimSceneNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimSceneNode, "{659BB221-38D3-43C0-BEE4-7EAB49C8CB33}", CAnimNode);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ private:
 
     std::vector<SSoundInfo> m_SoundInfo;
 
-    AZ::TimeMs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeMs;
+    AZ::TimeUs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeUs;
     float m_timeScaleBackup = 1.0f;
 };
 

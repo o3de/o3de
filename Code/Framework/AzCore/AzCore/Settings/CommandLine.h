@@ -31,7 +31,7 @@ namespace AZ
     class CommandLine
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommandLine, AZ::SystemAllocator);
 
         using ParamContainer = AZStd::vector<AZStd::string>;
 

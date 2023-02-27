@@ -13,7 +13,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxEditorModule, AZ::SystemAllocator)
 
     WhiteBoxEditorModule::WhiteBoxEditorModule()
         : WhiteBoxModule()

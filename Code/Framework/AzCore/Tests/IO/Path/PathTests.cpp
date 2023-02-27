@@ -88,7 +88,7 @@ namespace UnitTest
         static_assert(IsAbsolute());
     }
 
-    // PathView::isRelative test
+    // PathView::IsRelative test
     TEST_F(PathFixture, IsRelative_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -139,6 +139,24 @@ namespace UnitTest
         static_assert(fullPathPosix.Filename() == AZ::IO::PathView("separator.txt", AZ::IO::PosixPathSeparator));
         static_assert(fullPathPosix.Stem() == AZ::IO::PathView("separator", AZ::IO::PosixPathSeparator));
         static_assert(fullPathPosix.Extension() == AZ::IO::PathView(".txt", AZ::IO::PosixPathSeparator));
+    }
+
+    TEST_F(PathFixture, AsUri_Succeeds)
+    {
+        constexpr AZ::IO::PathView fullPathWindows("C:/win path/with\\posix/separator.txt", AZ::IO::WindowsPathSeparator);
+        constexpr AZ::IO::PathView networkPathWindows(R"(\\server\share\path/with\separator.txt)", AZ::IO::WindowsPathSeparator);
+        AZ::IO::FixedMaxPath uriEncodedPath = fullPathWindows.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///C:/win%20path/with/posix/separator.txt"), uriEncodedPath);
+
+        uriEncodedPath = networkPathWindows.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file://server/share/path/with/separator.txt"), uriEncodedPath);
+
+        constexpr AZ::IO::PathView fullPathPosix("/home/posix path/with/separator.txt", AZ::IO::PosixPathSeparator);
+        uriEncodedPath = fullPathPosix.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///home/posix%20path/with/separator.txt"), uriEncodedPath);
+        constexpr AZ::IO::PathView otherPathPosix(R"(\\server\share\path/with\separator.txt)", AZ::IO::PosixPathSeparator);
+        uriEncodedPath = otherPathPosix.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///server/share/path/with/separator.txt"), uriEncodedPath);
     }
 
     class PathParamFixture
