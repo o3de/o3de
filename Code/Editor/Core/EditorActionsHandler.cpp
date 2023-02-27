@@ -2091,13 +2091,13 @@ bool EditorActionsHandler::IsRecentFileActionActive(int index)
 
 bool EditorActionsHandler::IsRecentFileEntryValid(const QString& entry, const QString& gameFolderPath)
 {
-    QFileInfo info(entry);
-    if (!info.exists())
+    if (entry.isEmpty())
     {
         return false;
     }
 
-    if (entry.isEmpty())
+    QFileInfo info(entry);
+    if (!info.exists())
     {
         return false;
     }
