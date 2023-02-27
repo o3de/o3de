@@ -37,6 +37,7 @@
 #include <Atom/Feature/DisplayMapper/OutputTransformPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
+#include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <ColorGrading/LutGenerationPass.h>
@@ -75,6 +76,8 @@
 #include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 #include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
+#include <SplashScreen/SplashScreenFeatureProcessor.h>
+#include <SplashScreen/SplashScreenPass.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
@@ -134,6 +137,8 @@ namespace AZ
             RayTracingPassData::Reflect(context);
             TaaPassData::Reflect(context);
             RenderDebugFeatureProcessor::Reflect(context);
+            SplashScreenFeatureProcessor::Reflect(context);
+            SplashScreenSettings::Reflect(context);
 
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);
@@ -197,6 +202,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SMAAFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<RayTracingFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<OcclusionCullingPlaneFeatureProcessor, OcclusionCullingPlaneFeatureProcessorInterface>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SplashScreenFeatureProcessor>();
 
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
@@ -286,6 +292,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("RayTracingAccelerationStructurePass"), &Render::RayTracingAccelerationStructurePass::Create);
             passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
+            // Add splash screen pass
+            passSystem->AddPassCreator(Name("SplashScreenPass"), &Render::SplashScreenPass::Create);
+
             // setup handler for load pass template mappings
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
             RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
@@ -313,6 +322,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SplashScreenFeatureProcessor>();
         }
 
         void CommonSystemComponent::LoadPassTemplateMappings()
