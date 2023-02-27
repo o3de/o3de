@@ -498,8 +498,7 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::RefreshThumbnailview()
     {
-        updateGeometries();
-        update();
+        scheduleDelayedItemsLayout();
     }
 
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
@@ -801,30 +800,31 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-        // For now we only have a context menu in search mode for the "show in folder" option
-        if (!m_showSearchResultsMode)
-        {
-            return;
-        }
 
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
 
         if (idx.isValid())
         {
-            m_contextMenu = new QMenu(this);
-            auto action = m_contextMenu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            m_contextMenu->exec(event->globalPos());
-            delete m_contextMenu;
-            m_contextMenu = nullptr;
+            if (m_showSearchResultsMode)
+            {
+                QMenu* menu = new QMenu;
+                auto action = menu->addAction("Show In Folder");
+                connect(
+                    action,
+                    &QAction::triggered,
+                    this,
+                    [this, idx]()
+                    {
+                        emit showInFolderTriggered(idx);
+                    });
+                menu->exec(event->globalPos());
+                delete menu;
+            }
+            else
+            {
+                emit contextMenu(idx);
+            }
         }
     }
 

@@ -8,23 +8,29 @@
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
-
+#include <QTimer>
 #endif
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        static constexpr const char* const ThumbnailViewMainViewName = "AssetBrowserThumbnailView_main";
+
         AssetBrowserThumbnailView::AssetBrowserThumbnailView(QWidget* parent)
             : QWidget(parent)
             , m_thumbnailViewWidget(new AzQtComponents::AssetFolderThumbnailView(parent))
@@ -71,6 +77,73 @@ namespace AzToolsFramework
                     emit showInFolderTriggered(indexData);
                 });
 
+            connect(
+                m_thumbnailViewWidget,
+                &AzQtComponents::AssetFolderThumbnailView::contextMenu,
+                this,
+                [this](const QModelIndex& index)
+                {
+                    QMenu menu(this);
+                    const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    AZStd::vector<const AssetBrowserEntry*> entries { entry };
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                    if (!menu.isEmpty())
+                    {
+                        menu.exec(QCursor::pos());
+                    }
+                });
+
+              if (AzToolsFramework::IsNewActionManagerEnabled())
+              {
+                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                  {
+                      // Assign this widget to the Editor Asset Browser Action Context.
+                      hotKeyManagerInterface->AssignWidgetToActionContext(
+                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                  }
+              }
+
+              QAction* deleteAction = new QAction("Delete Action", this);
+              deleteAction->setShortcut(QKeySequence::Delete);
+              deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+              connect(
+                  deleteAction,
+                  &QAction::triggered,
+                  this,
+                  [this]()
+                  {
+                      DeleteEntries();
+                  });
+              addAction(deleteAction);
+
+              QAction* renameAction = new QAction("Rename Action", this);
+              renameAction->setShortcut(Qt::Key_F2);
+              renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+              connect(
+                  renameAction,
+                  &QAction::triggered,
+                  this,
+                  [this]()
+                  {
+                      RenameEntry();
+                  });
+              addAction(renameAction);
+
+              QAction* duplicateAction = new QAction("Duplicate Action", this);
+              duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+              duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+              connect(
+                  duplicateAction,
+                  &QAction::triggered,
+                  this,
+                  [this]()
+                  {
+                      DuplicateEntries();
+                  });
+              addAction(duplicateAction);
+
             // Track the root index on the proxy model as well so it can provide info such as whether an entry is first level or not
             connect(
                 m_thumbnailViewWidget,
@@ -83,11 +156,119 @@ namespace AzToolsFramework
             setLayout(layout);
         }
 
-        AssetBrowserThumbnailView::~AssetBrowserThumbnailView() = default;
+        AssetBrowserThumbnailView::~AssetBrowserThumbnailView()
+        {
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+                  {
+                      hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+                  }
+            }
+        }
 
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const
         {
             return m_thumbnailViewWidget;
+        }
+
+         void AssetBrowserThumbnailView::SetName(const QString& name)
+        {
+            m_name = name;
+        }
+
+        QString& AssetBrowserThumbnailView::GetName()
+        {
+            return m_name;
+        }
+
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
+        {
+            SetName(ThumbnailViewMainViewName);
+        }
+
+        bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()
+        {
+            return GetName() == ThumbnailViewMainViewName;
+        }
+
+        void AssetBrowserThumbnailView::DeleteEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot delete product files.
+
+            AssetBrowserViewUtils::DeleteEntries(entries, this);
+            if (!entries.empty())
+            {
+                UpdateThumbnailview();
+            }
+        }
+
+        void AssetBrowserThumbnailView::MoveEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot move product files.
+
+            AssetBrowserViewUtils::MoveEntries(entries, this);
+            if (!entries.empty())
+            {
+                UpdateThumbnailview();
+            }
+        }
+
+        void AssetBrowserThumbnailView::DuplicateEntries()
+        {
+            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            AssetBrowserViewUtils::DuplicateEntries(entries);
+            if (!entries.empty())
+            {
+                UpdateThumbnailview();
+            }
+        }
+
+        void AssetBrowserThumbnailView::RenameEntry()
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            AssetBrowserViewUtils::RenameEntry(entries, this);
+        }
+
+        void AssetBrowserThumbnailView::AfterRename(QString newVal)
+        {
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+
+            AssetBrowserViewUtils::AfterRename(newVal, entries, this);
+        }
+
+        AZStd::vector<const AssetBrowserEntry*> AssetBrowserThumbnailView::GetSelectedAssets(bool includeProducts) const
+        {
+            QModelIndexList sourceIndexes;
+            if (m_thumbnailViewWidget->selectionModel())
+            {
+                for (const auto& index : m_thumbnailViewWidget->selectionModel()->selectedIndexes())
+                {
+                    if (index.column() == 0)
+                    {
+                        sourceIndexes.push_back(m_thumbnailViewProxyModel->mapToSource((index)));
+                    }
+                }
+            }
+
+            AZStd::vector<const AssetBrowserEntry*> entries;
+            AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+            if (!includeProducts)
+            {
+                entries.erase(
+                    AZStd::remove_if(
+                        entries.begin(),
+                        entries.end(),
+                        [&](const AssetBrowserEntry* entry) -> bool
+                        {
+                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                        }),
+                    entries.end());
+            }
+
+            return entries;
         }
 
         void AssetBrowserThumbnailView::SetAssetTreeView(AssetBrowserTreeView* treeView)

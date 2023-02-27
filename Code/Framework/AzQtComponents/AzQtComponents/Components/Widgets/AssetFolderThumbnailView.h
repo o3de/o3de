@@ -116,6 +116,7 @@ namespace AzQtComponents
     signals:
         void rootIndexChanged(const QModelIndex& idx);
         void showInFolderTriggered(const QModelIndex& idx);
+        void contextMenu(const QModelIndex& idx);
 
     protected:
         friend class Style;
@@ -163,6 +164,5 @@ namespace AzQtComponents
         Config m_config;
         bool m_showSearchResultsMode = false;
         bool m_hideProductAssets = true;
-        QMenu* m_contextMenu = nullptr;
     };
 }
