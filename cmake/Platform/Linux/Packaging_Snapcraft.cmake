@@ -12,7 +12,7 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
 )
 
 # make sure that all executables have the correct permissions
-execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod +x {} "\;"
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod \+x {} +
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
@@ -24,7 +24,7 @@ execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f 
 execute_process (COMMAND apt install patchelf
 )
 
-execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} "\;"
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} +
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
