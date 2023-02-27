@@ -108,7 +108,6 @@ namespace AZ
                     "User Settings", "Provides userdata storage for all system components")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &UserSettingsComponent::m_providerId, "ProviderId", "The settings group this provider with handle.")
                         ->EnumAttribute(UserSettings::CT_LOCAL, "Local")
                         ->EnumAttribute(UserSettings::CT_GLOBAL, "Global")

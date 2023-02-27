@@ -430,10 +430,18 @@ namespace AZ
         return this;
     }
 
-    //=========================================================================
-    // BehaviorContext
-    //=========================================================================
-    BehaviorContext::BehaviorContext() = default;
+    // Reflect the following types by default
+    // AZStd::string
+    // AZStd::string_view
+    // AZStd::fixed_string<1024>
+    // This skips over the need to reflect the type via OnDemandReflection system
+    // saving build time across the board
+    BehaviorContext::BehaviorContext()
+    {
+        CommonOnDemandReflections::ReflectCommonString(this);
+        CommonOnDemandReflections::ReflectCommonFixedString(this);
+        CommonOnDemandReflections::ReflectCommonStringView(this);
+    }
 
     //=========================================================================
     // ~BehaviorContext

@@ -225,8 +225,12 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                    });
         });
 
         return picker;
@@ -269,9 +273,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                        handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                    });
         });
 
         return picker;
@@ -314,9 +322,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                {
+                    handler->RequestWrite(picker);
+                    handler->OnEditingFinished(picker);
+                    handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                });
         });
 
         return picker;

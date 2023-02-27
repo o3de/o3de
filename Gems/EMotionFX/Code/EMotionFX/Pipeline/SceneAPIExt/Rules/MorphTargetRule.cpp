@@ -86,7 +86,8 @@ namespace EMotionFX
                     AZStd::set<AZ::Crc32> types;
                     auto keyValueIterator = it.GetBaseIterator();
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
-                    EBUS_EVENT(AZ::SceneAPI::Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);
+                    AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
+                        &AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, index);
                     if (types.find(AZ::SceneAPI::Events::GraphMetaInfo::GetIgnoreVirtualType()) == types.end())
                     {
                         selection.AddSelectedNode(it->first.GetPath());
@@ -169,7 +170,8 @@ namespace EMotionFX
                     AZStd::set<AZ::Crc32> types;
                     auto keyValueIterator = it.GetBaseIterator();
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
-                    EBUS_EVENT(AZ::SceneAPI::Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);
+                    AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
+                        &AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, index);
                     if (types.find(AZ::SceneAPI::Events::GraphMetaInfo::GetIgnoreVirtualType()) == types.end())
                     {
                         morphTargetAnimations++;

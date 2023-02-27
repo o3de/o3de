@@ -129,7 +129,7 @@ namespace PhysX
 
             group->SetSceneGraph(&scene.GetGraph());
 
-            EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+            AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
             scene.GetManifest().AddEntry(AZStd::move(group));
 
             return AZ::SceneAPI::Events::ProcessingResult::Success;

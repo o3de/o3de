@@ -79,6 +79,9 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_EntityOutliner_EntityOrdering(EditorSingleTest):
         from .EditorScripts import EntityOutliner_EntityOrdering as test_module
 
+        # https://github.com/o3de/o3de/issues/10799
+        extra_cmdline_args = ["-rhi=Null", "-NullRenderer"]
+
     class test_Menus_EditMenuOptions_Work(EditorBatchedTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
 
