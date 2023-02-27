@@ -163,6 +163,7 @@ set(FILES
     Memory/HphaAllocator.cpp
     Memory/HphaAllocatorErrorDetection.cpp
     Memory/LeakDetection.cpp
+    Memory/PoolAllocatorTests.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
     Metrics/EventLoggerReflectUtilsTests.cpp

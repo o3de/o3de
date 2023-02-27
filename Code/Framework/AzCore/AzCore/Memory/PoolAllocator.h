@@ -32,6 +32,8 @@ namespace AZ
         ~PoolSchema();
 
         bool Create();
+        bool Create(
+            PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -69,6 +71,7 @@ namespace AZ
         ~ThreadPoolSchema();
 
         bool Create();
+        bool Create(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -148,6 +151,12 @@ namespace AZ
             PoolAllocatorHelper()
             {
                 static_cast<Schema*>(this->m_schema)->Create();
+                this->PostCreate();
+            }
+
+            PoolAllocatorHelper(size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize)
+            {
+                static_cast<Schema*>(this->m_schema)->Create(pageSize, minAllocationSize, maxAllocationSize);
                 this->PostCreate();
             }
 
