@@ -27,6 +27,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -41,10 +42,6 @@
 
 #include <QMenu>
 #include <QAction>
-
-#ifdef _WIN32
-#include <tlhelp32.h>
-#endif
 
 namespace Multiplayer
 {
@@ -579,32 +576,17 @@ namespace Multiplayer
                     remoteAddress.c_str()) return;
             }
 
-            #ifdef _WIN32
-                // Find and terminate all ServerLauncher processes before launching a new one for the editor
-                PROCESSENTRY32 entry;
-                entry.dwSize = sizeof(PROCESSENTRY32);
-                HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-                if (Process32First(snapshot, &entry))
-                {
-                    // Build a wide-char string of the server executable name. IE: L"MultiplayerSample.ServerLauncher.exe"
-                    const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-                    const AZStd::wstring serverExeFilenameUnicode(serverExeFilename.begin(), serverExeFilename.end());
-
-                    while (Process32Next(snapshot, &entry))
-                    {
-                        if (!_wcsicmp(entry.szExeFile, serverExeFilenameUnicode.c_str()))
-                        {
-                            // Terminate the previously existing server launcher
-                            AZ_Warning("MultiplayerEditorSystemComponent", false, "Editor found and terminated an existing server launcher before launching its own. Set editorsv_launch = false to disable automatic launching and connect to hand-opened server instead.")
-
-                            HANDLE serverLauncherProcess = OpenProcess(PROCESS_TERMINATE, false, entry.th32ProcessID);
-                            TerminateProcess(serverLauncherProcess, 1);
-                            CloseHandle(serverLauncherProcess);
-                        }
-                    }
-                }
-                CloseHandle(snapshot);
-            #endif
+            // Terminate any existing server launchers before launching a new one.
+            // It's possible for a rogue server launcher to exist if the Editor shutdown unexpectedly while running a previous multiplayer session.
+            // It's also common to open ServerLaunchers by hand for testing, but then to forget to shut it down before starting the editor play mode.
+            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            if (AzFramework::ProcessUtils::TerminateProcess(serverExeFilename))
+            {
+                AZ_Warning("MultiplayerEditorSystemComponent", false,
+                    "Terminating an existing server launcher (%s) before opening a new server. "
+                    "If your intention was to connect to this server instead of automatically launching one from the Editor set editorsv_launch = false.",
+                    serverExeFilename.c_str());
+            }
 
             AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...");
 
