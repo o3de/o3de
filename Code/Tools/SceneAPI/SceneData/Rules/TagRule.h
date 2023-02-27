@@ -18,17 +18,13 @@ namespace AZ
 
     namespace SceneAPI
     {
-        namespace Containers
-        {
-            class Scene;
-        }
         namespace SceneData
         {
             class TagRule
                 : public DataTypes::ITagRule
             {
             public:
-                AZ_RTTI(CommentRule, "{AF678C05-ED7A-4622-9007-A5CC6044C42D}", DataTypes::ITagRule);
+                AZ_RTTI(TagRule, "{AF678C05-ED7A-4622-9007-A5CC6044C42D}", DataTypes::ITagRule);
                 AZ_CLASS_ALLOCATOR_DECL
 
                 ~TagRule() override = default;

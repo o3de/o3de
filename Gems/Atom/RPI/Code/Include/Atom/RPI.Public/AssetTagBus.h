@@ -25,14 +25,20 @@ namespace AZ
         public:
             using MutexType = AZStd::recursive_mutex;
 
+            //! Returns the quality associated with an asset tag
             virtual AssetQuality GetQuality(const AZ::Name& assetTag) const = 0;
 
+            //! Returns all registered tags
             virtual AZStd::vector<AZ::Name> GetTags() const = 0;
 
-            virtual void RegisterAsset(AZ::Name imageTag, const Data::AssetId& assetId) = 0;
+            //! Registers an asset as using a tag, which allows the tag system to reload the asset if required when the tag is updated
+            //! Can be called multiple times with the same assetId
+            virtual void RegisterAsset(AZ::Name assetTag, const Data::AssetId& assetId) = 0;
 
+            //! Registers a tag to the system, must be called before using that tag with other functions
             virtual void RegisterTag(AZ::Name tag) = 0;
 
+            //! Updates the quality associated with a tag, which may trigger asset reload for registered assets
             virtual void SetQuality(const AZ::Name& assetTag, AssetQuality quality) = 0;
         };
 

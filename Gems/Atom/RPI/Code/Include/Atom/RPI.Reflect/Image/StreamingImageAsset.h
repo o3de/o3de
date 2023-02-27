@@ -109,6 +109,8 @@ namespace AZ
             //! Returns the image tags
             const AZStd::vector<AZ::Name>& GetTags() const;
 
+            //! Removes up to `mipChainLevel` mipchains, reducing quality (used by the image tag system).
+            //! The last mipchain won't be removed
             void RemoveFrontMipchains(size_t mipChainLevel);
 
         private:

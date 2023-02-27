@@ -26,10 +26,9 @@
 
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
+#include <Atom/RPI.Public/AssetQuality.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/DrawList.h>
-
-#include <Atom/RPI.Public/AssetQuality.h>
 
 #include <AtomCore/std/parallel/concurrency_checker.h>
 

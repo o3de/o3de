@@ -93,7 +93,11 @@ namespace AZ
         {
             if (ValidateIsReady())
             {
-                m_asset->m_tags.emplace(AZStd::move(tag));
+                // add tag if it doesn't already exist
+                if (auto it = AZStd::find(m_asset->m_tags.begin(), m_asset->m_tags.end(), tag); it == m_asset->m_tags.end())
+                {
+                    m_asset->m_tags.push_back(AZStd::move(tag));
+                }
             }
         }
 

@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -77,7 +78,7 @@ namespace AZ
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
             //! Returns the model tags
-            const AZStd::unordered_set<AZ::Name>& GetTags() const;
+            const AZStd::vector<AZ::Name>& GetTags() const;
 
         private:
             // AssetData overrides...
@@ -122,7 +123,7 @@ namespace AZ
 
             AZStd::size_t CalculateTriangleCount() const;
 
-            AZStd::unordered_set<AZ::Name> m_tags;
+            AZStd::vector<AZ::Name> m_tags;
         };
 
         class ModelAssetHandler

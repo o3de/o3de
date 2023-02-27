@@ -48,7 +48,7 @@ namespace AZ
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
                     assetData->m_tailMipChain.Init();
 
-                    if (const AZStd::vector<AZ::Name>& imageTags = assetData->GetTags(); !imageTags.empty())
+                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
                     {
                         AssetQuality highestMiplevel = AssetQualityLowest;
                         for (const AZ::Name& tag : imageTags)

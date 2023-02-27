@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/AssetQuality.h>
 
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -37,8 +38,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
-
-#include <Atom/RPI.Public/AssetQuality.h>
 
 namespace AZ
 {

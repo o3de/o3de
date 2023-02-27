@@ -38,6 +38,7 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
+            // ImageTagBus::Handler overrides
             AssetQuality GetQuality(const AZ::Name& imageTag) const override;
 
             AZStd::vector<AZ::Name> GetTags() const override;

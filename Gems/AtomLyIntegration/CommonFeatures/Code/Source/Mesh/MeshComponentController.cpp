@@ -343,7 +343,7 @@ namespace AZ
             m_configuration.m_qualityLevel = RPI::AssetQualityHighest;
             if (m_configuration.m_modelAsset)
             {
-                if (const AZStd::unordered_set<AZ::Name>& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
+                if (const auto& modelTags = m_configuration.m_modelAsset->GetTags(); !modelTags.empty())
                 {
                     m_configuration.m_qualityLevel = RPI::AssetQualityLowest;
                     for (const AZ::Name& tag : modelTags)
@@ -355,7 +355,9 @@ namespace AZ
                 }
 
                 if (m_configuration.m_qualityLevel >= m_configuration.m_modelAsset->GetLodCount())
+                {
                     m_configuration.m_qualityLevel = aznumeric_caster(m_configuration.m_modelAsset->GetLodCount() - 1);
+                }
             }
 
             if (m_meshFeatureProcessor)
