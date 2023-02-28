@@ -95,8 +95,9 @@ namespace PhysX
             }
         }
 
-        //! Function to add the ground for tests where the ground is needed
-        void AddGround(const AZ::Transform& floorTransform = DefaultFloorTransform)
+        //! Add the ground tot he scene via the test basis for tests where the ground is needed.
+        //! This function will only ever add one ground element to the scene.
+        void SetupGround(const AZ::Transform& floorTransform = DefaultFloorTransform)
         {
             m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
         }
@@ -116,24 +117,26 @@ namespace PhysX
         float m_timeStep = AzPhysics::SystemConfiguration::DefaultFixedTimestep;
     };
 
+    //! Test that verifies that the Gravity Set & Get methods operate as expected.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySets)
     {
         const float expectedGravityMultiplier = 2.5f;
-
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
+
+        // Set the gravity via the accessor
         basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier);
         EXPECT_THAT(basis.m_gameplayController->GetGravityMultiplier(), testing::FloatEq(expectedGravityMultiplier));
     }
 
+    //! Test that verifies that the Gravity Set & Get methods operate as expected while the scene ticks
+    //! and interacts with the entity & its components.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GravitySetsWhileMoving)
     {
         const float expectedGravityMultiplier = 2.5f;
-
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component
+        // Let scene run for a few moments so the entity can be manipulated by gravity from the gameplay component.
         int duration = 10;
-
         for (int i = 0; i < duration; i++)
         {
             basis.m_gameplayController->SetGravityMultiplier(expectedGravityMultiplier + i);
@@ -143,67 +146,85 @@ namespace PhysX
         }
     }
 
+    //! Test that verifies that the Falling Velocity Set & Get methods function as expected.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySets)
     {
+        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
+        // Get the original velocity so we can determine that set actually changes things.
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
+        // Set the falling velocity to the expected + original velocity to verify that the velociy will change.
         basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
-        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
 
+        // Get the end velocity and validate that it is the expected value.
+        auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
         EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ(), 0.001f));
     }
 
+    //! Test the verifies that the Falling Velocity sets and uses the set value to interact with the tick incrementing.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_FallingVelocitySetsWhileMoving)
     {
+        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
+        // Get the original velocity so we can determine that set actually changes things.
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
+        // Run the scene for a while and validate that the set velocity is working
         for (int i = 0; i < 10; i++)
         {
+            // Calculate and set velocity based upon the original velocity, expected velocity, and loop count modifier
             auto setVelocity = originalVelocity + expectedVelocity + AZ::Vector3(0.0f, 0.0f, float(i));
             basis.m_gameplayController->SetFallingVelocity(setVelocity);
+
             basis.Update();
 
+            // Get the endVelocity & current gravity to perform calculations on.
             auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
             const auto gravity = basis.m_testScene->GetGravity();
 
-            // The expected velocity should be decelerated by gt when g is gravity acceleration and t is the length of time
+            // The end velocity should be decelerated by gt when g is gravity acceleration and t is the length of time
             const float expectedDeceleration = gravity.GetZ() * basis.m_timeStep;
 
+            // Verify that the end velocity is the set velocity minus the deceleration for a single time step
             EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(setVelocity.GetZ() + expectedDeceleration, 0.001f));
         }
     }
 
+    //! Test that verifies that the Ground Detec Set & Get methods function as expected.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
         const float expectedHeight = 10.0f;
+        const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
 
+        // Set the ground detection to the excpected heigh + the original height to ensure that it changes.
         basis.m_gameplayController->SetGroundDetectionBoxHeight(expectedHeight + originalHeight);
-        auto endHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
 
+        // Get the end height and verify that it is set to the expected value set.
+        auto endHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
         EXPECT_THAT(endHeight, testing::FloatNear(expectedHeight + originalHeight, 0.001f));
     }
 
+    //! Test to determine if the ground will detect while moving.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GroundDetectedWhileMoving)
     {
+        // Create a test scene with a Ground Element.
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
-        basis.AddGround();
+        basis.SetupGround();
 
+        // Set the gameplayController entity above the ground.
         const AZ::Transform startingPosition = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 0.1f));
+        basis.m_controller->SetTransform(startingPosition);
 
-        basis.m_controller->SetTransform(startingPosition);        
+        // Get the starting state of the gameplay controller to verify that it was not detecting at the start.
         const auto startingDetected = basis.m_gameplayController->IsOnGround();
 
+        // Let the scene run until the Gameplay Controller detects the ground.
         bool groundDetected = false;
-
         for (int i = 0; i < 10; i++)
         {
             basis.Update();
@@ -215,11 +236,14 @@ namespace PhysX
             }
         }
 
+        // Validate that the ground was detected while the scene was running and validate against the starting state
+        // that was expected to be false to prevent false detections passing the test.
         EXPECT_THAT(groundDetected, testing::AllOf(testing::IsTrue(), testing::Ne(startingDetected)));
     }
 
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
 
+    //! Test that verifies that an entity with a gameplay controller is falling under gravity as expected.
     TEST_P(PhysXDefaultWorldTestWithParamFixture, CharacterGameplayController_EntityFallsUnderGravity)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);     
