@@ -5,27 +5,26 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PhysX_Collider_Component_CRUD():
+def PhysX_Primitive_Collider_Component_CRUD():
     """
     Summary:
-    Creating a PhysX Collider and setting values to all properties that are supported via the Editor Context Bus.
+    Creating a PhysX Primitive Collider and setting values to all properties that are supported via the Editor Context Bus.
 
     Expected Behavior:
     Validates component Created, Read, Update, Delete (CRUD) and performs expected operations.
 
-    PhysX Collider Components:
-     - PhysX Collider
+    PhysX Primitive Collider Components:
+     - PhysX Primitive Collider
 
     Test Steps:
      1) Add an Entity to manipulate
-     2) Add a PhysX Collider Component to Entity
+     2) Add a PhysX Primitive Collider Component to Entity
      3) Set Box Shape and Child Properties
      4) Set Capsule Shape and Child Properties
      5) Set Cylinder Shape and Child Properties
      6) Set Sphere Shape and Child Properties
      7) Set General Properties
-     8) Set PhyicsAsset Shape and Child Properties
-     9) Delete Component
+     8) Delete Component
 
     :return: None
     """
@@ -33,14 +32,14 @@ def PhysX_Collider_Component_CRUD():
     # Helper file Imports
     import os
 
-    from editor_python_test_tools.editor_component.editor_physx_collider import EditorPhysxCollider as PhysxCollider
+    from editor_python_test_tools.editor_component.editor_physx_primitive_collider import EditorPhysxPrimitiveCollider as PhysxPrimitiveCollider
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Tracer, TestHelper
     from editor_python_test_tools.editor_component.editor_component_validation import (
         validate_property_switch_toggle, validate_vector3_property, validate_float_property,
-        validate_integer_property, validate_asset_property)
+        validate_integer_property)
     from editor_python_test_tools.editor_component.test_values.common_test_values import (
-        VECTOR3_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS)
+        VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_HEIGHT_TESTS)
     from editor_python_test_tools.editor_component.test_values.phsyx_collider_test_values import (
         COLLIDER_RADIUS_TESTS, CYLINDER_HEIGHT_TESTS, CONTACT_OFFSET_TESTS,
         REST_OFFSET_TESTS, CYLINDER_SUBDIVISION_TESTS)
@@ -48,9 +47,8 @@ def PhysX_Collider_Component_CRUD():
     from consts.general import Strings
 
     # 0) Pre-conditions
-    physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
     physx_material = os.path.join("physx", "glass.physxmaterial")
-    component_name = "PhysX Collider"
+    component_name = "PhysX Primitive Collider"
 
     TestHelper.init_idle()
     TestHelper.open_level("", "Base")
@@ -59,8 +57,8 @@ def PhysX_Collider_Component_CRUD():
     # 1 ) Add an Entity to manipulate
         phsyx_collider_entity = EditorEntity.create_editor_entity("TestEntity")
 
-    # 2) Add a PhysX Collider Component to Entity
-        physx_collider = PhysxCollider(phsyx_collider_entity)
+    # 2) Add a PhysX Primitive Collider Component to Entity
+        physx_collider = PhysxPrimitiveCollider(phsyx_collider_entity)
 
     # 3) Set Box Shape and Child Properties
         physx_collider.set_box_shape()
@@ -94,27 +92,20 @@ def PhysX_Collider_Component_CRUD():
         validate_vector3_property("Offset", physx_collider.get_offset, physx_collider.set_offset, component_name, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
 
         # o3de/o3de#13223 - Add Quaternion Property Validator to validate Rotation property
-        # o3de/o3de#12634 - Get PhysX Collider Tag to set properly.
+        # o3de/o3de#12634 - Get PhysX Primitive Collider Tag to set properly.
 
         validate_float_property("Contact Offset", physx_collider.get_contact_offset, physx_collider.set_contact_offset, component_name, CONTACT_OFFSET_TESTS)
         validate_float_property("Rest Offset", physx_collider.get_rest_offset, physx_collider.set_rest_offset, component_name, REST_OFFSET_TESTS)
 
         validate_property_switch_toggle("Draw Collider", physx_collider.get_draw_collider, physx_collider.set_draw_collider, component_name)
 
-        # o3de/o3de#12503 PhysX Collider Component's Physic Material field(s) return unintuitive property tree paths.
+        # o3de/o3de#12503 PhysX Primitive Collider Component's Physic Material field(s) return unintuitive property tree paths.
 
-    # 8) Set PhyicsAsset Shape and Child Properties
-        physx_collider.set_physicsasset_shape()
-
-        validate_asset_property("PhysX Mesh Asset", physx_collider.get_physx_mesh, physx_collider.set_physx_mesh, component_name, physx_mesh)
-        validate_vector3_property("PhysX Mesh Asset Scale", physx_collider.get_physx_mesh_asset_scale, physx_collider.set_physx_mesh_asset_scale, component_name, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
-        validate_property_switch_toggle("Use Physics Materials From Asset", physx_collider.get_use_physics_materials_from_asset, physx_collider.set_use_physics_materials_from_asset, component_name)
-
-    # 9) Delete Component
+    # 8) Delete Component
         physx_collider.component.remove()
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PhysX_Collider_Component_CRUD)
+    Report.start_test(PhysX_Primitive_Collider_Component_CRUD)
 
