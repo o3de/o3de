@@ -12,9 +12,9 @@ namespace AzToolsFramework::Prefab
 {
     PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
         : m_overridden(false)
+        , m_iconButton(new QToolButton())
+        , m_textLabel(new AzQtComponents::ElidingLabel())
     {
-        m_iconButton = new QToolButton();
-        m_textLabel = new AzQtComponents::ElidingLabel();
         m_textLabel->setProperty(OverriddenPropertyName, false);
         m_textLabel->setStyleSheet(QString("[%1=\"true\"] { font-weight: bold }").arg(OverriddenPropertyName));
 
