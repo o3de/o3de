@@ -16,7 +16,12 @@ execute_process (COMMAND get_python.sh
 )
 
 # make sure that all executables have the correct permissions
-execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod -v +x {} \;
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod +x {} \;
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
+)
+
+# setup the rpath
+execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec patchelf --force-rpath --set-rpath \$ORIGIN:/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu {} \;
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
