@@ -18,7 +18,6 @@ import stat
 import shutil
 
 # Import LyTestTools
-import ly_test_tools
 from ly_test_tools.o3de import asset_processor as asset_processor_utils
 
 # Import fixtures
@@ -310,7 +309,6 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         missing_assets, _ = asset_processor.compare_assets_with_cache()
         assert not missing_assets, 'Following assets are missing in cache: {}'.format(missing_assets)
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
@@ -352,6 +350,9 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         shutil.copyfile(data_for_rename, file_to_rename)
 
+        # Clear the cache folder
+        asset_processor.delete_temp_cache()
+
         # Reprocessing files and making sure there are no failed jobs
         result, output = run_ap_debug_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
@@ -364,7 +365,6 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert num_processed_assets >= expected_asset_count, f'Wrong number of successfully processed assets found in output: '\
                                           f'expected at least {expected_asset_count}, but only {num_processed_assets} were processed'
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_InvalidServerAddress_Warning_Logs(self, asset_processor):
@@ -380,10 +380,13 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         asset_processor.create_temp_asset_root()
         # Launching AP and making sure that the warning exists
-        result, output = asset_processor.batch_process(capture_output=True, extra_params=["/serverAddress=InvalidAddress", "/server"])
+        result, output = asset_processor.batch_process(capture_output=True, extra_params=[
+            '--regset="/O3DE/AssetProcessor/Settings/Server/cacheServerAddress=InvalidAddress"',
+            '--regset="/O3DE/AssetProcessor/Settings/Server/assetCacheServerMode=Server"'
+        ])
         assert result, "AssetProcessorBatch failed when it should have had a warning and no failure"
 
-        assert asset_processor_utils.has_invalid_server_address(output), 'Invalid server address warning not present.'
+        assert asset_processor_utils.has_invalid_server_address(output, "InvalidAddress"), 'Invalid server address warning not present.'
 
 
     @pytest.mark.test_case_id("C1571774")
@@ -650,7 +653,6 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
-    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):

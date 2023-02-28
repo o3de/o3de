@@ -1089,5 +1089,5 @@ def get_num_failed_processed_assets(output):
     return -1 if not result else int(result)
 
 
-def has_invalid_server_address(output):
-    return parse_output_value(output, 'Invalid server address') is not None
+def has_invalid_server_address(output, serverAddress):
+    return parse_output_value(output, f'Server address ({serverAddress}) is invalid! Reverting back to ()') is not None
