@@ -13,6 +13,6 @@ namespace AzFramework::ProcessUtils
     // Finds and terminates any existing processes matching a particular name
     // @param processFilename The filename of the process to terminate. Example: "MyGame.ServerLauncher.exe"
     // @return bool Returns true if the process was found and terminated; otherwise false.
-    bool TerminateProcess(const AZStd::string& processFilename);
+    bool TerminateProcess(AZStd::string_view processFilename);
 
 } // namespace AzFramework::ProcessUtils
