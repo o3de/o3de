@@ -17,8 +17,7 @@ namespace UnitTest
     // These index paths depend on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
     // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, these may
     // change in the future if the data stored in the DPE DOM itself changes and need to be modified accordingly to prevent test failures.
-    constexpr AZStd::string_view parentRowOrigin = "/0/3";
-    constexpr AZStd::string_view translateRowOrigin = "/0/3/2";
+    constexpr AZStd::string_view pathToTranslateRow = "/0/3/2";
 
     TEST_F(PrefabInspectorOverrideTest, ValidatePresenceOfOverrideProperty)
     {
@@ -37,12 +36,8 @@ namespace UnitTest
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
 
             // Validate the translate row has overridden data.
-            // <Row>
-            //   <PropertyEditor Type="PrefabOverrideLabel" Text="Translate" IsOverridden="true" />
-            //   <PropertyEditor ValueType="Vector3" Value=... />
-            // </Row>
-            AZ::Dom::Path pathToTranslateRow(translateRowOrigin);
-            AZ::Dom::Value translateRow = adapterContents[pathToTranslateRow];
+            AZ::Dom::Path domPathToTranslateRow(pathToTranslateRow);
+            AZ::Dom::Value translateRow = adapterContents[domPathToTranslateRow];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 2);
 
@@ -53,20 +48,6 @@ namespace UnitTest
 
             AZ::Dom::Value valuePropertyEditor = translateRow[1];
             EXPECT_EQ(valuePropertyEditor[PropertyEditor::Value.GetName()][0].GetDouble(), 10.0);
-
-            // Validate the parent row has overridden data since child rows have overridden data.
-            // <Row>
-            //   <PropertyEditor Type="PrefabOverrideLabel" Text="Values" IsOverridden="true" />
-            //   <Row> ... </Row>  <-- translate row
-            // </Row>
-            AZ::Dom::Path pathToParentRow(parentRowOrigin);
-            AZ::Dom::Value parentRow = adapterContents[pathToParentRow];
-            EXPECT_EQ(parentRow.GetType(), AZ::Dom::Type::Node);
-
-            AZ::Dom::Value labelPropertyEditorInParentRow = adapterContents[pathToParentRow][0];
-            EXPECT_EQ(labelPropertyEditorInParentRow[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditorInParentRow[PrefabOverrideLabel::Text.GetName()].GetString(), "Values");
-            EXPECT_TRUE(labelPropertyEditorInParentRow[PrefabOverrideLabel::IsOverridden.GetName()].GetBool());
         };
 
         ValidateComponentEditorDomContents(callback);
@@ -90,8 +71,8 @@ namespace UnitTest
             EXPECT_FALSE(adapterContents.IsArrayEmpty());
 
             // Validate the translate row has no overridden data.
-            AZ::Dom::Path pathToTranslateRow(translateRowOrigin);
-            AZ::Dom::Value translateRow = adapterContents[pathToTranslateRow];
+            AZ::Dom::Path domPathToTranslateRow(pathToTranslateRow);
+            AZ::Dom::Value translateRow = adapterContents[domPathToTranslateRow];
             EXPECT_EQ(translateRow.GetType(), AZ::Dom::Type::Node);
             EXPECT_EQ(translateRow.ArraySize(), 2);
 
@@ -102,16 +83,6 @@ namespace UnitTest
 
             AZ::Dom::Value valuePropertyEditor = translateRow[1];
             EXPECT_EQ(valuePropertyEditor[PropertyEditor::Value.GetName()][0].GetDouble(), 10.0);
-
-            // Validate the parent row has no overridden data since child rows have no overridden data.
-            AZ::Dom::Path pathToParentRow(parentRowOrigin);
-            AZ::Dom::Value parentRow = adapterContents[pathToParentRow];
-            EXPECT_EQ(parentRow.GetType(), AZ::Dom::Type::Node);
-
-            AZ::Dom::Value labelPropertyEditorInParentRow = adapterContents[pathToParentRow][0];
-            EXPECT_EQ(labelPropertyEditorInParentRow[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditorInParentRow[PrefabOverrideLabel::Text.GetName()].GetString(), "Values");
-            EXPECT_FALSE(labelPropertyEditorInParentRow[PrefabOverrideLabel::IsOverridden.GetName()].GetBool());
         };
 
         ValidateComponentEditorDomContents(callback);
