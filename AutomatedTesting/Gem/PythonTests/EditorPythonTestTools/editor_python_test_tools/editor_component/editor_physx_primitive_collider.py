@@ -147,7 +147,7 @@ class EditorPhysxPrimitiveCollider:
 
     def get_rotation(self) -> math.Quaternion:
         """
-        Property Type, Default Visibility - ('Vector3', 'Visible')
+        Property Type, Default Visibility - ('Quaternion', 'Visible')
 
         Used to get the PhysX Primitive Collider's Rotation Property value.
         """
