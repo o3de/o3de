@@ -99,6 +99,7 @@ namespace AZ
             void AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&) override;
 
             // AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler...
+            void OnActionRegistrationHook() override;
             void OnMenuBindingHook() override;
 
             void PurgePreviews();
