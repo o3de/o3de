@@ -131,7 +131,7 @@ namespace PhysX
                 return false;
             }
 
-            // Once the component is removed from the entity we are responsable for its destruction.
+            // Once the component is removed from the entity we are responsible for its destruction.
             delete editorColliderComponent;
 
             entityModified = true;
