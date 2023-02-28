@@ -313,6 +313,10 @@ set(FILES
     Source/SkyAtmosphere/SkyAtmosphereParentPass.h
     Source/SkyAtmosphere/SkyAtmospherePass.cpp
     Source/SkyAtmosphere/SkyAtmospherePass.h
+    Source/SplashScreen/SplashScreenFeatureProcessor.cpp
+    Source/SplashScreen/SplashScreenFeatureProcessor.h
+    Source/SplashScreen/SplashScreenPass.cpp
+    Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )
