@@ -57,11 +57,6 @@ namespace AzToolsFramework
         AzQtComponents::CardHeader::setIconClickable(clickable);
     }
 
-    bool ComponentEditorHeader::IsComponentIconClickable() const
-    {
-        return AzQtComponents::CardHeader::isIconClickable();
-    }
-
     void ComponentEditorHeader::SetExpandable(bool expandable)
     {
         AzQtComponents::CardHeader::setExpandable(expandable);

@@ -50,7 +50,6 @@ namespace AzToolsFramework
 
         // Set whether the component icon is clickable
         void SetComponentIconClickable(bool clickable);
-        bool IsComponentIconClickable() const;
 
         /// Set whether the header has an expand/contract button.
         /// Note that the header itself will not change size or hide, it
