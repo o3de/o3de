@@ -3962,16 +3962,6 @@ namespace AssetProcessor
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
                         jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
                     job.m_hasMissingSourceDependency = true;
-                    #if 0
-                    job.m_warnings.push_back(AZStd::string::format(
-                        "No job was found to match the job dependency criteria declared by file %s. (File: %s, JobKey: %s, Platform: %s)\n"
-                        "This may be due to a mismatched job key.\n"
-                        "Job ordering will not be guaranteed and could result in errors or unexpected output.",
-                        job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
-                        jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
-                        jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
-                        jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str()));
-                    #endif
                 }
             }
 
