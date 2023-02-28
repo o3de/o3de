@@ -28,7 +28,6 @@ namespace GameState
             {
                 ec->Class<GameStateSystemComponent>("GameState", "A generic framework for managing game states and the transitions between them.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

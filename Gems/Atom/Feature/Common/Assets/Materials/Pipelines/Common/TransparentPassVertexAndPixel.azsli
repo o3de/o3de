@@ -45,6 +45,8 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
     float3 diffuse = lightingData.diffuseLighting.rgb;
     diffuse *= surface.alpha;
     
+    diffuse += lightingData.emissiveLighting;
+
     // m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
     float3 specular = lightingData.specularLighting.rgb;
     specular = lerp(specular, specular * surface.alpha, surface.opacityAffectsSpecularFactor);

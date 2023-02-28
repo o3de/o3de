@@ -12,6 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -280,7 +281,7 @@ namespace AzToolsFramework
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
                             toPath = item->GetFullPath() + "/" + filename.c_str() + "/*";
                         }
-                        MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                     }
                     return true;
                 }

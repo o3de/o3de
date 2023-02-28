@@ -45,6 +45,14 @@ static constexpr int s_narrowModeThreshold = 700;
 
 using namespace AzToolsFramework::AssetBrowser;
 
+namespace
+{
+    inline QString FromStdString(AZStd::string_view string)
+    {
+        return QString::fromUtf8(string.data(), static_cast<int>(string.size()));
+    }
+}
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -157,7 +165,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-        m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+        m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
 
         connect(
             m_ui->m_thumbnailView,
@@ -277,7 +285,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         if (folderEntry)
         {
             // No need to select the folder ourselves, callback from Breadcrumbs will take care of that
-            m_ui->m_pathBreadCrumbs->pushPath(QString::fromUtf8(folderEntry->GetVisiblePath().c_str()));
+            m_ui->m_pathBreadCrumbs->pushFullPath(FromStdString(folderEntry->GetFullPath()), FromStdString(folderEntry->GetVisiblePath()));
         }
     });
 
@@ -345,7 +353,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
-    m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
+    m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -432,8 +440,9 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
     return listener;
 }
 
-bool AzAssetBrowserWindow::TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView) {
-    return m_ui->m_assetBrowserTreeViewWidget == treeView;
+bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
+{
+    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
@@ -624,15 +633,17 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
     using namespace AzToolsFramework::AssetBrowser;
 
     QString entryPath;
+    QString fullPath;
     if (selectedEntry)
     {
         const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
-            entryPath = QString::fromUtf8(folderEntry->GetVisiblePath().c_str());
+            entryPath = FromStdString(folderEntry->GetVisiblePath());
+            fullPath = FromStdString(folderEntry->GetFullPath());
         }
     }
-    m_ui->m_pathBreadCrumbs->pushPath(entryPath);
+    m_ui->m_pathBreadCrumbs->pushFullPath(fullPath, entryPath);
 }
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)

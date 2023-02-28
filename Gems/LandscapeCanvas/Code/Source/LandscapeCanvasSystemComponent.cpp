@@ -267,7 +267,6 @@ namespace LandscapeCanvas
             {
                 ec->Class<LandscapeCanvasSystemComponent>("LandscapeCanvas", "Graph canvas representation of Dynamic Vegetation")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

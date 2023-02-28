@@ -58,7 +58,6 @@ namespace Gestures
             {
                 ec->Class<GesturesSystemComponent>("Gestures", "Interprets raw mouse/touch input in order to detect common gestures like drag, hold, swipe, etc.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &GesturesSystemComponent::m_doublePressConfig,
                         "Double Press", "The config used to create the default double press gesture input channel.")

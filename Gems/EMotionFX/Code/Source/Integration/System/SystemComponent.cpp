@@ -383,7 +383,6 @@ namespace EMotionFX
                 {
                     ec->Class<SystemComponent>("EMotion FX Animation", "Enables the EMotion FX animation solution")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_numThreads, "Number of threads", "Number of threads used internally by EMotion FX")
                     ;
@@ -748,7 +747,7 @@ namespace EMotionFX
             if (rootPath)
             {
                 AZStd::string mediaRootPath = rootPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mediaRootPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, mediaRootPath);
                 EMotionFX::GetEMotionFX().SetMediaRootFolder(mediaRootPath.c_str());
             }
             else
