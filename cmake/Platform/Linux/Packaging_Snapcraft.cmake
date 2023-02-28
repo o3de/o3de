@@ -11,7 +11,7 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
 )
 
-execute_process (COMMAND /bin/sh ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/get_python.sh)
+execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/get_python.sh)
 
 # make sure that all executables have the correct permissions
 execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f -executable -exec chmod +x {} \;
