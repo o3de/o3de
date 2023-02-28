@@ -283,8 +283,15 @@ namespace O3DE::ProjectManager
 
         m_pythonStarted = false;
 
+        QString o3de_python_root = qEnvironmentVariable("O3DE_PY_ROOT_OVERRIDE", "");
+
+        if (o3de_python_root.isEmpty())
+        {
+            o3de_python_root = m_enginePath.c_str();
+        }
+
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
+        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, o3de_python_root.toStdString().c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Error("python", false, "Python home path does not exist: %s", pyBasePath.c_str());

@@ -6,7 +6,12 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-SOURCE="${BASH_SOURCE[0]}"
+if($ENV{O3DE_PY_ROOT_OVERRIDE})
+    SOURCE="$ENV{O3DE_PY_ROOT_OVERRIDE}"
+else
+    SOURCE="${BASH_SOURCE[0]}"
+fi
+
 # While $SOURCE is a symlink, resolve it
 while [[ -h "$SOURCE" ]]; do
     DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"

@@ -24,6 +24,11 @@ if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev2-linux)
     ly_set(LY_PYTHON_PACKAGE_HASH eda1fdc9129fb70df2d63bd21d0876c83c4f7021864f22c85850f4a8ff8cf1bf)
+    if(DEFINED $ENV{O3DE_PY_ROOT_OVERRIDE})
+    ly_set(O3DE_PY_INSTALL_LOCATION $ENV{O3DE_PY_ROOT_OVERRIDE})
+    else()
+    ly_set(O3DE_PY_INSTALL_LOCATION ${LY_ROOT_FOLDER})
+    endif()
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
     ly_set(LY_PYTHON_VERSION 3.10.5)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
@@ -213,14 +218,14 @@ endfunction()
 # first time.
 
 set(temp_LY_PACKAGE_VALIDATE_PACKAGE ${LY_PACKAGE_VALIDATE_PACKAGE})
-if (EXISTS  ${LY_ROOT_FOLDER}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
+if (EXISTS  ${O3DE_PY_INSTALL_LOCATION}/python/runtime/${LY_PYTHON_PACKAGE_NAME})
     # we will not validate the hash of every file, just that it is present
     # this is not just an optimization, see comment above.
     set(LY_PACKAGE_VALIDATE_PACKAGE FALSE)
 endif()
 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
-ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${LY_ROOT_FOLDER}/python/runtime)
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${O3DE_PY_INSTALL_LOCATION}/python/runtime)
 ly_download_associated_package(Python)
 
 ly_set(LY_PACKAGE_VALIDATE_CONTENTS ${temp_LY_PACKAGE_VALIDATE_CONTENTS})
