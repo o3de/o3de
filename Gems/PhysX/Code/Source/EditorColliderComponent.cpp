@@ -173,7 +173,7 @@ namespace PhysX
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorColliderComponent, EditorComponentBase>()
-                ->Version(1 + (1<<PX_PHYSICS_VERSION_MAJOR)) // Use PhysX version to trigger prefabs recompilation when switching between PhysX 4 and 5.
+                ->Version(2 + (1<<PX_PHYSICS_VERSION_MAJOR)) // Use PhysX version to trigger prefabs recompilation when switching between PhysX 4 and 5.
                 ->Field("ColliderConfiguration", &EditorColliderComponent::m_configuration)
                 ->Field("ShapeConfiguration", &EditorColliderComponent::m_proxyShapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorColliderComponent::m_colliderDebugDraw)
@@ -348,6 +348,11 @@ namespace PhysX
         if (m_proxyShapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset)
         {
             m_proxyShapeConfiguration.m_shapeType = Physics::ShapeType::Box;
+            // Primitive colliders can only have one material slot.
+            if (m_configuration.m_materialSlots.GetSlotsCount() > 1)
+            {
+                m_configuration.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
+            }
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                 &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                 AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
