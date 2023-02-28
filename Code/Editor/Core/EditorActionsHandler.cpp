@@ -1053,6 +1053,30 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 
+    // -- Tools Actions
+
+    // Lua Editor
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.tools.luaEditor";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Lua Editor";
+        actionProperties.m_category = "Tools";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::LaunchLuaEditor, nullptr);
+            }
+        );
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
     // --- View Actions
 
     // Component Entity Layout
@@ -1785,6 +1809,15 @@ void EditorActionsHandler::OnMenuBindingHook()
         }
     }
 
+    // Tools
+    {
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ToolsMenuIdentifier,
+            "o3de.action.tools.luaEditor",
+            m_actionManagerInterface->GenerateActionAlphabeticalSortKey("o3de.action.tools.luaEditor")
+        );
+    }
+
     // View
     {
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::LayoutsMenuIdentifier, 100);
@@ -2398,11 +2431,6 @@ void EditorActionsHandler::RefreshToolActions()
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsMenuItems;
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsToolBarItems;
 
-    // Place all actions in the same sort index in the menu and toolbar.
-    // This will display them in order of addition (alphabetical) and ensure no external tool
-    // can add items in-between tools without passing through the QtViewPanes system.
-    const int sortKey = 0;
-
     // Get the tools list and refresh the menu.
     const QtViewPanes& viewpanes = m_qtViewPaneManager->GetRegisteredPanes();
     for (const auto& viewpane : viewpanes)
@@ -2444,6 +2472,11 @@ void EditorActionsHandler::RefreshToolActions()
         }
 
         m_toolActionIdentifiers.push_back(toolActionIdentifier);
+
+        // Set the sortKey as the ASCII of the first character in the toolName.
+        // This will allow Tool actions to always be sorted alphabetically even if they are
+        // plugged in by Gems, as long as they use this same logic.
+        int sortKey = m_actionManagerInterface->GenerateActionAlphabeticalSortKey(toolActionIdentifier);
 
         if (viewpane.m_options.showInMenu)
         {
