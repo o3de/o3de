@@ -51,9 +51,9 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
-#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
@@ -924,6 +924,8 @@ namespace AzToolsFramework
                 if (auto prefabOverridePublicInterface =
                         AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
                 {
+                    // Note: Multiple selection is not currently supported for overrides.
+                    // Revert overrides on the single component that's displaying override state.
                     prefabOverridePublicInterface->RevertComponentOverrides(
                         AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
                 }

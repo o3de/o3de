@@ -84,6 +84,10 @@
                         {
                             patchType = PatchType::Add;
                         }
+                        else if (opPath == "replace")
+                        {
+                            patchType = PatchType::Edit;
+                        }
                     }
                 }
                 else if (link->get().AreOverridesPresent(path))
