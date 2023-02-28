@@ -18,8 +18,6 @@
 
 #include "XMLBinaryReader.h"
 
-#include <md5.h>
-
 //////////////////////////////////////////////////////////////////////////
 #ifdef CRY_COLLECT_XML_NODE_STATS
 SXmlNodeStats* g_pCXmlNode_Stats = 0;

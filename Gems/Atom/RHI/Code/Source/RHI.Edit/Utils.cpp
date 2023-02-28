@@ -25,8 +25,6 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <md5.h>
-
 namespace AZ
 {
     namespace RHI
