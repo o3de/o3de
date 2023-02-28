@@ -31,7 +31,7 @@ namespace SurfaceData
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceDataColliderConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceDataColliderConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceDataColliderConfig, "{D435DDB9-C513-4A2E-B0AC-9933E9360857}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         SurfaceTagVector m_providerTags;

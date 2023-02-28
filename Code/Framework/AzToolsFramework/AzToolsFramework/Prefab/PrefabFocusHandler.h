@@ -43,7 +43,7 @@ namespace AzToolsFramework::Prefab
         , private EditorEntityInfoNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator);
 
         void RegisterPrefabFocusInterface();
         void UnregisterPrefabFocusInterface();

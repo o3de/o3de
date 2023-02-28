@@ -20,7 +20,7 @@ namespace AZ
         struct EditorMeshStatsForLod final
         {
             AZ_RTTI(EditorMeshStatsForLod, "{626E3AEB-0F7A-4777-BAF1-2BBA8C1857ED}");
-            AZ_CLASS_ALLOCATOR(EditorMeshStatsForLod, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorMeshStatsForLod, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -32,7 +32,7 @@ namespace AZ
         struct EditorMeshStats final
         {
             AZ_RTTI(EditorMeshStats, "{68D0D3EF-17BB-46EA-B98F-51355402CCD6}");
-            AZ_CLASS_ALLOCATOR(EditorMeshStats, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorMeshStats, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
             AZStd::string GetLodLabel(int index) const;

@@ -11,6 +11,8 @@
 #include <AzToolsFramework/ComponentModes/ShapeTranslationOffsetViewportEdit.h>
 #include <AzToolsFramework/Manipulators/CapsuleManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/RadiusManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace AzToolsFramework
 {
@@ -28,13 +30,6 @@ namespace AzToolsFramework
             RadiusManipulatorRequestBus::EventResult(radius, entityComponentIdPair, &RadiusManipulatorRequestBus::Events::GetRadius);
             return radius;
         };
-        auto getRotationOffset = [entityComponentIdPair]()
-        {
-            AZ::Quaternion rotationOffset = AZ::Quaternion::CreateIdentity();
-            CapsuleManipulatorRequestBus::EventResult(
-                rotationOffset, entityComponentIdPair, &CapsuleManipulatorRequestBus::Events::GetRotationOffset);
-            return rotationOffset;
-        };
         auto setCapsuleHeight = [entityComponentIdPair](float height)
         {
             CapsuleManipulatorRequestBus::Event(entityComponentIdPair, &CapsuleManipulatorRequestBus::Events::SetHeight, height);
@@ -45,12 +40,11 @@ namespace AzToolsFramework
         };
         capsuleViewportEdit->InstallGetCapsuleHeight(AZStd::move(getCapsuleHeight));
         capsuleViewportEdit->InstallGetCapsuleRadius(AZStd::move(getCapsuleRadius));
-        capsuleViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
         capsuleViewportEdit->InstallSetCapsuleHeight(AZStd::move(setCapsuleHeight));
         capsuleViewportEdit->InstallSetCapsuleRadius(AZStd::move(setCapsuleRadius));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CapsuleComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CapsuleComponentMode, AZ::SystemAllocator)
 
     void CapsuleComponentMode::Reflect(AZ::ReflectContext* context)
     {
@@ -82,6 +76,20 @@ namespace AzToolsFramework
                 m_entityComponentIdPair);
         }
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
+    }
+
+    CapsuleComponentMode::~CapsuleComponentMode()
+    {
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+        ShapeComponentModeRequestBus::Handler::BusDisconnect();
+    }
+
+    void CapsuleComponentMode::DisplayEntityViewport(
+        const AzFramework::ViewportInfo& viewportInfo, [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->OnCameraStateChanged(cameraState);
     }
 
     AZStd::string CapsuleComponentMode::GetComponentModeName() const

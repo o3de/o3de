@@ -13,6 +13,7 @@
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/RenderPass.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -97,7 +98,7 @@ namespace AZ
             const VkPipelineCache pipelineCache = descriptor.m_pipelineLibrary ? descriptor.m_pipelineLibrary->GetNativePipelineCache() : VK_NULL_HANDLE;
 
             const VkResult vkResult = descriptor.m_device->GetContext().CreateGraphicsPipelines(
-                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, nullptr, &GetNativePipelineRef());
+                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, VkSystemAllocator::Get(), &GetNativePipelineRef());
 
             return ConvertResult(vkResult);
         }

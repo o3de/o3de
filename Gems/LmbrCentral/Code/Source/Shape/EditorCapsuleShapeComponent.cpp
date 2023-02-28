@@ -119,7 +119,7 @@ namespace LmbrCentral
             {
                 DrawShape(
                     debugDisplay,
-                    ShapeDrawParams{ m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    ShapeDrawParams{ m_capsuleShape.GetCapsuleConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_capsuleShapeMesh,
                     m_capsuleShape.GetTranslationOffset());
             },
@@ -197,11 +197,6 @@ namespace LmbrCentral
         GenerateVertices();
     }
 
-    AZ::Quaternion EditorCapsuleShapeComponent::GetRotationOffset() const
-    {
-        return AZ::Quaternion::CreateIdentity();
-    }
-
     float EditorCapsuleShapeComponent::GetRadius() const
     {
         return m_capsuleShape.GetCapsuleConfiguration().m_radius;
@@ -227,5 +222,10 @@ namespace LmbrCentral
     AZ::Transform EditorCapsuleShapeComponent::GetManipulatorSpace() const
     {
         return GetWorldTM();
+    }
+
+    AZ::Quaternion EditorCapsuleShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
     }
 } // namespace LmbrCentral

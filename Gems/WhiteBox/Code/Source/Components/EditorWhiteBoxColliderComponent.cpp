@@ -172,13 +172,13 @@ namespace WhiteBox
     static bool ConvertToTriangles(
         const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
     {
-        const size_t triangleCount = Api::MeshFaceCount(whiteBox);
+        const auto triangleCount = Api::MeshFaceCount(whiteBox);
         if (triangleCount == 0)
         {
             return false;
         }
 
-        const size_t vertexCount = Api::MeshHalfedgeCount(whiteBox);
+        const auto vertexCount = Api::MeshHalfedgeCount(whiteBox);
 
         vertices.resize(vertexCount);
         indices.resize(triangleCount * 3);

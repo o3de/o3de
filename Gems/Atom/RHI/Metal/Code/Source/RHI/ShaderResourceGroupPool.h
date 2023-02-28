@@ -20,7 +20,7 @@ namespace AZ
         {
             using Base = RHI::ShaderResourceGroupPool;
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
             static RHI::Ptr<ShaderResourceGroupPool> Create();
             

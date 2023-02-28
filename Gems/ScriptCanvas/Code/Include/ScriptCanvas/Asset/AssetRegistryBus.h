@@ -32,3 +32,5 @@ namespace ScriptCanvas
 
     using AssetRegistryRequestBus = AZ::EBus<AssetRegistryRequests>;
 }
+
+DECLARE_EBUS_EXTERN(ScriptCanvas::AssetRegistryRequests);

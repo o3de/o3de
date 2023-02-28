@@ -23,7 +23,7 @@ namespace TextureAtlasNamespace
     {
     public:
         AZ_RTTI(TextureAtlasModule, "{D3997F41-8117-4E0F-9BFE-937C4AE7E71F}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(TextureAtlasModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureAtlasModule, AZ::SystemAllocator);
 
         TextureAtlasModule()
             : CryHooksModule()

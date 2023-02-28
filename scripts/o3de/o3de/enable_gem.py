@@ -113,17 +113,9 @@ def enable_gem_in_project(gem_name: str = None,
         # do not check compatibility if the project has not been registered with an engine 
         # because most gems depend on engine gems which would not be found 
         if manifest.get_project_engine_path(project_path):
-            enabled_gem_names = cmake.get_enabled_gems(project_enabled_gem_file)
-
-            # it's more efficient to open all gem.json files now instead of 
-            # looking up each by name, which will load many gem.json files multiple times
-            # it takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
-            all_gems_json_data = manifest.get_gems_json_data_by_name(project_path=project_path, include_manifest_gems=True, include_engine_gems=True)
-
             # Note: we don't remove gems that are not active or dependencies
             # because they will be implicitely found and activated via cmake 
-
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_json_data, project_path, all_gems_json_data)
+            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
             if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} has the following dependency compatibility issues and '
                     'requires the --force parameter to activate:\n  '+ 

@@ -150,7 +150,7 @@ namespace AZ::Dom
     {
     public:
         AZ_TYPE_INFO(Value, "{3E20677F-3B8E-4F89-B665-ED41D74F4799}");
-        AZ_CLASS_ALLOCATOR(Value, ValueAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Value, ValueAllocator);
 
         // Determine the short string buffer size based on the size of our largest internal type (string_view)
         // minus the size of the short string size field.

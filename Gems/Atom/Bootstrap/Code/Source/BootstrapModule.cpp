@@ -22,7 +22,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(BootstrapModule, "{ADDE20F4-03E6-4692-A736-E56B87952727}", AZ::Module);
-                AZ_CLASS_ALLOCATOR(BootstrapModule, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(BootstrapModule, AZ::SystemAllocator);
 
                 BootstrapModule()
                     : AZ::Module()

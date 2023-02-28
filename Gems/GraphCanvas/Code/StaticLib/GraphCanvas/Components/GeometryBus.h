@@ -66,7 +66,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(GeometrySaveData, "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}", ComponentSaveData);
-        AZ_CLASS_ALLOCATOR(GeometrySaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeometrySaveData, AZ::SystemAllocator);
 
         GeometrySaveData()
             : m_position(0,0)

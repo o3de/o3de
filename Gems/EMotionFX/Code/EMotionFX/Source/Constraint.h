@@ -23,7 +23,7 @@ namespace EMotionFX
     {
         public:
             AZ_RTTI(Constraint, "{DC5998AD-EE56-4642-AAE7-EA285F0B9B0A}")
-            AZ_CLASS_ALLOCATOR(Constraint, EMotionFX::Integration::EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(Constraint, EMotionFX::Integration::EMotionFXAllocator)
 
             Constraint() {}
             virtual ~Constraint() {}

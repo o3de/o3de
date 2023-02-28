@@ -35,7 +35,7 @@ namespace AZ
 
         public:
             AZ_RTTI(FullscreenTrianglePass, "{58C1EDD7-0459-4128-BB20-9839BA233AED}", RenderPass);
-            AZ_CLASS_ALLOCATOR(FullscreenTrianglePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FullscreenTrianglePass, SystemAllocator);
             virtual ~FullscreenTrianglePass();
 
             //! Creates a FullscreenTrianglePass

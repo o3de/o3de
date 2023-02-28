@@ -73,7 +73,7 @@ namespace AZ
             static_assert(AZStd::is_base_of<AliasedHeap, Heap>::value, "Type must inherit from RHI::AliasedHeap to be used by the RHI::AliasedAttachmentAllocator.");
             using Base = DeviceObject;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedAttachmentAllocator<Heap>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedAttachmentAllocator<Heap>, AZ::SystemAllocator);
 
             struct Descriptor
                 : public Heap::Descriptor

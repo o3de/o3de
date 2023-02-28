@@ -16,10 +16,12 @@
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/RigidBodyComponent.h>
 #include <Editor/InertiaPropertyHandler.h>
+#include <Editor/KinematicDescriptionDialog.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/PropertyTypes.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyBoolComboBoxCtrl.hxx>
 
 #include <LyViewPaneNames.h>
 
@@ -27,7 +29,7 @@ namespace PhysX
 {
     namespace Internal
     {
-        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetCollisionShapes(AZ::Entity* entity)
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> CreateCollisionShapes(AZ::Entity* entity)
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> allShapes;
 
@@ -48,7 +50,8 @@ namespace PhysX
                 if (shapeConfigurationProxy.IsAssetConfig())
                 {
                     AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                    Utils::GetShapesFromAsset(shapeConfigurationProxy.m_physicsAsset.m_configuration,
+                    Utils::CreateShapesFromAsset(
+                        shapeConfigurationProxy.m_physicsAsset.m_configuration,
                         colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
 
                     for (const auto& shape : shapes)
@@ -126,6 +129,21 @@ namespace PhysX
             &AzToolsFramework::EditorRequests::OpenViewPane, LyViewPane::PhysXConfigurationEditor);
     }
 
+    static AzToolsFramework::GenericEditResultOutcome<bool> OnEditButtonClicked(bool comboBoxValue)
+    {
+        QWidget* mainWindow = nullptr;
+        AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
+
+        PhysX::Editor::KinematicDescriptionDialog kinematicDialog(comboBoxValue, mainWindow);
+        
+        int dialogResult = kinematicDialog.exec();
+        if (dialogResult == QDialog::Accepted)
+        {
+            return AZ::Success(kinematicDialog.GetResult());
+        }
+        return AZ::Failure("No result from dialog");
+    }
+
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -175,12 +193,20 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
                         "Gravity enabled", "When active, global gravity affects this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
-                    ->DataElement(Physics::Edit::KinematicSelector, &AzPhysics::RigidBodyConfiguration::m_kinematic,
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &AzPhysics::RigidBodyConfiguration::m_kinematic,
                         "Type", "Determines how the movement/position of the rigid body is controlled.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
+                        ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Dynamic")
+                    ->Attribute(
+                        AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
+                        ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     // Linear axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
@@ -315,6 +341,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         Physics::ColliderComponentEventBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -368,6 +395,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -492,7 +520,7 @@ namespace PhysX
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
+        configuration.m_colliderAndShapeData = Internal::CreateCollisionShapes(GetEntity());
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -662,5 +690,32 @@ namespace PhysX
         }
 
         return AZ::Aabb::CreateNull();
+    }
+
+    bool EditorRigidBodyComponent::SupportsEditorRayIntersect()
+    {
+        return true;
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
+    {
+        return GetWorldBounds();
+    }
+
+    bool EditorRigidBodyComponent::EditorSelectionIntersectRayViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    {
+        AzPhysics::RayCastRequest request;
+        request.m_direction = dir;
+        request.m_distance = distance;
+        request.m_start = src;
+
+        if (auto hit = RayCast(request))
+        {
+            distance = hit.m_distance;
+            return true;
+        }
+
+        return false;
     }
 } // namespace PhysX

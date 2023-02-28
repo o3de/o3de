@@ -19,7 +19,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeTranslation, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeTranslation, AZ::SystemAllocator);
 
     JointsSubComponentModeTranslation::JointsSubComponentModeTranslation()
         : m_manipulator(

@@ -18,11 +18,16 @@ from Atom.atom_utils.atom_constants import (
     AtomToolsDocumentRequestBusEvents, AtomToolsDocumentSystemRequestBusEvents, AtomToolsMainWindowRequestBusEvents,
     EntityPreviewViewportSettingsRequestBusEvents)
 
-MATERIAL_TYPES_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:Atom_Feature_Common@/Assets/Materials/Types"))
-MATERIALCANVAS_GRAPH_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData"))
-TEST_DATA_MATERIALS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:Atom_TestData@/Assets/TestData/Materials"))
-VIEWPORT_LIGHTING_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialEditor@/Assets/MaterialEditor/LightingPresets"))
-VIEWPORT_MODELS_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path("@gemroot:MaterialEditor@/Assets/MaterialEditor/ViewportModels"))
+MATERIAL_TYPES_PATH = pathlib.PurePath(azlmbr.paths.resolve_path(
+    "@gemroot:Atom_Feature_Common@/Assets/Materials/Types"))
+MATERIALCANVAS_GRAPH_PATH = pathlib.PurePath(azlmbr.paths.resolve_path(
+    "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData"))
+TEST_DATA_MATERIALS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path(
+    "@gemroot:Atom_TestData@/Assets/TestData/Materials"))
+VIEWPORT_LIGHTING_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path(
+    "@gemroot:MaterialEditor@/Assets/MaterialEditor/LightingPresets"))
+VIEWPORT_MODELS_PRESETS_PATH = pathlib.PurePath(azlmbr.paths.resolve_path(
+    "@gemroot:MaterialEditor@/Assets/MaterialEditor/ViewportModels"))
 
 
 def is_close(
@@ -264,6 +269,18 @@ def exit() -> None:
     :return: None
     """
     azlmbr.atomtools.general.exit()
+
+
+def disable_material_canvas_file_writes() -> None:
+    """
+    Modifies some registry settings to disable MaterialCanvas graph compilation on open/edit/save.
+    This is because some tests (i.e. main suite) need to avoid file writing/saving during the test run.
+
+    :return: None
+    """
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen", False)
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave", False)
+    azlmbr.atomtools.util.SetSettingsValue_bool("/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit", False)
 
 
 def wait_for_condition(function: (), timeout_in_seconds: float = 1.0) -> bool or TypeError:

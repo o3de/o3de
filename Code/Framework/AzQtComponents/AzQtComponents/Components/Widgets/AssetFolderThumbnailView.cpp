@@ -22,22 +22,61 @@ AZ_POP_DISABLE_WARNING
 
 namespace
 {
+    // Returns the QString that will be displayed under each thumbnail
     QString elidedTextWithExtension(const QFontMetrics& fm, const QString& text, int width)
     {
-        if (fm.horizontalAdvance(text) <= width)
-            return text;
+        auto textWidth = fm.horizontalAdvance(text);
+        const int dot = text.lastIndexOf(QLatin1Char{ '.' });
+        QString extension = "";
+        int extensionWidth = 0;
 
-        const int dot = text.lastIndexOf(QLatin1Char{'.'});
+        // If the file has an extension, move it to the second row
         if (dot != -1)
         {
-            const auto baseName = text.left(dot);
-            const auto extension = text.mid(dot + 1);
-            return fm.elidedText(baseName, Qt::ElideRight, width - fm.horizontalAdvance(extension)) + extension;
+            auto baseName = text.left(dot);
+            extension = text.mid(dot + 1);
+            extensionWidth = fm.horizontalAdvance(extension);
+            if (extensionWidth > width)
+            {
+                extension = fm.elidedText(extension, Qt::ElideRight, width);
+                extensionWidth = fm.horizontalAdvance(extension);
+            }
+            if (baseName.isEmpty())
+            {
+                return text;
+            }
+            if (fm.horizontalAdvance(baseName) <= width)
+            {
+                return baseName + "\n" + extension;
+            }
         }
-        else
+
+        // Return if text fits within one row
+        if (textWidth <= width)
         {
-            return fm.elidedText(text, Qt::ElideRight, width);
+            return text;
         }
+
+        // Text does not fit within one row, calculate the number of characters in each row
+        double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
+        int charactersPerLine = percentOfTextPerLine * text.size() - 1;
+        auto firstLine = text.left(charactersPerLine);
+        auto secondLine = text.mid(charactersPerLine);
+        auto secondLineWidth = fm.horizontalAdvance(secondLine);
+        // Check if text fits within the two rows
+        if (secondLineWidth <= width)
+        {
+            return firstLine + "\n" + secondLine;
+        }
+        // If there is an extension present, elide to show it
+        if (!extension.isEmpty())
+        {
+            auto secondLineBase = secondLine.left(dot);
+            auto elidedBase = fm.elidedText(secondLineBase, Qt::ElideRight, width - extensionWidth); 
+            return firstLine + "\n" + elidedBase + extension;
+        }
+        // Elide left to show the beginning of the text in the first row and the end of the text in the second row
+        return firstLine + "\n" + fm.elidedText(secondLine, Qt::ElideLeft, width);
     }
 }
 
@@ -160,26 +199,24 @@ namespace AzQtComponents
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight};
+            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
         else
         {
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight };
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
 
         painter->restore();
@@ -459,6 +496,12 @@ namespace AzQtComponents
         }
     }
 
+    void AssetFolderThumbnailView::RefreshThumbnailview()
+    {
+        updateGeometries();
+        update();
+    }
+
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);
@@ -699,15 +742,13 @@ namespace AzQtComponents
 
         // check that the preview on one of the top level items was clicked
         // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
+        auto idx = indexAtPos(p);
+        if (idx.isValid())
         {
-            auto idx = indexAtPos(p);
-
-            if (idx.isValid())
-            {
-                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-                emit clicked(idx);
-                return;
-            }
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit clicked(idx);
+            update();
+            return;
         }
 
         // check the collapse button on one of the child frames was clicked
@@ -728,6 +769,14 @@ namespace AzQtComponents
                     return;
                 }
             }
+        }
+
+        // If empty space in the view is clicked, clear the current selection and update the view
+        if (!idx.isValid())
+        {
+            selectionModel()->clear();
+            update();
+            return;
         }
 
         QAbstractItemView::mousePressEvent(event);

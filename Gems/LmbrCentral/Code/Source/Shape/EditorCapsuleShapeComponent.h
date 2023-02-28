@@ -62,7 +62,6 @@ namespace LmbrCentral
         // AzToolsFramework::CapsuleManipulatorRequestBus overrides ...
         float GetHeight() const override;
         void SetHeight(float height) override;
-        AZ::Quaternion GetRotationOffset() const override;
 
         // AzToolsFramework::RadiusManipulatorRequestBus overrides ...
         float GetRadius() const override;
@@ -72,6 +71,7 @@ namespace LmbrCentral
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
         AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
 
         AZ::Crc32 ConfigurationChanged();
         void ClampHeight();

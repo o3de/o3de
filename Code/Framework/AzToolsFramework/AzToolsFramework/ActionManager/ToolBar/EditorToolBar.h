@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
@@ -35,7 +36,7 @@ namespace AzToolsFramework
     class EditorToolBar final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator);
         AZ_RTTI(EditorToolBar, "{A3862087-FEB3-466C-985B-92F9411BC2EF}");
 
         EditorToolBar();
@@ -44,16 +45,16 @@ namespace AzToolsFramework
         static void Initialize(QWidget* defaultParentWidget);
         static void Reflect(AZ::ReflectContext* context);
         
-        // Add Menu Items
+        // Add ToolBar Items
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier);
         void AddWidget(int sortKey, AZStd::string widgetActionIdentifier);
         void AddSeparator(int sortKey);
 
-        // Remove Menu Items
+        // Remove ToolBar Items
         void RemoveAction(AZStd::string actionIdentifier);
         
-        // Returns whether the action queried is contained in this toolbar.
+        // Returns whether the action queried is contained in this toolBar.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
         bool ContainsWidget(const AZStd::string& widgetActionIdentifier) const;
         
@@ -61,14 +62,15 @@ namespace AzToolsFramework
         AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
         AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
 
-        // Returns the pointer to the ToolBar.
-        QToolBar* GetToolBar();
-        const QToolBar* GetToolBar() const;
+        // Returns a copy of the ToolBar.
+        QToolBar* GenerateToolBar();
 
-        // Clears the menu and creates a new one from the EditorMenu information.
-        void RefreshToolBar();
+        // Clears the toolBars and re-creates them from the EditorToolBar information.
+        void RefreshToolBars();
 
     private:
+        void EnumerateToolBars(AZStd::function<bool(QToolBar*)> handler);
+
         enum class ToolBarItemType
         {
             Action = 0,
@@ -79,7 +81,7 @@ namespace AzToolsFramework
 
         struct ToolBarItem final
         {
-            AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator);
             AZ_RTTI(ToolBarItem, "{B0DE0795-2C3F-4ABC-AAAB-1A68604EF33E}");
 
             explicit ToolBarItem(
@@ -96,7 +98,9 @@ namespace AzToolsFramework
             QWidgetAction* m_widgetAction = nullptr;
         };
 
-        QToolBar* m_toolBar = nullptr;
+        AZStd::string m_name;
+
+        AZStd::unordered_set<QToolBar*> m_toolBars;
         AZStd::map<int, AZStd::vector<ToolBarItem>> m_toolBarItems;
         AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
         AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;

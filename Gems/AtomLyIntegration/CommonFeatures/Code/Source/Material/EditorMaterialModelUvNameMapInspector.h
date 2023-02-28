@@ -38,7 +38,7 @@ namespace AZ
             {
                 Q_OBJECT
             public:
-                AZ_CLASS_ALLOCATOR(MaterialModelUvNameMapInspector, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(MaterialModelUvNameMapInspector, AZ::SystemAllocator);
 
                 explicit MaterialModelUvNameMapInspector(
                     const AZ::Data::AssetId& assetId,

@@ -29,7 +29,7 @@ namespace AZ
             : public SerializeContext::IEventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SceneProcessingConfigSystemComponentSerializationEvents, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SceneProcessingConfigSystemComponentSerializationEvents, SystemAllocator);
 
             void OnWriteBegin(void* classPtr) override;
         };

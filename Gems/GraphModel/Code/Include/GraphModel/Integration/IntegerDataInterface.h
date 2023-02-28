@@ -23,7 +23,7 @@ namespace GraphModelIntegration
     class IntegerDataInterface : public GraphCanvas::NumericDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(IntegerDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntegerDataInterface, AZ::SystemAllocator);
 
         IntegerDataInterface(GraphModel::SlotPtr slot)
             : m_slot(slot)

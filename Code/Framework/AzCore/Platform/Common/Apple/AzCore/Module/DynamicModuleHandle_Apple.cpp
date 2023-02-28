@@ -19,7 +19,7 @@ namespace AZ
             return AZ::Utils::GetExecutableDirectory();
         }
 
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
+        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen)
         {
             void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
             alreadyOpen = (handle != nullptr);

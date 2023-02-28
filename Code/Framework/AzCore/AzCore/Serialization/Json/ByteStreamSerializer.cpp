@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonByteStreamSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonByteStreamSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonByteStreamSerializer::Load(
         void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,

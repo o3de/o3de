@@ -6,13 +6,14 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 
 namespace AzToolsFramework::Prefab
 {
-    static constexpr AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
-    static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
+    const AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
+    const AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
+    const AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
     bool IsHotReloadingEnabled()
     {
@@ -35,6 +36,18 @@ namespace AzToolsFramework::Prefab
         }
 
         return prefabOverridesUxEnabled;
+    }
+
+    bool IsInspectorOverrideManagementEnabled()
+    {
+        bool isInspectorOverrideManagementEnabled = false;
+
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(isInspectorOverrideManagementEnabled, InspectorOverrideManagementKey);
+        }
+
+        return isInspectorOverrideManagementEnabled;
     }
 
 } // namespace AzToolsFramework::Prefab

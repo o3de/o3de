@@ -26,7 +26,7 @@ namespace AzToolsFramework
     class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::PrefabUiHandler, "{598154A2-89E3-45CB-A3CB-337CB1C73DE7}", EditorEntityUiHandlerBase);
 
         PrefabUiHandler();

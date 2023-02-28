@@ -119,14 +119,6 @@ namespace PhysX
         AZ_Assert(m_pxMaterial, "Failed to create physx material");
         m_pxMaterial->userData = this;
 
-        MaterialConfiguration::ValidateMaterialAsset(m_materialAsset);
-
-        for (const auto& materialProperty : m_materialAsset->GetMaterialProperties())
-        {
-            SetProperty(materialProperty.first, materialProperty.second);
-        }
-
-        // Connect to asset bus to listen to asset reloads notifications
         AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
     }
 
@@ -296,7 +288,7 @@ namespace PhysX
         return m_pxMaterial.get();
     }
 
-    void Material::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void Material::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_materialAsset = asset;
 
@@ -306,5 +298,10 @@ namespace PhysX
         {
             SetProperty(materialProperty.first, materialProperty.second);
         }
+    }
+
+    void Material::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        OnAssetReady(asset);
     }
 } // namespace PhysX
