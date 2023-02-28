@@ -29,6 +29,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
 #include <Vulkan_Traits_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -317,8 +318,8 @@ namespace AZ
             }
             else
             {
-                const VkResult vkResult =
-                    instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                const VkResult vkResult = instance.GetContext().CreateDevice(
+                    physicalDevice.GetNativePhysicalDevice(), &deviceInfo, VkSystemAllocator::Get(), &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
@@ -667,7 +668,7 @@ namespace AZ
             {
                 if (m_nativeDevice != VK_NULL_HANDLE)
                 {
-                    m_context.DestroyDevice(m_nativeDevice, nullptr);
+                    m_context.DestroyDevice(m_nativeDevice, VkSystemAllocator::Get());
                     m_nativeDevice = VK_NULL_HANDLE;
                 }
             }
@@ -1218,14 +1219,14 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 
             VkBuffer vkBuffer = VK_NULL_HANDLE;
-            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
+            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &vkBuffer);
             AssertSuccess(vkResult);
             return vkBuffer;
         }
 
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
-            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
         }
 
         Device::ShadingRateImageMode Device::GetImageShadingRateMode() const

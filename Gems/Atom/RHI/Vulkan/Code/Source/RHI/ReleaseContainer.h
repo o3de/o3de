@@ -10,6 +10,7 @@
 #include <Atom/RHI/Object.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/functional.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -33,7 +34,10 @@ namespace AZ
                 , m_vkDestroyFunc(vkDestroyFunc)
             {}
 
-            ~ReleaseContainer() { m_vkDestroyFunc(m_vkDevice, m_vkObject, nullptr); }
+            ~ReleaseContainer()
+            {
+                m_vkDestroyFunc(m_vkDevice, m_vkObject, VkSystemAllocator::Get());
+            }
 
         private:
             VkDevice m_vkDevice;;

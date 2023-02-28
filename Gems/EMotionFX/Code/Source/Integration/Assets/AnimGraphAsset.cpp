@@ -67,7 +67,7 @@ namespace EMotionFX
                 // The following code is required to be set so the FileManager detects changes to the files loaded
                 // through this method. Once EMotionFX is integrated to the asset system this can go away.
                 AZStd::string assetFilename;
-                EBUS_EVENT_RESULT(assetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
                 AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
                 if (!projectPath.empty())
                 {

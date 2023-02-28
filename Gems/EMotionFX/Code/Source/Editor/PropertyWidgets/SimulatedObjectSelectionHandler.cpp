@@ -128,7 +128,8 @@ namespace EMotionFX
 
         connect(picker, &SimulatedObjectPicker::SelectionChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newSimulatedObjects)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
