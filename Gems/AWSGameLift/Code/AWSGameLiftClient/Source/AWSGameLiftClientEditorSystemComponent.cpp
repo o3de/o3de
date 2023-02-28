@@ -15,17 +15,15 @@
 namespace AWSGameLift
 {
     AWSGameLiftClientEditorSystemComponent::AWSGameLiftClientEditorSystemComponent()
-        : AWSGameLiftClientSystemComponent()
+        : AZ::Component()
     {
     }
 
     void AWSGameLiftClientEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AWSGameLiftClientSystemComponent::Reflect(context);
-
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AWSGameLiftClientEditorSystemComponent, AWSGameLiftClientSystemComponent>()
+            serialize->Class<AWSGameLiftClientEditorSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
@@ -61,16 +59,12 @@ namespace AWSGameLift
 
     void AWSGameLiftClientEditorSystemComponent::Activate()
     {
-        AWSGameLiftClientSystemComponent::Activate();
-
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void AWSGameLiftClientEditorSystemComponent::Deactivate()
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-
-        AWSGameLiftClientSystemComponent::Deactivate();
     }
 
     void AWSGameLiftClientEditorSystemComponent::OnMenuBindingHook()
