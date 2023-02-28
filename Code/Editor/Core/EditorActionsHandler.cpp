@@ -304,7 +304,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
             }
             actionProperties.m_category = "Level";
-            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
@@ -2169,20 +2169,29 @@ void EditorActionsHandler::UpdateRecentFileActions()
     const QString gameDirPath = gameDir.absolutePath();
 
     m_recentFileActionsCount = 0;
-    int counter = 0;
+
+    int index = 0;
 
     // Update all names
-    for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
+    for (int counter = 0; counter < maxRecentFiles; ++counter)
     {
-        if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
-        {
-            continue;
-        }
-
+        // Loop through all Recent Files Menu entries, even the hidden ones.
         AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", counter + 1);
+
+        // Check if the recent file at index is valid. If not, increment index until you find one, or the list ends.
+        while (index < recentFilesSize)
+        {
+            if (IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
+            {
+                break;
+            }
+
+            ++index;
+        }
 
         if (index < recentFilesSize)
         {
+            // If the index is valid, use it to populate the action's name and then increment for the next menu item.
             QString displayName;
             recentFiles->GetDisplayName(displayName, index, sCurDir);
 
@@ -2190,13 +2199,14 @@ void EditorActionsHandler::UpdateRecentFileActions()
                 actionIdentifier, AZStd::string::format("%i | %s", counter + 1, displayName.toUtf8().data()));
 
             ++m_recentFileActionsCount;
+            ++index;
         }
         else
         {
+            // If the index is invalid, give the default name for consistency.
+            // The menu item will not show as it will be disabled by its enabled state callback.
             m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", counter + 1));
         }
-
-        ++counter;
     }
 
     // Trigger the updater

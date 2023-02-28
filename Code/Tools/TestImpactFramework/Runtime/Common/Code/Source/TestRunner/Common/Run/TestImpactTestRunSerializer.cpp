@@ -147,18 +147,14 @@ namespace TestImpact
         // Suites
         for (const auto& suite : doc[TestRunFields::Keys[TestRunFields::SuitesKey]].GetArray())
         {
-            // Suite name
-            const AZStd::string name = suite[TestRunFields::Keys[TestRunFields::NameKey]].GetString();
-
-            // Suite duration
-            const AZStd::chrono::milliseconds suiteDuration = AZStd::chrono::milliseconds{suite[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint()};
-
             // Suite enabled
             testSuites.emplace_back(TestRunSuite{
-                suite[TestRunFields::Keys[TestRunFields::NameKey]].GetString(),
-                suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool(),
-                {},
-                AZStd::chrono::milliseconds{suite[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint()}});
+                TestSuite<TestRunCase>{
+                    suite[TestRunFields::Keys[TestRunFields::NameKey]].GetString(),
+                    suite[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool()
+                },
+                AZStd::chrono::milliseconds{ suite[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint() }
+            });
 
             // Suite tests
             for (const auto& test : suite[TestRunFields::Keys[TestRunFields::TestsKey]].GetArray())
@@ -171,7 +167,13 @@ namespace TestImpact
                 }
                 const AZStd::chrono::milliseconds testDuration = AZStd::chrono::milliseconds{test[TestRunFields::Keys[TestRunFields::DurationKey]].GetUint()};
                 testSuites.back().m_tests.emplace_back(
-                    TestRunCase{test[TestRunFields::Keys[TestRunFields::NameKey]].GetString(), test[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool(), result, testDuration, status});
+                    TestRunCase{
+                        TestCase{
+                            test[TestRunFields::Keys[TestRunFields::NameKey]].GetString(),
+                            test[TestRunFields::Keys[TestRunFields::EnabledKey]].GetBool()
+                        },
+                         result, testDuration, status
+                    });
             }
         }
 
