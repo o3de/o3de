@@ -31,13 +31,17 @@ def Component_TestComponentInit():
     from editor_python_test_tools.utils import TestHelper
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.editor_component.PhysXDynamicRigidBodyComponent import PhysXDynamicRigidBodyComponent
+    from editor_python_test_tools.editor_component.editor_component_validation import \
+        (validate_vector3_property, validate_float_property, validate_property_switch_toggle, validate_integer_property)
+    from editor_python_test_tools.editor_component.test_values.common_test_values import (
+        INT_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_TESTS_NEGATIVE_EXPECT_PASS)
 
     general.idle_enable(True)
 
     TEST_ENTITY_NAME = "Test_Entity"
-    TEST_VECX = 101.1
-    TEST_VECY = 202.2
-    TEST_VECZ = 303.3
+    TEST_VECTOR3_X = 101.1
+    TEST_VECTOR3_Y = 202.2
+    TEST_VECTOR3_Z = 303.3
     TEST_FLOAT = 10.5
     TEST_INT = 2
     TEST_BOOL = True
@@ -53,21 +57,33 @@ def Component_TestComponentInit():
     dynamic_rigid_body_component = PhysXDynamicRigidBodyComponent(editor_entity)
 
     # 4) Modify one of each property types on the component
-    dynamic_rigid_body_component.initial_linear_velocity.set(TEST_VECX,TEST_VECY,TEST_VECZ)
+    dynamic_rigid_body_component.initial_linear_velocity.set(TEST_VECTOR3_X, TEST_VECTOR3_Y,TEST_VECTOR3_Z)
+    validate_vector3_property("Initial linear velocity",
+                              dynamic_rigid_body_component.initial_linear_velocity.get,
+                              dynamic_rigid_body_component.initial_linear_velocity.set, "PhysX Dynamic Rigid Body",
+                              VECTOR3_TESTS_NEGATIVE_EXPECT_PASS)
+
     dynamic_rigid_body_component.linear_dampening.set(TEST_FLOAT)
+    validate_float_property("Linear dampening",
+                              dynamic_rigid_body_component.linear_dampening.get,
+                              dynamic_rigid_body_component.linear_dampening.set, "PhysX Dynamic Rigid Body",
+                              FLOAT_TESTS_NEGATIVE_EXPECT_PASS)
+
     dynamic_rigid_body_component.start_asleep.set(TEST_BOOL)
+    validate_property_switch_toggle("Start asleep",
+                                    dynamic_rigid_body_component.start_asleep.get,
+                                    dynamic_rigid_body_component.start_asleep.set, "PhysX Dynamic Rigid Body")
+
     dynamic_rigid_body_component.solver_position_iterations.set(TEST_INT)
+    validate_integer_property("Solver Position Iterations",
+                              dynamic_rigid_body_component.solver_position_iterations.get,
+                              dynamic_rigid_body_component.solver_position_iterations.set, "PhysX Dynamic Rigid Body",
+                              INT_TESTS_NEGATIVE_EXPECT_FAIL)
 
     # 5) Get the property values and verify they match what was set in the previous step
-    initial_linear_velocity = dynamic_rigid_body_component.initial_linear_velocity.get()
-    linear_dampening = dynamic_rigid_body_component.linear_dampening.get()
     start_asleep = dynamic_rigid_body_component.start_asleep.get()
     position_iterations = dynamic_rigid_body_component.solver_position_iterations.get()
 
-    assert initial_linear_velocity.x == TEST_VECX, "Vector 3 was not set properly"
-    assert initial_linear_velocity.y == TEST_VECY, "Vector 3 was not set properly"
-    assert initial_linear_velocity.z == TEST_VECZ, "Vector 3 was not set properly"
-    assert linear_dampening == TEST_FLOAT, "Float was not set properly"
     assert start_asleep == TEST_BOOL, "Boolean was not set properly"
     assert position_iterations == TEST_INT, "Integer was not set properly"
 
