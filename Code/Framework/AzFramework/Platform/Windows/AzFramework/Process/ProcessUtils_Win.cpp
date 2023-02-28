@@ -10,12 +10,12 @@
 
 namespace AzFramework::ProcessUtils
 {
-    bool TerminateProcess(const AZStd::string& processFilename)
+    int ProcessCount(AZStd::string_view processFilename)
     {
         PROCESSENTRY32 entry;
         entry.dwSize = sizeof(PROCESSENTRY32);
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-        bool foundAndTerminatedProcess = false;
+        int foundProcessCount = 0;
         if (Process32First(snapshot, &entry))
         {
             // Build a wide-char string of the server executable name. IE: L"MultiplayerSample.ServerLauncher.exe"
@@ -25,14 +25,12 @@ namespace AzFramework::ProcessUtils
             {
                 if (!_wcsicmp(entry.szExeFile, processFilenameUnicode.c_str()))
                 {
-                    HANDLE serverLauncherProcess = OpenProcess(PROCESS_TERMINATE, false, entry.th32ProcessID);
-                    foundAndTerminatedProcess = ::TerminateProcess(serverLauncherProcess, 1);
-                    CloseHandle(serverLauncherProcess);
+                    ++foundProcessCount;
                 }
             }
         }
         CloseHandle(snapshot);
 
-        return foundAndTerminatedProcess;
+        return foundProcessCount;
     }
 }
