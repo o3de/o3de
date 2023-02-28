@@ -12,7 +12,7 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
 )
 
 execute_process (COMMAND get_python.sh
-                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}/${CPACK_PACKAGE_VERSION}/python
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python
 )
 
 # make sure that all executables have the correct permissions
@@ -26,6 +26,10 @@ execute_process (COMMAND find ./O3DE/${CPACK_PACKAGE_VERSION}/bin/Linux -type f 
 )
 
 # build snap
+execute_process (COMMAND snapcraft clean o3de
+                 WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
+)
+
 execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
