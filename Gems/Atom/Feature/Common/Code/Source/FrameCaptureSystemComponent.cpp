@@ -974,7 +974,7 @@ namespace AZ
 
             if (!filePathA.ends_with(".png") || !filePathB.ends_with(".png"))
             {
-                error.m_errorMessage = "Image comparison only supports png and ppm files for now.";
+                error.m_errorMessage = "Image comparison only supports png files for now.";
                 return AZ::Failure(error);
             }
 
