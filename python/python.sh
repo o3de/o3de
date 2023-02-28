@@ -6,10 +6,10 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
-if($ENV{O3DE_PY_ROOT_OVERRIDE})
-    SOURCE="$ENV{O3DE_PY_ROOT_OVERRIDE}"
-else
+if [[ -z "${O3DE_PY_ROOT_OVERRIDE}" ]]; then
     SOURCE="${BASH_SOURCE[0]}"
+else
+    SOURCE="$ENV{O3DE_PY_ROOT_OVERRIDE}"
 fi
 
 # While $SOURCE is a symlink, resolve it
