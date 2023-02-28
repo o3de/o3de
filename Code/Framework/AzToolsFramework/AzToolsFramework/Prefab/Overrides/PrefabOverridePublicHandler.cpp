@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -175,29 +176,50 @@ namespace AzToolsFramework
         AZStd::pair<AZ::Dom::Path, LinkId> PrefabOverridePublicHandler::GetComponentPathAndLinkIdFromFocusedPrefab(
             const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
-            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair = GetEntityPathAndLinkIdFromFocusedPrefab(entityComponentIdPair.GetEntityId());
-            if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
+            AZStd::pair<AZ::Dom::Path, LinkId> pathAndLinkIdPair;
+
+            // Find entity owned by instance
+            AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
+            EntityOptionalConstReference entity;
+            if (auto instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get())
             {
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(
-                    entity, &AZ::ComponentApplicationRequests::FindEntity, entityComponentIdPair.GetEntityId());
-                if (entity)
+                if (InstanceOptionalReference owningInstance = instanceEntityMapperInterface->FindOwningInstance(entityId);
+                    owningInstance.has_value())
                 {
-                    AZ::Component* component = entity->FindComponent(entityComponentIdPair.GetComponentId());
-                    if (component)
+                    if (EntityAliasOptionalReference entityAlias =
+                            owningInstance->get().GetEntityAlias(entityId);
+                        entityAlias.has_value())
+                    {
+                        entity = owningInstance->get().GetEntity(entityAlias->get());
+                    }
+                }
+            }
+
+            if (entity.has_value())
+            {
+                if (AZ::Component* component = entity->get().FindComponent(entityComponentIdPair.GetComponentId()))
+                {
+                    pathAndLinkIdPair = GetEntityPathAndLinkIdFromFocusedPrefab(entityId);
+                    if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
                     {
                         pathAndLinkIdPair.first /= PrefabDomUtils::ComponentsName;
                         pathAndLinkIdPair.first /= component->GetSerializedIdentifier();
                     }
-                    else
-                    {
-                        AZ_Warning("PrefabOverridePublicHandler", false, "FindComponent failed - could not find component pointer from componentId provided.");
-                    }
                 }
                 else
                 {
-                    AZ_Warning("PrefabOverridePublicHandler", entity, "FindEntity failed - could not find entity pointer from entityId provided.");
+                    AZ_Warning(
+                        "PrefabOverridePublicHandler",
+                        false,
+                        "FindComponent failed - could not find component pointer from componentId provided.");
                 }
+            }
+            else
+            {
+                AZ_Warning(
+                    "PrefabOverridePublicHandler",
+                    false,
+                    "FindEntity failed - could not find entity pointer from entityId provided.");
             }
 
             return pathAndLinkIdPair;
