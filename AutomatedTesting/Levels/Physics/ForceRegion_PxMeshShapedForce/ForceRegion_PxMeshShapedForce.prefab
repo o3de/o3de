@@ -52,7 +52,7 @@
             "Name": "Sedan",
             "Components": {
                 "Component_[10040515516141845460]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 10040515516141845460,
                     "ColliderConfiguration": {
                         "Trigger": true,
@@ -65,26 +65,24 @@
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
                                     "subId": 1454228742
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
                             },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{2E7408F7-ABCD-5BE3-B50F-061BCCE273A8}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/forceregion_pxmeshshapedforce/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                },
-                                "UseMaterialsFromAsset": false
-                            }
+                            "UseMaterialsFromAsset": false
                         }
                     }
                 },

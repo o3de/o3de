@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -60,33 +56,33 @@
                     "Id": 11910933043402144506
                 },
                 "Component_[13113720495486511997]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 13113720495486511997,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
                                     "subId": 1454228742
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
@@ -102,12 +98,17 @@
                             -0.07926200330257416,
                             0.434479296207428
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 0.8812907934188843
-                        },
+                        "Inertia tensor": [
+                            0.8812907934188843,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.8812907934188843,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.8812907934188843
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -144,7 +145,7 @@
                     "Id": 2663722722650275926
                 },
                 "Component_[5115628589039702205]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 5115628589039702205,
                     "ColliderConfiguration": {
                         "Position": [
@@ -152,30 +153,30 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
                                     "subId": 1454228742
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
@@ -200,10 +201,6 @@
                             "SortIndex": 3
                         }
                     ]
-                },
-                "Component_[7216909725723276880]": {
-                    "$type": "SelectionComponent",
-                    "Id": 7216909725723276880
                 },
                 "Component_[9522159058993627022]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -252,9 +249,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 12138025353959759635,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -273,12 +272,17 @@
                             0.0,
                             0.0
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 6.0
-                        },
+                        "Inertia tensor": [
+                            6.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            6.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            6.0
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -289,10 +293,6 @@
                 "Component_[16419802654970267859]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 16419802654970267859
-                },
-                "Component_[16528875231383182327]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16528875231383182327
                 },
                 "Component_[4180535836747230322]": {
                     "$type": "EditorEntitySortComponent",
@@ -307,9 +307,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -350,12 +352,17 @@
                             0.0,
                             0.0
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 13.223134994506836
-                        },
+                        "Inertia tensor": [
+                            13.223134994506836,
+                            0.0,
+                            0.0,
+                            0.0,
+                            13.223134994506836,
+                            0.0,
+                            0.0,
+                            0.0,
+                            13.223134994506836
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -371,19 +378,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 15234779330112880964,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
                     "ShapeConfiguration": {
                         "ShapeType": 2
                     }
-                },
-                "Component_[15524182888388782459]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15524182888388782459
                 },
                 "Component_[15590625091539872337]": {
                     "$type": "EditorVisibilityComponent",
@@ -435,9 +440,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -475,12 +482,17 @@
                             0.0,
                             0.0
                         ],
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        },
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -501,9 +513,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -515,19 +529,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 14555534719461622997,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
                     "ShapeConfiguration": {
                         "ShapeType": 0
                     }
-                },
-                "Component_[17553553989214810742]": {
-                    "$type": "SelectionComponent",
-                    "Id": 17553553989214810742
                 },
                 "Component_[2330725775954221844]": {
                     "$type": "EditorEntitySortComponent",
@@ -593,33 +605,33 @@
                     "Id": 11910933043402144506
                 },
                 "Component_[13113720495486511997]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 13113720495486511997,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
                                     "subId": 1454228742
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
@@ -631,12 +643,17 @@
                         "entityId": "",
                         "Compute Mass": false,
                         "Compute COM": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 0.8130738139152527
-                        },
+                        "Inertia tensor": [
+                            0.8130738139152527,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.8130738139152527,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.8130738139152527
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -673,7 +690,7 @@
                     "Id": 2663722722650275926
                 },
                 "Component_[4624678338655393672]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 4624678338655393672,
                     "ColliderConfiguration": {
                         "Position": [
@@ -681,30 +698,30 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
                                     "subId": 1454228742
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{B0721305-F525-5FA4-B91D-1BF330115E2A}",
-                                        "subId": 1454228742
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/rigidbody_com_computingworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
@@ -729,10 +746,6 @@
                             "SortIndex": 3
                         }
                     ]
-                },
-                "Component_[7216909725723276880]": {
-                    "$type": "SelectionComponent",
-                    "Id": 7216909725723276880
                 },
                 "Component_[9522159058993627022]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -781,9 +794,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 12138025353959759635,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -798,12 +813,17 @@
                         "entityId": "",
                         "Compute Mass": false,
                         "Compute COM": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 6.0
-                        },
+                        "Inertia tensor": [
+                            6.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            6.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            6.0
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -814,10 +834,6 @@
                 "Component_[16419802654970267859]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 16419802654970267859
-                },
-                "Component_[16528875231383182327]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16528875231383182327
                 },
                 "Component_[4180535836747230322]": {
                     "$type": "EditorEntitySortComponent",
@@ -832,9 +848,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -871,12 +889,17 @@
                         "entityId": "",
                         "Compute Mass": false,
                         "Compute COM": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 13.223134994506836
-                        },
+                        "Inertia tensor": [
+                            13.223134994506836,
+                            0.0,
+                            0.0,
+                            0.0,
+                            13.223134994506836,
+                            0.0,
+                            0.0,
+                            0.0,
+                            13.223134994506836
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -892,19 +915,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 15234779330112880964,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
                     "ShapeConfiguration": {
                         "ShapeType": 2
                     }
-                },
-                "Component_[15524182888388782459]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15524182888388782459
                 },
                 "Component_[15590625091539872337]": {
                     "$type": "EditorVisibilityComponent",
@@ -956,9 +977,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -992,12 +1015,17 @@
                         "Gravity Enabled": false,
                         "Compute Mass": false,
                         "Compute COM": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        },
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ],
                         "Debug Draw Center of Mass": true
                     }
                 },
@@ -1018,9 +1046,11 @@
                             0.0,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -1032,19 +1062,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 14555534719461622997,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
                     "ShapeConfiguration": {
                         "ShapeType": 0
                     }
-                },
-                "Component_[17553553989214810742]": {
-                    "$type": "SelectionComponent",
-                    "Id": 17553553989214810742
                 },
                 "Component_[2330725775954221844]": {
                     "$type": "EditorEntitySortComponent",

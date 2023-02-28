@@ -73,7 +73,7 @@
                     ]
                 },
                 "Component_[14094829544062915163]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 14094829544062915163,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
@@ -121,26 +121,24 @@
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
+                                "subId": 4070350670
+                            },
+                            "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
                                     "subId": 4070350670
                                 },
+                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
                             },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{304E0636-42C3-529D-8D9B-89E1E11A3FDD}",
-                                        "subId": 4070350670
-                                    },
-                                    "loadBehavior": "QueueLoad",
-                                    "assetHint": "levels/physics/c4044697_material_perfacematerialvalidation/test.pxmesh"
-                                },
-                                "UseMaterialsFromAsset": false
-                            }
+                            "UseMaterialsFromAsset": false
                         }
                     }
                 },

@@ -553,7 +553,7 @@
             "Name": "StaticMesh",
             "Components": {
                 "Component_[10271136976310200923]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 10271136976310200923,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
@@ -564,23 +564,21 @@
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
                                     "subId": 1454228742
                                 },
                                 "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
-                                        "subId": 1454228742
-                                    },
-                                    "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
@@ -649,7 +647,7 @@
             "Name": "Mesh",
             "Components": {
                 "Component_[16300212154464470531]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 16300212154464470531,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
@@ -660,23 +658,21 @@
                             ]
                         }
                     },
-                    "ShapeConfiguration": {
-                        "PhysicsAsset": {
-                            "Asset": {
+                    "PhysicsAssetShapeConfiguration": {
+                        "Asset": {
+                            "assetId": {
+                                "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
+                                "subId": 1454228742
+                            },
+                            "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
+                        },
+                        "Configuration": {
+                            "PhysicsAsset": {
                                 "assetId": {
                                     "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
                                     "subId": 1454228742
                                 },
                                 "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                            },
-                            "Configuration": {
-                                "PhysicsAsset": {
-                                    "assetId": {
-                                        "guid": "{6B6C2A7C-DC44-54F6-8A30-DA370189C11B}",
-                                        "subId": 1454228742
-                                    },
-                                    "assetHint": "levels/physics/c29032500_editorcomponents_worldbodybusworks/physxsedan/_dev_sedan_r0-b.pxmesh"
-                                }
                             }
                         }
                     }
