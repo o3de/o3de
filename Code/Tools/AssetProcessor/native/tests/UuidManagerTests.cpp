@@ -472,4 +472,43 @@ namespace UnitTests
 
         EXPECT_EQ(uuidB.GetValue(), uuidA.GetValue());
     }
+
+    TEST_F(UuidManagerTests, UpdateCase)
+    {
+        static constexpr AZ::IO::FixedMaxPath TestFile = "c:/somepath/mockfile.txt";
+        static constexpr AZ::IO::FixedMaxPath RenamedFile = "c:/somepath/MockFile.txt";
+
+        MakeFile(TestFile);
+
+        // Generate the metadata file
+        auto uuid = m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(TestFile));
+
+        EXPECT_TRUE(uuid);
+
+        auto* io = AZ::IO::FileIOBase::GetInstance();
+
+        // Make sure the metadata file exists (this is not a case sensitive check)
+        EXPECT_TRUE(io->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(TestFile.c_str()).c_str()));
+
+        QString relPath = "mockfile.txt";
+        relPath += AzToolsFramework::MetadataManager::MetadataFileExtension;
+
+        // Verify the case of the metadata file is lowercase to start with
+        EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase("c:/somepath", relPath));
+        EXPECT_STREQ(relPath.toUtf8().constData(), (QString("mockfile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension).toUtf8().constData());
+
+        // Rename the source file from lowercase to uppercase and notify about the old file being removed
+        io->Rename(TestFile.c_str(), RenamedFile.c_str());
+        m_uuidInterface->FileRemoved(TestFile);
+
+        // Request the UUID again, this should automatically update the case of the metadata file
+        m_uuidInterface->GetUuid(AssetProcessor::SourceAssetReference(RenamedFile));
+
+        // Verify the metadata file exists (this is not a case sensitive check)
+        EXPECT_TRUE(io->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(RenamedFile.c_str()).c_str()));
+
+        // Verify the case of the metadata file is actually updated
+        EXPECT_TRUE(AssetUtilities::UpdateToCorrectCase("c:/somepath", relPath));
+        EXPECT_STREQ(relPath.toUtf8().constData(), (QString("MockFile.txt") + AzToolsFramework::MetadataManager::MetadataFileExtension).toUtf8().constData());
+    }
 }
