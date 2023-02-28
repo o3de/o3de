@@ -21,6 +21,8 @@ namespace PhysX
 {
     namespace Pipeline
     {
+        class MeshAsset;
+
         //! Optional collider configuration data that is stored in the asset.
         //! All the fields here are optional. If you set them at the asset building stage
         //! that data will then be used in the collider
@@ -49,6 +51,10 @@ namespace PhysX
 
             static void Reflect(AZ::ReflectContext* context);
 
+            //! Creates a Mesh Asset with random Id from the
+            //! properties of this mesh asset data.
+            AZ::Data::Asset<MeshAsset> CreateMeshAsset() const;
+
             // Reserved material index indicating that cooked mesh itself stores the indices.
             // Wrapping the numeric_limits<AZ::u16>::max function in parenthesis to get around the issue with windows.h defining max as a macro.
             static constexpr AZ::u16 TriangleMeshMaterialIndex = (std::numeric_limits<AZ::u16>::max)();
@@ -71,6 +77,10 @@ namespace PhysX
             AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", AZ::Data::AssetData);
 
             static void Reflect(AZ::ReflectContext* context);
+
+            //! Sets the mesh data for this mesh asset and marks it as ready.
+            //! This is useful when creating an in-memory mesh asset.
+            void SetData(const MeshAssetData& assetData);
 
             MeshAssetData m_assetData;
         };
