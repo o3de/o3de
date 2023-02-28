@@ -716,8 +716,8 @@ namespace UnitTest
     class TestVectorPoolAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestVectorPoolAllocator, AZ::SystemAllocator, 0)
-        AZ_TYPE_INFO(TestVectorPoolAllocator, "{4645067B-6A6D-4A45-996E-DA10671159E1}")
+        AZ_CLASS_ALLOCATOR(TestVectorPoolAllocator, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(TestVectorPoolAllocator, "{4645067B-6A6D-4A45-996E-DA10671159E1}");
 
         TestVectorPoolAllocator()
             // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
