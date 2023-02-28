@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
@@ -33,6 +34,8 @@
 
 namespace EMStudio
 {
+    constexpr AZStd::string_view AnimationEditorAnimGraphActionContextIdentifier = "o3de.context.animationEditor.animGraph";
+
     BlendGraphViewWidget::BlendGraphViewWidget(AnimGraphPlugin* plugin, QWidget* parentWidget)
         : QWidget(parentWidget)
         , m_parentPlugin(plugin)
@@ -451,10 +454,22 @@ namespace EMStudio
         UpdateNavigation();
         UpdateAnimGraphOptions();
         UpdateEnabledActions();
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(AnimationEditorAnimGraphActionContextIdentifier, this);
+        }
     }
 
     BlendGraphViewWidget::~BlendGraphViewWidget()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(AnimationEditorAnimGraphActionContextIdentifier, this);
+        }
+
         for (auto entry : m_nodeTypeToWidgetMap)
         {
             AnimGraphNodeWidget* widget = entry.second;
