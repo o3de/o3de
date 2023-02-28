@@ -19,6 +19,7 @@ parts:
      - libfreetype6
      - libpng16-16
      - libgl1
+     - libglu1-mesa-dev
      - libxcb-icccm4
      - libxcb-image0
      - libxcb-keysyms1
