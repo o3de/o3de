@@ -20,7 +20,6 @@
 #endif
 
 class RCcontrollerUnitTests;
-
 namespace AssetProcessor
 {
     class QueueElementID;
@@ -53,7 +52,7 @@ namespace AssetProcessor
         // implement QSortFilteRProxyModel:
         bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
         bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
-
+        
     public Q_SLOTS:
         void OnEscalateJobs(AssetProcessor::JobIdEscalationList jobIdEscalationList);
 

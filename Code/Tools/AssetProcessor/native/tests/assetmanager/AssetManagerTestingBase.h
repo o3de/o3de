@@ -73,6 +73,23 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
+    class TestingRCController
+        : public AssetProcessor::RCController
+    {
+    public:
+        TestingRCController() = default;
+        explicit TestingRCController(int minJobs, int maxJobs, QObject* parent = 0)
+            : AssetProcessor::RCController(minJobs, maxJobs, parent)
+        {
+
+        }
+
+        AssetProcessor::RCQueueSortModel& GetRCQueueSortModel()
+        {
+            return m_RCQueueSortModel;
+        }
+    };
+
     class AssetManagerTestingBase : public ::UnitTest::LeakDetectionFixture
     {
     public:
@@ -149,7 +166,7 @@ namespace UnitTests
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 
-        AZStd::unique_ptr<AssetProcessor::RCController> m_rc;
+        AZStd::unique_ptr<TestingRCController> m_rc;
 
         AZStd::vector<AssetProcessor::JobDetails> m_jobDetailsList;
 

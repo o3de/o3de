@@ -90,7 +90,7 @@ namespace AssetProcessor
 
         int itemCount() const;
         RCJob* getItem(int index) const;
-        int GetIndexOfProcessingJob(const QueueElementID& elementId);
+        int GetIndexOfJobByState(const QueueElementID& elementId, RCJob::JobState jobState);
 
         ///! EraseJobs expects the database name of the source file.
         void EraseJobs(const SourceAssetReference& sourceAssetReference, AZStd::vector<RCJob*>& pendingJobs);

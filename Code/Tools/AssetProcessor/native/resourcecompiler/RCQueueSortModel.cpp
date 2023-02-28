@@ -144,6 +144,19 @@ namespace AssetProcessor
             return false; // right before left.
         }
 
+        // Check if either job was marked as having a missing source dependency.
+        // This means that the job is looking for another source asset and job to exist before it runs, but
+        // that source doesn't exist yet. Those jobs are deferred to run later, in case the dependency eventually shows up.
+        // The dependency may be on an intermediate asset that will be generated later in asset processing.
+        if (leftJob->GetHasMissingSourceDependency() != rightJob->GetHasMissingSourceDependency())
+        {
+            if (rightJob->GetHasMissingSourceDependency())
+            {
+                return true; // left does not have a missing source dependency, but right does, so left wins.
+            }
+            return false; // Right does not have a missing source dependency, but left does, so right wins.
+        }
+
         // first thing to check is in platform.
         bool leftActive = m_currentlyConnectedPlatforms.contains(leftJob->GetPlatformInfo().m_identifier.c_str());
         bool rightActive = m_currentlyConnectedPlatforms.contains(rightJob->GetPlatformInfo().m_identifier.c_str());

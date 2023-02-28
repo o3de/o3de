@@ -316,12 +316,12 @@ namespace AssetProcessor
         return false;
     }
 
-    int RCJobListModel::GetIndexOfProcessingJob(const QueueElementID& elementId)
+    int RCJobListModel::GetIndexOfJobByState(const QueueElementID& elementId, RCJob::JobState jobState)
     {
         for (int idx = 0; idx < rowCount(); ++idx)
         {
             RCJob* job = getItem(idx);
-            if (job->GetState() == RCJob::processing && job->GetElementID() == elementId)
+            if (job->GetState() == jobState && job->GetElementID() == elementId)
             {
                 return idx;
                 break;

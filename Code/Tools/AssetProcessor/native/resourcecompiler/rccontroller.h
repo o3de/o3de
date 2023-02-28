@@ -105,6 +105,9 @@ namespace AssetProcessor
         void OnJobComplete(JobEntry completeEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnAddedToCatalog(JobEntry jobEntry);
 
+    protected:
+        AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
+
     private:
         void FinishJob(AssetProcessor::RCJob* rcJob);
 
@@ -118,7 +121,6 @@ namespace AssetProcessor
         QMap<QString, int> m_jobsCountPerPlatform;// This stores the count of jobs per platform in the RC Queue
         QMap<QString, int> m_pendingCriticalJobsPerPlatform;// This stores the count of pending critical jobs per platform in the RC Queue
         AssetProcessor::RCJobListModel m_RCJobListModel;
-        AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
 
         //! An Asset Compile Group is a set of assets that we're tracking the compilation of
         //! It consists of a whole bunch of assets and is considered to be "complete" when either one of the assets in the group fails

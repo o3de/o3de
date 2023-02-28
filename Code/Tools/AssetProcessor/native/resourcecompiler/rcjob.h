@@ -203,6 +203,7 @@ namespace AssetProcessor
         AssetBuilderSDK::ProcessJobResponse& GetProcessJobResponse();
 
         const JobEntry& GetJobEntry() const;
+        bool GetHasMissingSourceDependency() const;
 
         void Start();
 

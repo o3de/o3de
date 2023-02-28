@@ -865,6 +865,12 @@ public:
 
         m_intermediateFileName = AZ::IO::Path(m_firstFileNameNoExtension.c_str()).ReplaceExtension(m_intermediateExtension.c_str());
         m_intermediateAssetPath = MakePath(m_intermediateFileName.c_str(), true);
+
+        // Store the path to the product asset, so that the test can examine the contents of the product asset.
+        m_secondProductPath = GetCacheDir()
+                                  .Append("pc")
+                                  .Append(m_secondFileName)
+                                  .ReplaceExtension(m_SecondProductExtension.c_str());
     }
 
     // Helper function - generates the initial files ued by this test.
@@ -927,17 +933,7 @@ public:
                 outputFile.ReplaceExtension(m_SecondProductExtension.c_str());
                 outputFile = AZ::IO::Path(request.m_tempDirPath).Append(outputFile);
 
-                // Store the path to the product asset, so that the test can examine the contents of the product asset.
-                m_secondProductPath = GetCacheDir()
-                                          .Append(request.m_platformInfo.m_identifier)
-                                          .Append(m_secondFileName)
-                                          .ReplaceExtension(m_SecondProductExtension.c_str());
-
-                // The first time this asset is processed, the intermediate asset won't yet exist.
-                // Track that in a way the test can verify.
-                // The second time this asset is processed, the intermediate asset will have been created.
-                // This behavior isn't desireable long term - this test is written to verify existing behavior so
-                // an adjustment to how dependencies are handled for processing assets can be made.
+                // Write if the intermediate exists or not to the product asset.
                 bool intermediateAssetExists = (AZ::IO::FileIOBase::GetInstance()->Exists(m_intermediateAssetPath.c_str()));
 
                 AZStd::string toWrite = m_intermediateFileExistsString;
@@ -1050,37 +1046,77 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     // TODO: Note that the PC job (asset B) will always run before the Common job (asset A) because the system
     // purposely prioritizes host platform jobs first.
     ASSERT_EQ(m_jobDetailsList.size(), 2);
+    // One of the two jobs should have the missing source dependency flagged for follow up.
+    EXPECT_NE(m_jobDetailsList[0].m_hasMissingSourceDependency, m_jobDetailsList[1].m_hasMissingSourceDependency);
+    m_rc->JobSubmitted(m_jobDetailsList[0]);
+    m_rc->JobSubmitted(m_jobDetailsList[1]);
+    m_jobDetailsList.clear();
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform("pc"), 1);
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform(AssetBuilderSDK::CommonPlatformName), 1);
+
+    UnitTests::JobSignalReceiver receiver;
+
+    // Process the first asset in the queue, which will be the job for A, because B had a missing dependency and was made lower priority.
+    WaitForNextJobToProcess(receiver);
+
+    // Pause dispatching. In this test scenario, with only two assets queued,
+    // it's likely that Job B will finish before Job B is re-issued due to the newly
+    // updated source asset.
+    // This happens frequently when step-through debugging this function with breakpoints.
+    m_rc->SetDispatchPaused(true);
+
+    // Product B shouldn't exist yet because A was processed first.
+    EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(m_secondProductPath.c_str()));
+
+    // Emit that A was finished processing.
+    m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
+
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform("pc"), 1);
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform(AssetBuilderSDK::CommonPlatformName), 0);
+
+    // AssetProcessorManager::CheckSource - the asset processor now knows Job B needs to be re-queued
+    // because the source dependency is now valid.
+    QCoreApplication::processEvents();
+    // AssetProcessorManager::ProcessBuilders & CreateJobs again for Job B
+    QCoreApplication::processEvents();
+    // AssetProcessorManager::CheckForIdle which queues the job created, calls AssetProcessorManager::AssetToProcess, and puts Job B back in
+    // the m_jobDetailsList, as well as the intermediate asset
+    QCoreApplication::processEvents();
+
+    // This will queue the second job, if it hasn't been queued already.
+    // Note when updating these tests: If you're using the debugger to step through,
+    // certain actions may occur on different processEvents calls than described here
+    // because other threads end up completing and queueing work at different speeds.
+    QCoreApplication::processEvents();
+
+    ASSERT_EQ(m_jobDetailsList.size(), 2);
+    // No jobs should be missing dependencies at this point.
+    EXPECT_EQ(m_jobDetailsList[0].m_hasMissingSourceDependency, m_jobDetailsList[1].m_hasMissingSourceDependency);
     m_rc->JobSubmitted(m_jobDetailsList[0]);
     m_rc->JobSubmitted(m_jobDetailsList[1]);
     m_jobDetailsList.clear();
 
-    UnitTests::JobSignalReceiver receiver;
+    // There's currently a bug where canceled jobs are not removed from the cached list of pending jobs per platform.
+    // So the count will be 3 right now, because Job B is in there twice:
+    // Once for the old job that was canceled due to the new job,
+    // and once for the new job that replaced the old job, that is actually pending.
+    // The third job is the intermediate asset.
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform("pc"), 3);
+    AssetProcessor::RCQueueSortModel& sortModel = m_rc->GetRCQueueSortModel();
+    // Verify that one of the jobs is no longer valid and canceled by checking the actual row count of the sort model.
+    EXPECT_EQ(sortModel.rowCount(), 2);
 
-    // Processing asset B will produce several warnings right now (listed at the end of this block, where they are checked).
-    m_errorChecker.Begin();
+    // Process events so the job queue is cleaned up, and the canceled job is removed.
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
 
-    // Process the first asset in the queue, which will be the job for B, because it's a PC job, which takes priority over the Common platform job in the queue.
+    // Unpause dispatch, now that the updated jobs are re-queued.
+    m_rc->SetDispatchPaused(false);
     WaitForNextJobToProcess(receiver);
-
-    // This absorbs these warnings:
-    //  No job was found to match the job dependency criteria declared by file
-    //  This may be due to a mismatched job key
-    //  Job ordering will not be guaranteed and could result in errors or unexpected output
-    m_errorChecker.End(3);
-    m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
-
-    auto readResult = AZ::Utils::ReadFile<AZStd::string>(m_secondProductPath.c_str(), AZStd::numeric_limits<size_t>::max());
-    EXPECT_TRUE(readResult.IsSuccess());
-    EXPECT_EQ(readResult.GetValue().compare(m_intermediateFileDoesNotExistString), 0);
-
-    // Process asset A, which will produce the intermediate asset that B depended on.
-    WaitForNextJobToProcess(receiver);
-
     // Mark this asset as processed, so AP will move on to the next steps.
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
-    // Need to call process events 4 times, to get the job details list populated with the
-    // intermediate asset job and the job for the B asset that was triggered by the intermediate asset appearing.
+    // Need to call process events 4 times, to get the job details list populated with the intermediate asset job
     QCoreApplication::processEvents(); // RCController::DispatchJobsImpl
     // The second process event updates a lot of general AssetProcessor systems:
     //  AssetProcessorManager::ScheduleNextUpdate, AssetProcessorManager::ProcessFilesToExamineQueue,
@@ -1093,26 +1129,24 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     // Make sure the job requests are populated and ready to go, without this, RCJob::PopulateProcessJobRequest sometimes crashes accessing job info.
     QCoreApplication::processEvents();
 
-    // The intermediate job was added to the queue, and the B asset was re-added because the dependency triggered.
-    EXPECT_EQ(m_jobDetailsList.size(), 2);
-    m_rc->JobSubmitted(m_jobDetailsList[0]);
-    m_rc->JobSubmitted(m_jobDetailsList[1]);
-    m_jobDetailsList.clear();
+    // One of the two jobs processed, the intermediate asset or job B. The priority of these two doesn't matter.
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform("pc"), 2);
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform(AssetBuilderSDK::CommonPlatformName), 0);
 
-    // Process the itnermediate asset.
+    // Make sure all remaning non-canceled jobs are processed.
     WaitForNextJobToProcess(receiver);
 
-    // Run the second job in the queue, make sure the job gets dispatched.
-    // Specifically not calling WaitForNextJobToProcess because this needs to be called a bit differently.
-    QCoreApplication::processEvents(); // RCController::DispatchJobsImpl
-    receiver.WaitForFinish(); // Process asset B, again.
-    
-    // If the text has changed in the file, then:
-    //  The intermediate asset job has been created
-    //  The B asset has been re-processed
-    readResult = AZ::Utils::ReadFile<AZStd::string>(m_secondProductPath.c_str(), AZStd::numeric_limits<size_t>::max());
+    auto readResult = AZ::Utils::ReadFile<AZStd::string>(m_secondProductPath.c_str(), AZStd::numeric_limits<size_t>::max());
     EXPECT_TRUE(readResult.IsSuccess());
     EXPECT_EQ(readResult.GetValue().compare(m_intermediateFileExistsString), 0);
+
+    // Examine the queue directly : Canceled jobs aren't fully removed, so make sure there is
+    // one job left and it was the canceled job.
+    EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform("pc"), 1);
+    EXPECT_EQ(sortModel.GetNextPendingJob(), nullptr);
+
+    // The canceled job was removed from the actual sort model, it just wasn't removed from the pending per platform list.
+    EXPECT_EQ(sortModel.rowCount(), 0);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)

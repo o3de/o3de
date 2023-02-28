@@ -145,7 +145,7 @@ namespace UnitTests
 
         AZ::Utils::WriteFile("unit test file", m_testFilePath);
 
-        m_rc = AZStd::make_unique<AssetProcessor::RCController>(1, 1);
+        m_rc = AZStd::make_unique<TestingRCController>(1, 1);
         m_rc->SetDispatchPaused(false);
 
         QObject::connect(
