@@ -20,7 +20,7 @@ namespace AZ
             : public RHI::RayTracingPipelineState
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingPipelineState> Create();
 

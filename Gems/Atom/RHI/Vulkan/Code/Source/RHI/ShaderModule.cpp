@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/ShaderModule.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -40,7 +41,8 @@ namespace AZ
             const VkResult result =
                 static_cast<Device&>(GetDevice())
                     .GetContext()
-                    .CreateShaderModule(descriptor.m_device->GetNativeDevice(), &createInfo, nullptr, &m_nativeShaderModule);
+                    .CreateShaderModule(
+                        descriptor.m_device->GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeShaderModule);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -72,7 +74,7 @@ namespace AZ
             if (m_nativeShaderModule != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, nullptr);
+                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, VkSystemAllocator::Get());
                 m_nativeShaderModule = VK_NULL_HANDLE;
             }
             m_alignedByteCode.clear();

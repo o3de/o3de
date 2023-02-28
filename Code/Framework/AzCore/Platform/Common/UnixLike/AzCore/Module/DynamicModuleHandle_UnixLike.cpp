@@ -29,7 +29,7 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator)
 
         DynamicModuleHandleUnixLike(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)

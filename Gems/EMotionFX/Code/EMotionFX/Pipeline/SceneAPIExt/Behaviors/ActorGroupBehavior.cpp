@@ -188,7 +188,8 @@ namespace EMotionFX
                 // in the same way again. To guarantee the same uuid, generate a stable one instead.
                 group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, Group::ActorGroup::TYPEINFO_Uuid()));
 
-                EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+                AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
                 scene.GetManifest().AddEntry(AZStd::move(group));
 
                 return AZ::SceneAPI::Events::ProcessingResult::Success;

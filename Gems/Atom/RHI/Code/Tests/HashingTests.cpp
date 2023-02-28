@@ -29,7 +29,7 @@ namespace UnitTest
     class ShaderStageFunction : public RHI::ShaderStageFunction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator);
 
         ShaderStageFunction(uint64_t hash, RHI::ShaderStage shaderStage)
             : RHI::ShaderStageFunction(shaderStage)

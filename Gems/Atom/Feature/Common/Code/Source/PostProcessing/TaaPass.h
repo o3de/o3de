@@ -17,7 +17,7 @@ namespace AZ::Render
         : public RPI::ComputePassData
     {
         AZ_RTTI(TaaPassData, "{BCDF5C7D-7A78-4C69-A460-FA6899C3B960}", ComputePassData);
-        AZ_CLASS_ALLOCATOR(TaaPassData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaaPassData, SystemAllocator);
 
         TaaPassData() = default;
         virtual ~TaaPassData() = default;
@@ -43,7 +43,7 @@ namespace AZ::Render
         
     public:
         AZ_RTTI(AZ::Render::TaaPass, "{AB3BD4EA-33D7-477F-82B4-21DDFB517499}", Base);
-        AZ_CLASS_ALLOCATOR(TaaPass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaaPass, SystemAllocator);
         virtual ~TaaPass() = default;
         
         /// Creates a TaaPass

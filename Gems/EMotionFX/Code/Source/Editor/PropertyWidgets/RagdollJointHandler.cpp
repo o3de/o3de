@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollMultiJointHandler, PropertyWidgetAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollMultiJointHandler, PropertyWidgetAllocator)
 
     AZ::u32 RagdollMultiJointHandler::GetHandlerName() const
     {
@@ -28,7 +28,8 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
         return picker;

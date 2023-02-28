@@ -19,7 +19,7 @@ namespace Compression
     {
     public:
         AZ_RTTI(CompressionRegistrarImpl, "{9F3B8418-4BEB-4249-BAAF-6653A8F511A3}", CompressionRegistrarInterface);
-        AZ_CLASS_ALLOCATOR(CompressionRegistrarImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompressionRegistrarImpl, AZ::SystemAllocator);
 
         CompressionRegistrarImpl();
         ~CompressionRegistrarImpl();

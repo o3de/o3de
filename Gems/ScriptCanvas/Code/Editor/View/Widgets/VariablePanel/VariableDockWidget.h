@@ -113,7 +113,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator);
 
         static AZStd::string ConstructDefaultVariableName(AZ::u32 variableCounter);
         static AZStd::string FindDefaultVariableName(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId);

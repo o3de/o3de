@@ -25,6 +25,7 @@ set(FILES
     ActionManager/HotKey/HotKeyManager.cpp
     ActionManager/HotKey/HotKeyManager.h
     ActionManager/HotKey/HotKeyManagerInterface.h
+    ActionManager/HotKey/HotKeyManagerInternalInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -720,6 +721,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
     AssetBrowser/Views/AssetBrowserThumbnailView.h
+    AssetBrowser/Views/AssetBrowserViewUtils.cpp
+    AssetBrowser/Views/AssetBrowserViewUtils.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
     AssetBrowser/Views/AssetBrowserFolderWidget.cpp

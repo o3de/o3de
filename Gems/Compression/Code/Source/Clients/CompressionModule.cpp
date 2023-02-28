@@ -19,7 +19,7 @@ namespace Compression
     {
     public:
         AZ_RTTI(CompressionModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
-        AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator);
 
         CompressionModule()
         {

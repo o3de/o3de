@@ -229,11 +229,46 @@ namespace AZ::Utils
             settingsRegistry = AZ::SettingsRegistry::Get();
         }
 
-
         if (settingsRegistry != nullptr)
         {
             if (AZ::IO::FixedMaxPathString settingsValue;
                 settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
             {
                 return settingsValue;
             }

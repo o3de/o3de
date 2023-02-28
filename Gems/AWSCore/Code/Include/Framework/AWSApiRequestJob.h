@@ -160,7 +160,7 @@ namespace AWSCore
     public:
 
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(AwsApiRequestJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiRequestJob, AZ::SystemAllocator);
 
         using AwsApiRequestJobType = AwsApiRequestJob<RequestTraits>;
         using AwsApiClientJobType = AwsApiClientJob<typename RequestTraits::ClientType>;
@@ -295,7 +295,7 @@ namespace AWSCore
     {
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator);
 
         Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
             : AwsApiRequestJobType(

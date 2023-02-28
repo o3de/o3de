@@ -19,7 +19,7 @@ namespace AzFramework
         , public AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SpawnableAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnableAssetHandler, AZ::SystemAllocator);
         AZ_RTTI(AZ::SpawnableAssetHandler, "{BF6E2D17-87C9-4BB1-A205-3656CF6D551D}", AZ::Data::AssetHandler);
 
         SpawnableAssetHandler();

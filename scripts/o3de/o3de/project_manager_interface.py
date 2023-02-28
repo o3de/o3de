@@ -10,9 +10,8 @@ Contains functions for the project manager to call that gather data from o3de sc
 """
 
 import logging
-import pathlib
 
-from o3de import cmake, disable_gem, download, enable_gem, engine_properties, engine_template, manifest, project_properties, register, repo
+from o3de import manifest, utils
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -138,7 +137,29 @@ def get_all_project_infos() -> list:
 
         :return list of dicts containing project infos.
     """
-    return list()
+    project_paths = manifest.get_all_projects()
+
+    # get all engine info once up front
+    engines_json_data = manifest.get_engines_json_data_by_path()
+
+    project_infos = []
+    for project_path in project_paths:
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+        if not project_json_data:
+            continue
+        user_project_json_data = manifest.get_project_json_data(project_path=project_path, user=True)
+        if user_project_json_data:
+            project_json_data.update(user_project_json_data)
+
+        project_json_data['path'] = project_path
+        project_json_data['engine_path'] = manifest.get_project_engine_path(project_path=project_path, 
+                                                                            project_json_data=project_json_data, 
+                                                                            user_project_json_data=user_project_json_data, 
+                                                                            engines_json_data=engines_json_data)
+        project_infos.append(project_json_data)
+    return project_infos
+
+
 
 
 def set_project_info(project_info: dict):

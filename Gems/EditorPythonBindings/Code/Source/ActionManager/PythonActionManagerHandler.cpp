@@ -271,9 +271,9 @@ namespace EditorPythonBindings
         return m_toolBarManagerInterface->AddToolBarToToolBarArea(toolBarAreaIdentifier, toolBarIdentifier, sortIndex);
     }
 
-    QToolBar* PythonActionManagerHandler::GetToolBar(const AZStd::string& toolBarIdentifier)
+    QToolBar* PythonActionManagerHandler::GenerateToolBar(const AZStd::string& toolBarIdentifier)
     {
-        return m_toolBarManagerInterface->GetToolBar(toolBarIdentifier);
+        return m_toolBarManagerInterface->GenerateToolBar(toolBarIdentifier);
     }
 
     AzToolsFramework::ToolBarManagerIntegerResult PythonActionManagerHandler::GetSortKeyOfActionInToolBar(

@@ -22,7 +22,7 @@ namespace AZ
         {
             using Base = RHI::IndirectBufferSignature;
         public:
-            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferSignature, "{29CAB46E-351D-4BC1-A93B-B16EA0496645}", Base);
 
             static RHI::Ptr<IndirectBufferSignature> Create();

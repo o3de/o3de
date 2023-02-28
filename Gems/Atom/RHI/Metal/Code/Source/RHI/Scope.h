@@ -30,7 +30,7 @@ namespace AZ
             using Base = RHI::Scope;
         public:
             AZ_RTTI(Scope, "{FDACECE6-322E-480C-9331-DC639C320882}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             //Used for aliased memory
             enum class ResourceFenceAction : uint32_t

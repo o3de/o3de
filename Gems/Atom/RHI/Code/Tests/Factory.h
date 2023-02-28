@@ -25,7 +25,7 @@ namespace UnitTest
         Factory();
         ~Factory();
 
-        AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator);
 
     private:
         const AZ::Name m_platformName{"UnitTest"};

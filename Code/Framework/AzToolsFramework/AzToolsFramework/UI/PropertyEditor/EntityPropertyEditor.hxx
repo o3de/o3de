@@ -131,7 +131,7 @@ namespace AzToolsFramework
         Q_OBJECT;
     public:
 
-        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator)
 
         enum class ReorderState
         {
@@ -262,6 +262,7 @@ namespace AzToolsFramework
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
+        void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;

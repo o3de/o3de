@@ -18,7 +18,7 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(EditorBaseComponentMode, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(EditorBaseComponentMode, AZ::SystemAllocator)
 
         EditorBaseComponentMode::EditorBaseComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)

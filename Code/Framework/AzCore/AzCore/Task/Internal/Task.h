@@ -108,7 +108,7 @@ namespace AZ::Internal
     class alignas(alignof(max_align_t)) Task final
     {
     public:
-        AZ_CLASS_ALLOCATOR(Task, ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Task, ThreadPoolAllocator);
 
         // The inline buffer allows the Task to span two cache lines. Lambdas can capture 56
         // bytes of data (7 pointers/references on a 64-bit machine).

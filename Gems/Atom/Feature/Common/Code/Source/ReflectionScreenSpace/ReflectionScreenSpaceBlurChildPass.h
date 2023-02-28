@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceBlurChildPass, "{238E4D6C-3213-4BA2-8DFE-EAC469346E77}", FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurChildPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurChildPass, SystemAllocator);
 
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurChildPass> Create(const RPI::PassDescriptor& descriptor);

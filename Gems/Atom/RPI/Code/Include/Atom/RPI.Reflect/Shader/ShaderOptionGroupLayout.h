@@ -193,7 +193,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::ShaderOptionGroupLayout, "{32E269DE-12A2-4B65-B4F8-BAE93DD39D7E}");
-            AZ_CLASS_ALLOCATOR(ShaderOptionGroupLayout, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderOptionGroupLayout, AZ::ThreadPoolAllocator);
             static void Reflect(ReflectContext* context);
 
             static Ptr<ShaderOptionGroupLayout> Create();

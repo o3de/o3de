@@ -23,7 +23,7 @@ namespace AZ::RHI
     class XRInstanceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRInstanceDescriptor, "{FE1EC82F-6265-4A67-84D2-D05D4229B598}");
 
         XRInstanceDescriptor() = default;
@@ -34,7 +34,7 @@ namespace AZ::RHI
     class XRPhysicalDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRPhysicalDeviceDescriptor, "{94B9A6A2-AA80-4439-A51F-DBF20B4337BD}");
 
         XRPhysicalDeviceDescriptor() = default;
@@ -45,7 +45,7 @@ namespace AZ::RHI
     class XRDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRDeviceDescriptor, "{02118DCD-A081-4B1C-80CA-A8C5CD80D83B}");
 
         XRDeviceDescriptor() = default;
@@ -56,7 +56,7 @@ namespace AZ::RHI
     class XRSessionDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSessionDescriptor, "{697039B1-0004-4544-8B5D-B8E2B1AA7E8D}");
 
         XRSessionDescriptor() = default;
@@ -67,7 +67,7 @@ namespace AZ::RHI
     class XRSwapChainDescriptor : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSwapChainDescriptor, "{89DB71B1-913E-4802-9F77-B23E2F15D4D4}");
 
         XRSwapChainDescriptor() = default;
@@ -89,7 +89,7 @@ namespace AZ::RHI
     class XRRenderingInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator);
         AZ_RTTI(XRRenderingInterface, "{D1D99CEF-30E5-4690-9D91-36C0029436FD}");
 
         XRRenderingInterface() = default;

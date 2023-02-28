@@ -34,7 +34,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator);
 
             explicit AssetBrowserThumbnailView(QWidget* parent = nullptr);
             ~AssetBrowserThumbnailView() override;

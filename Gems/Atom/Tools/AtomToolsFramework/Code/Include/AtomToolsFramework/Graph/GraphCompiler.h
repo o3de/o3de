@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(GraphCompiler, "{D79FA3C7-BF5D-4A23-A3AB-1D6733B0C619}");
-        AZ_CLASS_ALLOCATOR(GraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCompiler, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(GraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);

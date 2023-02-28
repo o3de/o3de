@@ -32,7 +32,7 @@ namespace AZ::IO::ZipDir
         : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator);
         // the size of the buffer that's using during re-linking the zip file
         inline static constexpr size_t g_nSizeRelinkBuffer = 1024 * 1024;
         inline static constexpr size_t g_nMaxItemsRelinkBuffer = 128; // max number of files to read before (without) writing

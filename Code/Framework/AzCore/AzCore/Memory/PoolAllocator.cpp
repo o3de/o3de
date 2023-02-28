@@ -96,7 +96,7 @@ namespace AZ
     class PoolAllocation
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolAllocation<Allocator>, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PoolAllocation<Allocator>, SystemAllocator);
 
         using PageType = typename Allocator::Page;
         using BucketType = typename Allocator::Bucket;

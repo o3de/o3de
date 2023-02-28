@@ -31,7 +31,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceUpgradeTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceUpgradeTest_MockCatalog, AZ::SystemAllocator);
 
         SliceUpgradeTest_MockCatalog()
         {

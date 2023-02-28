@@ -67,7 +67,7 @@ namespace ProjectSettingsTool
     class PropertyLinkedHandler
         : public AzToolsFramework::PropertyHandler<AZStd::string, PropertyLinkedCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyLinkedHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyLinkedHandler, AZ::SystemAllocator);
 
     public:
         PropertyLinkedHandler(ValidationHandler* valHdlr);
