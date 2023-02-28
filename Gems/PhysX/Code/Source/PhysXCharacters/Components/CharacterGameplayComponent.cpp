@@ -123,20 +123,6 @@ namespace PhysX
             return true;
         }
 
-        // first check if we can use the character controller state, which should be cheaper than doing a scene query
-
-        // if the controller is slightly above an object or has not been asked to move downwards, the PxController may
-        // not report a touched actor or downward collision, so this can give false negatives, but should not give
-        // false positives, so it's useful as an early out
-        physx::PxControllerState state;
-        pxController->getState(state);
-
-        if (state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0)
-        {
-            return true;
-        }
-
-        // if we get to this point it's still unclear whether the character is touching the ground so
         // use an overlap query to see if there's any geometry immediately below the character's foot position
         if (auto* scene = character->GetScene())
         {
