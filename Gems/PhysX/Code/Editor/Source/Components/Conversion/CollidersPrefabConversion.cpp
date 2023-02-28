@@ -108,8 +108,9 @@ namespace PhysX
             newProxyAssetShapeConfig.m_hasNonUniformScale = proxyShapeConfig.m_hasNonUniformScale;
             newProxyAssetShapeConfig.m_subdivisionLevel = proxyShapeConfig.m_subdivisionLevel;
 
-            if (!entity.CreateComponent<EditorMeshColliderComponent>(
-                    editorColliderComponent->GetColliderConfiguration(), newProxyAssetShapeConfig))
+            auto* editorMeshColliderComponent = entity.CreateComponent<EditorMeshColliderComponent>(
+                editorColliderComponent->GetColliderConfiguration(), newProxyAssetShapeConfig);
+            if (!editorMeshColliderComponent)
             {
                 AZ_Warning(
                     "PhysXColliderConversion",
@@ -130,6 +131,9 @@ namespace PhysX
                     prefabInfo.m_prefabFullPath.c_str());
                 return false;
             }
+            // Keep the same component id for the mesh collider component. It's needed
+            // in case there are other prefabs with patches referencing the old component.
+            editorMeshColliderComponent->SetId(editorColliderComponent->GetId());
 
             // Once the component is removed from the entity we are responsible for its destruction.
             delete editorColliderComponent;
