@@ -78,7 +78,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="a Qt checkbox does not trigger the events needed to properly pass the test.")
+    @pytest.mark.skip(reason="a Qt checkbox does not trigger: https://github.com/o3de/o3de/issues/14860")
     def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
         from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -88,7 +88,7 @@ class TestAutomationQtPyTests(TestAutomationBase):
         from . import ScriptEvent_AddRemoveMethod_UpdatesInSC as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="a Qt checkbox does not trigger the events needed to properly pass the test.")
+    @pytest.mark.skip(reason="a Qt checkbox does not trigger: https://github.com/o3de/o3de/issues/14860")
     def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
         from . import ScriptEvents_AllParamDatatypes_CreationSuccess as test_module
         self._run_test(request, workspace, editor, test_module)
