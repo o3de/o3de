@@ -264,9 +264,9 @@ namespace AZ
             if (graphicsDevMode || shaderBuildArguments.m_generateDebugInfo)
             {
                 // prepare .pdb filename:
-                AZStd::string md5hex = RHI::ByteToHexString(sha1);
+                AZStd::string sha1hex = RHI::ByteToHexString(sha1);
                 AZStd::string symbolDatabaseFilePath = dxcInputFile.c_str();  // mutate from source
-                AZStd::string pdbFileName = md5hex + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
+                AZStd::string pdbFileName = sha1hex + "-" + profileIt->second; // concatenate the shader profile to disambiguate vs/ps...
                 AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, pdbFileName.c_str(), "pdb");
                 // it is possible that another activated platform/profile, already exported that file. (since it's hashed on the source file)
                 // dxc returns an error in such case. we get less surprising effets by just not mentionning an -Fd argument
