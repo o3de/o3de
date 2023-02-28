@@ -115,53 +115,37 @@ namespace AZ::Internal
     template<class WrappedType, class Callable>
     auto ClassBuilderBase::WrappingMember(Callable callableFunction) -> ClassBuilderBase*
     {
-        auto Unwrap = [](void* classPtr, void*& unwrappedClassPtr, AZ::Uuid& unwrappedClassTypeId, const UnwrapperUserData& userData)
+        auto Unwrap = [](void* classPtr, BehaviorObject& unwrappedObject, const UnwrapperUserData& userData)
         {
             const Callable* callablePtr{};
-            if constexpr (sizeof(Callable) <= sizeof(userData.m_objectStorage))
-            {
-                const void* storageAddress = reinterpret_cast<const void*>(&userData.m_objectStorage);
-                callablePtr = static_cast<const Callable*>(storageAddress);
-            }
-            else
-            {
-                callablePtr = static_cast<const Callable*>(userData.m_unwrapperPtr.get());
-            }
+            callablePtr = static_cast<const Callable*>(userData.m_unwrapperPtr.get());
 
             using CallableTraits = AZStd::function_traits<Callable>;
             if constexpr (!AZStd::is_same_v<typename CallableTraits::class_type, AZStd::Internal::error_type>)
             {
                 using ClassTypePtr = typename CallableTraits::class_type*;
-                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
+                unwrappedObject.m_address = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
             }
             else
             {
                 static_assert(CallableTraits::arity > 0, "Non member Wrapping function must accept at least 1 argument");
                 using ClassTypePtr = typename CallableTraits::template get_arg_t<0>;
-                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
+                unwrappedObject.m_address = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
             }
-            unwrappedClassTypeId = AzTypeInfo<WrappedType>::Uuid();
+            unwrappedObject.m_typeId = AZ::AzTypeInfo<WrappedType>::Uuid();
+            unwrappedObject.m_rttiHelper = AZ::GetRttiHelper<WrappedType>();
         };
 
         UnwrapperUserData userData;
-        if constexpr(sizeof(Callable) <= sizeof(userData.m_objectStorage))
+        auto deleteCallable = [](void* ptr)
         {
-            // placement new the callable in the 8 bytes available for the void*
-            void* storageAddress = reinterpret_cast<void*>(&userData.m_objectStorage);
-            new (storageAddress) Callable(AZStd::move(callableFunction));
-        }
-        else
-        {
-            auto deleteCallable = [](void* ptr)
+            if (ptr != nullptr)
             {
-                if (ptr != nullptr)
-                {
-                    delete static_cast<Callable*>(ptr);
-                }
-            };
-            userData.m_unwrapperPtr = UnwrapperPtr(new Callable(AZStd::move(callableFunction)),
-                UnwrapperFuncDeleter{ AZStd::move(deleteCallable) });
-        }
+                delete static_cast<Callable*>(ptr);
+            }
+        };
+        userData.m_unwrapperPtr = UnwrapperPtr(new Callable(AZStd::move(callableFunction)),
+            UnwrapperFuncDeleter{ AZStd::move(deleteCallable) });
 
         if (!Base::m_context->IsRemovingReflection())
         {

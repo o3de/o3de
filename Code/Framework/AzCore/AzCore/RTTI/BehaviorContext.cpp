@@ -1152,12 +1152,9 @@ namespace AZ
     }
 
     UnwrapperUserData::UnwrapperUserData() = default;
-    UnwrapperUserData::UnwrapperUserData(UnwrapperUserData&&) = default;
-    UnwrapperUserData& UnwrapperUserData::operator=(UnwrapperUserData&&) = default;
-
-    UnwrapperUserData::~UnwrapperUserData()
-    {
-    }
+    UnwrapperUserData::UnwrapperUserData(UnwrapperUserData&& other) = default;
+    UnwrapperUserData& UnwrapperUserData::operator=(UnwrapperUserData&& other) = default;
+    UnwrapperUserData::~UnwrapperUserData() = default;
 
 
     //////////////////////////////////////////////////////////////////////////

@@ -860,19 +860,17 @@ namespace AZ
     // Wraps storage for the unwrapper functor that cannot be
     // stored within the <= sizeof(void*) amount of storage
     using UnwrapperPtr = AZStd::unique_ptr<void, UnwrapperFuncDeleter>;
-    union UnwrapperUserData
+    struct UnwrapperUserData
     {
         UnwrapperUserData();
         UnwrapperUserData(UnwrapperUserData&&);
         UnwrapperUserData& operator=(UnwrapperUserData&&);
         ~UnwrapperUserData();
 
-        AZStd::byte m_objectStorage[sizeof (void*)]{};
         UnwrapperPtr m_unwrapperPtr;
-
     };
-    using BehaviorClassUnwrapperFunction = void(*)(void* /*classPtr*/, void*& /*unwrappedClass*/,
-        AZ::Uuid& /*unwrappedClassTypeId*/, const UnwrapperUserData& /*userData*/);
+    using BehaviorClassUnwrapperFunction = void(*)(void* /*classPtr*/, BehaviorObject& /*unwrappedBehaviorObject*/,
+        const UnwrapperUserData& /*userData*/);
 
     /**
      * Behavior representation of reflected class.
