@@ -726,7 +726,6 @@ namespace AZ
         , m_alignment(0)
         , m_size(0)
         , m_unwrapper(nullptr)
-        , m_unwrapperUserData(nullptr)
         , m_wrappedTypeId(Uuid::CreateNull())
     {
     }
@@ -1143,7 +1142,22 @@ namespace AZ
         return FindAttribute(attributeId) != nullptr;
     }
 
+    // Deleter operator for the unwrapper unique_ptr deleter
+    void UnwrapperFuncDeleter::operator()(void* ptr) const
+    {
+        if (m_deleter && ptr)
+        {
+            m_deleter(ptr);
+        }
+    }
 
+    UnwrapperUserData::UnwrapperUserData() = default;
+    UnwrapperUserData::UnwrapperUserData(UnwrapperUserData&&) = default;
+    UnwrapperUserData& UnwrapperUserData::operator=(UnwrapperUserData&&) = default;
+
+    UnwrapperUserData::~UnwrapperUserData()
+    {
+    }
 
 
     //////////////////////////////////////////////////////////////////////////

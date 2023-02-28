@@ -31,11 +31,9 @@ namespace AZ::Internal
         template<class C, class... Params>
         ClassBuilderBase* ConstructorWithClass();
 
-        /// When your class is a wrapper, like smart pointers, you should use this to describe how to unwrap the class.
-        template<class WrappedType>
-        ClassBuilderBase* Wrapping(BehaviorClassUnwrapperFunction unwrapper, void* userData);
 
-        /// Provide a function to unwrap this class (use an underlaying class)
+        /// Provide a function to unwrap this class to an underlying member address
+        /// Such as retrieving the raw pointer from a smart_ptr or a const char* from a string type
         template<class WrappedType, class Callable>
         ClassBuilderBase* WrappingMember(Callable callableFunction);
 
@@ -114,64 +112,71 @@ namespace AZ::Internal
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<class WrappedType>
-    auto ClassBuilderBase::Wrapping(BehaviorClassUnwrapperFunction unwrapper, void* userData) -> ClassBuilderBase*
+    template<class WrappedType, class Callable>
+    auto ClassBuilderBase::WrappingMember(Callable callableFunction) -> ClassBuilderBase*
     {
+        auto Unwrap = [](void* classPtr, void*& unwrappedClassPtr, AZ::Uuid& unwrappedClassTypeId, const UnwrapperUserData& userData)
+        {
+            const Callable* callablePtr{};
+            if constexpr (sizeof(Callable) <= sizeof(userData.m_objectStorage))
+            {
+                const void* storageAddress = reinterpret_cast<const void*>(&userData.m_objectStorage);
+                callablePtr = static_cast<const Callable*>(storageAddress);
+            }
+            else
+            {
+                callablePtr = static_cast<const Callable*>(userData.m_unwrapperPtr.get());
+            }
+
+            using CallableTraits = AZStd::function_traits<Callable>;
+            if constexpr (!AZStd::is_same_v<typename CallableTraits::class_type, AZStd::Internal::error_type>)
+            {
+                using ClassTypePtr = typename CallableTraits::class_type*;
+                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
+            }
+            else
+            {
+                static_assert(CallableTraits::arity > 0, "Non member Wrapping function must accept at least 1 argument");
+                using ClassTypePtr = typename CallableTraits::template get_arg_t<0>;
+                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(*callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
+            }
+            unwrappedClassTypeId = AzTypeInfo<WrappedType>::Uuid();
+        };
+
+        UnwrapperUserData userData;
+        if constexpr(sizeof(Callable) <= sizeof(userData.m_objectStorage))
+        {
+            // placement new the callable in the 8 bytes available for the void*
+            void* storageAddress = reinterpret_cast<void*>(&userData.m_objectStorage);
+            new (storageAddress) Callable(AZStd::move(callableFunction));
+        }
+        else
+        {
+            auto deleteCallable = [](void* ptr)
+            {
+                if (ptr != nullptr)
+                {
+                    delete static_cast<Callable*>(ptr);
+                }
+            };
+            userData.m_unwrapperPtr = UnwrapperPtr(new Callable(AZStd::move(callableFunction)),
+                UnwrapperFuncDeleter{ AZStd::move(deleteCallable) });
+        }
+
         if (!Base::m_context->IsRemovingReflection())
         {
             AZ_Error("BehaviorContext", m_class, "You can wrap only valid classes!");
         }
         if (m_class)
         {
-            AZ_Assert(m_class->m_typeId != AzTypeInfo<WrappedType>::Uuid(), "A Wrapping member cannot unwrap to the same type as itself."
+            const AZ::Uuid wrappedTypeId = AzTypeInfo<WrappedType>::Uuid();
+            AZ_Assert(m_class->m_typeId != wrappedTypeId, "A Wrapping member cannot unwrap to the same type as itself."
                 " As wrapped types are implicitly reflected by the ScriptContext, this prevents a recursive loop");
-            m_class->m_wrappedTypeId = AzTypeInfo<WrappedType>::Uuid();
-            m_class->m_unwrapper = unwrapper;
-            m_class->m_unwrapperUserData = userData;
+            m_class->m_wrappedTypeId = wrappedTypeId;
+            m_class->m_unwrapper = Unwrap;
+            m_class->m_unwrapperUserData = AZStd::move(userData);
         }
         return this;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    template<class WrappedType, class Callable>
-    auto ClassBuilderBase::WrappingMember(Callable callableFunction) -> ClassBuilderBase*
-    {
-        static_assert(sizeof(Callable) <= sizeof(void*), "Callable cannot be greater than the size of a pointer.\n"
-            "The Callable is stored in a void* and therefore must be able to fit within a pointer");
-
-        auto Unwrap = [](void* classPtr, void*& unwrappedClassPtr, AZ::Uuid& unwrappedClassTypeId, void* userData)
-        {
-            union
-            {
-                void* userData;
-                Callable callablePtr;
-            } u;
-            u.callablePtr = nullptr;
-
-            u.userData = userData;
-            using CallableTraits = AZStd::function_traits<Callable>;
-            if constexpr (!AZStd::is_same_v<typename CallableTraits::class_type, AZStd::Internal::error_type>)
-            {
-                using ClassTypePtr = typename CallableTraits::class_type*;
-                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(u.callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
-            }
-            else
-            {
-                static_assert(CallableTraits::arity > 0, "Non member Wrapping function must accept at least 1 argument");
-                using ClassTypePtr = typename CallableTraits::template get_arg_t<0>;
-                unwrappedClassPtr = const_cast<void*>(reinterpret_cast<const void*>(AZStd::invoke(u.callablePtr, reinterpret_cast<ClassTypePtr>(classPtr))));
-            }
-            unwrappedClassTypeId = AzTypeInfo<WrappedType>::Uuid();
-        };
-
-        union
-        {
-            Callable callableFunction;
-            void* userData;
-        } u;
-        u.callableFunction = callableFunction;
-
-        return Wrapping<WrappedType>(Unwrap, u.userData);
     }
 
     template<class Function>
@@ -413,9 +418,6 @@ namespace AZ
         template<class... Params>
         ClassBuilder* Constructor();
 
-        template<class WrappedType>
-        ClassBuilder* Wrapping(BehaviorClassUnwrapperFunction unwrapper, void* userData);
-
         template<class WrappedType, class Callable>
         ClassBuilder* WrappingMember(Callable callableFunction);
 
@@ -489,15 +491,6 @@ namespace AZ
     auto BehaviorContext::ClassBuilder<T>::Constructor() -> ClassBuilder*
     {
         ClassBuilderBase::ConstructorWithClass<T, Params...>();
-        return this;
-    }
-
-    template<class T>
-    template<class WrappedType>
-    auto BehaviorContext::ClassBuilder<T>::Wrapping(BehaviorClassUnwrapperFunction unwrapper, void* userData)
-        -> ClassBuilder*
-    {
-        ClassBuilderBase::Wrapping<WrappedType>(AZStd::move(unwrapper), userData);
         return this;
     }
 

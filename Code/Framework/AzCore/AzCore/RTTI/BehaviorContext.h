@@ -40,9 +40,6 @@ namespace AZ
     constexpr const char* k_PropertyNameGetterSuffix = "::Getter";
     constexpr const char* k_PropertyNameSetterSuffix = "::Setter";
 
-    /// Typedef for class unwrapping callback (i.e. used for things like smart_ptr<T> to unwrap for T)
-    using BehaviorClassUnwrapperFunction = void(*)(void* /*classPtr*/, void*& /*unwrappedClass*/, AZ::Uuid& /*unwrappedClassTypeId*/, void* /*userData*/);
-
     class BehaviorContext;
     class BehaviorClass;
     class BehaviorProperty;
@@ -852,6 +849,31 @@ namespace AZ
         };
     } // namespace Internal
 
+    struct UnwrapperFuncDeleter
+    {
+        using Deleter = void(*)(void*);
+
+        void operator()(void* ptr) const;
+
+        Deleter m_deleter{};
+    };
+    // Wraps storage for the unwrapper functor that cannot be
+    // stored within the <= sizeof(void*) amount of storage
+    using UnwrapperPtr = AZStd::unique_ptr<void, UnwrapperFuncDeleter>;
+    union UnwrapperUserData
+    {
+        UnwrapperUserData();
+        UnwrapperUserData(UnwrapperUserData&&);
+        UnwrapperUserData& operator=(UnwrapperUserData&&);
+        ~UnwrapperUserData();
+
+        AZStd::byte m_objectStorage[sizeof (void*)]{};
+        UnwrapperPtr m_unwrapperPtr;
+
+    };
+    using BehaviorClassUnwrapperFunction = void(*)(void* /*classPtr*/, void*& /*unwrappedClass*/,
+        AZ::Uuid& /*unwrappedClassTypeId*/, const UnwrapperUserData& /*userData*/);
+
     /**
      * Behavior representation of reflected class.
      */
@@ -967,7 +989,7 @@ namespace AZ
         size_t m_size;
         BehaviorClassUnwrapperFunction m_unwrapper;
         ValueHasherType m_valueHasher;
-        void* m_unwrapperUserData;
+        UnwrapperUserData m_unwrapperUserData;
         AZ::Uuid m_wrappedTypeId;
         // Store all owned instances for unload verification?
     };
