@@ -276,7 +276,7 @@ namespace ScriptAutomation
 
         bool PrepareForScreenCapture(const AZStd::string& imageName)
         {
-            AZ::Outcome<AZStd::string, AZ::Render::FrameCaptureTestError> pathOutcome;
+            AZ::Render::FrameCapturePathOutcome pathOutcome;
             AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
                 pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
 
@@ -362,7 +362,7 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZ::Outcome<AZStd::string, AZ::Render::FrameCaptureTestError> pathOutcome;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
                         pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
 
@@ -370,7 +370,7 @@ namespace ScriptAutomation
                     AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
 
                     AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
@@ -397,7 +397,7 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZ::Outcome<AZStd::string, AZ::Render::FrameCaptureTestError> pathOutcome;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
                         pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
 
@@ -405,7 +405,7 @@ namespace ScriptAutomation
                     AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
 
                     AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
@@ -506,7 +506,7 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZ::Outcome<AZStd::string, AZ::Render::FrameCaptureTestError> pathOutcome;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
                         pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
 
@@ -514,7 +514,7 @@ namespace ScriptAutomation
                     AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(
                         captureOutcome,
                         &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
@@ -547,7 +547,7 @@ namespace ScriptAutomation
                 AZStd::string resolvedPathA = ResolvePath(filePathA);
                 AZStd::string resolvedPathB = ResolvePath(filePathB);
 
-                AZ::Outcome<AZ::Utils::ImageDiffResult, AZ::Render::FrameCaptureTestError> compareOutcome;
+                AZ::Render::FrameCaptureComparisonOutcome compareOutcome;
                 AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
                     compareOutcome,
                     &AZ::Render::FrameCaptureTestRequestBus::Events::CompareScreenshots,

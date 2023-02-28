@@ -94,7 +94,7 @@ namespace TrackView
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
+        AZ::Render::FrameCaptureOutcome captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             captureOutcome,
             &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,

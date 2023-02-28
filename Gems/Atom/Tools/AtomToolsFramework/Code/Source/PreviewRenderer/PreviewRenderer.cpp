@@ -234,7 +234,7 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        AZ::Outcome<AZ::Render::FrameCaptureId, AZ::Render::FrameCaptureError> captureOutcome;
+        AZ::Render::FrameCaptureOutcome captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             captureOutcome,
             &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,

@@ -491,23 +491,21 @@ namespace AZ
             return AZ::Success(captureHandle);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
+        FrameCaptureOutcome FrameCaptureSystemComponent::CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle)
         {
             return InternalCaptureScreenshot(filePath, windowHandle);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
+        FrameCaptureOutcome FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
         {
+            FrameCaptureError error;
+
             AzFramework::NativeWindowHandle windowHandle = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
-            if (windowHandle == nullptr)
-            {
-                return InvalidFrameCaptureId;
-            }
 
             return InternalCaptureScreenshot(filePath, windowHandle);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
+        FrameCaptureOutcome FrameCaptureSystemComponent::CaptureScreenshotWithPreview(const AZStd::string& outputFilePath)
         {
             FrameCaptureError error;
 
@@ -553,10 +551,16 @@ namespace AZ
             return AZ::Success(frameId);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::InternalCaptureScreenshot(
+        FrameCaptureOutcome FrameCaptureSystemComponent::InternalCaptureScreenshot(
             const AZStd::string& imagePath, AzFramework::NativeWindowHandle windowHandle)
         {
             FrameCaptureError error;
+
+            if (!windowHandle)
+            {
+                error.m_errorMessage = "No valid window for the capture.";
+                return AZ::Failure(error); 
+            }
 
             // Find SwapChainPass for the window handle
             RPI::SwapChainPass* pass = AZ::RPI::PassSystemInterface::Get()->FindSwapChainPass(windowHandle);
@@ -585,7 +589,7 @@ namespace AZ
             return AZ::Success(frameId);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::InternalCapturePassAttachment(
+        FrameCaptureOutcome FrameCaptureSystemComponent::InternalCapturePassAttachment(
             const AZStd::string& outputFilePath,
             AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction,
             const AZStd::vector<AZStd::string>& passHierarchy,
@@ -634,7 +638,7 @@ namespace AZ
             return AZ::Success(frameId);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::CapturePassAttachment(
+        FrameCaptureOutcome FrameCaptureSystemComponent::CapturePassAttachment(
             const AZStd::string& imagePath,
             const AZStd::vector<AZStd::string>& passHierarchy,
             const AZStd::string& slot,
@@ -648,7 +652,7 @@ namespace AZ
                 option);
         }
 
-        AZ::Outcome<FrameCaptureId, FrameCaptureError> FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
+        FrameCaptureOutcome FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
             RPI::AttachmentReadback::CallbackFunction callback,
             const AZStd::vector<AZStd::string>& passHierarchy,
             const AZStd::string& slotName,
@@ -904,7 +908,7 @@ namespace AZ
             m_localBaselineImageFolder = ResolvePath(baselineFolder);
         }
 
-        AZ::Outcome<AZStd::string, FrameCaptureTestError> FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath)
+        FrameCapturePathOutcome FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
             AZStd::string imagePath = useEnvPath
                 ? ResolvePath(AZStd::string::format("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()))
@@ -922,7 +926,7 @@ namespace AZ
             }
         }
 
-        AZ::Outcome<AZStd::string, FrameCaptureTestError> FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
+        FrameCapturePathOutcome FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
             AZStd::string imagePath = useEnvPath
                 ? ResolvePath(AZStd::string::format("%s/%s/%s", m_officialBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()))
@@ -940,7 +944,7 @@ namespace AZ
             }
         }
 
-        AZ::Outcome<AZStd::string, FrameCaptureTestError> FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
+        FrameCapturePathOutcome FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath)
         {
             AZStd::string imagePath = useEnvPath
                 ? ResolvePath(AZStd::string::format("%s/%s/%s", m_localBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()))
@@ -958,7 +962,8 @@ namespace AZ
             }
         }
 
-        AZ::Outcome<Utils::ImageDiffResult, FrameCaptureTestError> FrameCaptureSystemComponent::CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
+        FrameCaptureComparisonOutcome FrameCaptureSystemComponent::CompareScreenshots(
+            const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
         {
             FrameCaptureTestError error;
 
