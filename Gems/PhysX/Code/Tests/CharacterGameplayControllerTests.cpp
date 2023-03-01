@@ -95,17 +95,11 @@ namespace PhysX
             }
         }
 
-        //! Add the ground tot he scene via the test basis for tests where the ground is needed.
+        //! Add the ground to the scene via the test basis for tests where the ground is needed.
         //! This function will only ever add one ground element to the scene.
         void SetupGround(const AZ::Transform& floorTransform = DefaultFloorTransform)
         {
             m_floor = PhysX::TestUtils::AddStaticFloorToScene(m_sceneHandle, floorTransform);
-        }
-
-        //! Function to remove the ground for tests where the ground can interfere with the intent of the test. 
-        void RemoveGround()
-        {
-            m_testScene->RemoveSimulatedBody(m_floor->m_bodyHandle);
         }
 
         AzPhysics::Scene* m_testScene = nullptr;
@@ -156,10 +150,12 @@ namespace PhysX
         auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
 
         // Set the falling velocity to the expected + original velocity to verify that the velociy will change.
-        basis.m_gameplayController->SetFallingVelocity(originalVelocity + expectedVelocity);
+        basis.m_gameplayController->SetFallingVelocity(expectedVelocity);
 
         // Get the end velocity and validate that it is the expected value.
         auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
+
+        EXPECT_THAT(endVelocity.GetZ(), testing::Not(testing::FloatNear(originalVelocity.GetZ(), 0.001f)));
         EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ(), 0.001f));
     }
 
@@ -176,7 +172,7 @@ namespace PhysX
         for (int i = 0; i < 10; i++)
         {
             // Calculate and set velocity based upon the original velocity, expected velocity, and loop count modifier
-            auto setVelocity = originalVelocity + expectedVelocity + AZ::Vector3(0.0f, 0.0f, float(i));
+            auto setVelocity = expectedVelocity + AZ::Vector3(0.0f, 0.0f, float(i));
             basis.m_gameplayController->SetFallingVelocity(setVelocity);
 
             basis.Update();
@@ -186,42 +182,44 @@ namespace PhysX
             const auto gravity = basis.m_testScene->GetGravity();
 
             // The end velocity should be decelerated by gt when g is gravity acceleration and t is the length of time
-            const float expectedDeceleration = gravity.GetZ() * basis.m_timeStep;
+            const float expectedVelocityChange = gravity.GetZ() * basis.m_timeStep;
 
             // Verify that the end velocity is the set velocity minus the deceleration for a single time step
-            EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(setVelocity.GetZ() + expectedDeceleration, 0.001f));
+            EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(setVelocity.GetZ() + expectedVelocityChange, 0.001f));
         }
     }
 
-    //! Test that verifies that the Ground Detec Set & Get methods function as expected.
+    //! Test that verifies that the Ground Detection Set & Get methods function as expected.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_SetGroundDetectionHeight)
     {
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        const float expectedHeight = 10.0f;
+        const float expectedHeight = 1.2f;
         const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
 
-        // Set the ground detection to the excpected heigh + the original height to ensure that it changes.
-        basis.m_gameplayController->SetGroundDetectionBoxHeight(expectedHeight + originalHeight);
+        // Set the ground detection to the expected height + the original height to ensure that it changes.
+        basis.m_gameplayController->SetGroundDetectionBoxHeight(expectedHeight);
 
         // Get the end height and verify that it is set to the expected value set.
-        auto endHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
-        EXPECT_THAT(endHeight, testing::FloatNear(expectedHeight + originalHeight, 0.001f));
+        const auto endHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
+
+        EXPECT_THAT(endHeight, testing::Not(testing::FloatNear(originalHeight, 0.001f)));
+        EXPECT_THAT(endHeight, testing::FloatNear(expectedHeight, 0.001f));
     }
 
-    //! Test to determine if the ground will detect while moving.
+    //! Test to determine if the ground is detected while moving.
     TEST_F(PhysXDefaultWorldTest, CharacterGameplayController_GroundDetectedWhileMoving)
     {
         // Create a test scene with a Ground Element.
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
         basis.SetupGround();
 
-        // Set the gameplayController entity above the ground.
+        // Set the Gameplay Controller entity above the ground.
         const AZ::Transform startingPosition = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 0.1f));
         basis.m_controller->SetTransform(startingPosition);
 
-        // Get the starting state of the gameplay controller to verify that it was not detecting at the start.
-        const auto startingDetected = basis.m_gameplayController->IsOnGround();
+        // Verify the ground state of the Gameplay Controller is not detecting at the start.
+        EXPECT_FALSE(basis.m_gameplayController->IsOnGround());
 
         // Let the scene run until the Gameplay Controller detects the ground.
         bool groundDetected = false;
@@ -236,9 +234,8 @@ namespace PhysX
             }
         }
 
-        // Validate that the ground was detected while the scene was running and validate against the starting state
-        // that was expected to be false to prevent false detections passing the test.
-        EXPECT_THAT(groundDetected, testing::AllOf(testing::IsTrue(), testing::Ne(startingDetected)));
+        // Validate that the ground was detected while the scene was running.
+        EXPECT_TRUE(groundDetected);
     }
 
     using PhysXDefaultWorldTestWithParamFixture = PhysXDefaultWorldTestWithParam<int>;
