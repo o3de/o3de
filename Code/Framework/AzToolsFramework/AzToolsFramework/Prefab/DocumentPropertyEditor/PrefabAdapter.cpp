@@ -44,7 +44,6 @@ namespace AzToolsFramework::Prefab
         if (m_prefabOverridePublicInterface->AreOverridesPresent(entityId, relativePathFromEntity.ToString()))
         {
             adapterBuilder->BeginPropertyEditor<PrefabPropertyEditorNodes::PrefabOverrideProperty>();
-            adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::SharePriorColumn, true);
             adapterBuilder->Attribute(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::UseMinimumWidth, true);
             adapterBuilder->Attribute(
                 AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Alignment,

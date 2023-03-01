@@ -20,6 +20,8 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
+        using VisitComponentEditorsCallback = AZStd::function<bool(const ComponentEditor*)>;
+
         //! Allows a component to get the list of selected entities or if in a pinned window, the list of entities in that window
         //! \param selectedEntityIds the return vector holding the entities required
         virtual void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) = 0;
@@ -31,6 +33,10 @@ namespace AzToolsFramework
         //! Explicitly sets a component as having been the most recently added.
         //! This means that the next time the UI refreshes, that component will be ensured to be visible.
         virtual void SetNewComponentId(AZ::ComponentId componentId) = 0;
+
+        //! Visits the component editors in an EntityPropertyEditor via a callback.
+        //! @param callback The callback that iterates over all the component editors within an EntityPropertyEditor.
+        virtual void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const = 0;
     };
 
     using EntityPropertyEditorRequestBus = AZ::EBus<EntityPropertyEditorRequests>;
