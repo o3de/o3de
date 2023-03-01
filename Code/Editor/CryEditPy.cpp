@@ -17,6 +17,7 @@
 // AzCore
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
