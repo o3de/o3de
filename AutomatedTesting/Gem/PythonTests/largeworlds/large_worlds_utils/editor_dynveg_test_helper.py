@@ -53,8 +53,8 @@ def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
     assert root.has_component("PhysX Mesh Collider") and collider_component.is_enabled() and \
            static_rigid_body_component.is_enabled(), "Failed to add/activate PhysX Mesh Collider component"
     # Assign the specified PhysX Mesh asset to PhysX Mesh Collider
-    collider_component.set_component_property_value("Physics Asset|PhysX Mesh", physx_mesh_id)
-    assert collider_component.get_component_property_value("Physics Asset|PhysX Mesh") == physx_mesh_id, \
+    collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", physx_mesh_id)
+    assert collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh") == physx_mesh_id, \
         "Failed to assign PhysX Mesh asset"
     # Create and return the temporary/in-memory prefab
     temp_prefab = Prefab.create_prefab([root], prefab_filename)

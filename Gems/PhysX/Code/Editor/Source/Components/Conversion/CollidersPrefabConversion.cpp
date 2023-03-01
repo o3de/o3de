@@ -103,13 +103,13 @@ namespace PhysX
             }
 
             EditorProxyAssetShapeConfig newProxyAssetShapeConfig;
-            newProxyAssetShapeConfig.m_configuration = proxyShapeConfig.m_legacyPhysicsAsset.m_configuration;
-            newProxyAssetShapeConfig.m_pxAsset = proxyShapeConfig.m_legacyPhysicsAsset.m_pxAsset;
+            newProxyAssetShapeConfig.m_physicsAsset.m_configuration = proxyShapeConfig.m_legacyPhysicsAsset.m_configuration;
+            newProxyAssetShapeConfig.m_physicsAsset.m_pxAsset = proxyShapeConfig.m_legacyPhysicsAsset.m_pxAsset;
             newProxyAssetShapeConfig.m_hasNonUniformScale = proxyShapeConfig.m_hasNonUniformScale;
             newProxyAssetShapeConfig.m_subdivisionLevel = proxyShapeConfig.m_subdivisionLevel;
 
             auto* editorMeshColliderComponent = entity.CreateComponent<EditorMeshColliderComponent>(
-                editorColliderComponent->GetColliderConfiguration(), newProxyAssetShapeConfig);
+                editorColliderComponent->GetColliderConfiguration(), newProxyAssetShapeConfig, editorColliderComponent->IsDebugDrawDisplayFlagEnabled());
             if (!editorMeshColliderComponent)
             {
                 AZ_Warning(

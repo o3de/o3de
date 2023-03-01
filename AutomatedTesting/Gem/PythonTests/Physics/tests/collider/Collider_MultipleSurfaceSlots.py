@@ -78,8 +78,8 @@ def Collider_MultipleSurfaceSlots():
 
     # 4) Assign the fbx file in PhysX Mesh and Mesh component
     px_asset = Asset.find_asset_by_path(PHYSX_MESH)
-    collider_component.set_component_property_value("Physics Asset|PhysX Mesh", px_asset.id)
-    px_asset.id = collider_component.get_component_property_value("Physics Asset|PhysX Mesh")
+    collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", px_asset.id)
+    px_asset.id = collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
     Report.result(Tests.assign_px_mesh_asset, px_asset.get_path().lower() == PHYSX_MESH.replace(os.sep, "/").lower())
 
     model_asset = Asset.find_asset_by_path(STATIC_MESH)

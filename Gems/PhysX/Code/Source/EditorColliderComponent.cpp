@@ -243,6 +243,11 @@ namespace PhysX
         return colliderConfiguration;
     }
 
+    bool EditorColliderComponent::IsDebugDrawDisplayFlagEnabled() const
+    {
+        return m_colliderDebugDraw.IsDisplayFlagEnabled();
+    }
+
     EditorProxyShapeConfig::EditorProxyShapeConfig(const Physics::ShapeConfiguration& shapeConfiguration)
     {
         m_shapeType = shapeConfiguration.GetShapeType();

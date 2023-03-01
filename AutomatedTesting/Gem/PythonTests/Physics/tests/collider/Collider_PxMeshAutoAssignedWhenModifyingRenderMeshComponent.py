@@ -60,7 +60,7 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
 
     MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.azmodel")
     MESH_PROPERTY_PATH = "Controller|Configuration|Model Asset"
-    TESTED_PROPERTY_PATH = "Physics Asset|PhysX Mesh"
+    TESTED_PROPERTY_PATH = "Shape Configuration|Asset|PhysX Mesh"
 
     # 1) Load the empty level
     hydra.open_base_level()

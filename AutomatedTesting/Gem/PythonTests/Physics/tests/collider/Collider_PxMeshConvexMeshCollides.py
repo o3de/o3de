@@ -92,8 +92,8 @@ def Collider_PxMeshConvexMeshCollides():
 
     # 4) Select fbx convex mesh in PhysX Mesh Collider component.
     mesh_asset = Asset.find_asset_by_path(MESH_ASSET_PATH)
-    collider_component.set_component_property_value("Physics Asset|PhysX Mesh", mesh_asset.id)
-    mesh_asset.id = collider_component.get_component_property_value("Physics Asset|PhysX Mesh")
+    collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", mesh_asset.id)
+    mesh_asset.id = collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
     Report.result(Tests.assign_fbx_mesh, mesh_asset.get_path().lower() == MESH_ASSET_PATH.replace(os.sep, "/").lower())
 
     # 5) Create terrain entity with physx terrain

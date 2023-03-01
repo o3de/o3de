@@ -85,7 +85,7 @@ def Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent():
     Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
 
     # 6) The physics asset in PhysX Mesh Collider component is auto-assigned.
-    asset_id = test_component.get_component_property_value("Physics Asset|PhysX Mesh")
+    asset_id = test_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
     test_asset = Asset(asset_id)
     Report.result(Tests.automatic_shape_change, test_asset.get_path().lower() == PHYSX_MESH.replace(os.sep, "/").lower())
 

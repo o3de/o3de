@@ -169,9 +169,11 @@ def update_manifest(scene):
                                       entity_id, "{20382794-0E74-4860-9C35-A19F22DC80D4} EditorMeshColliderComponent")
 
             json_update = json.dumps({
-                "PhysicsAssetShapeConfiguration": {
-                    "Asset": {
-                        "assetHint": os.path.join(source_relative_path, source_filename_only + "_triangle.pxmesh")
+                "ShapeConfiguration": {
+                    "PhysicsAsset": {
+                        "Asset": {
+                            "assetHint": os.path.join(source_relative_path, source_filename_only + "_triangle.pxmesh")
+                        }
                     }
                 }
             })

@@ -90,7 +90,7 @@ def Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx():
     Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
 
     # 6) The physics asset in PhysX Mesh Collider component is not auto-assigned.
-    asset_id = test_component.get_component_property_value("Physics Asset|PhysX Mesh")
+    asset_id = test_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh")
     # Comparing asset_id with Null/Invalid asset azlmbr.asset.AssetId() to check that asset is not auto assigned
     Report.result(Tests.shape_not_assigned, asset_id == azasset.AssetId())
 
