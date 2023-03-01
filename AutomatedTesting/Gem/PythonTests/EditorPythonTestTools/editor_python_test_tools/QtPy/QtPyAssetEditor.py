@@ -250,3 +250,4 @@ class QtPyAssetEditor(QtPyCommon):
         add_event.click()
         # refresh our handle on the asset editor widget since the qt object structure has changed
         self.__refresh_qt_references()
+        
