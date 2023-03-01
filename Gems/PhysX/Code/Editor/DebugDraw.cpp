@@ -220,6 +220,11 @@ namespace PhysX
             m_locallyEnabled = enable;
         }
 
+        bool Collider::IsDisplayFlagEnabled() const
+        {
+            return m_locallyEnabled;
+        }
+
         void Collider::BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const
         {
             if (m_geometry.size() <= geomIndex)

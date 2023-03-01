@@ -194,9 +194,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Collider_CapsuleShapeEditing(EditorBatchedTest):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
-    class Collider_CheckDefaultShapeSettingIsPxMesh(EditorBatchedTest):
-        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
-
     class Collider_MultipleSurfaceSlots(EditorBatchedTest):
         from .tests.collider import Collider_MultipleSurfaceSlots as test_module
 

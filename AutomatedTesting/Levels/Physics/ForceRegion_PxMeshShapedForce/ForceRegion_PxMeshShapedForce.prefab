@@ -52,7 +52,7 @@
             "Name": "Sedan",
             "Components": {
                 "Component_[10040515516141845460]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 10040515516141845460,
                     "ColliderConfiguration": {
                         "Trigger": true,
