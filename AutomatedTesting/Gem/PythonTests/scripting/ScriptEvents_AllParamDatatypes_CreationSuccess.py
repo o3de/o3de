@@ -32,7 +32,7 @@ def TestScriptEvents_AllParamDatatypes_CreationSuccess():
        """
     import azlmbr.legacy.general as general
     from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
-    from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI)
+    from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, SCRIPT_EVENT_UI)
 
     # Preconditions
     general.idle_enable(True)
@@ -44,7 +44,7 @@ def TestScriptEvents_AllParamDatatypes_CreationSuccess():
     qtpy_asset_editor = qtpy_o3de_editor.open_asset_editor()
 
     # 2) Create new Script Event Asset
-    qtpy_asset_editor.click_menu_bar_option("Script Events")
+    qtpy_asset_editor.click_menu_bar_option(SCRIPT_EVENT_UI)
 
     # 3) Add a method to the script event
     qtpy_asset_editor.add_method_to_script_event("test_method")

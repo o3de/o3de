@@ -43,6 +43,7 @@ def Entity_HappyPath_AddScriptCanvasComponent():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     import azlmbr.legacy.general as general
     import azlmbr.math as math
+    from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI)
 
     TEST_ENTITY_NAME = "test_entity"
 
@@ -61,8 +62,8 @@ def Entity_HappyPath_AddScriptCanvasComponent():
     with Tracer() as section_tracer:
 
         # 4) Add Script Canvas component to test entity and check for errors
-        editor_entity.add_component("Script Canvas")
-        Report.result(Tests.add_sc_component, editor_entity.has_component("Script Canvas"))
+        editor_entity.add_component(SCRIPT_CANVAS_UI)
+        Report.result(Tests.add_sc_component, editor_entity.has_component(SCRIPT_CANVAS_UI))
 
 
 if __name__ == "__main__":

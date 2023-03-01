@@ -95,4 +95,3 @@ if __name__ == "__main__":
     from utils import Report
 
     Report.start_test(TestNodePaletteHappyPathCanSelectNode)
-    

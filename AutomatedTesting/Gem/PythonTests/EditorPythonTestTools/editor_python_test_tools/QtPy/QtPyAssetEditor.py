@@ -62,7 +62,7 @@ class QtPyAssetEditor(QtPyCommon):
             QtWidgets.QToolButton, "")
         add_parameters_button.click()
 
-        self.refresh_qt_references()
+        self.__refresh_qt_references()
 
         self.update_parameter_name("ParameterName", new_parameter_name, parameter_index)
 
@@ -102,10 +102,7 @@ class QtPyAssetEditor(QtPyCommon):
 
         """
         self.expand_qt_container_rows(f"[{parameter_index}]")
-        self.refresh_qt_references()
-
         self.expand_qt_container_rows(NAME_STRING)
-        self.refresh_qt_references()
 
         line_edits = self.asset_editor_row_container.findChildren(QtWidgets.QLineEdit)
 
@@ -225,7 +222,7 @@ class QtPyAssetEditor(QtPyCommon):
         """
         super().expand_qt_container_rows(self.asset_editor_row_container, category_name)
 
-    def refresh_qt_references(self):
+    def __refresh_qt_references(self):
         """
         Function for updating references to qt objects associated with the asset manager. Expanding/deleting stuff
         from the list will cause the hierarchy to shift around so references can get stale, which makes interacting
@@ -252,24 +249,4 @@ class QtPyAssetEditor(QtPyCommon):
 
         add_event.click()
         # refresh our handle on the asset editor widget since the qt object structure has changed
-        self.refresh_qt_references()
-
-
-    #debug stuff. delete this before merging
-    def get_q_objects(self, qobject):
-
-        children = qobject.children()
-        depth = 0
-        for child in children:
-            print(f"{depth}->Name:{child.objectName()}: Text:{child.property('text')} {type(child)}")
-            self.print_types_recursive(child, "", depth)
-
-    def print_types_recursive(self, container, string, depth):
-
-        children = container.children()
-        string += "="
-        depth += 1
-        for child in children:
-            if child is not None:
-                print(f"{depth}->{string}: Name:{child.objectName()}: Text:{child.property('text')} {type(child)}")
-                self.print_types_recursive(child, string, depth)
+        self.__refresh_qt_references()

@@ -36,7 +36,7 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
     import scripting_utils.scripting_tools as tools
     import azlmbr.legacy.general as general
     from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
-    from scripting_utils.scripting_constants import (ASSET_EDITOR_UI)
+    from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_CANVAS_UI)
 
     general.idle_enable(True)
     general.close_pane(ASSET_EDITOR_UI)
@@ -48,7 +48,7 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
     qtpy_asset_editor = qtpy_o3de_editor.open_asset_editor()
 
     # 2) Create new Script Event Asset
-    qtpy_asset_editor.click_menu_bar_option("Script Events")
+    qtpy_asset_editor.click_menu_bar_option(SCRIPT_CANVAS_UI)
 
     # 3) Add a method to the script event
     qtpy_asset_editor.add_method_to_script_event("test_method")
