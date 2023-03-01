@@ -9,7 +9,6 @@
 # this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Windows.
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                                 TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                      TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                    TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
