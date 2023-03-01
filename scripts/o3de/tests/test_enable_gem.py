@@ -116,6 +116,10 @@ def init_enable_gem_data(request):
 
 @pytest.mark.usefixtures('init_enable_gem_data')
 class TestEnableGemCommand:
+    @staticmethod
+    def resolve(self):
+        return self
+
     @pytest.mark.parametrize("gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,"
                              "optional, expected_result", [
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, False, 0),
@@ -168,13 +172,13 @@ class TestEnableGemCommand:
             return self.enable_gem.engine_data
 
         def get_project_gems(project_path: pathlib.Path):
-            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
+            return [gem_path] if gem_registered_with_project else []
 
         def get_enabled_gems(cmake_file: pathlib.Path) -> set:
             return set() 
 
         def get_engine_gems():
-            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_engine else []
+            return [gem_path] if gem_registered_with_engine else []
 
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
@@ -197,6 +201,7 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
                 patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+                patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
             self.enable_gem.project_data.pop('gem_names', None)
@@ -307,6 +312,10 @@ class TestEnableGemCommand:
                                         external_subdirectories: list = None
                                         ) -> dict:
             all_gems_json_data = {}
+            # include the gem we're enabling
+            gem_json_data = get_gem_json_data()
+            all_gems_json_data[gem_json_data['gem_name']] = [gem_json_data]
+
             for gem_name in gem_json_data_by_name.keys():
                 all_gems_json_data[gem_name] = [get_gem_json_data(gem_name=gem_name)]
             return all_gems_json_data
@@ -353,15 +362,15 @@ class TestEnableGemCommand:
             return gem_data
 
         def get_project_gems(project_path: pathlib.Path):
-            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
+            return [gem_path] if gem_registered_with_project else []
 
         def get_enabled_gems(cmake_file: pathlib.Path) -> set:
             return set() 
 
         def get_engine_gems():
-            gem_paths = list(map(lambda path:pathlib.Path(path).resolve(), gem_json_data_by_name.keys()))
+            gem_paths = list(map(lambda path:path, gem_json_data_by_name.keys()))
             if gem_registered_with_engine:
-                gem_paths.append(pathlib.Path(gem_path).resolve())
+                gem_paths.append(gem_path)
             return gem_paths
 
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
@@ -386,6 +395,7 @@ class TestEnableGemCommand:
                 patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
+                patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
             self.enable_gem.project_data.pop('gem_names', None)
@@ -402,28 +412,38 @@ class TestEnableGemCommand:
                 else:
                     assert gem not in project_json.get('gem_names', [])
 
-    @pytest.mark.parametrize("gem_name, gem_json_data_by_path, dry_run, force,"
+    @pytest.mark.parametrize("gem_name, gem_json_data_by_path, force,"
                              "expected_result", [
         # when no version specifier used and gem exists expect it is found
-        pytest.param("GemA", {pathlib.PurePath('GemA'):{"gem_name":"GemA"}}, False, False, 0),
+        pytest.param("GemA", {pathlib.PurePath('GemA'):{"gem_name":"GemA"}}, False, 0),
         # when version specifier used and gem exists with version expect it is found
-        pytest.param("GemA==1.0", {pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"1.0.0"}}, False, False, 0),
+        pytest.param("GemA==1.0", {pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"1.0.0"}}, False, 0),
         # when version specifier used and gem version doesn't exists expect it is not found
-        pytest.param("GemA==1.0", {pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"2.0.0"}}, False, False, 1),
+        pytest.param("GemA==1.0", {pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"2.0.0"}}, False, 1),
         # when version specifier used and multiple gem versions exist, expect gem activated 
         pytest.param("GemA>1.0", {
-            pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"2.0.0"},
-            pathlib.PurePath('GemB'):{"gem_name":"GemA","version":"3.0.0"},
-            }, False, False, 0),
+            pathlib.PurePath('GemA1'):{"gem_name":"GemA","version":"2.0.0"},
+            pathlib.PurePath('GemA2'):{"gem_name":"GemA","version":"3.0.0"},
+            }, False, 0),
+        # when dependencies cannot be satisfied expect fails, the following requires gemC 1.0.0 and 2.0.0
+        pytest.param("GemA", {
+            pathlib.PurePath('GemA'):{"gem_name":"GemA","version":"1.0.0","dependencies":['GemB==3.0.0','GemC==2.0.0']},
+            pathlib.PurePath('GemB'):{"gem_name":"GemB","version":"3.0.0","dependencies":['GemC==1.0.0']},
+            pathlib.PurePath('GemC1'):{"gem_name":"GemC","version":"1.0.0"},
+            pathlib.PurePath('GemC2'):{"gem_name":"GemC","version":"2.0.0"},
+            }, False, 1),
         ],
     )
     def test_enable_gem_with_version_specifier_checks_compatibility(self, gem_name, gem_json_data_by_path, 
-                                                    dry_run, force, expected_result):
+                                                    force, expected_result):
         project_path = pathlib.PurePath('TestProject')
         engine_path = pathlib.PurePath('o3de')
 
         def get_manifest_engines() -> list:
             return [engine_path]
+
+        def get_project_engine_path(project_path:str or pathlib.Path) -> pathlib.Path or None:
+            return engine_path
 
         def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
             if not manifest_path:
@@ -502,15 +522,17 @@ class TestEnableGemCommand:
             patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
             patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_gem_json_data_patch,\
             patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
+            patch('o3de.manifest.get_project_engine_path', side_effect=get_project_engine_path) as get_project_engine_path_patch,\
             patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
             patch('o3de.manifest.get_all_gems', side_effect=get_all_gems) as get_all_gems_patch,\
             patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
             patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+            patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
             patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
             # remove any existing 'gem_names'
             self.enable_gem.project_data.pop('gem_names', None)
-            result = enable_gem.enable_gem_in_project(gem_name=gem_name, project_path=project_path, force=force, dry_run=dry_run)
+            result = enable_gem.enable_gem_in_project(gem_name=gem_name, project_path=project_path, force=force)
             assert result == expected_result
             if expected_result == 0:
                 project_json = get_project_json_data(project_path=project_path)

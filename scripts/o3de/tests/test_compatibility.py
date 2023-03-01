@@ -7,8 +7,10 @@
 #
 
 import pytest
+import pathlib
 
 from o3de import compatibility 
+from resolvelib import InconsistentCandidate, ResolutionImpossible
 
 @pytest.mark.parametrize(
     "gem_json_data, all_gem_json_data, expected_number_incompatible", [
@@ -103,3 +105,59 @@ def test_get_incompatible_gem_version_specifiers(gem_json_data, all_gem_json_dat
     # Test number of incompatible version specifiers, because we don't want these 
     # tests to fail if the error message changes
     assert len(result) == expected_number_incompatible
+
+
+
+@pytest.mark.parametrize(
+    "gem_names, all_gem_json_data, expected_result", [
+        # when the gem exists and no version specifiers are provided expect found
+        pytest.param(['gemA'], {'gemA':[{'gem_name':'gemA','gem_path':pathlib.PurePath()}]}, ['gemA==0.0.0']),
+        # when the gem dependency doesn't exist expect failure
+        pytest.param(['gemA'], {}, []),
+        # when the gem dependency with correct version doesn't exist expect failure
+        pytest.param(['gemA~=1.2.0'], {'gemA':[{'gem_name':'gemA','version':'2.4.0'}]}, []),
+        # when the gem sub dependency exists and no version specifiers are provided expect found
+        pytest.param(['gemA'], {
+            'gemA':[{'gem_name':'gemA','dependencies':['gemB']}],
+            'gemB':[{'gem_name':'gemB'}]
+            }, ['gemA==0.0.0','gemB==0.0.0']),
+        # when the gem sub dependency doesn't exist expect failure 
+        pytest.param(['gemA'], {
+            'gemA':[{'gem_name':'gemA','dependencies':['gemB']}]
+            }, []),
+        # when the circular dependency exists expect still succeeds 
+        pytest.param(['gemA'], {
+            'gemA':[{'gem_name':'gemA','dependencies':['gemB']}],
+            'gemB':[{'gem_name':'gemB','dependencies':['gemA']}]
+            }, ['gemA==0.0.0','gemB==0.0.0']),
+        # when the two versions of a gem exist, but only one solution expect version gemC==1.0.0 used
+        pytest.param(['gemA','gemB'], { 
+            'gemA':[
+                # gemA can use gemC 1.0.0 or 2.0.0
+                {'gem_name':'gemA','version':'1.0.0','dependencies':['gemC>=1.0.0']}
+                ],
+            'gemB':[
+                # gemB can only use gemC 1.0.0
+                {'gem_name':'gemB','version':'4.3.2','dependencies':['gemC==1.0.0']}
+                ],
+            'gemC':[
+                {'gem_name':'gemC','version':'1.0.0'}, # <-- should be selected
+                {'gem_name':'gemC','version':'2.0.0'}
+                ]
+            }, ['gemA==1.0.0','gemB==4.3.2','gemC==1.0.0'])
+    ]
+)
+def test_resolve_gem_dependencies(gem_names, all_gem_json_data, expected_result):
+    engine_json_data = {
+        'engine_name':'o3de',
+        'version':'1.0.0'
+    }
+    result, errors = compatibility.resolve_gem_dependencies(gem_names, all_gem_json_data, engine_json_data)
+    if result:
+        result_set = set()
+        for _, candidate in result.items():
+            result_set.add(f'{candidate.name}=={candidate.version}')
+        assert result_set == set(expected_result)
+    else:
+        assert not expected_result
+        assert errors

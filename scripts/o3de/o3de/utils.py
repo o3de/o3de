@@ -349,14 +349,15 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     return ancestor_file.parent if ancestor_file else None
 
 
-def get_gem_names_set(gems: list) -> set:
+def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     """
     For working with the 'gem_names' lists in project.json
     Returns a set of gem names in a list of gems
     :param gems: The original list of gems, strings or small dicts (json objects)
+    :param include_optional: If false, exclude optional gems
     :return: A set of gem name strings
     """
-    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems])
+    return set([gem['name'] if isinstance(gem, dict) and (include_optional or not gem.get('optional', False)) else gem for gem in gems])
 
 
 def remove_gem_duplicates(gems: list) -> list:
