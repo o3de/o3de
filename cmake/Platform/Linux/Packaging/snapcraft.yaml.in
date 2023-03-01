@@ -41,6 +41,7 @@ parts:
      - libunwind-dev
      - libssl3
      - libffi7
+     - libffi8
      - gcc
     stage-snaps:
      - cmake
