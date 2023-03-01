@@ -41,7 +41,7 @@ namespace AZ::DocumentPropertyEditor
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
-        void SetComponent(AZ::Component* componentInstance);
+        virtual void SetComponent(AZ::Component* componentInstance);
 
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
@@ -56,10 +56,8 @@ namespace AZ::DocumentPropertyEditor
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
     protected:
-        AZStd::string m_componentAlias;
         AZ::EntityId m_entityId;
-
-        AZ::Component* m_componentInstance = nullptr;
+        AZ::ComponentId m_componentId = AZ::InvalidComponentId;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
 

@@ -169,8 +169,6 @@ private:
     
     void AddPropertyToParamInfoMap(const CAnimParamType& paramType);
 
-    int m_refCount;     // intrusive_ptr ref counter
-
     AZ::Uuid                                m_componentTypeId;
     AZ::ComponentId                         m_componentId;
 

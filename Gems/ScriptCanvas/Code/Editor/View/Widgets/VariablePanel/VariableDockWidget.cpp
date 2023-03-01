@@ -338,7 +338,6 @@ namespace ScriptCanvasEditor
 
     VariableDockWidget::VariableDockWidget(QWidget* parent /*= nullptr*/)
         : AzQtComponents::StyledDockWidget(parent)
-        , m_manipulatingSelection(false)
         , ui(new Ui::VariableDockWidget())
     {
         ui->setupUi(this);

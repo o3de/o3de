@@ -27,12 +27,15 @@ namespace AZ::DocumentPropertyEditor
     {
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_componentInstance->GetEntityId());
+        if (m_entityId.IsValid())
+        {
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
+        }
     }
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
     {
-        if (m_componentInstance->GetId() == componentId)
+        if (m_componentId == componentId)
         {
             m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values;
             QTimer::singleShot(
@@ -74,16 +77,15 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
-        m_componentInstance = componentInstance;
-        m_entityId = m_componentInstance->GetEntityId();
+        m_entityId = componentInstance->GetEntityId();
+        m_componentId = componentInstance->GetId();
+
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
 
-        // Set the component alias before calling SetValue(). Otherwise, an empty alias will be sent to the PrefabAdapter.
-        m_componentAlias = componentInstance->GetSerializedIdentifier();
-        AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
-        SetValue(m_componentInstance, instanceTypeId);
+        AZ::Uuid instanceTypeId = azrtti_typeid(componentInstance);
+        SetValue(componentInstance, instanceTypeId);
     }
 
     void ComponentAdapter::DoRefresh()
@@ -103,28 +105,24 @@ namespace AZ::DocumentPropertyEditor
             switch (changeType)
             {
             case Nodes::ValueChangeType::InProgressEdit:
-                if (m_componentInstance)
+                if (m_entityId.IsValid())
                 {
-                    const AZ::EntityId& entityId = m_componentInstance->GetEntityId();
-                    if (entityId.IsValid())
+                    if (m_currentUndoNode)
                     {
-                        if (m_currentUndoNode)
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode,
-                                &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                                m_currentUndoNode,
-                                "Modify Entity Property");
-                        }
-                        else
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
-                        }
-
-                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                            &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, entityId);
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            m_currentUndoNode,
+                            &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                            m_currentUndoNode,
+                            "Modify Entity Property");
                     }
+                    else
+                    {
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+                    }
+
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityId);
                 }
                 break;
             case Nodes::ValueChangeType::FinishedEdit:
@@ -146,17 +144,6 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
-        auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
-        if (prefabAdapterInterface)
-        {
-            AZ::Dom::Path relativePathFromEntity;
-            if (!serializedPath.empty())
-            {
-                relativePathFromEntity /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
-                relativePathFromEntity /= m_componentAlias;
-                relativePathFromEntity /= AZ::Dom::Path(serializedPath);
-            }
-            prefabAdapterInterface->AddPropertyLabelNode(adapterBuilder, labelText, relativePathFromEntity, m_entityId);
-        }
+        ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
     }
 } // namespace AZ::DocumentPropertyEditor

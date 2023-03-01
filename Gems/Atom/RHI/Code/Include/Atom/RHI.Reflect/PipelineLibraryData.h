@@ -8,12 +8,24 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/span.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
 namespace AZ
 {
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+
+    class ReflectContext;
+
     namespace RHI
     {
         /**
@@ -53,7 +65,10 @@ namespace AZ
             PipelineLibraryData(AZStd::vector<uint8_t>&& data);
             PipelineLibraryData() = default;
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             AZStd::vector<uint8_t> m_data;
         };

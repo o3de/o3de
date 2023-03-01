@@ -43,6 +43,7 @@
 
 #include <AssetManager/ExcludedFolderCache.h>
 #include <AssetManager/ProductAsset.h>
+#include <native/utilities/IMetadataUpdates.h>
 #endif
 
 class FileWatcher;
@@ -98,6 +99,7 @@ namespace AssetProcessor
     class AssetProcessorManager
         : public QObject
         , public AssetProcessor::ProcessingJobInfoBus::Handler
+        , public AZ::Interface<AssetProcessor::IMetadataUpdates>::Registrar
     {
         using BaseAssetProcessorMessage = AzFramework::AssetSystem::BaseAssetProcessorMessage;
         using AssetFingerprintClearRequest = AzToolsFramework::AssetSystem::AssetFingerprintClearRequest;
@@ -194,9 +196,11 @@ namespace AssetProcessor
         //! Controls whether or not we are allowed to skip analysis on a file when the source files modtimes have not changed
         //! and neither have any builders.
         void SetEnableModtimeSkippingFeature(bool enable);
+        bool GetModtimeSkippingFeatureEnabled() const;
 
         //! Controls whether or not startup analysis is enabled or not.
         void SetInitialScanSkippingFeature(bool enable);
+        bool GetInitialScanSkippingFeatureEnabled() const;
 
         //! Query logging will log every asset database query.
         void SetQueryLogging(bool enableLogging);
@@ -239,6 +243,13 @@ namespace AssetProcessor
         //! The scan folder ID may not be available if the platform config is not available,
         //! or the scan folder ID hasn't been set for the platform config.
         AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderId() const;
+
+        //! Sets the maximum amount of time to wait before automatically generating a metadata file for an asset which does not currently have a metadata file.
+        //! Only applies to file types which are using the metadata system.
+        //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
+        void SetMetaCreationDelay(AZ::u32 milliseconds);
+
+        void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
@@ -288,6 +299,12 @@ namespace AssetProcessor
         //! Fired when FinishAnalysis is run for a file to notify that a source file has completely finished processing.
         //! count is the number of files remaining waiting for FinishAnalysis to be called
         void FinishedAnalysis(int count);
+
+        //! Fired when processing of a file has been delayed to wait for a metadata file creation event.
+        void ProcessingDelayed(QString filePath);
+
+        //! Fired when a previously-delayed file has begun processing.
+        void ProcessingResumed(QString filePath);
 
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
@@ -343,6 +360,8 @@ namespace AssetProcessor
 
         void OnBuildersRegistered();
         void OnCatalogReady();
+
+        void DelayedMetadataFileCheck();
 
     private:
         template <class R>
@@ -480,6 +499,14 @@ namespace AssetProcessor
         //! Check whether the specified file is an LFS pointer file.
         bool IsLfsPointerFile(const AZStd::string& filePath);
 
+        bool CheckMetadataIsAvailable(AZ::IO::PathView absolutePath);
+        bool ShouldIgnorePendingMove(AZ::IO::PathView absolutePath, bool triggeredByMetadata, bool isDelete);
+        bool ShouldDelayProcessingFile(const FileEntry& source, QString normalizedFilePath, bool triggeredByMetadata);
+
+        //! Returns true if elapsed time is close enough to the delay process wait time
+        //! This is not an exact check since QTimer is not precise with its event timing
+        bool HasDelayProcessTimerElapsed(qint64 elapsedTime);
+
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
         bool m_queuedExamination = false;
@@ -492,6 +519,18 @@ namespace AssetProcessor
         ThreadController<AssetCatalog>* m_assetCatalog;
         typedef QHash<QString, FileEntry> FileExamineContainer;
         FileExamineContainer m_filesToExamine; // order does not actually matter in this (yet)
+
+        // Set of files which are metadata-enabled but don't have a metadata file.
+        // These files will be delayed for processing for a short time to wait for a metadata file to show up.
+        AZStd::unordered_map<AZ::IO::Path, QDateTime> m_delayProcessMetadataFiles;
+        // Indicates if DelayedMetadataFileCheck has already been queued to run or not.
+        bool m_delayProcessMetadataQueued = false;
+        // Max delay time before creating a metadata file.
+        // Avoid setting this too high as it will delay processing of new files.
+        AZ::u32 m_metaCreationDelayMs = 0;
+        // Set of files/folders that have been reported as pending for move.  bool: false = old file path, true = new file path
+        AZStd::unordered_map<AZ::IO::Path, bool> m_pendingMoves;
+        AZStd::recursive_mutex m_pendingMovesMutex;
 
         // this map contains a list of source files that were discovered in the database before asset scanning began.
         // (so files from a previous run).

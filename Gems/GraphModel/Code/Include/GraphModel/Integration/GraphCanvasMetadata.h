@@ -10,11 +10,15 @@
 
 // AZ
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 
 // Graph Model
 #include <GraphModel/Model/Common.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace GraphCanvas
 {
@@ -32,7 +36,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(GraphCanvasMetadata, "{BD95C3EB-CD09-4F82-9724-032BD1827B95}");
-        
+
         virtual ~GraphCanvasMetadata() = default;
 
         static void Reflect(AZ::ReflectContext* reflectContext);
@@ -46,7 +50,7 @@ namespace GraphModelIntegration
         // Using a map instead of unordered_map for simpler xml diffs
         typedef AZStd::map<GraphModel::NodeId, EntitySaveDataContainerPtr> NodeMetadataMap;
         typedef AZStd::map<AZ::EntityId, EntitySaveDataContainerPtr> OtherMetadataMap;
-        
+
         //! Graph Canvas metadata that pertains to the entire scene
         EntitySaveDataContainerPtr m_sceneMetadata;
 

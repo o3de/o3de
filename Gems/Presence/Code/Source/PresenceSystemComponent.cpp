@@ -9,6 +9,8 @@
 #include <PresenceSystemComponent.h>
 #include <Presence/PresenceNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Presence
 {
@@ -56,7 +58,7 @@ namespace Presence
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<PresenceDetails>()
-                ->Constructor<PresenceDetails&>()
+                ->Constructor<const PresenceDetails&>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("localUserId", BehaviorValueProperty(&PresenceDetails::localUserId))
                 ->Property("titleId", BehaviorValueProperty(&PresenceDetails::titleId))

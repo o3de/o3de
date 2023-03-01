@@ -15,41 +15,41 @@ namespace AZ
 {
     namespace Utils
     {
-        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ImageDiffResultCode);
-
-        void ImageDiffResult::Reflect(ReflectContext* context)
+        void ImageComparisonError::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                ImageDiffResultCodeReflect(*serializeContext);
+                serializeContext->Class<ImageComparisonError>()
+                    ->Version(1)
+                    ->Field("ErrorMessage", &ImageComparisonError::m_errorMessage);
+            }
 
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ImageComparisonError>("ImageComparisonError")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Module, "utils")
+                    ->Property("ErrorMessage", BehaviorValueProperty(&ImageComparisonError::m_errorMessage));
+            }
+        }
+
+        void ImageDiffResult::Reflect(ReflectContext* context)
+        {
+            ImageComparisonError::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
                 serializeContext->Class<ImageDiffResult>()
                     ->Version(1)
-                    ->Field("ResultCode", &ImageDiffResult::m_resultCode)
                     ->Field("DiffScore", &ImageDiffResult::m_diffScore)
                     ->Field("FilteredDiffScore", &ImageDiffResult::m_filteredDiffScore);
             }
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EnumProperty<static_cast<int>(ImageDiffResultCode::Success)>("ImageDiffResultCode_Success")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils");
-                behaviorContext->EnumProperty<static_cast<int>(ImageDiffResultCode::SizeMismatch)>("ImageDiffResultCode_SizeMismatch")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils");
-                behaviorContext->EnumProperty<static_cast<int>(ImageDiffResultCode::FormatMismatch)>("ImageDiffResultCode_FormatMismatch")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils");
-                behaviorContext->EnumProperty<static_cast<int>(ImageDiffResultCode::UnsupportedFormat)>("ImageDiffResultCode_UnsupportedFormat")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "utils");
-
                 behaviorContext->Class<ImageDiffResult>("ImageDiffResult")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Module, "utils")
-                    ->Property("ResultCode", BehaviorValueProperty(&ImageDiffResult::m_resultCode))
-                        ->Attribute(AZ::Script::Attributes::Alias, "result_code")
                     ->Property("DiffScore", BehaviorValueProperty(&ImageDiffResult::m_diffScore))
                         ->Attribute(AZ::Script::Attributes::Alias, "diff_score")
                     ->Property("FilteredDiffScore", BehaviorValueProperty(&ImageDiffResult::m_filteredDiffScore))
@@ -69,7 +69,7 @@ namespace AZ
             return AZ::GetMax(AZ::GetMax(AZ::GetMax(diffR, diffG), diffB), diffA);
         }
 
-        ImageDiffResult CalcImageDiffRms(
+        AZ::Outcome<ImageDiffResult, ImageComparisonError> CalcImageDiffRms(
             AZStd::span<const uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
             AZStd::span<const uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
             float minDiffFilter)
@@ -77,43 +77,34 @@ namespace AZ
             static constexpr size_t BytesPerPixel = 4;
 
             ImageDiffResult result;
+            ImageComparisonError error;
 
             if (formatA != formatB)
             {
-                result.m_resultCode = ImageDiffResultCode::FormatMismatch;
-                return result;
+                error.m_errorMessage = "Images format mismatch.";
+                return AZ::Failure(error);
             }
 
             if (formatA != AZ::RHI::Format::R8G8B8A8_UNORM || formatB != AZ::RHI::Format::R8G8B8A8_UNORM)
             {
-                result.m_resultCode = ImageDiffResultCode::UnsupportedFormat;
-                return result;
+                error.m_errorMessage = "Unsupported image format.";
+                return AZ::Failure(error);
             }
 
             if (sizeA != sizeB)
             {
-                result.m_resultCode = ImageDiffResultCode::SizeMismatch;
-                return result;
+                error.m_errorMessage = "Images size mismatch.";
+                return AZ::Failure(error);
             }
 
             uint32_t totalPixelCount = sizeA.m_width * sizeA.m_height;
 
-            if (bufferA.size() != bufferB.size())
+            if (bufferA.size() != bufferB.size()
+                || bufferA.size() != BytesPerPixel * totalPixelCount
+                || bufferB.size() != BytesPerPixel * totalPixelCount)
             {
-                result.m_resultCode = ImageDiffResultCode::SizeMismatch;
-                return result;
-            }
-
-            if (bufferA.size() != BytesPerPixel * totalPixelCount)
-            {
-                result.m_resultCode = ImageDiffResultCode::SizeMismatch;
-                return result;
-            }
-
-            if (bufferB.size() != BytesPerPixel * totalPixelCount)
-            {
-                result.m_resultCode = ImageDiffResultCode::SizeMismatch;
-                return result;
+                error.m_errorMessage = "Images size mismatch.";
+                return AZ::Failure(error);
             }
 
             result.m_diffScore = 0.0f;
@@ -135,8 +126,7 @@ namespace AZ
             result.m_diffScore = sqrt(result.m_diffScore / totalPixelCount);
             result.m_filteredDiffScore = sqrt(result.m_filteredDiffScore / totalPixelCount);
 
-            result.m_resultCode = ImageDiffResultCode::Success;
-            return result;
+            return AZ::Success(result);
         }
 
     }

@@ -10,7 +10,6 @@
 
 // include core system
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include "EMotionFXConfig.h"
 
 
@@ -108,5 +107,6 @@ namespace EMotionFX
     };
 
     // include inline code
-#include "KeyFrame.inl"
 } // namespace EMotionFX
+
+#include "KeyFrame.inl"

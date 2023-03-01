@@ -14,7 +14,6 @@
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptPropertyWatcherBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
 
 // Ideally, the properties would be able to marshal themselves
@@ -51,10 +50,10 @@ namespace AZ
         static void UpdateScriptProperty(AZ::ScriptDataContext& sdc, int valueIndex, ScriptProperty** targetProperty);
 
         static void Reflect(AZ::ReflectContext* reflection);
-        static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement);
 
         virtual ~ScriptProperty() {}
-        AZ_RTTI(ScriptProperty, "{D227D737-F1ED-4FB3-A1FB-38E4985D2E7A}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptProperty);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         ScriptProperty() {}
         ScriptProperty(const char* name)
@@ -100,7 +99,8 @@ namespace AZ
         : public ScriptProperty
     {
     public:
-        AZ_RTTI(FunctionalScriptProperty, "{57D7418D-6B14-4A02-B50E-2E409D23CFC6}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(FunctionalScriptProperty);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         FunctionalScriptProperty();
         FunctionalScriptProperty(const char* name);
@@ -128,7 +128,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNil, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyNil, "{ACAD23F6-5E75-460E-BD77-1B477750264F}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNil);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -153,7 +154,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyBoolean, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyBoolean, "{EA7335F8-5B9F-4744-B805-FEF9240451BD}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyBoolean);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -185,7 +187,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNumber, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyNumber, "{5BCDFDEB-A75D-4E83-BB74-C45299CB9826}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNumber);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -217,7 +220,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyString, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyString, "{A0229C6D-B010-47E7-8985-EE220FC7BFAF}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyString);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -251,7 +255,8 @@ namespace AZ
         friend class AzToolsFramework::Components::ScriptEditorComponent;
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClass, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyGenericClass, "{80618224-814C-44D4-A7B8-14B5A36F96ED}", FunctionalScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyGenericClass);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -322,7 +327,9 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyNumberArray, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyNumberArray, "{76609A01-46CA-442E-8BA6-251D529886AF}", ScriptProperty);
+
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyNumberArray);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -353,7 +360,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyBooleanArray, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyBooleanArray, "{3A83958C-26C7-4A59-B6D7-A7805B0EC756}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyBooleanArray);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -384,7 +392,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyStringArray, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyStringArray, "{899993A5-D717-41BB-B89B-04A27952CA6D}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyStringArray);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -417,7 +426,8 @@ namespace AZ
         typedef AZStd::vector<AZ::DynamicSerializableField> ValueArrayType;
 
         AZ_CLASS_ALLOCATOR(ScriptPropertyGenericClassArray, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyGenericClassArray, "{28E986DD-CF7C-404D-9BEE-EEE067180CD1}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyGenericClassArray);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
         static ScriptProperty* TryCreateProperty(AZ::ScriptDataContext& context, int valueIndex, const char* name);
@@ -454,9 +464,6 @@ namespace AZ
     private: // static member functions
 
         AZ::Uuid m_elementTypeId = AZ::Uuid::CreateNull(); // Stores type wrapped by DynamicSerializableField values
-
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
     };
 
     class ScriptPropertyAsset
@@ -464,7 +471,8 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptPropertyAsset, AZ::SystemAllocator);
-        AZ_RTTI(ScriptPropertyAsset, "{4D4B7176-A6E1-4BB9-A7B0-5977EC724CCB}", ScriptProperty);
+        AZ_TYPE_INFO_WITH_NAME_DECL(ScriptPropertyAsset);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         static void Reflect(AZ::ReflectContext* reflection);
 
