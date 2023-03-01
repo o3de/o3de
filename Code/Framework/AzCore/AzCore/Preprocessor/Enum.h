@@ -39,12 +39,12 @@
 //! {
 //!     AZ_ENUM(MyCoolEnum, A, B);
 //! }
-//! 
+//!
 //! namespace AZ
 //! {
 //!     AZ_TYPE_INFO_SPECIALIZE(MyNamespace::MyCoolEnum, "{<SomeGuid>}");
 //! }
-//! 
+//!
 #define AZ_ENUM(EnumTypeName, ...)                                                      MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, __VA_ARGS__)
 
 //! Generate a decorated enumeration as AZ_ENUM, but with a specific underlying type.
@@ -95,7 +95,7 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
 { \
     enum SCOPE_QUAL EnumTypeName EnumUnderlyingType \
     { \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(AZ_MACRO_CALL_WRAP, GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__)) \
+        AZ_FOR_EACH(GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__) \
     };\
     inline constexpr size_t AZ_JOIN(EnumTypeName, Count) = EnumTypeCount; \
     struct AZ_JOIN(EnumTypeName, EnumeratorValueAndString) \
@@ -105,7 +105,7 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
     }; \
     constexpr AZStd::array<AZ_JOIN(EnumTypeName, EnumeratorValueAndString), AZ_JOIN(EnumTypeName, Count)> AZ_JOIN(EnumTypeName, Members) = \
     {{ \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__)) \
+        AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__) \
     }}; \
     constexpr AZStd::optional<EnumTypeName> FromString(AZStd::string_view stringifiedEnumerator)\
     { \
