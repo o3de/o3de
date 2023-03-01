@@ -314,6 +314,7 @@ namespace Multiplayer
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+        processLaunchInfo.m_tetherLifetime = true;
 
         // Launch the Server
         const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs

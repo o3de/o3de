@@ -53,6 +53,9 @@ namespace AzFramework
             bool m_showWindow = true;
 
             AZStd::string GetCommandLineParametersAsString() const;
+
+            //! Tether the lifetime of this process to the parent; causes the new process to terminate whenever this process ends.
+            bool m_tetherLifetime = false;
         };
 
         static const AZ::u32 INFINITE_TIMEOUT = (AZ::u32) -1;
