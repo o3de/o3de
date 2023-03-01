@@ -25,6 +25,7 @@ namespace GraphModel
     public:
         AZ_CLASS_ALLOCATOR(GraphElement, AZ::SystemAllocator);
         AZ_RTTI(GraphElement, "{FD83C7CA-556B-49F1-BACE-6E9C7A4D6347}");
+        static void Reflect(AZ::ReflectContext* context);
 
         GraphElement() = default; // Needed by SerializeContext
         virtual ~GraphElement() = default;

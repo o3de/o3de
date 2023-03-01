@@ -17,6 +17,7 @@
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/DataType.h>
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Slot.h>
@@ -33,6 +34,7 @@ namespace GraphModel
     {
         // Reflect core graph classes
         GraphModel::Graph::Reflect(context);
+        GraphModel::GraphContext::Reflect(context);
         GraphModel::DataType::Reflect(context);
         GraphModelIntegration::GraphCanvasMetadata::Reflect(context);
 
@@ -50,7 +52,7 @@ namespace GraphModel
         GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphModel::GraphOutputNode>::Reflect(context);
         GraphModelIntegration::CreateModuleNodeMimeEvent::Reflect(context);
 
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<GraphModelSystemComponent, AZ::Component>()
                 ->Version(0)
@@ -73,33 +75,40 @@ namespace GraphModel
             behaviorContext->EBus<GraphModelIntegration::GraphManagerRequestBus>("GraphManagerRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, GraphCanvas::EditorGraphModuleName)
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
                 ->Event("GetGraph", &GraphModelIntegration::GraphManagerRequests::GetGraph)
                 ;
 
             behaviorContext->EBus<GraphModelIntegration::GraphControllerRequestBus>("GraphControllerRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, GraphCanvas::EditorGraphModuleName)
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
                 ->Event("AddNode", &GraphModelIntegration::GraphControllerRequests::AddNode)
                 ->Event("RemoveNode", &GraphModelIntegration::GraphControllerRequests::RemoveNode)
+                ->Event("GetPosition", &GraphModelIntegration::GraphControllerRequests::GetPosition)
                 ->Event("WrapNode", &GraphModelIntegration::GraphControllerRequests::WrapNode)
+                ->Event("WrapNodeOrdered", &GraphModelIntegration::GraphControllerRequests::WrapNodeOrdered)
+                ->Event("UnwrapNode", &GraphModelIntegration::GraphControllerRequests::UnwrapNode)
+                ->Event("IsNodeWrapped", &GraphModelIntegration::GraphControllerRequests::IsNodeWrapped)
+                ->Event("SetWrapperNodeActionString", &GraphModelIntegration::GraphControllerRequests::SetWrapperNodeActionString)
                 ->Event("AddConnection", &GraphModelIntegration::GraphControllerRequests::AddConnection)
                 ->Event("AddConnectionBySlotId", &GraphModelIntegration::GraphControllerRequests::AddConnectionBySlotId)
                 ->Event("AreSlotsConnected", &GraphModelIntegration::GraphControllerRequests::AreSlotsConnected)
                 ->Event("RemoveConnection", &GraphModelIntegration::GraphControllerRequests::RemoveConnection)
                 ->Event("ExtendSlot", &GraphModelIntegration::GraphControllerRequests::ExtendSlot)
-                ;
-
-            behaviorContext->Class<GraphModel::SlotId>("GraphModelSlotId")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, GraphCanvas::EditorGraphModuleName)
-                ->Constructor<const GraphModel::SlotName&>()
-                ->Constructor<const GraphModel::SlotName&, GraphModel::SlotSubId>()
-                ->Property("name", BehaviorValueProperty(&GraphModel::SlotId::m_name))
-                ->Property("subId", BehaviorValueProperty(&GraphModel::SlotId::m_subId))
-                ;
+                ->Event("GetNodeById", &GraphModelIntegration::GraphControllerRequests::GetNodeById)
+                ->Event("GetNodesFromGraphNodeIds", &GraphModelIntegration::GraphControllerRequests::GetNodesFromGraphNodeIds)
+                ->Event("GetNodeIdByNode", &GraphModelIntegration::GraphControllerRequests::GetNodeIdByNode)
+                ->Event("GetSlotIdBySlot", &GraphModelIntegration::GraphControllerRequests::GetSlotIdBySlot)
+                ->Event("GetNodes", &GraphModelIntegration::GraphControllerRequests::GetNodes)
+                ->Event("GetSelectedNodes", &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes)
+                ->Event("SetSelected", &GraphModelIntegration::GraphControllerRequests::SetSelected)
+                ->Event("ClearSelection", &GraphModelIntegration::GraphControllerRequests::ClearSelection)
+                ->Event("EnableNode", &GraphModelIntegration::GraphControllerRequests::EnableNode)
+                ->Event("DisableNode", &GraphModelIntegration::GraphControllerRequests::DisableNode)
+                ->Event("CenterOnNodes", &GraphModelIntegration::GraphControllerRequests::CenterOnNodes)
+                ->Event("GetMajorPitch", &GraphModelIntegration::GraphControllerRequests::GetMajorPitch)
+            ;
         }
     }
 

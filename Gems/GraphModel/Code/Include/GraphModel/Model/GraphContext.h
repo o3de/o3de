@@ -17,7 +17,6 @@
 
 namespace GraphModel
 {
-
     //!!! Start in Graph.h for high level GraphModel documentation !!!
 
     //! GraphContext provides access to client specific information and systems required by the graphmodel framework.
@@ -26,8 +25,14 @@ namespace GraphModel
     class GraphContext : public AZStd::enable_shared_from_this<GraphContext>
     {
     public:
+        AZ_CLASS_ALLOCATOR(GraphContext, AZ::SystemAllocator);
+        AZ_RTTI(GraphContext, "{4CD3C171-A7AA-4B62-96BB-F09F398A73E7}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
         using DataTypeList = AZStd::vector<DataTypePtr>;
 
+        GraphContext() = default;
         GraphContext(const AZStd::string& systemName, const AZStd::string& moduleExtension, const DataTypeList& dataTypes);
         virtual ~GraphContext() = default;
 
@@ -39,7 +44,7 @@ namespace GraphModel
 
         //! Creates the module graph manager used by all module nodes in this context.
         //! This is done after construction because it is optional and the module graph manager needs a reference to the graph context
-        virtual void CreateModuleGraphManager();
+        void CreateModuleGraphManager();
 
         //! Returns a ModuleGraphManager to support creating ModuleNodes. Subclasses can just return nullptr if this isn't needed.
         ModuleGraphManagerPtr GetModuleGraphManager() const;
@@ -64,7 +69,7 @@ namespace GraphModel
         //! This data type method has a different name because if the GraphContext implementation doesn't override
         //! this, there will be a compile error for a hidden function because of subclasses implementing
         //! the templated version below
-        virtual DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
+        DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
     protected:
         AZStd::string m_systemName;
