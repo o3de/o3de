@@ -23,7 +23,7 @@ namespace AWSClientAuth
 {
     //! Gem System Component. Responsible for instantiating and managing Authentication and Authorization Controller
     class AWSClientAuthEditorSystemComponent
-        : public AWSClientAuthSystemComponent
+        : public AZ::Component
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
@@ -40,7 +40,6 @@ namespace AWSClientAuth
 
     protected:
         // AZ::Component interface implementation
-        void Init() override;
         void Activate() override;
         void Deactivate() override;
 

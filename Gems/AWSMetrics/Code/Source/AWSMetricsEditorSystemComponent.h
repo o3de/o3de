@@ -23,11 +23,11 @@ namespace AWSMetrics
 
     //! Gem System Component. Responsible for instantiating and managing the Metrics Manager
     class AWSMetricsEditorSystemComponent
-        : public AWSMetricsSystemComponent
+        : public AZ::Component
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(AWSMetricsEditorSystemComponent, "{6144EDF6-12A6-4C3B-ADF1-7AA3C421BA68}", AWSMetricsSystemComponent);
+        AZ_COMPONENT(AWSMetricsEditorSystemComponent, "{6144EDF6-12A6-4C3B-ADF1-7AA3C421BA68}");
 
         static void Reflect(AZ::ReflectContext* context);
 

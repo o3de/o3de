@@ -19,12 +19,11 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
 #include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include <md5.h>
 
 namespace AZ
 {
@@ -220,11 +219,11 @@ namespace AZ
 
             if (arguments.m_digest)  // if the function's caller requested to compute a digest, let's hash the content and store it in the digest array.
             {            // this is useful for lld/pdb file naming (shader debug symbols) because it's the automatically recognized scheme by PIX and alike.
-                MD5Context md5;
-                MD5Init(&md5);
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
-                MD5Final(*arguments.m_digest, &md5);
+                
+                AZ::Sha1 hasher;
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
+                hasher.GetDigest((reinterpret_cast<AZ::Sha1::DigestType>(*arguments.m_digest)));
             }
 
             return combinedFile;
