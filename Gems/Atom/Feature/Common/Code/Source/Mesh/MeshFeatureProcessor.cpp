@@ -13,6 +13,7 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+#include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -552,7 +553,7 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return { RPI::AssetQualityHighest, RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
+                return { RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 
@@ -801,6 +802,32 @@ namespace AZ
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
+
+            if (const auto& modelTags = modelAsset->GetTags(); !modelTags.empty())
+            {
+                RPI::AssetQuality highestLodBias = RPI::AssetQualityLowest;
+                for (const AZ::Name& tag : modelTags)
+                {
+                    RPI::AssetQuality tagQuality = RPI::AssetQualityHighest;
+                    RPI::ModelTagBus::BroadcastResult(tagQuality, &RPI::ModelTagBus::Events::GetQuality, tag);
+
+                    highestLodBias = AZStd::min(highestLodBias, tagQuality);
+                }
+
+                if (highestLodBias >= modelAsset->GetLodCount())
+                {
+                    highestLodBias = aznumeric_caster(modelAsset->GetLodCount() - 1);
+                }
+
+                m_parent->m_lodBias = highestLodBias;
+
+                for (const AZ::Name& tag : modelTags)
+                {
+                    RPI::ModelTagBus::Broadcast(&RPI::ModelTagBus::Events::RegisterAsset, tag, modelAsset->GetId());
+                }
+            }
+            else
+                m_parent->m_lodBias = 0;
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
@@ -1551,16 +1578,25 @@ namespace AZ
             const size_t modelLodCount = m_model->GetLodCount();
             const auto& lodAssets = m_model->GetModelAsset()->GetLodAssets();
             AZ_Assert(lodAssets.size() == modelLodCount, "Number of asset lods must match number of model lods");
+            AZ_Assert(m_lodBias <= modelLodCount - 1, "Incorrect lod bias");
 
             lodData.m_lods.resize(modelLodCount);
             cullData.m_drawListMask.reset();
 
             const size_t lodCount = lodAssets.size();
+
             for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                if (lodIndex == 0)
+                // non-used lod (except if forced)
+                if (lodIndex < m_lodBias)
+                {
+                    // set impossible screen coverage to disable it
+                    lod.m_screenCoverageMax = 1.0f;
+                    lod.m_screenCoverageMin = 0.0f;
+                }
+                else if (lodIndex == m_lodBias)
                 {
                     //first lod
                     lod.m_screenCoverageMax = 1.0f;
@@ -1583,7 +1619,7 @@ namespace AZ
                 }
 
                 lod.m_drawPackets.clear();
-                for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex])
+                for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex + m_lodBias])
                 {
                     const RHI::DrawPacket* rhiDrawPacket = meshDrawPacket.GetRHIDrawPacket();
 

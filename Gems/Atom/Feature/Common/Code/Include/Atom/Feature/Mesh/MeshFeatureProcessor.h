@@ -113,6 +113,8 @@ namespace AZ
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
 
+            size_t m_lodBias = 0;
+
             typedef AZStd::unordered_map<Data::Instance<RPI::Material>, RPI::Material::ChangeId> MaterialChangeIdMap;
             MaterialChangeIdMap m_materialChangeIds;
 
@@ -143,8 +145,6 @@ namespace AZ
             bool m_hasForwardPassIblSpecularMaterial = false;
             bool m_needsSetRayTracingData = false;
         };
-
-        static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final

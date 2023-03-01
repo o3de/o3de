@@ -777,21 +777,12 @@ namespace AZ
                     const float approxScreenPercentage =
                         ModelLodUtils::ApproxScreenPercentage(pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
 
-                    AssetQuality bias = lodData.m_lodConfiguration.m_lodBias;
-                    for (AZStd::size_t i = 0; i < lodData.m_lods.size(); ++i)
+                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
                     {
-                        const Cullable::LodData::Lod& lod = lodData.m_lods[i];
-
                         // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
-                            AZStd::size_t biasedLod = i + bias;
-                            if (biasedLod >= lodData.m_lods.size())
-                            {
-                                break;
-                            }
-
-                            addLodToDrawPacket(lodData.m_lods[biasedLod]);
+                            addLodToDrawPacket(lod);
                         }
                     }
                     break;
