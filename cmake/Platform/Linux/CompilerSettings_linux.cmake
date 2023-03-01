@@ -8,6 +8,7 @@
 
 if(NOT CMAKE_C_COMPILER AND NOT CMAKE_CXX_COMPILER AND NOT "$ENV{CC}" AND NOT "$ENV{CXX}")
     set(path_search
+        ${SNAP}/usr/bin
         /bin
         /usr/bin
         /usr/local/bin
