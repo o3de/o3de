@@ -165,9 +165,6 @@ namespace PhysX
         const AZ::Vector3 expectedVelocity(0.0f, 0.0f, 22.0f);
         GameplayTestBasis basis(m_testSceneHandle, DefaultGravityMultiplier, DefaultGroundDetectionBoxHeight);
 
-        // Get the original velocity so we can determine that set actually changes things.
-        auto originalVelocity = basis.m_gameplayController->GetFallingVelocity();
-
         // Run the scene for a while and validate that the set velocity is working
         for (int i = 0; i < 10; i++)
         {
