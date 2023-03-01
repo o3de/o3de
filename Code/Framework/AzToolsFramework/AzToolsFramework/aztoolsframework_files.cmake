@@ -87,6 +87,8 @@ set(FILES
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
+    API/Utils.h
+    API/Utils.cpp
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -112,6 +114,11 @@ set(FILES
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
     AssetCatalog/PlatformAddressedAssetCatalogManager.h
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
+    AssetSelection/AssetSelectionComboBox.h
+    AssetSelection/AssetSelectionComboBox.cpp
+    AssetSelection/AssetSelectionGrid.h
+    AssetSelection/AssetSelectionGrid.cpp
+    AssetSelection/AssetSelectionGrid.ui
     Thumbnails/ThumbnailerComponent.cpp
     Thumbnails/ThumbnailerComponent.h
     Thumbnails/ThumbnailerNullComponent.cpp

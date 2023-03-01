@@ -1,0 +1,8 @@
+<RCC>
+    <qresource>
+        <file>Icons/group_closed.png</file>
+        <file>Icons/group_open.png</file>
+        <file>Icons/blank.png</file>
+        <file>Icons/changed_property.svg</file>
+    </qresource>
+</RCC>

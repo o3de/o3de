@@ -122,5 +122,78 @@ namespace AZ
         AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromStream(IO::GenericStream& stream, const JsonDeserializerSettings* settings = nullptr);
         AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromFile(const AZStd::string& filePath,const JsonDeserializerSettings* settings = nullptr);
 
+        //! Provides a common way to report errors and warnings when processing Atom assets with JsonSerialization.
+        class JsonReportingHelper
+        {
+        public:
+            //! Attach this helper to the JsonSerializerSettings reporting callback
+            void Attach(JsonSerializerSettings& settings)
+            {
+                settings.m_reporting = [this](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode resultCode, AZStd::string_view path)
+                {
+                    return Reporting(message, resultCode, path);
+                };
+            }
+
+            //! Attach this helper to the JsonDeserializerSettings reporting callback
+            void Attach(JsonDeserializerSettings& settings)
+            {
+                settings.m_reporting = [this](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode resultCode, AZStd::string_view path)
+                {
+                    return Reporting(message, resultCode, path);
+                };
+            }
+
+            bool WarningsReported() const
+            {
+                return m_warningsReported;
+            }
+
+            bool ErrorsReported() const
+            {
+                return m_errorsReported;
+            }
+
+            AZStd::string GetErrorMessage() const
+            {
+                return m_firstErrorMessage;
+            }
+
+        private:
+            AZ::JsonSerializationResult::ResultCode Reporting(AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
+            {
+                if (result.GetOutcome() == JsonSerializationResult::Outcomes::Skipped)
+                {
+                    m_warningsReported = true;
+                    AZ_Warning("JSON", false, "Skipped unrecognized field '%.*s'", AZ_STRING_ARG(path));
+                }
+                else if (result.GetProcessing() != JsonSerializationResult::Processing::Completed ||
+                    result.GetOutcome() >= JsonSerializationResult::Outcomes::Unavailable)
+                {
+                    if (result.GetOutcome() >= JsonSerializationResult::Outcomes::Catastrophic)
+                    {
+                        m_errorsReported = true;
+                        AZ_Error("JSON", false, "'%.*s': %.*s - %s", AZ_STRING_ARG(path), AZ_STRING_ARG(message), result.ToString("").c_str());
+
+                        if (m_firstErrorMessage.empty())
+                        {
+                            m_firstErrorMessage = message;
+                        }
+                    }
+                    else
+                    {
+                        m_warningsReported = true;
+                        AZ_Warning("JSON", false, "'%.*s': %.*s - %s", AZ_STRING_ARG(path), AZ_STRING_ARG(message), result.ToString("").c_str());
+                    }
+                }
+
+                return result;
+            }
+
+            bool m_warningsReported = false;
+            bool m_errorsReported = false;
+            AZStd::string m_firstErrorMessage;
+        };
+
     } // namespace JsonSerializationUtils
 } // namespace Az

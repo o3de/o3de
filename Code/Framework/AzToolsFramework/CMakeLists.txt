@@ -22,6 +22,7 @@ ly_add_target(
         AzToolsFramework/aztoolsframework_files.cmake
         AzToolsFramework/aztoolsframework_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        AzToolsFramework/documenteditor_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -56,6 +57,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         AUTOMOC
         FILES_CMAKE
             AzToolsFramework/aztoolsframeworktestcommon_files.cmake
+            AzToolsFramework/DocumentEditor/documenteditor_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
