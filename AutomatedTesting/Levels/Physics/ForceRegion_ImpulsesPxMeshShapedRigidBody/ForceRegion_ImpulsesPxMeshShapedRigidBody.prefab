@@ -76,7 +76,7 @@
                     }
                 },
                 "Component_[17072051774364123210]": {
-                    "$type": "EditorMeshColliderComponent",
+                    "$type": "EditorColliderComponent",
                     "Id": 17072051774364123210,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
@@ -87,22 +87,24 @@
                             ]
                         }
                     },
-                    "PhysicsAssetShapeConfiguration": {
-                        "Asset": {
-                            "assetId": {
-                                "guid": "{80F2EABC-5A51-5514-B9F0-55F981549B2E}",
-                                "subId": 1454228742
-                            },
-                            "assetHint": "levels/physics/forceregion_impulsespxmeshshapedrigidbody/physxsedan/_dev_sedan_r0-b.pxmesh"
-                        },
-                        "Configuration": {
-                            "PhysicsAsset": {
+                    "ShapeConfiguration": {
+                        "PhysicsAsset": {
+                            "Asset": {
                                 "assetId": {
                                     "guid": "{80F2EABC-5A51-5514-B9F0-55F981549B2E}",
                                     "subId": 1454228742
                                 },
-                                "loadBehavior": "QueueLoad",
                                 "assetHint": "levels/physics/forceregion_impulsespxmeshshapedrigidbody/physxsedan/_dev_sedan_r0-b.pxmesh"
+                            },
+                            "Configuration": {
+                                "PhysicsAsset": {
+                                    "assetId": {
+                                        "guid": "{80F2EABC-5A51-5514-B9F0-55F981549B2E}",
+                                        "subId": 1454228742
+                                    },
+                                    "loadBehavior": "QueueLoad",
+                                    "assetHint": "levels/physics/forceregion_impulsespxmeshshapedrigidbody/physxsedan/_dev_sedan_r0-b.pxmesh"
+                                }
                             }
                         }
                     }
