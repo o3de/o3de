@@ -68,3 +68,4 @@ if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
 
     Report.start_test(ScriptEvent_AddRemoveParameter_ActionsSuccessful)
+    
