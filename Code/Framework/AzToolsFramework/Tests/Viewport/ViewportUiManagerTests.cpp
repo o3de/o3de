@@ -6,19 +6,35 @@
  *
  */
 
-#include <Tests/Viewport/ViewportUiManagerTests.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzTest/AzTest.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace UnitTest
 {
-    void ViewportUiManagerTestFixture::SetUp()
+    // sets up a parent widget and render overlay to attach the Viewport UI to
+    // as well as a cluster with one button
+    class ViewportUiManagerTestFixture : public ::testing::Test
     {
-        m_viewportManagerWrapper.Create();
-    }
+    public:
+        ViewportUiManagerTestFixture() = default;
 
-    void ViewportUiManagerTestFixture::TearDown()
-    {
-        m_viewportManagerWrapper.Destroy();
-    }
+        ViewportManagerWrapper m_viewportManagerWrapper;
+
+        void SetUp() override
+        {
+            m_viewportManagerWrapper.Create();
+        }
+
+        void TearDown() override
+        {
+            m_viewportManagerWrapper.Destroy();
+        }
+    };
 
     TEST_F(ViewportUiManagerTestFixture, CreateClusterAddsNewClusterAndReturnsId)
     {
@@ -123,9 +139,9 @@ namespace UnitTest
 
         // create a handler which will be triggered by the cluster
         bool handlerTriggered = false;
-        auto testButtonId = ButtonId(buttonId);
-        AZ::Event<ButtonId>::Handler handler(
-            [&handlerTriggered, testButtonId](ButtonId buttonId)
+        auto testButtonId = AzToolsFramework::ViewportUi::ButtonId(buttonId);
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler handler(
+            [&handlerTriggered, testButtonId](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == testButtonId)
                 {

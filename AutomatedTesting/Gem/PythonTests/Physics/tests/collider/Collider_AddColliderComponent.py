@@ -13,7 +13,7 @@ Test Case Title : Verify that you can add the physX collider component to an ent
 # fmt: off
 class Tests():
     create_test_entity           = ("Entity created successfully",    "Failed to create Entity")
-    add_physx_collider           = ("PhysX Collider component added", "Failed to add PhysX Collider component")
+    add_physx_collider           = ("PhysX Primitive Collider component added", "Failed to add PhysX Primitive Collider component")
     enter_game_mode              = ("Entered game mode",              "Failed to enter game mode")
     no_errors_and_warnings_found = ("No errors and warnings found",   "Found errors and warnings")
     exit_game_mode               = ("Exited game mode",               "Failed to exit game mode")
@@ -23,7 +23,7 @@ class Tests():
 def Collider_AddColliderComponent():
     """
     Summary:
-    Opens an empty level and creates an Entity with PhysX Collider. Verify that editor remains stable in Game mode.
+    Opens an empty level and creates an Entity with PhysX Primitive Collider. Verify that editor remains stable in Game mode.
 
     Expected Behavior:
     The Editor is stable there are no warnings or errors.
@@ -32,7 +32,7 @@ def Collider_AddColliderComponent():
      1) Load the level
      2) Create test entity
      3) Start the Tracer to catch any errors and warnings
-     4) Add the PhysX Collider component and change shape to box
+     4) Add the PhysX Primitive Collider component and change shape to box
      5) Enter game mode
      6) Verify there are no errors and warnings in the logs
      7) Exit game mode
@@ -56,13 +56,14 @@ def Collider_AddColliderComponent():
 
     # 2) Create test entity
     test_entity = EditorEntity.create_editor_entity("TestEntity")
+    test_entity.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_test_entity, test_entity.id.IsValid())
 
     # 3) Start the Tracer to catch any errors and warnings
     with Tracer() as section_tracer:
-        # 4) Add the PhysX Collider component and change shape to box
-        collider_component = test_entity.add_component("PhysX Collider")
-        Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Collider"))
+        # 4) Add the PhysX Primitive Collider component and change shape to box
+        collider_component = test_entity.add_component("PhysX Primitive Collider")
+        Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Primitive Collider"))
         collider_component.set_component_property_value('Shape Configuration|Shape', azlmbr.physics.ShapeType_Box)
 
         # 5) Enter game mode

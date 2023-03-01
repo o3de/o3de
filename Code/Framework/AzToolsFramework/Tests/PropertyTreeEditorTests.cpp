@@ -30,14 +30,14 @@ namespace UnitTest
 
     struct PropertyTreeEditorSubBlockTester
     {
-        AZ_TYPE_INFO(PropertyTreeEditorTester, "{E9497A1E-9B41-4A33-8F05-92CE41A0ABD9}");
+        AZ_TYPE_INFO(PropertyTreeEditorSubBlockTester, "{E9497A1E-9B41-4A33-8F05-92CE41A0ABD9}");
         AZ::s16 m_myNegativeShort = -42;
     };
 
     struct MockAssetData
         : public AZ::Data::AssetData
     {
-        AZ_RTTI(MyTestAssetData, "{8B0A8DCA-7F29-4B8E-B5D7-08E0EAB2C900}", AZ::Data::AssetData);
+        AZ_RTTI(MockAssetData, "{8B0A8DCA-7F29-4B8E-B5D7-08E0EAB2C900}", AZ::Data::AssetData);
 
         MockAssetData(const AZ::Data::AssetId& assetId)
             : AssetData(assetId)
@@ -100,7 +100,7 @@ namespace UnitTest
 
         struct PropertyTreeEditorNestedTester
         {
-            AZ_TYPE_INFO(PropertyTreeEditorTester, "{F5814544-424D-41C5-A5AB-632371615B6A}");
+            AZ_TYPE_INFO(PropertyTreeEditorNestedTester, "{F5814544-424D-41C5-A5AB-632371615B6A}");
 
             AZStd::string m_myNestedString = "NestedString";
         };
@@ -626,7 +626,7 @@ namespace UnitTest
             EXPECT_TRUE(propertyTree.GetPropertyType("My New List").starts_with("AZStd::vector"));
             EXPECT_EQ("AZStd::string", propertyTree.GetPropertyType("Nested|My Nested String"));
             EXPECT_EQ("double", propertyTree.GetPropertyType("My Hidden Double"));
-            EXPECT_EQ("PropertyTreeEditorTester", propertyTree.GetPropertyType("Nested"));
+            EXPECT_EQ("PropertyTreeEditorNestedTester", propertyTree.GetPropertyType("Nested"));
         }
 
         // BuildPathsList after enforcement removes the "show children only" nodes from the paths

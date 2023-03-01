@@ -76,7 +76,7 @@ namespace AzFramework
             {
                 auto spawnable = azrtti_cast<Spawnable*>(assetData);
 
-                spawnables.push_back(AZStd::make_pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
+                spawnables.push_back(AZStd::pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
 
                 if (assetInfo.m_relativePath == rootProductId)
                 {

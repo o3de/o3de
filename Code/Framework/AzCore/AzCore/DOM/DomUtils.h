@@ -77,10 +77,13 @@ namespace AZ::Dom::Utils
         using Type = T;
     };
 
+    // Only add pointer to non-pointer types
     template<typename T>
-    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>) && !is_dom_value_v<T>>>
+    struct DomValueWrapper<T, AZStd::enable_if_t<((AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>))
+        && !is_dom_value_v<T>>>
     {
-        using Type = AZStd::add_pointer_t<AZStd::remove_reference_t<T>>;
+        // i.e don't convert `const void*&` to `const void**`, instead convert to a reference wrapper
+        using Type = AZStd::reference_wrapper<AZStd::remove_reference_t<T>>;
     };
 
     template<typename T>
@@ -124,7 +127,7 @@ namespace AZ::Dom::Utils
         }
         else if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
         {
-            WrapperType wrapper = &value;
+            WrapperType wrapper = value;
             return MarshalOpaqueValue(wrapper);
         }
         else if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
@@ -307,11 +310,19 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            using ValueTypeNoQualifier = AZStd::conditional_t<AZStd::is_pointer_v<AZStd::remove_cvref_t<T>>,
+                AZStd::remove_pointer_t<AZStd::remove_cvref_t<T>>,
+                AZStd::remove_cvref_t<T>>;
             auto convertedValue = ValueToType<T>(value);
-            if constexpr (AZStd::is_reference_v<T>)
+            if constexpr (AZStd::is_void_v<ValueTypeNoQualifier>)
             {
-                // Crash with a null deref to give a relatively sensible error messae
-                return *convertedValue.value_or(nullptr);
+                // Return the raw void pointer
+                return convertedValue.value();
+            }
+            else if constexpr (AZStd::is_reference_v<T>)
+            {
+                // The convertedValue is a reference wrapper in this case
+                return convertedValue.value();
             }
             else if constexpr (AZStd::is_constructible_v<T>)
             {
