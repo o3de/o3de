@@ -1208,7 +1208,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.showHelpers";
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Show Helpers for all entities";
-        actionProperties.m_description = "Show/Hide Helpers.";
+        actionProperties.m_description = "Show Helpers.";
         actionProperties.m_category = "View";
         actionProperties.m_iconPath = ":/Menu/helpers.svg";
 
