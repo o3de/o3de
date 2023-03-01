@@ -6,6 +6,7 @@
  *
  */
 #include <Source/EditorColliderComponent.h>
+#include <Source/EditorMeshColliderComponent.h>
 #include <Source/EditorShapeColliderComponent.h>
 #include <Source/EditorForceRegionComponent.h>
 #include <Source/ForceRegionComponent.h>
@@ -291,21 +292,20 @@ namespace PhysX
         }
 
         // Update AABB cache of collider components if they're outdated or dirty.
-        AZ::Aabb aabb;
-        ColliderShapeRequestBus::EventResult(aabb
-            , GetEntityId()
-            , &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
+        const AZStd::vector<AZ::Vector3> shapeAabbPoints = [this]()
+        {
+            AZ::Aabb aabb;
+            ColliderShapeRequestBus::EventResult(aabb, GetEntityId(), &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
+
+            const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
+            const AZ::Vector3 aabbCenter = aabb.GetCenter();
+            return Utils::Geometry::GenerateBoxPoints(aabbCenter - halfExtents, aabbCenter + halfExtents);
+        }();
 
         const AZ::Entity::ComponentArrayType& enabledComponents = forceRegionEntity->GetComponents();
         for (AZ::Component* component : enabledComponents)
         {
-            EditorColliderComponent* editorColliderComponent = azrtti_cast<EditorColliderComponent*>(component);
-            EditorShapeColliderComponent* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component);
-            if (!editorColliderComponent && !editorShapeColliderComponent)
-            {
-                continue;
-            }
-            if (editorColliderComponent)
+            if (auto* editorColliderComponent = azrtti_cast<EditorColliderComponent*>(component))
             {
                 const PhysX::EditorProxyShapeConfig& shapeConfig = editorColliderComponent->GetShapeConfiguration();
                 AZStd::vector<AZ::Vector3> randomPoints;
@@ -327,31 +327,20 @@ namespace PhysX
                     float radius = shapeConfig.m_sphere.m_radius;
                     randomPoints = Utils::Geometry::GenerateSpherePoints(radius);
                 }
-                else if (shapeConfig.IsAssetConfig())
-                {
-                    const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
-                    randomPoints = Utils::Geometry::GenerateBoxPoints(-halfExtents, halfExtents);
-                }
 
-                if (!shapeConfig.IsAssetConfig())
-                {
-                    PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
-                        , GetWorldTM()
-                        , editorColliderComponent->GetColliderConfiguration().m_position
-                        , editorColliderComponent->GetColliderConfiguration().m_rotation
-                        , m_cachedNonUniformScale);
-                }
-                else
-                {
-                    const AZ::Vector3 aabbCenter = aabb.GetCenter();
-                    AZStd::transform(randomPoints.begin(), randomPoints.end(), randomPoints.begin(),
-                        [&aabbCenter](AZ::Vector3& point) {return point + aabbCenter; });
-                }
+                PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
+                    , GetWorldTM()
+                    , editorColliderComponent->GetColliderConfiguration().m_position
+                    , editorColliderComponent->GetColliderConfiguration().m_rotation
+                    , m_cachedNonUniformScale);
 
                 DrawForceArrows(randomPoints, debugDisplayRequests);
             }
-
-            else if (editorShapeColliderComponent)
+            else if (azrtti_cast<EditorMeshColliderComponent*>(component))
+            {
+                DrawForceArrows(shapeAabbPoints, debugDisplayRequests);
+            }
+            else if (auto* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component))
             {
                 DrawForceArrows(editorShapeColliderComponent->GetSamplePoints(), debugDisplayRequests);
             }

@@ -13,6 +13,8 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/BlockCompression.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -1099,6 +1101,63 @@ namespace AZ
             else
             {
                 return AZStd::nullopt;
+            }
+        }
+
+        void AddPassRequestToRenderPipeline(
+            AZ::RPI::RenderPipeline* renderPipeline,
+            const char* passRequestAssetFilePath,
+            const char* referencePass,
+            bool beforeReferencePass)
+        {
+            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            const AZ::RPI::PassRequest* passRequest = nullptr;
+            if (passRequestAsset->IsReady())
+            {
+                passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            }
+            if (!passRequest)
+            {
+                AZ_Error("RPIUtils", false, "Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
+            }
+
+            // Return if the pass to be created already exists
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
+            AZ::RPI::Pass* existingPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (existingPass)
+            {
+                return;
+            }
+
+            // Create the pass
+            AZ::RPI::Ptr<AZ::RPI::Pass> newPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+            if (!newPass)
+            {
+                AZ_Error("RPIUtils", false, "Failed to create the pass from pass request [%s].", passRequest->m_passName.GetCStr());
+                return;
+            }
+
+            // Add the pass to render pipeline
+            bool success;
+            if (beforeReferencePass)
+            {
+                success = renderPipeline->AddPassBefore(newPass, AZ::Name(referencePass));
+            }
+            else
+            {
+                success = renderPipeline->AddPassAfter(newPass, AZ::Name(referencePass));
+            }
+            // only create pass resources if it was success
+            if (!success)
+            {
+                AZ_Error(
+                    "RPIUtils",
+                    false,
+                    "Failed to add pass [%s] to render pipeline [%s].",
+                    newPass->GetName().GetCStr(),
+                    renderPipeline->GetId().GetCStr());
             }
         }
     } // namespace RPI
