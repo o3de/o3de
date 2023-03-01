@@ -155,6 +155,8 @@ namespace PhysX
         Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
         Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
 
+        bool IsDebugDrawDisplayFlagEnabled() const;
+
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;

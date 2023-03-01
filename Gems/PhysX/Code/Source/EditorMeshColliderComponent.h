@@ -44,6 +44,16 @@ namespace AzPhysics
 
 namespace PhysX
 {
+    struct EditorProxyPhysicsAsset
+    {
+        AZ_CLASS_ALLOCATOR(EditorProxyPhysicsAsset, AZ::SystemAllocator);
+        AZ_TYPE_INFO(EditorProxyPhysicsAsset, "{1F69C480-CC88-4C2D-B126-B13694E6192B}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::Data::Asset<Pipeline::MeshAsset> m_pxAsset{ AZ::Data::AssetLoadBehavior::QueueLoad };
+        Physics::PhysicsAssetShapeConfiguration m_configuration;
+    };
+
     //! Edit context wrapper for the physics asset and asset specific parameters in the shape configuration.
     struct EditorProxyAssetShapeConfig
     {
@@ -54,8 +64,7 @@ namespace PhysX
         EditorProxyAssetShapeConfig() = default;
         EditorProxyAssetShapeConfig(const Physics::PhysicsAssetShapeConfiguration& assetShapeConfiguration);
 
-        AZ::Data::Asset<Pipeline::MeshAsset> m_pxAsset{ AZ::Data::AssetLoadBehavior::QueueLoad };
-        Physics::PhysicsAssetShapeConfiguration m_configuration;
+        EditorProxyPhysicsAsset m_physicsAsset;
 
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
@@ -99,7 +108,9 @@ namespace PhysX
 
         EditorMeshColliderComponent() = default;
         EditorMeshColliderComponent(
-            const Physics::ColliderConfiguration& colliderConfiguration, const EditorProxyAssetShapeConfig& proxyAssetShapeConfig);
+            const Physics::ColliderConfiguration& colliderConfiguration,
+            const EditorProxyAssetShapeConfig& proxyAssetShapeConfig,
+            bool debugDrawDisplayFlagEnabled = true);
         EditorMeshColliderComponent(
             const Physics::ColliderConfiguration& colliderConfiguration, const Physics::PhysicsAssetShapeConfiguration& assetShapeConfig);
 
@@ -107,6 +118,8 @@ namespace PhysX
         const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
         Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
+
+        bool IsDebugDrawDisplayFlagEnabled() const;
 
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;

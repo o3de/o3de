@@ -72,7 +72,7 @@ namespace PhysX
             for (const EditorMeshColliderComponent* collider : entity->FindComponents<EditorMeshColliderComponent>())
             {
                 const EditorProxyAssetShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
-                if (!shapeConfigurationProxy.m_configuration.m_asset.IsReady())
+                if (!shapeConfigurationProxy.m_physicsAsset.m_configuration.m_asset.IsReady())
                 {
                     continue;
                 }
@@ -80,7 +80,7 @@ namespace PhysX
                 const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
                 Utils::CreateShapesFromAsset(
-                    shapeConfigurationProxy.m_configuration,
+                    shapeConfigurationProxy.m_physicsAsset.m_configuration,
                     colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
 
                 for (const auto& shape : shapes)

@@ -35,10 +35,10 @@ class EditorPhysxMeshCollider:
             and visibility.
         """
         class PhysicsAsset:
-            BASE = 'Physics Asset'
-            PHYSX_MESH = 'Physics Asset|PhysX Mesh'
-            ASSET_SCALE = 'Physics Asset|Configuration|Asset Scale'
-            PHYSICS_MATERIALS_FROM_ASSET = 'Physics Asset|Configuration|Physics materials from asset'
+            BASE = 'Shape Configuration|Asset'
+            PHYSX_MESH = 'Shape Configuration|Asset|PhysX Mesh'
+            ASSET_SCALE = 'Shape Configuration|Asset|Configuration|Asset Scale'
+            PHYSICS_MATERIALS_FROM_ASSET = 'Shape Configuration|Asset|Configuration|Physics materials from asset'
 
         COLLISION_LAYER = 'Collider Configuration|Collision Layer'
         COLLIDES_WITH = 'Collider Configuration|Collides With'
