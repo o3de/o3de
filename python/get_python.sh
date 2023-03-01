@@ -28,12 +28,16 @@ install_dependencies () {
     fi
     
     # if we're building a container app, create a package from o3de then install that to remove absolute paths to o3de scripts
-    pushd $DIR/../scripts/o3de/
-    $DIR/python.sh setup.py sdist
-    popd
+    if [ $O3DE_BUILDING_CONTAINER == 1 ]; then
+        pushd $DIR/../scripts/o3de/
+        $DIR/python.sh setup.py sdist
+        popd
 
-    #$DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
-    $DIR/pip.sh install $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz --no-deps --disable-pip-version-check --no-cache
+        $DIR/pip.sh install $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz --no-deps --disable-pip-version-check --no-cache
+    else
+        $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
+    fi
+
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failed to install $DIR/../scripts/o3de into python.  Check the log above!"
