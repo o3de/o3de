@@ -56,6 +56,7 @@ apps:
     command: bin/desktop-launch $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
     environment:
       LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
       DISABLE_WAYLAND: 1
   editor:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor

@@ -24,7 +24,7 @@ logger.setLevel(logging.INFO)
 
 def get_this_engine_path() -> pathlib.Path:
     if "SNAP" in os.environ:
-        return pathlib.Path(os.environ.get('SNAP')) / '0.0.10'
+        return pathlib.Path(os.environ.get('SNAP')) / os.environ.get('SNAP_BUILD')
     else:
         return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
