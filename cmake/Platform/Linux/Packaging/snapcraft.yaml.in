@@ -13,6 +13,7 @@ parts:
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
     stage-packages:
+     - cmake
      - clang
      - ninja-build
      - libatomic1
@@ -43,8 +44,6 @@ parts:
      - libffi7
      - libffi8
      - gcc
-    stage-snaps:
-     - cmake
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
