@@ -23,7 +23,8 @@ logger.setLevel(logging.INFO)
 # Directory methods
 
 def get_this_engine_path() -> pathlib.Path:
-    return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
+    #return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
+    return pathlib.Path(os.environ.get('SNAP')) / '0.0.10'
 
 
 def get_home_folder() -> pathlib.Path:
