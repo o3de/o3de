@@ -86,9 +86,10 @@ namespace AzToolsFramework
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
+    protected:
+
         void PopulateSettingsInspector(InspectorWidget* inspector) const override;
 
-    protected:
         // Create menus and actions to open and create files for all registered document types 
         void BuildCreateMenu(QAction* insertPostion);
         void BuildOpenMenu(QAction* insertPostion);

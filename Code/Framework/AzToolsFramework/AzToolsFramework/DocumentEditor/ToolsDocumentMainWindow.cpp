@@ -52,9 +52,9 @@ namespace AzToolsFramework
             ToolsDocumentSystemRequestBus::EventResult(
                 documentTypes, m_toolId, &ToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
             for (const auto& documentType : documentTypes)
-{
+            {
                 if (documentType.IsSupportedExtensionToOpen(absolutePath))
-    {
+                {
                     AZ::SystemTickBus::QueueFunction([toolId = m_toolId, absolutePath]() {
                         ToolsDocumentSystemRequestBus::Event(toolId, &ToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
                     });

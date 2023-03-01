@@ -23,6 +23,8 @@
 
 namespace AzToolsFramework
 {
+    class InspectorWidget;
+
     class ToolsMainWindow
         : public AzQtComponents::DockMainWindow
         , protected ToolsMainWindowRequestBus::Handler
