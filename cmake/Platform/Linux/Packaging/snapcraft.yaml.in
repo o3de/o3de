@@ -41,7 +41,7 @@ parts:
      - libunwind-dev
      - libssl3
      - libffi7
-     - python3-venv
+     - gcc
     stage-snaps:
      - cmake
 
