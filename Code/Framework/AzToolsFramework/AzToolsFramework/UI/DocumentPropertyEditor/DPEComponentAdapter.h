@@ -58,8 +58,7 @@ namespace AZ::DocumentPropertyEditor
     protected:
         AZStd::string m_componentAlias;
         AZ::EntityId m_entityId;
-
-        AZ::Component* m_componentInstance = nullptr;
+        AZ::ComponentId m_componentId;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
 
