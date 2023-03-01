@@ -827,7 +827,9 @@ namespace AZ
                 }
             }
             else
+            {
                 m_parent->m_lodBias = 0;
+            }
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
