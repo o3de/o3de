@@ -589,7 +589,7 @@ namespace Multiplayer
                     existingServers, serverExeFilename.c_str());
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...");
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...\n");
 
             // Launch the editor-server
             if (!LaunchEditorServer())
