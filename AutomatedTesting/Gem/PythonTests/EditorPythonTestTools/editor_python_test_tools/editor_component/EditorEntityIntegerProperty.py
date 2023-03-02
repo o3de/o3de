@@ -14,8 +14,8 @@ class EditorEntityIntegerProperty(EditorEntityComponentProperty):
     """
     Defines the behaviors for interacting with an Editor Entity integer property
     """
-    def __init__(self, property_path: str, editor_component: EditorComponent, clamped: bool = True):
-        super().__init__(property_path, editor_component, clamped)
+    def __init__(self, property_path: str, editor_component: EditorComponent):
+        super().__init__(property_path, editor_component)
 
     def get(self) -> int:
         return self.editor_component.get_component_property_value(self.property_path)

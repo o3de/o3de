@@ -70,4 +70,3 @@ class PhysXDynamicRigidBodyComponent(EditorEntityComponent):
         self.debug_draw_COM = EditorEntityBoolProperty(self.component, self.Path.DEBUG_DRAW_COM)
         self.solver_position_iterations = EditorEntityIntegerProperty(self.component, self.Path.SOLVER_POSITION_ITERATIONS)
         self.solver_velocity_iterations = EditorEntityIntegerProperty(self.component, self.Path.SOLVER_VELOCITY_ITERATIONS)
-

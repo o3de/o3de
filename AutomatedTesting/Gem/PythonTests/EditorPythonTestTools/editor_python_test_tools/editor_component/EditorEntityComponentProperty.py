@@ -6,13 +6,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 This util is intended to store common test values for editor component tests.
 """
-
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 
 
 class EditorEntityComponentProperty:
 
-    def __init__(self, editor_component: EditorComponent, path: str, clamped: bool = True):
+    def __init__(self, editor_component: EditorComponent, path: str):
         self.property_path = path
         self.editor_component = editor_component
-        self.clamped = clamped
