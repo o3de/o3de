@@ -500,6 +500,10 @@ namespace AssetProcessor
         bool CheckMetadataIsAvailable(AZ::IO::PathView absolutePath);
         bool ShouldIgnorePendingMove(AZ::IO::PathView absolutePath, bool triggeredByMetadata, bool isDelete);
 
+        //! Returns true if elapsed time is close enough to the delay process wait time
+        //! This is not an exact check since QTimer is not precise with its event timing
+        bool IsDelayProcessTimerElapsed(qint64 elapsedTime);
+
         AssetProcessor::PlatformConfiguration* m_platformConfig = nullptr;
 
         bool m_queuedExamination = false;

@@ -1854,7 +1854,7 @@ namespace AssetProcessor
                 if (m_delayProcessMetadataFiles.contains(absolutePath))
                 {
                     auto duration = m_delayProcessMetadataFiles[absolutePath].msecsTo(QDateTime::currentDateTime());
-                    if (duration < m_metaCreationDelayMs)
+                    if (!IsDelayProcessTimerElapsed(duration))
                     {
                         // Event 7: Already waiting on file, keep waiting
                         return;
@@ -5979,6 +5979,15 @@ namespace AssetProcessor
         return false;
     }
 
+    bool AssetProcessorManager::IsDelayProcessTimerElapsed(qint64 elapsedTime)
+    {
+        // QTimer is not a precise timer, it could fire several milliseconds before or after the required wait time.
+        // Just check if the elapsed time is relatively close; 30ms is arbitrary but should be sufficient.
+        // Precise timing isn't necessary here anyway.
+        constexpr double ToleranceMs = 30;
+        return elapsedTime + ToleranceMs >= m_metaCreationDelayMs;
+    }
+
     void AssetProcessorManager::DelayedMetadataFileCheck()
     {
         m_delayProcessMetadataQueued = false;
@@ -5990,11 +5999,7 @@ namespace AssetProcessor
         {
             auto duration = time.msecsTo(now);
 
-            // QTimer is not a precise timer, it could fire several milliseconds before or after the required wait time.
-            // Just check if the elapsed time is relatively close; 30ms is arbitrary but should be sufficient.
-            // Precise timing isn't necessary here anyway.
-            constexpr double ToleranceMs = 30;
-            if (duration + ToleranceMs >= m_metaCreationDelayMs)
+            if (IsDelayProcessTimerElapsed(duration))
             {
                 // Times up, process it
                 auto* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
