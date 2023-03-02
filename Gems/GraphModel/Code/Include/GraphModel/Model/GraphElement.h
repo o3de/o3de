@@ -39,8 +39,8 @@ namespace GraphModel
         GraphContextPtr GetGraphContext() const;
 
     protected:
-
-        AZStd::weak_ptr<Graph> m_graph; // Every GraphElement will at least need a pointer to the Graph, so it can convert IDs into actual element pointers.
+        // Every GraphElement will at least need a pointer to the Graph, so it can convert IDs into actual element pointers.
+        AZStd::weak_ptr<Graph> m_graph;
     };
 
 } // namespace GraphModel

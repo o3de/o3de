@@ -24,6 +24,7 @@ namespace GraphModel
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
+        GraphContext::Reflect(context);
         GraphElement::Reflect(context);
         Node::Reflect(context);
         SlotId::Reflect(context);

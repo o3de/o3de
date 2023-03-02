@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 // AZ
@@ -27,7 +28,6 @@ namespace GraphModel
     public:
         AZ_CLASS_ALLOCATOR(GraphContext, AZ::SystemAllocator);
         AZ_RTTI(GraphContext, "{4CD3C171-A7AA-4B62-96BB-F09F398A73E7}");
-
         static void Reflect(AZ::ReflectContext* context);
 
         using DataTypeList = AZStd::vector<DataTypePtr>;
@@ -63,7 +63,10 @@ namespace GraphModel
 
         //! Utility function to returns a DataType object representing the given template type T, or Invalid if it doesn't exist.
         template<typename T>
-        DataTypePtr GetDataType() const { return GetDataType(azrtti_typeid<T>()); }
+        DataTypePtr GetDataType() const
+        {
+            return GetDataType(azrtti_typeid<T>());
+        }
 
         //! Returns a DataType object representing the given AZStd::any value, or Invalid if it doesn't exist.
         //! This data type method has a different name because if the GraphContext implementation doesn't override
@@ -77,9 +80,5 @@ namespace GraphModel
         DataTypeList m_dataTypes;
         GraphModel::ModuleGraphManagerPtr m_moduleGraphManager;
     };
-    
+
 } // namespace GraphModel
-
-
-
-

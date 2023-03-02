@@ -34,7 +34,6 @@ namespace GraphModel
     {
         // Reflect core graph classes
         GraphModel::Graph::Reflect(context);
-        GraphModel::GraphContext::Reflect(context);
         GraphModel::DataType::Reflect(context);
         GraphModelIntegration::GraphCanvasMetadata::Reflect(context);
 
