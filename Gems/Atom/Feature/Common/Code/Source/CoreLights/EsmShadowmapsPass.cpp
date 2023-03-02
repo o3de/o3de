@@ -10,6 +10,7 @@
 #include <CoreLights/DepthExponentiationPass.h>
 
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Math/MathFilterDescriptor.h>
@@ -37,6 +38,7 @@ namespace AZ
             }
 
             m_lightTypeName = esmData->m_lightType;
+            m_isProjected = m_lightTypeName == AZ::Name("projected");
         }
 
         // --- Setters/Getters ---
@@ -44,6 +46,11 @@ namespace AZ
         const Name& EsmShadowmapsPass::GetLightTypeName() const
         {
             return m_lightTypeName;
+        }
+
+        bool EsmShadowmapsPass::GetIsProjected() const
+        {
+            return m_isProjected;
         }
 
         void EsmShadowmapsPass::SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer)
@@ -95,6 +102,35 @@ namespace AZ
             Base::FrameBeginInternal(params);
         }
 
+        void EsmShadowmapsPass::BuildInternal()
+        {
+            if (GetOutputCount() > 0 && m_isProjected)
+            {
+                if (!m_atlasAttachmentImage)
+                {
+                    auto binding = GetOutputBinding(0);
+                    if (binding.GetAttachment() == nullptr)
+                    {
+                        auto tempAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::R16_FLOAT);
+                        AttachImageToSlot(AZ::Name("EsmShadowmaps"), tempAttachmentImage);
+                        AZ_TracePrintf("EsmShadowmapsPass", "Attaching temp image %s to %s.", tempAttachmentImage->GetAttachmentId().GetCStr(), GetPathName().GetCStr());
+                    }
+                    else
+                    {
+
+                        AZ_TracePrintf("EsmShadowmapsPass", "Leaving %s with current attachment %s.", GetPathName().GetCStr(), binding.GetAttachment()->GetAttachmentId().GetCStr());
+                    }
+                }
+                else
+                {
+                    AttachImageToSlot(AZ::Name("EsmShadowmaps"), m_atlasAttachmentImage);
+                    AZ_TracePrintf("EsmShadowmapsPass", "Attaching esm atlas image %s to %s.", m_atlasAttachmentImage->GetAttachmentId().GetCStr(), GetPathName().GetCStr());
+                }
+            }
+
+            Base::BuildInternal();
+        }
+
         void EsmShadowmapsPass::SetEnabledComputation(bool enabled)
         {
             if (m_lightTypeName.IsEmpty())
@@ -126,6 +162,11 @@ namespace AZ
             }
 
             m_computationEnabled = enabled;
+        }
+
+        void EsmShadowmapsPass::SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge)
+        {
+            m_atlasAttachmentImage = atlasAttachmentIamge;
         }
 
         void EsmShadowmapsPass::UpdateChildren()

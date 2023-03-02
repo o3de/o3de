@@ -74,11 +74,12 @@ namespace AZ::Render
         m_shadowProperties.Clear();
 
         m_projectedShadowmapsPasses.clear();
+        m_esmShadowmapsPasses.clear();
         m_primaryProjectedShadowmapsPass = nullptr;
-        if (m_esmShadowmapsPass)
+        if (m_primaryEsmShadowmapsPass)
         {
-            m_esmShadowmapsPass->SetEnabledComputation(false);
-            m_esmShadowmapsPass = nullptr;
+            m_primaryEsmShadowmapsPass->SetEnabledComputation(false);
+            m_primaryEsmShadowmapsPass = nullptr;
         }
     }
 
@@ -372,12 +373,10 @@ namespace AZ::Render
 
         // ESM shadowmap pass
 
-        RPI::PassAttachmentBinding* esmOutputBinding = nullptr;
-        m_esmShadowmapsPass = nullptr;
+        m_primaryEsmShadowmapsPass = nullptr;
+        m_esmShadowmapsPasses.clear();
         if (m_primaryProjectedShadowmapsPass)
         {
-            AZStd::vector<EsmShadowmapsPass*> esmPasses;
-
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("EsmShadowmapsTemplate"), GetParentScene());
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter,
                 [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -387,15 +386,16 @@ namespace AZ::Render
                     {
                         if (esmShadowmapsPass->GetRenderPipeline() == m_primaryProjectedShadowmapsPass->GetRenderPipeline())
                         {
-                            m_esmShadowmapsPass = esmShadowmapsPass;
-                            esmOutputBinding = &m_esmShadowmapsPass->GetOutputBinding(0);
+                            m_primaryEsmShadowmapsPass = esmShadowmapsPass;
                             m_filterParameterNeedsUpdate = m_shadowProperties.GetDataCount() > 0;
                         }
                         else
                         {
-                            esmPasses.push_back(esmShadowmapsPass);
                             esmShadowmapsPass->SetEnabledComputation(false);
                         }
+                        m_esmShadowmapsPasses.push_back(esmShadowmapsPass);
+                        esmShadowmapsPass->SetAtlasAttachmentImage(m_esmAtlasImage);
+                        esmShadowmapsPass->QueueForBuildAndInitialization();
                     }
                     return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                 }
@@ -422,7 +422,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::UpdateEsmPassEnabled()
     {
-        if (m_esmShadowmapsPass == nullptr)
+        if (m_primaryEsmShadowmapsPass == nullptr)
         {
             AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
             return;
@@ -439,13 +439,13 @@ namespace AZ::Render
             }
         }
 
-        m_esmShadowmapsPass->SetEnabledComputation(anyShadowsUseEsm);
+        m_primaryEsmShadowmapsPass->SetEnabledComputation(anyShadowsUseEsm);
     }
 
     void ProjectedShadowFeatureProcessor::SetFilterParameterToPass()
     {
         static uint32_t nameIndex = 0;
-        if (m_primaryProjectedShadowmapsPass == nullptr || m_esmShadowmapsPass == nullptr)
+        if (m_primaryProjectedShadowmapsPass == nullptr || m_primaryEsmShadowmapsPass == nullptr)
         {
             AZ_Error("ProjectedShadowFeatureProcessor", false, "Cannot find a required pass.");
             return;
@@ -458,8 +458,8 @@ namespace AZ::Render
 
         m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
-        m_esmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
-        m_esmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
+        m_primaryEsmShadowmapsPass->SetShadowmapIndexTableBuffer(indexTableBuffer);
+        m_primaryEsmShadowmapsPass->SetFilterParameterBuffer(m_filterParamBufferHandler.GetBuffer());
     }
 
     void ProjectedShadowFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
@@ -484,9 +484,9 @@ namespace AZ::Render
                 m_deviceBufferNeedsUpdate = true;
             }
 
-            if (m_esmShadowmapsPass != nullptr)
+            if (m_primaryEsmShadowmapsPass != nullptr)
             {
-                m_esmShadowmapsPass->QueueForBuildAndInitialization();
+                m_primaryEsmShadowmapsPass->QueueForBuildAndInitialization();
             }
 
             m_shadowmapPassNeedsUpdate = false;
@@ -632,38 +632,59 @@ namespace AZ::Render
 
         m_atlas.Initialize();
         auto& shadowProperties = m_shadowProperties.GetDataVector();
+        bool needsEsm = false;
         for (const auto& shadowProperty : shadowProperties)
         {
             uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
             FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
+            needsEsm = needsEsm || filterData.m_isEnabled;
             m_atlas.SetShadowmapSize(shadowIndex, static_cast<ShadowmapSize>(filterData.m_shadowmapSize));
         }
         m_atlas.Finalize();
 
-        m_atlasImage = {};
-        RHI::ImageDescriptor imageDescriptor;
-        const uint32_t shadowmapSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-        imageDescriptor.m_size = RHI::Size(shadowmapSize, shadowmapSize, 1);
-        imageDescriptor.m_format = RHI::Format::D32_FLOAT;
-        imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
-        imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::Depth;
-        imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::Graphics;
+        auto createAtlas = [&](RHI::Format format, RHI::ImageBindFlags bindFlags, RHI::ImageAspectFlags aspectFlags, AZStd::string name)
+            ->AZ::Data::Instance<RPI::AttachmentImage>
+        {
+            RHI::ImageDescriptor imageDescriptor;
+            const uint32_t shadowmapSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
+            imageDescriptor.m_size = RHI::Size(shadowmapSize, shadowmapSize, 1);
+            imageDescriptor.m_format = format;
+            imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
+            imageDescriptor.m_bindFlags |= bindFlags;
+            imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::Graphics;
 
-        // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
-        RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDescriptor.m_format, 0, 0);
-        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+            // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
+            RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDescriptor.m_format, 0, 0);
+            viewDesc.m_aspectFlags = aspectFlags;
 
-        RPI::CreateAttachmentImageRequest createImageRequest;
-        createImageRequest.m_imagePool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool().get();
-        createImageRequest.m_imageDescriptor = imageDescriptor;
-        createImageRequest.m_imageName = AZStd::string::format("ProjectedShadowAtlas.%s", GetParentScene()->GetName().GetCStr());
-        createImageRequest.m_imageViewDescriptor = &viewDesc;
-        m_atlasImage = RPI::AttachmentImage::Create(createImageRequest);
+            RPI::CreateAttachmentImageRequest createImageRequest;
+            createImageRequest.m_imagePool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool().get();
+            createImageRequest.m_imageDescriptor = imageDescriptor;
+            createImageRequest.m_imageName = AZStd::string::format("%s.%s", name.c_str(), GetParentScene()->GetName().GetCStr());
+            createImageRequest.m_imageViewDescriptor = &viewDesc;
+            return RPI::AttachmentImage::Create(createImageRequest);
+        };
+
+        m_atlasImage = createAtlas(RHI::Format::D32_FLOAT, RHI::ImageBindFlags::Depth, RHI::ImageAspectFlags::Depth, "ProjectedShadowAtlas");
 
         for (auto& projectedShadowmapsPass : m_projectedShadowmapsPasses)
         {
             projectedShadowmapsPass->SetAtlasAttachmentImage(m_atlasImage);
             projectedShadowmapsPass->QueueForBuildAndInitialization();
+        }
+
+        if (needsEsm)
+        {
+            m_esmAtlasImage = createAtlas(RHI::Format::R16_FLOAT, RHI::ImageBindFlags::ShaderReadWrite, RHI::ImageAspectFlags::Color, "ProjectedShadowAtlasESM");
+            for (auto& esmShadowmapsPass : m_esmShadowmapsPasses)
+            {
+                esmShadowmapsPass->SetAtlasAttachmentImage(m_esmAtlasImage);
+                esmShadowmapsPass->QueueForBuildAndInitialization();
+            }
+        }
+        else
+        {
+            m_esmAtlasImage = {};
         }
     }
 

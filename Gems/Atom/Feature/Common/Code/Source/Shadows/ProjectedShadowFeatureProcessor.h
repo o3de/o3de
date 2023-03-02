@@ -134,10 +134,12 @@ namespace AZ::Render
 
         ShadowmapAtlas m_atlas;
         Data::Instance<RPI::AttachmentImage> m_atlasImage;
+        Data::Instance<RPI::AttachmentImage> m_esmAtlasImage;
 
         AZStd::vector<ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
+        AZStd::vector<EsmShadowmapsPass*> m_esmShadowmapsPasses;
         ProjectedShadowmapsPass* m_primaryProjectedShadowmapsPass = nullptr;
-        EsmShadowmapsPass* m_esmShadowmapsPass = nullptr;
+        EsmShadowmapsPass* m_primaryEsmShadowmapsPass = nullptr;
 
         Data::Instance<AZ::RPI::Shader> m_clearShadowShader;
         RHI::ConstPtr<AZ::RHI::DrawPacket> m_clearShadowDrawPacket;

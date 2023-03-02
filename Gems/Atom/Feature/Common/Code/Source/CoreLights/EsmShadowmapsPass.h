@@ -61,6 +61,7 @@ namespace AZ
             static RPI::Ptr<EsmShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
 
             const Name& GetLightTypeName() const;
+            bool GetIsProjected() const;
 
             //! This sets the buffer of the table which enable to get shadowmap index
             //! from the coordinate in the atlas.
@@ -74,12 +75,16 @@ namespace AZ
             //! This enable/disable children's computations.
             void SetEnabledComputation(bool enabled);
 
+            //! Sets the image to use as the output for all esm passes. This is needed so multiple pipelines in a scene can share the same resource.
+            void SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge);
+
         private:
             EsmShadowmapsPass() = delete;
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
+            void BuildInternal() override;
 
             void UpdateChildren();
             // Parameters for both the depth exponentiation pass along with the Kawase blur passes
@@ -87,11 +92,12 @@ namespace AZ
             void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
             bool m_computationEnabled = false;
+            bool m_isProjected = false;
             Name m_lightTypeName;
             RHI::Size m_shadowmapImageSize;
             uint16_t m_shadowmapArraySize;
 
-            RPI::Ptr<RPI::PassAttachment> m_outputOverride;
+            Data::Instance<RPI::AttachmentImage> m_atlasAttachmentImage;
 
             Data::Instance<RPI::Buffer> m_filterTableBuffer;
             AZStd::array<RHI::ShaderInputBufferIndex, EsmChildPassKindCount> m_filterTableBufferIndices;
