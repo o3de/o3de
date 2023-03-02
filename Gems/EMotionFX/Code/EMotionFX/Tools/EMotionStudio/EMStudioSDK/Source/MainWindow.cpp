@@ -53,6 +53,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
@@ -150,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -180,10 +184,22 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(AnimationEditorActionContextIdentifier, this);
+        }
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(AnimationEditorActionContextIdentifier, this);
+        }
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)

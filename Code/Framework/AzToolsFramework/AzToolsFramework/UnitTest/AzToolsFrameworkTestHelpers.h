@@ -43,6 +43,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <QMainWindow>
@@ -543,5 +544,37 @@ namespace UnitTest
 
     /// Destroy all the created slice assets.
     void DestroySlices(SliceAssets& sliceAssets);
+
+    //! Child class of ViewportUiManager which exposes the protected button group and viewport display
+    class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
+    {
+    public:
+        using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
+        using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
+
+        ViewportUiManagerTestable() = default;
+        ~ViewportUiManagerTestable() override = default;
+
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap();
+
+        ViewportUiDisplay* GetViewportUiDisplay();
+    };
+
+    //! Provides support for ViewportUi request calls.
+    class ViewportManagerWrapper
+    {
+    public:
+        void Create();
+        void Destroy();
+
+        ViewportUiManagerTestable* GetViewportManager();
+
+        QWidget* GetMockRenderOverlay();
+
+    private:
+        AZStd::unique_ptr<ViewportUiManagerTestable> m_viewportManager;
+        AZStd::unique_ptr<QWidget> m_parentWidget;
+        AZStd::unique_ptr<QWidget> m_mockRenderOverlay;
+    };
 
 } // namespace UnitTest

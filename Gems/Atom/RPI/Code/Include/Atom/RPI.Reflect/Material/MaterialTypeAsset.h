@@ -31,7 +31,7 @@ namespace AZ
         class UvNamePair final
         {
         public:
-            AZ_RTTI(AZ::RPI::MaterialTypeAsset, "{587D2902-B236-41B6-8F7B-479D891CC3F3}");
+            AZ_RTTI(UvNamePair, "{587D2902-B236-41B6-8F7B-479D891CC3F3}");
             static void Reflect(ReflectContext* context);
 
             UvNamePair() = default;
