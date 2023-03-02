@@ -107,7 +107,7 @@ namespace Multiplayer
     {
         if (m_spawnPoints.empty())
         {
-            return static_cast<uint32_t>(-1);
+            return 0;
         }
 
         if (m_spawnIndex >= m_spawnPoints.size())

@@ -22,7 +22,7 @@ namespace Multiplayer
 
         virtual ~ISimplePlayerSpawner() = default;
 
-        //! Returns the location where the next joining player will be spawned. Unlike RoundRobinNextSpawnPoint(), this will not cause the current spawn point index to increment.
+        //! Returns the location where the next joining player will be spawned.
         //! Method is only valid if called from the multiplayer host/authority; clients are not given information regarding the spawn point index.
         //! @return AZ::Transform The location of the next spawn point
         virtual AZ::Transform GetNextSpawnPoint() const = 0;
