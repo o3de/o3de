@@ -280,12 +280,6 @@ namespace AzFramework
             return false;
         }
 
-        if (processLaunchInfo.m_tetherLifetime)
-        {
-            AZ_Warning("ProcessWatcher", false, 
-                "ProcessLaunchInfo tether-lifetime isn't implemented for Linux yet. The new process won't be terminated when this process closes.");
-        }
-
         // Because of the way execvpe is defined we need to copy the strings from
         // AZ::string (using c_str() returns a const char*) into a non-const char*
 
@@ -332,9 +326,19 @@ namespace AzFramework
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
 
+        const pid_t parentPid = getpid();
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
+            if (processLaunchInfo.m_tetherLifetime)
+            {
+                prctl(PR_SET_PDEATHSIG, SIGTERM);
+                if (getppid() != parentPid)
+                {
+                    _exit(1);  // Close if we've already been orphaned from our original parent process.
+                }
+            }
+
             ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo, childErrorPipeFds);
         }
 
