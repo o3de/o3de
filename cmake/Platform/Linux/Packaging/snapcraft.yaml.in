@@ -12,7 +12,11 @@ parts:
     plugin: dump
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
+    build-attributes:
+     - enable-patchelf
     stage-packages:
+     - clang
+     - ninja-build
      - libatomic1
      - libfreetype6
      - libpng16-16
@@ -40,6 +44,8 @@ parts:
      - libssl3
      - libffi7
      - libffi8
+    stage-snaps:
+     - cmake
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
