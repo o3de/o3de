@@ -15,13 +15,10 @@
 #include <MCore/Source/AzCoreConversions.h>
 #include <Integration/ActorComponentBus.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
-    AZ_CVAR(bool, bg_DrawArticulatedHitVolumes, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw of articulated hit volumes");
+    AZ_CVAR(bool, bg_DrawArticulatedHitVolumes, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw of articulated hit volumes");
     AZ_CVAR(float, bg_DrawDebugHitVolumeLifetime, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The lifetime for hit volume draw-debug shapes");
-    AZ_CVAR(AZ::Color, bg_DrawDebugHitVolumeColor, AZ::Colors::Blue, nullptr, AZ::ConsoleFunctorFlags::Null, "The color of debug hit volumes");
 
     AZ_CVAR(float, bg_RewindPositionTolerance, 0.0001f, nullptr, AZ::ConsoleFunctorFlags::Null, "Don't sync the physx entity if the square of delta position is less than this value");
     AZ_CVAR(float, bg_RewindOrientationTolerance, 0.001f, nullptr, AZ::ConsoleFunctorFlags::Null, "Don't sync the physx entity if the square of delta orientation is less than this value");
@@ -253,7 +250,7 @@ namespace Multiplayer
         if (m_debugDisplay != nullptr)
         {
             const AZ::u32 previousState = m_debugDisplay->GetState();
-            m_debugDisplay->SetColor(bg_DrawDebugHitVolumeColor);
+            m_debugDisplay->SetColor(AZ::Colors::Blue);
 
             AZ::Transform rigidBodyTransform = GetEntity()->GetTransform()->GetWorldTM();
 
@@ -297,5 +294,3 @@ namespace Multiplayer
 #endif
     }
 } // namespace Multiplayer
-
-#pragma optimize("", on)
