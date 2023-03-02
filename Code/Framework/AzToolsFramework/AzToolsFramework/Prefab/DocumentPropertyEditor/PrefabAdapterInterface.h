@@ -31,11 +31,16 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_RTTI(PrefabAdapterInterface, "{8272C235-1642-432F-8A51-63E9B4488D55}");
 
-        //! Adds a property handler to the DPE DOM if an override is present on the entity at the provided path.
-        //! @param adapterBuilder The builder to use to add the property handler. It could have already added other things to DOM.
+        //! Adds a property label node to the DPE DOM and configures its style if an override is present
+        //! on the entity at the provided path.
+        //! @param adapterBuilder The builder to use to add the property label node.
+        //! @param labelText The text string to be displayed in label.
         //! @param relativePathFromEntity The path as seen by the entity a component or its properties.
         //! @param entityId The entity id to use to query the prefab system about the presence of overrides.
-        virtual void AddPropertyHandlerIfOverridden(
-            AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, const AZ::Dom::Path& relativePathFromEntity, AZ::EntityId entityId) = 0;
+        virtual void AddPropertyLabelNode(
+            AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
+            AZStd::string_view labelText,
+            const AZ::Dom::Path& relativePathFromEntity,
+            AZ::EntityId entityId) = 0;
     };
 } // namespace AzToolsFramework::Prefab

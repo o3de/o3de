@@ -35,6 +35,32 @@
 
 namespace AZ
 {
+    // Add implementation of TypeInfo overloads for ObjectStreamWriteOverrideResponse
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_IMPL(ObjectStreamWriteOverrideResponse, "ObjectStreamWriteOverrideResponse", "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext, "SerializeContext", "{83482F97-84DA-4FD4-BF9E-7FE34C8E091F}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SerializeContext, ReflectContext);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::DataPatchUpgrade, "DataPatchUpgrade", "{FD1C3109-0883-45FF-A12F-CAF5E323E954}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SerializeContext::DataPatchUpgrade);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::DataPatchNameUpgrade, "DataPatchNameUpgrade", "{9991F242-7D3B-4E76-B3EA-2E09AE14187D}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SerializeContext::DataPatchNameUpgrade, DataPatchUpgrade);
+
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(SerializeContext::DataPatchTypeUpgrade, "DataPatchTypeUpgrade", "{E5A2F519-261C-4B81-925F-3730D363AB9C}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+    // The first argument to RTTI is template name followed by any template placeholders for substituting the template type specifiers
+    AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::ClassElement, "ClassElement", "{7D386902-A1D9-4525-8284-F68435FE1D05}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::ClassData, "ClassData", "{20EB8E2E-D807-4039-84E2-CE37D7647CD4}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::IDataContainer, "IDataContainer", "{8565CBEA-C077-4A49-927B-314533A6EDB1}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::IDataContainer::IAssociativeDataContainer, "IAssociativeDataContainer", "{58CF6250-6B0F-4A25-9864-25A64EB55DB1}");
+
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SerializeContext::EnumerateInstanceCallContext, "EnumerateInstanceCallContext", "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
+
     AZ_THREAD_LOCAL void* Internal::AZStdArrayEvents::m_indices = nullptr;
 
     //////////////////////////////////////////////////////////////////////////

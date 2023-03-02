@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzNetworking/Framework/ICompressor.h>
 #include <AzCore/Casting/numeric_cast.h>

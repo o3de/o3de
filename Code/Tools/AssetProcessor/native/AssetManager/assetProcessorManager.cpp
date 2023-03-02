@@ -4312,7 +4312,7 @@ namespace AssetProcessor
         if (!sourceDependency.m_sourceFileDependencyUUID.IsNull())
         {
             // if the UUID has been provided, we will use that
-            resultDatabaseSourceName = sourceDependency.m_sourceFileDependencyUUID.ToString<QString>();
+            resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
         }
         else if (!sourceDependency.m_sourceFileDependencyPath.empty())
         {

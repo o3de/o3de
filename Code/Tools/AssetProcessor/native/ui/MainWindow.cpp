@@ -686,7 +686,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
         ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
         ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToFixedString().c_str());
     }
 }
 

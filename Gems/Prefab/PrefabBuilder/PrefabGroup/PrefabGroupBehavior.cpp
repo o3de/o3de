@@ -465,17 +465,16 @@ namespace AZ::SceneAPI::Behaviors
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
         if (behaviorContext)
         {
-            using namespace AzToolsFramework::Prefab;
 
             auto loadTemplate = [](const AZStd::string& prefabPath)
             {
                 AZ::IO::FixedMaxPath path {prefabPath};
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     return prefabLoaderInterface->LoadTemplateFromFile(path);
                 }
-                return TemplateId{};
+                return AzToolsFramework::Prefab::TemplateId{};
             };
 
             behaviorContext->Method("LoadTemplate", loadTemplate)
@@ -483,10 +482,10 @@ namespace AZ::SceneAPI::Behaviors
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "prefab");
 
-            auto saveTemplateToString = [](TemplateId templateId) -> AZStd::string
+            auto saveTemplateToString = [](AzToolsFramework::Prefab::TemplateId templateId) -> AZStd::string
             {
                 AZStd::string output;
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     prefabLoaderInterface->SaveTemplateToString(templateId, output);
