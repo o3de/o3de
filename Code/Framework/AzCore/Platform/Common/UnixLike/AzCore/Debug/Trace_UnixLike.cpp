@@ -120,6 +120,22 @@ namespace AZ::Debug
             Debug::Trace::Instance().RawOutput(nullptr, message);
         }
         Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
+
+        // Continue the overridden signal handlers by exiting with the matching exit code based on the signal
+        switch (signal)
+        {
+            case SIGSEGV:
+                _exit(139);
+                break;
+            case SIGKILL:
+                _exit(137);
+                break;
+            case SIGTRAP:
+                _exit(133);
+                break;
+            default:
+                break;
+        }
     }
 #endif
 
