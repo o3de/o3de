@@ -15,10 +15,9 @@ import azlmbr.asset as azasset
 import azlmbr.atom
 import azlmbr.atomtools
 import azlmbr.bus as bus
-import azlmbr.legacy.general as general
 import azlmbr.math as azmath
-import azlmbr.paths    
-    
+import azlmbr.paths
+
 import ly_test_tools.environment.file_system as fs
 
 from Atom.atom_utils.atom_constants import (
@@ -336,6 +335,9 @@ class ShaderAssetTestHelper:
             shutil.copyfile(src_file_path, target_file_path)
 
     def copy_tmp_files_in_order(src_directory, file_list, dst_directory, wait_time_in_between=0.0):
+
+        import azlmbr.legacy.general as general
+
         # type: (str, list, str, float) -> None
         """
         This function assumes that for each file name listed in @file_list
