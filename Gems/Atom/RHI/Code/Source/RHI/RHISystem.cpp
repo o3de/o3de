@@ -40,12 +40,13 @@ namespace AZ
     
         void RHISystem::Init()
         {
-            Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_devices[MultiDevice::DefaultDeviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
+            auto& device{m_devices[MultiDevice::DefaultDeviceIndex]};
+            Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = device->GetDescriptor().m_platformLimitsDescriptor;
 
             RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
 
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
-            m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
+            m_pipelineStateCache = RHI::PipelineStateCache::Create(*device);
 
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
@@ -85,7 +86,7 @@ namespace AZ
             }
 
             frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
-            m_frameScheduler.Init(*m_devices[MultiDevice::DefaultDeviceIndex], frameSchedulerDescriptor);
+            m_frameScheduler.Init(*device, frameSchedulerDescriptor);
         }
 
         void RHISystem::InitInternalDevices()
@@ -243,7 +244,12 @@ namespace AZ
 
         RHI::Device* RHISystem::GetDevice(int deviceIndex)
         {
-            return m_devices[deviceIndex].get();
+            if (deviceIndex < m_devices.size())
+            {
+                return m_devices.at(deviceIndex).get();
+            }
+
+            return nullptr;
         }
 
         int RHISystem::GetDeviceCount()
