@@ -13,9 +13,6 @@ parts:
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
     stage-packages:
-     - cmake
-     - clang
-     - ninja-build
      - libatomic1
      - libfreetype6
      - libpng16-16
@@ -43,7 +40,6 @@ parts:
      - libssl3
      - libffi7
      - libffi8
-     - gcc
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
