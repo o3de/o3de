@@ -45,7 +45,7 @@ namespace AZ::Debug
             }
             for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
             {
-                if (processStatusView[i] != ' ')
+                if (!std::isspace(processStatusView[i]))
                 {
                     return processStatusView[i] != '0';
                 }
