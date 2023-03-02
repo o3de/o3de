@@ -175,6 +175,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) = 0;
 
+        //! Generates a sort key from the action's name that can be used to sort alphabetically.
+        //! @param actionIdentifier The action identifier to query.
+        //! @return A sortKey if the action was found, or the max integer otherwise.
+        virtual int GenerateActionAlphabeticalSortKey(const AZStd::string& actionIdentifier) = 0;
+
         //! Returns the enabled state for the action.
         //! @param actionIdentifier The action identifier to query.
         //! @return A successful outcome object with the enabled state, or a string with a message detailing the error in case of failure.

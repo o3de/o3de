@@ -26,7 +26,6 @@ ly_add_target(
         PRIVATE
             3rdParty::expat
             3rdParty::lz4
-            3rdParty::md5
             3rdParty::TIFF
             3rdParty::zstd
             Legacy::CryCommon

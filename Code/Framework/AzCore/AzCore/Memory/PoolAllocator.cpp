@@ -32,9 +32,25 @@
 #define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
 #define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
 
+namespace AZ
+{
+    AZ_TYPE_INFO_WITH_NAME_IMPL(PoolSchema, "PoolSchema", "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}");
+}
+
 namespace AZ::Internal
 {
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
     template class PoolAllocatorHelper<PoolSchema>;
+
+    // Also instantiate the PoolAllocatorHelper for the Thread Pool Allocator
+    template class PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+}
+
+namespace AZ
+{
+    // Instantiate the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template
+    template struct AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
 }
 
 namespace

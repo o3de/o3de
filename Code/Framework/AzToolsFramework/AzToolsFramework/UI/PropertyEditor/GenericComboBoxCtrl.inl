@@ -415,6 +415,8 @@ namespace AzToolsFramework
     {
         system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(
             AZ::DocumentPropertyEditor::Nodes::PropertyEditor::PropertyEditor::GenericValueList<T>);
+        system->RegisterNodeAttribute<AZ::DocumentPropertyEditor::Nodes::PropertyEditor>(
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::PropertyEditor::GenericValue<T>);
     }
 
     template<typename T>
