@@ -18,7 +18,7 @@ namespace AZ
     {
         struct ImageComparisonError
         {
-            AZ_TYPE_INFO(FrameCaptureError, "{25703453-7025-4489-9680-1E12AFF45734}");
+            AZ_TYPE_INFO(ImageComparisonError, "{25703453-7025-4489-9680-1E12AFF45734}");
             static void Reflect(ReflectContext* context);
 
             AZStd::string m_errorMessage;
