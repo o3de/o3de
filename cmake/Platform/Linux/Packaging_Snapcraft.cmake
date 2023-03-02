@@ -11,6 +11,8 @@ configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
 )
 
+execute_process (COMMAND lsb_release -a)
+
 execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/get_python.sh)
 
 # Patch binaries to setup rpath and interpreter. Once snapcraft 7.3 is in stable, it should be possible to remove 

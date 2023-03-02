@@ -18,8 +18,6 @@ parts:
      - cmake
      - clang-14
      - ninja-build
-     - libc6
-     - libstdc++6
      - libatomic1
      - libfreetype6
      - libpng16-16
