@@ -64,51 +64,40 @@ namespace TestImpact::Console
                     << "Test impact analysis data for this repository was not found, seed or regular sequence fallbacks will be used.\n";
             }
 
+            // Use realtime console output as Python tests aren't run concurrently and can cause Jenkins to timeout on long
+            // tests if nothing is outputted to the console
+            const auto consoleOutputMode = ConsoleOutputMode::Realtime;
+
             switch (const auto type = options.GetTestSequenceType())
             {
             case TestSequenceType::Regular:
             {
+                RegularTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
-                    runtime.RegularTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        RegularTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
-                    options);
+                    runtime.RegularTestSequence(options.GetTestTargetTimeout(), options.GetGlobalTimeout()), options);
             }
             case TestSequenceType::Seed:
             {
+                SeedTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
-                    runtime.SeededTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        SeedTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
-                    options);
+                    runtime.SeededTestSequence(options.GetTestTargetTimeout(), options.GetGlobalTimeout()), options);
             }
             case TestSequenceType::ImpactAnalysisNoWrite:
             case TestSequenceType::ImpactAnalysis:
             {
-                return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+                return WrappedImpactAnalysisTestSequence(options, runtime, changeList, consoleOutputMode);
             }
             case TestSequenceType::ImpactAnalysisOrSeed:
             {
                 if (runtime.HasImpactAnalysisData())
                 {
-                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList, consoleOutputMode);
                 }
                 else
                 {
+                    SeedTestSequenceNotificationHandler handler(consoleOutputMode);
                     return ConsumeSequenceReportAndGetReturnCode(
-                        runtime.SeededTestSequence(
-                            options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout(),
-                            TestSequenceStartCallback,
-                            SeedTestSequenceCompleteCallback,
-                            TestRunCompleteCallback),
-                        options);
+                        runtime.SeededTestSequence(options.GetTestTargetTimeout(), options.GetGlobalTimeout()), options);
                 }
             }
             default:

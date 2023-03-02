@@ -13,14 +13,13 @@
 
 namespace TestImpact
 {
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonInstrumentedNullTestRunner::TestJobRunner::Job>> PythonInstrumentedNullTestRunner::RunTests(
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonInstrumentedNullTestRunner::TestJobRunner::Job>>
+    PythonInstrumentedNullTestRunner::RunTests(
         const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
         [[maybe_unused]] StdOutputRouting stdOutRouting,
         [[maybe_unused]] StdErrorRouting stdErrRouting,
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-        AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout)
     {
         AZStd::vector<Job> jobs;
         jobs.reserve(jobInfos.size());
@@ -35,11 +34,7 @@ namespace TestImpact
                 // As these jobs weren't executed, no return code exists, so use the test pass/failure result to set the appropriate error code
                 meta.m_returnCode = outcome.GetValue().first->GetNumFailures() ? ErrorCodes::PyTest::TestFailures : 0;
                 jobs.push_back(job);
-
-                if (clientCallback.has_value())
-                {
-                    (*clientCallback)(job.GetJobInfo(), meta, StdContent{});
-                }
+                NotificationsBus::Broadcast(&NotificationsBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
             }
             else
             {
@@ -47,11 +42,7 @@ namespace TestImpact
                 meta.m_result = JobResult::FailedToExecute;
                 Job job(jobInfo, AZStd::move(meta), AZStd::nullopt);
                 jobs.push_back(job);
-
-                if (clientCallback.has_value())
-                {
-                    (*clientCallback)(job.GetJobInfo(), meta, StdContent{});
-                }
+                NotificationsBus::Broadcast(&NotificationsBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
             }
         }
 

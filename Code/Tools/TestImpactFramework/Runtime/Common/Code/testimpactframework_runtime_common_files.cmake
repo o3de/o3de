@@ -67,7 +67,6 @@ set(FILES
     Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
-    Include/Static/TestImpactRuntime.h
     Include/Static/TestImpactRuntimeUtils.cpp
     Include/Static/TestImpactRuntimeUtils.h
     Include/Static/TestImpactTestTargetExclusionList.h
