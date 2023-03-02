@@ -12,11 +12,8 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Integration/ActorComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/CharacterBus.h>
-
-#if AZ_TRAIT_CLIENT
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#endif
+#include <AzFramework/Physics/CharacterBus.h>
 
 namespace Physics
 {
@@ -100,8 +97,6 @@ namespace Multiplayer
         Multiplayer::EntityPreRenderEvent::Handler m_preRenderHandler;
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
 
-#if AZ_TRAIT_CLIENT
         AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
-#endif
     };
 }

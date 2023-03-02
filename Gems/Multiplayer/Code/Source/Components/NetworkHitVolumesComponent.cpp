@@ -239,7 +239,6 @@ namespace Multiplayer
 
     void NetworkHitVolumesComponent::DrawDebugHitVolumes()
     {
-#if AZ_TRAIT_CLIENT
         if (m_debugDisplay == nullptr)
         {
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -291,6 +290,5 @@ namespace Multiplayer
 
             m_debugDisplay->SetState(previousState);
         }
-#endif
     }
 } // namespace Multiplayer
