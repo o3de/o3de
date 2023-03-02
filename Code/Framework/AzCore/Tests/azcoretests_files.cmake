@@ -102,6 +102,7 @@ set(FILES
     Geometry2DUtils.cpp
     Interface.cpp
     IO/FileReaderTests.cpp
+    IO/Path/PathReflectTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp

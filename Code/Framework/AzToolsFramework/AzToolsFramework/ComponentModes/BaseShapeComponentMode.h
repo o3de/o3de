@@ -50,8 +50,8 @@ namespace AzToolsFramework
         void SetShapeSubMode(ShapeComponentModeRequests::SubMode mode) override;
         void ResetShapeSubMode() override;
 
-        constexpr static const char* const DimensionsTooltip = "Switch to dimensions mode";
-        constexpr static const char* const TranslationOffsetTooltip = "Switch to translation offset mode";
+        constexpr static const char* const DimensionsTooltip = "Switch to dimensions mode (1)";
+        constexpr static const char* const TranslationOffsetTooltip = "Switch to translation offset mode (2)";
 
     protected:
         void SetupCluster();

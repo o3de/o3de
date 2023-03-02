@@ -745,6 +745,22 @@ namespace AzToolsFramework
         m_newComponentId = componentId;
     }
 
+    void EntityPropertyEditor::VisitComponentEditors(const VisitComponentEditorsCallback& callback) const
+    {
+        for (const ComponentEditor* componentEditor : m_componentEditors)
+        {
+            if (!componentEditor)
+            {
+                continue;
+            }
+
+            if (!callback(componentEditor))
+            {
+                return;
+            }
+        }
+    }
+
     void EntityPropertyEditor::SetOverrideEntityIds(const AzToolsFramework::EntityIdSet& entities)
     {
         m_overrideSelectedEntityIds = entities;

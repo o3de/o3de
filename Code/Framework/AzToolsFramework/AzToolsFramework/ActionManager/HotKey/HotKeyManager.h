@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -27,6 +28,7 @@ namespace AzToolsFramework
     //! Handles Editor HotKeys and allows access across tools.
     class HotKeyManager final
         : public HotKeyManagerInterface
+        , public HotKeyManagerInternalInterface
     {
     public:
         HotKeyManager();
@@ -36,6 +38,9 @@ namespace AzToolsFramework
         HotKeyManagerOperationResult AssignWidgetToActionContext(const AZStd::string& contextIdentifier, QWidget* widget) override;
         HotKeyManagerOperationResult RemoveWidgetFromActionContext(const AZStd::string& contextIdentifier, QWidget* widget) override;
         HotKeyManagerOperationResult SetActionHotKey(const AZStd::string& actionIdentifier, const AZStd::string& hotKey) override;
+
+        // HotKeyManagerInternalInterface overrides ...
+        void Reset() override;
 
     private:
         struct HotKeyMapping final

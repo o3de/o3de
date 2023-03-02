@@ -158,7 +158,7 @@ namespace AZ
     void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
         // Add the debug to our display, removing the oldest entry if we exceed the maximum.
-        m_debugLogEntires.push_back(AZStd::make_pair<AZStd::string, AZ::Color>(debugLogString, color));
+        m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
         if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
             m_debugLogEntires.pop_front();

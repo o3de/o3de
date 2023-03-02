@@ -65,7 +65,6 @@ namespace TestImpact
 
         if (jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone)
         {
-        
             if (auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
             {
                 return result;
@@ -144,8 +143,7 @@ namespace TestImpact
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
-        : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
+        : m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
             sourceDir,
             targetBinaryDir,
             artifactDir,

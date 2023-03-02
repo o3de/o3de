@@ -37,7 +37,6 @@ namespace Twitch
                 ec->Class<TwitchSystemComponent>("Twitch", "Provides access to Twitch \"Friends\", \"Rich Presence\" APIs")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

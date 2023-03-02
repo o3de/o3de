@@ -288,34 +288,10 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
     // make_pair
     template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, T2&& value2)
+    constexpr auto make_pair(T1&& value1, T2&& value2)
     {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
+        using pair_type = pair<AZStd::unwrap_ref_decay_t<T1>, AZStd::unwrap_ref_decay_t<T2>>;
         return pair_type(AZStd::forward<T1>(value1), AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, T2&& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type(AZStd::forward<T1>(value1), (typename AZStd::unwrap_reference<T2>::type)value2);
-    }
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, (typename AZStd::unwrap_reference<T2>::type)value2);
     }
     //////////////////////////////////////////////////////////////////////////
 

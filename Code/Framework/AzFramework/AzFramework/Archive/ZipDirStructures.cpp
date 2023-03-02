@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzFramework/Archive/Codec.h>

@@ -41,6 +41,11 @@ namespace AzToolsFramework
 
         //! Serialize a toolbar by its identifier.
         virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
+
+        //! Completely reset the ToolBar Manager from all items registered after initialization.
+        //! Clears all ToolBars and ToolBar Areas.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
     };
 
 } // namespace AzToolsFramework

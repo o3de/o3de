@@ -47,32 +47,30 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
-            RHI::Device* GetDevice() override;
+            RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) override;
+            int GetDeviceCount() override;
             RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
             RHI::PipelineStateCache* GetPipelineStateCache() override;
-            const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
             double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
-            ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
+            ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
-            const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() override;
             XRRenderingInterface* GetXRSystem() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
 
             //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            RHI::Ptr<RHI::Device> InitInternalDevice();
+            void InitInternalDevices();
 
-            RHI::Ptr<RHI::Device> m_device;
-            RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
-            RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
+            AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
-            PhysicalDeviceDescriptor m_physicalDeviceDescriptor;
+            RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
+            RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             XRRenderingInterface* m_xrSystem = nullptr;
         };
     } // namespace RPI

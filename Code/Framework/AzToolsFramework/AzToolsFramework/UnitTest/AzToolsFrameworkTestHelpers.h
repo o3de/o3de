@@ -26,7 +26,11 @@
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -39,6 +43,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <QMainWindow>
@@ -332,6 +337,32 @@ namespace UnitTest
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+            
+            // If the new action manager is enabled, reset it between test runs.
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                    EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+                if (auto actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get())
+                {
+                    actionManagerInternalInterface->Reset();
+                }
+                if (auto hotKeyManagerInternalInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInternalInterface>::Get())
+                {
+                    hotKeyManagerInternalInterface->Reset();
+                }
+                if (auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get())
+                {
+                    menuManagerInternalInterface->Reset();
+                }
+                if (auto toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get())
+                {
+                    toolBarManagerInternalInterface->Reset();
+                }
+            }
 
             // Reset back to Default Handler to prevent having a handler with dangling "this" pointer
             EditorInteractionSystemViewportSelectionRequestBus::Event(
@@ -513,5 +544,37 @@ namespace UnitTest
 
     /// Destroy all the created slice assets.
     void DestroySlices(SliceAssets& sliceAssets);
+
+    //! Child class of ViewportUiManager which exposes the protected button group and viewport display
+    class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
+    {
+    public:
+        using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
+        using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
+
+        ViewportUiManagerTestable() = default;
+        ~ViewportUiManagerTestable() override = default;
+
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap();
+
+        ViewportUiDisplay* GetViewportUiDisplay();
+    };
+
+    //! Provides support for ViewportUi request calls.
+    class ViewportManagerWrapper
+    {
+    public:
+        void Create();
+        void Destroy();
+
+        ViewportUiManagerTestable* GetViewportManager();
+
+        QWidget* GetMockRenderOverlay();
+
+    private:
+        AZStd::unique_ptr<ViewportUiManagerTestable> m_viewportManager;
+        AZStd::unique_ptr<QWidget> m_parentWidget;
+        AZStd::unique_ptr<QWidget> m_mockRenderOverlay;
+    };
 
 } // namespace UnitTest

@@ -919,6 +919,11 @@ namespace AzToolsFramework
         return m_components;
     }
 
+    void ComponentEditor::VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const
+    {
+        callback(m_adapter->GetContents());
+    }
+
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)
     {
         for (AZ::Component* component : m_components)
