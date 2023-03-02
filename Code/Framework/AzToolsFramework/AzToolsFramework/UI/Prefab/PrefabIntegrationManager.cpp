@@ -721,7 +721,7 @@ namespace AzToolsFramework
                     {
                         QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
                         revertAction->setToolTip(QObject::tr("Revert all overrides on this entity."));
-                        if (m_prefabOverridePublicInterface->GetOverrideType(selectedEntity) == OverrideType::AddEntity)
+                        if (m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntity) == OverrideType::AddEntity)
                         {
                             revertAction->setToolTip(QObject::tr("Cannot revert overrides on entities that are added as overrides. Use Delete instead."));
                             revertAction->setEnabled(false);
