@@ -15,7 +15,8 @@ parts:
     build-attributes:
      - enable-patchelf
     stage-packages:
-     - clang
+     - cmake
+     - clang-14
      - ninja-build
      - libatomic1
      - libfreetype6
@@ -44,8 +45,8 @@ parts:
      - libssl3
      - libffi7
      - libffi8
-    stage-snaps:
-     - cmake
+     - libnettle8
+     - libhogweed6
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
