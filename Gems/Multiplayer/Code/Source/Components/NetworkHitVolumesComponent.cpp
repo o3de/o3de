@@ -15,10 +15,13 @@
 #include <MCore/Source/AzCoreConversions.h>
 #include <Integration/ActorComponentBus.h>
 
+#pragma optimize("", off)
+
 namespace Multiplayer
 {
-    AZ_CVAR(bool, bg_DrawArticulatedHitVolumes, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw of articulated hit volumes");
+    AZ_CVAR(bool, bg_DrawArticulatedHitVolumes, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables debug draw of articulated hit volumes");
     AZ_CVAR(float, bg_DrawDebugHitVolumeLifetime, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The lifetime for hit volume draw-debug shapes");
+    AZ_CVAR(AZ::Color, bg_DrawDebugHitVolumeColor, AZ::Colors::Blue, nullptr, AZ::ConsoleFunctorFlags::Null, "The color of debug hit volumes");
 
     AZ_CVAR(float, bg_RewindPositionTolerance, 0.0001f, nullptr, AZ::ConsoleFunctorFlags::Null, "Don't sync the physx entity if the square of delta position is less than this value");
     AZ_CVAR(float, bg_RewindOrientationTolerance, 0.001f, nullptr, AZ::ConsoleFunctorFlags::Null, "Don't sync the physx entity if the square of delta orientation is less than this value");
@@ -125,9 +128,18 @@ namespace Multiplayer
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_preRenderHandler);
-        m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
         GetTransformComponent()->BindTransformChangedEventHandler(m_transformChangedHandler);
         OnTransformUpdate(GetTransformComponent()->GetWorldTM());
+
+        // During activation the character controller is not created yet.
+        // Connect to CharacterNotificationBus to listen when it's activated after creation.
+        Physics::CharacterNotificationBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void NetworkHitVolumesComponent::OnCharacterActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
+        Physics::CharacterNotificationBus::Handler::BusDisconnect();
     }
 
     void NetworkHitVolumesComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -152,6 +164,11 @@ namespace Multiplayer
         {
             m_actorComponent->GetJointTransformComponents(hitVolume.m_jointIndex, EMotionFX::Integration::Space::ModelSpace, position, rotation, scale);
             hitVolume.UpdateTransform(AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position) * hitVolume.m_colliderOffSetTransform);
+        }
+
+        if (bg_DrawArticulatedHitVolumes)
+        {
+            DrawDebugHitVolumes();
         }
     }
 
@@ -222,4 +239,63 @@ namespace Multiplayer
     {
         m_actorComponent = nullptr;
     }
-}
+
+    void NetworkHitVolumesComponent::DrawDebugHitVolumes()
+    {
+#if AZ_TRAIT_CLIENT
+        if (m_debugDisplay == nullptr)
+        {
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+            m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        }
+
+        if (m_debugDisplay != nullptr)
+        {
+            const AZ::u32 previousState = m_debugDisplay->GetState();
+            m_debugDisplay->SetColor(bg_DrawDebugHitVolumeColor);
+
+            AZ::Transform rigidBodyTransform = GetEntity()->GetTransform()->GetWorldTM();
+
+            for (const AnimatedHitVolume& hitVolume : m_animatedHitVolumes)
+            {
+                AZ::Vector3 jointPosition = AZ::Vector3::CreateZero();
+                AZ::Vector3 jointScale = AZ::Vector3::CreateOne();
+                AZ::Quaternion jointRotation = AZ::Quaternion::CreateIdentity();
+                m_actorComponent->GetJointTransformComponents(
+                    hitVolume.m_jointIndex, EMotionFX::Integration::Space::ModelSpace, jointPosition, jointRotation, jointScale);
+
+                AZ::Transform colliderTransformNoScale = rigidBodyTransform *
+                    AZ::Transform::CreateFromQuaternionAndTranslation(jointRotation, jointPosition) * hitVolume.m_colliderOffSetTransform;
+
+                m_debugDisplay->PushMatrix(colliderTransformNoScale);
+
+                if (const Physics::SphereShapeConfiguration* sphereCollider =
+                        azrtti_cast<const Physics::SphereShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    m_debugDisplay->DrawWireSphere(AZ::Vector3::CreateZero(), sphereCollider->m_radius);
+                }
+                else if (const Physics::CapsuleShapeConfiguration* capsuleCollider =
+                        azrtti_cast<const Physics::CapsuleShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    const float radius = capsuleCollider->m_radius;
+                    const float height = capsuleCollider->m_height;
+                    m_debugDisplay->DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), radius, height * 0.5f);
+                }
+                else if (const Physics::BoxShapeConfiguration* boxCollider =
+                        azrtti_cast<const Physics::BoxShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    AZ::Vector3 dimensions = boxCollider->m_dimensions;
+                    m_debugDisplay->DrawWireBox(dimensions * -0.5f, dimensions * 0.5f);
+                }
+
+                m_debugDisplay->PopMatrix();
+            }
+
+            m_debugDisplay->SetState(previousState);
+        }
+#endif
+    }
+} // namespace Multiplayer
+
+#pragma optimize("", on)

@@ -12,6 +12,11 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Integration/ActorComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/CharacterBus.h>
+
+#if AZ_TRAIT_CLIENT
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif
 
 namespace Physics
 {
@@ -24,6 +29,7 @@ namespace Multiplayer
     class NetworkHitVolumesComponent
         : public NetworkHitVolumesComponentBase
         , private EMotionFX::Integration::ActorComponentNotificationBus::Handler
+        , private Physics::CharacterNotificationBus::Handler
     {
     public:
         struct AnimatedHitVolume final
@@ -76,6 +82,13 @@ namespace Multiplayer
         void OnActorInstanceCreated(EMotionFX::ActorInstance* actorInstance) override;
         void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
         //! @}
+        
+        //! Physics::CharacterNotificationBus overrides ...
+        //! @{
+        void OnCharacterActivated(const AZ::EntityId& entityId) override;
+        //! @}
+
+        void DrawDebugHitVolumes();
 
         Physics::CharacterRequests* m_physicsCharacter = nullptr;
         EMotionFX::Integration::ActorComponentRequests* m_actorComponent = nullptr;
@@ -86,5 +99,9 @@ namespace Multiplayer
         Multiplayer::EntitySyncRewindEvent::Handler m_syncRewindHandler;
         Multiplayer::EntityPreRenderEvent::Handler m_preRenderHandler;
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;
+
+#if AZ_TRAIT_CLIENT
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
+#endif
     };
 }
