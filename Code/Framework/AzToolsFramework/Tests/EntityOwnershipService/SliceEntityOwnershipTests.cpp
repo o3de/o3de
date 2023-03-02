@@ -397,9 +397,9 @@ namespace UnitTest
 
 #if GTEST_HAS_DEATH_TEST
 #if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
-    TEST_F(SliceEntityOwnershipDeathTests, DISABLED_AddEntity_RootSliceAssetAbsent_EntityNotCreated)
-#else
     TEST_F(SliceEntityOwnershipDeathTests, AddEntity_RootSliceAssetAbsent_EntityNotCreated)
+#else
+    TEST_F(SliceEntityOwnershipDeathTests, DISABLED_AddEntity_RootSliceAssetAbsent_EntityNotCreated)
 #endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         m_sliceEntityOwnershipService->Destroy();
