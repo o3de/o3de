@@ -34,6 +34,7 @@ def main():
 
     test_output_node = atomtools.DynamicNodeManagerRequestBus(bus.Broadcast, "CreateNodeByName", test_graph, "Standard PBR")
     print(f"{test_output_node=}")
+    print(f"{test_output_node.typename}")
     print(f"{test_output_node.invoke('GetId')}")
 
     graph.GraphControllerRequestBus(bus.Event, "AddNode", test_graph_id, test_output_node, math.Vector2(0.0, 0.0))
