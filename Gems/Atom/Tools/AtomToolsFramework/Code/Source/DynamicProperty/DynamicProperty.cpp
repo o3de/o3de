@@ -36,8 +36,8 @@ namespace AtomToolsFramework
         : public AZ::AttributeFunction<R(Args...)>
     {
     public:
-        AZ_RTTI((AtomToolsFramework::AttributeFixedMemberFunction<R(C::*)(Args...) const>, "{78511F1E-58AD-4670-8440-1FE4C9BD1C21}", R, C, Args...), AZ::AttributeFunction<R(Args...)>);
-        AZ_CLASS_ALLOCATOR(AttributeFixedMemberFunction<R(C::*)(Args...) const>, AZ::SystemAllocator);
+        AZ_RTTI((AttributeFixedMemberFunction, "{78511F1E-58AD-4670-8440-1FE4C9BD1C21}", R(C::*)(Args...) const), AZ::AttributeFunction<R(Args...)>);
+        AZ_CLASS_ALLOCATOR(AttributeFixedMemberFunction, AZ::SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...) const;
 
         explicit AttributeFixedMemberFunction(C* o, FunctionPtr f)

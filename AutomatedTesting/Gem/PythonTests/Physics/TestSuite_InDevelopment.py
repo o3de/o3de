@@ -43,8 +43,12 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_PhysX_Collider_Component_CRUD(self, request, workspace, editor, launcher_platform):
-        from .tests.EntityComponentTests import PhysX_Collider_Component_CRUD as test_module
+    def test_PhysX_Primitive_Collider_Component_CRUD(self, request, workspace, editor, launcher_platform):
+        from .tests.EntityComponentTests import PhysX_Primitive_Collider_Component_CRUD as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_PhysX_Mesh_Collider_Component_CRUD(self, request, workspace, editor, launcher_platform):
+        from .tests.EntityComponentTests import PhysX_Mesh_Collider_Component_CRUD as test_module
         self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain

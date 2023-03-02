@@ -73,20 +73,10 @@ real3 GetSpecularLighting_EnhancedPBR(Surface surface, LightingData lightingData
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
     {
-        real3 halfVector = normalize(dirToLight + lightingData.dirToCamera);
-        real NdotH = saturate(dot(surface.clearCoat.normal, halfVector));
-        real NdotL = saturate(dot(surface.clearCoat.normal, dirToLight));
-        real HdotL = saturate(dot(halfVector, dirToLight));
-
-        // HdotV = HdotL due to the definition of half vector
-        real3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surface.clearCoat.factor;
-        real clearCoatRoughness = max(surface.clearCoat.roughness * surface.clearCoat.roughness, 0.0005);
-        real3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF);
-
-        specular = specular * (1.0 - clearCoatF) + clearCoatSpecular;
+        specular = ClearCoatSpecular(dirToLight, lightingData.dirToCamera, surface.clearCoat.normal, surface.clearCoat.factor, surface.clearCoat.roughness, specular);
     }
 #endif
-
+    
     specular *= lightIntensity;
     return specular;
 }

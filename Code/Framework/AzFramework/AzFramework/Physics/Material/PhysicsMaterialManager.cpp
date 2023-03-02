@@ -79,7 +79,7 @@ namespace Physics
 
             // The call to BlockUntilLoadComplete must happen after the new material
             // has been added to m_materials container. This is because BlockUntilLoadComplete
-            // will dispatch events for other assets while waiting, and if other OnAssetRead
+            // will dispatch events for other assets while waiting, and if other OnAssetReady
             // code ends up trying find/create the same material it needs to find it in the
             // container and return it.
             assetLocal.BlockUntilLoadComplete();

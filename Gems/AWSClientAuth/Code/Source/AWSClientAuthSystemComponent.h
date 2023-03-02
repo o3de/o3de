@@ -57,6 +57,7 @@ namespace AWSClientAuth
 
         std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> m_cognitoIdentityProviderClient;
         std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> m_cognitoIdentityClient;
+
     };
 
 } // namespace AWSClientAuth
