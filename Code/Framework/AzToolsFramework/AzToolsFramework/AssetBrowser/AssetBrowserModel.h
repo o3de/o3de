@@ -106,8 +106,6 @@ namespace AzToolsFramework
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
 
-            void RequestThumbnailviewUpdate();
-
         private:
             //Non owning pointer
             AssetBrowserFilterModel* m_filterModel = nullptr;
@@ -118,7 +116,6 @@ namespace AzToolsFramework
             bool m_isTickBusEnabled = false;
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
-            AZStd::unordered_map<AZStd::string, AZ::Crc32> m_customNewlyCreatedAssetPathsToCreatorBusIds;
 
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };

@@ -527,12 +527,6 @@ namespace AzQtComponents
         }
     }
 
-    void AssetFolderThumbnailView::RefreshThumbnailview()
-    {
-
-        scheduleDelayedItemsLayout();
-    }
-
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);
@@ -865,6 +859,29 @@ namespace AzQtComponents
     int AssetFolderThumbnailView::childThumbnailSizeInPixels() const
     {
         return m_config.childThumbnail.width;
+    }
+
+    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsInserted(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::reset()
+    {
+        m_itemGeometry.clear();
+        m_expandedIndexes.clear();
+        m_childFrames.clear();
+
+        QAbstractItemView::reset();
     }
 
     void AssetFolderThumbnailView::updateGeometries()

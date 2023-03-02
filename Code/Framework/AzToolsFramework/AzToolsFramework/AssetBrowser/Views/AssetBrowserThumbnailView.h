@@ -10,7 +10,6 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 #include <QItemSelection>
 #include <QWidget>
@@ -35,7 +34,6 @@ namespace AzToolsFramework
 
         class AssetBrowserThumbnailView
             : public QWidget
-            , private AzToolsFramework::AssetBrowser::AssetBrowserModelNotificationBus::Handler
         {
             Q_OBJECT
         public:
@@ -47,11 +45,6 @@ namespace AzToolsFramework
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
             void HideProductAssets(bool checked);
-
-             // AssetBrowserModelNotificationBus
-            void EntryAdded(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
-            void EntryRemoved(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
-            // ~AssetBrowserModelNotificationBus
 
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
@@ -77,7 +70,7 @@ namespace AzToolsFramework
             void showInFolderTriggered(const AssetBrowserEntry* entry);
 
         public Q_SLOTS:
-            void UpdateThumbnailview();
+            void OpenItemForEditing(const QModelIndex &index);
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;

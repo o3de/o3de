@@ -8,7 +8,6 @@
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -43,8 +42,6 @@ namespace AzToolsFramework
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
             m_thumbnailViewWidget->setModel(m_thumbnailViewProxyModel);
-
-            AssetBrowserModelNotificationBus::Handler::BusConnect();
 
             connect(
                 m_thumbnailViewWidget,
@@ -178,23 +175,6 @@ namespace AzToolsFramework
                           EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
                   }
             }
-            AssetBrowserModelNotificationBus::Handler::BusDisconnect();
-        }
-
-        void AssetBrowserThumbnailView::EntryAdded([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
-        {
-            if (m_isActiveView && m_thumbnailViewWidget->rootIndex().isValid())
-            {
-                UpdateThumbnailview();
-            }
-        }
-
-        void AssetBrowserThumbnailView::EntryRemoved([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
-        {
-            if (m_isActiveView && m_thumbnailViewWidget->rootIndex().isValid())
-            {
-                UpdateThumbnailview();
-            }
         }
  
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const
@@ -202,7 +182,7 @@ namespace AzToolsFramework
             return m_thumbnailViewWidget;
         }
 
-         void AssetBrowserThumbnailView::SetName(const QString& name)
+        void AssetBrowserThumbnailView::SetName(const QString& name)
         {
             m_name = name;
         }
@@ -382,9 +362,19 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserThumbnailView::UpdateThumbnailview()
+        void AssetBrowserThumbnailView::OpenItemForEditing(const QModelIndex& index)
         {
-            m_thumbnailViewWidget->RefreshThumbnailview();
+            QModelIndex proxyIndex = m_thumbnailViewProxyModel->mapFromSource(
+                m_assetFilterModel->mapFromSource(index));
+
+            if (proxyIndex.isValid())
+            {
+                m_thumbnailViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+
+                m_thumbnailViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
+
+                RenameEntry();
+            }
         }
 
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()

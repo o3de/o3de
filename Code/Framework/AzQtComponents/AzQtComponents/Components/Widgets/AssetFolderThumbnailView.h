@@ -101,14 +101,15 @@ namespace AzQtComponents
         void setThumbnailSize(ThumbnailSize size);
         ThumbnailSize thumbnailSize() const;
 
+        void rowsInserted(const QModelIndex& parent, int start, int end) override;
+        void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
+        void reset() override;
         void updateGeometries() override;
         QModelIndex indexAt(const QPoint& point) const override;
         void scrollTo(const QModelIndex& index, QAbstractItemView::ScrollHint hint) override;
         QRect visualRect(const QModelIndex& index) const override;
 
         void setRootIndex(const QModelIndex &index) override;
-
-        void RefreshThumbnailview();
 
         void SetShowSearchResultsMode(bool searchMode);
 
