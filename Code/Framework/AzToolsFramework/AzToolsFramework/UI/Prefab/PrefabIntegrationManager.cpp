@@ -446,7 +446,7 @@ namespace AzToolsFramework
                                 );
                             }
 
-                            if (IsPrefabOverridesUxEnabled())
+                            if (IsOutlinerOverrideManagementEnabled())
                             {
                                 if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
                                 {
@@ -713,7 +713,7 @@ namespace AzToolsFramework
 
             // Revert Overrides
             {
-                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                if (IsOutlinerOverrideManagementEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
                     if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
