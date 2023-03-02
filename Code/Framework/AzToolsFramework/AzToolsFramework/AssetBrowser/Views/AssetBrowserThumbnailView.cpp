@@ -22,7 +22,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
-#include <QTimer>
 #endif
 
 namespace AzToolsFramework
