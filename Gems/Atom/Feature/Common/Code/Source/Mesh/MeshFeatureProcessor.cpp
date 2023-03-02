@@ -1595,29 +1595,32 @@ namespace AZ
                 if (lodIndex < m_lodBias)
                 {
                     // set impossible screen coverage to disable it
-                    lod.m_screenCoverageMax = 1.0f;
-                    lod.m_screenCoverageMin = 0.0f;
-                }
-                else if (lodIndex == m_lodBias)
-                {
-                    //first lod
-                    lod.m_screenCoverageMax = 1.0f;
+                    lod.m_screenCoverageMax = 0.0f;
+                    lod.m_screenCoverageMin = 1.0f;
                 }
                 else
                 {
-                    //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
-                }
+                    if (lodIndex == m_lodBias)
+                    {
+                        //first lod
+                        lod.m_screenCoverageMax = 1.0f;
+                    }
+                    else
+                    {
+                        //every other lod: use the previous lod's min
+                        lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
+                    }
 
-                if (lodIndex < lodAssets.size() - 1)
-                {
-                    //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
-                }
-                else
-                {
-                    //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
+                    if (lodIndex < lodAssets.size() - 1)
+                    {
+                        //first and middle lods: compute a stepdown value for the min
+                        lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
+                    }
+                    else
+                    {
+                        //last lod: use MinimumScreenCoverage for the min
+                        lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
+                    }
                 }
 
                 lod.m_drawPackets.clear();
