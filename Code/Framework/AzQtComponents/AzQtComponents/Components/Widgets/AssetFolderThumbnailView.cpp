@@ -12,12 +12,13 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QAbstractItemDelegate>
+#include <QLineEdit>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>
-#include <QMenu>
+#include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -112,22 +113,8 @@ namespace AzQtComponents
         painter->drawConvexPolygon(caret);
     }
 
-    class AssetFolderThumbnailViewDelegate : public QAbstractItemDelegate
-    {
-    public:
-        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
-
-        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
-        void polish(const AssetFolderThumbnailView::Config& config);
-
-    private:
-        AssetFolderThumbnailView::Config m_config;
-    };
-
     AssetFolderThumbnailViewDelegate::AssetFolderThumbnailViewDelegate(QObject* parent)
-        : QAbstractItemDelegate(parent)
+        : QStyledItemDelegate(parent)
     {
     }
 
@@ -231,6 +218,42 @@ namespace AzQtComponents
     void AssetFolderThumbnailViewDelegate::polish(const AssetFolderThumbnailView::Config& config)
     {
         m_config = config;
+    }
+
+    QWidget* AssetFolderThumbnailViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+        QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
+        if (lineEdit)
+        {
+            connect(
+                lineEdit,
+                &QLineEdit::editingFinished,
+                this,
+                [this]()
+                {
+                    auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                    if (sendingLineEdit)
+                    {
+                        emit RenameThumbnail(sendingLineEdit->text());
+                    }
+                });
+        }
+        return widget;
+    }
+
+    void AssetFolderThumbnailViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            const auto& rect = option.rect;
+            const auto textHeight = option.fontMetrics.height();
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2 };
+            lineEdit->setGeometry(textRect);
+            lineEdit->setMaximumWidth(rect.width());
+            return;
+        }
+        QStyledItemDelegate::updateEditorGeometry(editor, option, index);
     }
 
     static void readColor(QSettings& settings, const QString& name, QColor& color)
@@ -376,6 +399,14 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+        connect(
+            m_delegate,
+            &AssetFolderThumbnailViewDelegate::RenameThumbnail,
+            this,
+            [this](const QString& value)
+            {
+                emit afterRename(value);
+            });
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -498,6 +529,7 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::RefreshThumbnailview()
     {
+
         scheduleDelayedItemsLayout();
     }
 
@@ -804,27 +836,24 @@ namespace AzQtComponents
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
 
-        if (idx.isValid())
+        if (idx.isValid() && m_showSearchResultsMode)
         {
-            if (m_showSearchResultsMode)
-            {
-                QMenu* menu = new QMenu;
-                auto action = menu->addAction("Show In Folder");
-                connect(
-                    action,
-                    &QAction::triggered,
-                    this,
-                    [this, idx]()
-                    {
-                        emit showInFolderTriggered(idx);
-                    });
-                menu->exec(event->globalPos());
-                delete menu;
-            }
-            else
-            {
-                emit contextMenu(idx);
-            }
+            QMenu* menu = new QMenu;
+            auto action = menu->addAction("Show In Folder");
+            connect(
+                action,
+                &QAction::triggered,
+                this,
+                [this, idx]()
+                {
+                    emit showInFolderTriggered(idx);
+                });
+            menu->exec(event->globalPos());
+            delete menu;
+        }
+        else
+        {
+            emit contextMenu(idx);
         }
     }
 

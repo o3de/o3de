@@ -108,6 +108,7 @@ namespace AzToolsFramework
 
         public Q_SLOTS:
             void OpenItemForEditing(const QModelIndex& index);
+            void OnContextMenu(const QPoint& point);
 
         protected:
             QModelIndexList selectedIndexes() const override;
@@ -138,8 +139,6 @@ namespace AzToolsFramework
             void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
-            void OnContextMenu(const QPoint& point);
-
             //! Get all visible source entries and place them in a queue to update their source control status
             void OnUpdateSCThumbnailsList();
         };

@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -42,6 +43,8 @@ namespace AzToolsFramework
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
             m_thumbnailViewWidget->setModel(m_thumbnailViewProxyModel);
+
+            AssetBrowserModelNotificationBus::Handler::BusConnect();
 
             connect(
                 m_thumbnailViewWidget,
@@ -83,17 +86,26 @@ namespace AzToolsFramework
                 this,
                 [this](const QModelIndex& index)
                 {
-                    QMenu menu(this);
-                    const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    AZStd::vector<const AssetBrowserEntry*> entries { entry };
-                    AssetBrowserInteractionNotificationBus::Broadcast(
-                        &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
-
-                    if (!menu.isEmpty())
+                    if (index.isValid())
                     {
-                        menu.exec(QCursor::pos());
+                        QMenu menu(this);
+                        const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                        AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                        AssetBrowserInteractionNotificationBus::Broadcast(
+                            &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                        if (!menu.isEmpty())
+                        {
+                            menu.exec(QCursor::pos());
+                        }
+                    }
+                    else if (!index.isValid() && m_assetTreeView)
+                    {
+                        m_assetTreeView->OnContextMenu(QCursor::pos());
                     }
                 });
+
+            connect(m_thumbnailViewWidget, &AzQtComponents::AssetFolderThumbnailView::afterRename, this, &AssetBrowserThumbnailView::AfterRename);
 
               if (AzToolsFramework::IsNewActionManagerEnabled())
               {
@@ -166,8 +178,25 @@ namespace AzToolsFramework
                           EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
                   }
             }
+            AssetBrowserModelNotificationBus::Handler::BusDisconnect();
         }
 
+        void AssetBrowserThumbnailView::EntryAdded([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+        {
+            if (m_isActiveView && m_thumbnailViewWidget->rootIndex().isValid())
+            {
+                UpdateThumbnailview();
+            }
+        }
+
+        void AssetBrowserThumbnailView::EntryRemoved([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
+        {
+            if (m_isActiveView && m_thumbnailViewWidget->rootIndex().isValid())
+            {
+                UpdateThumbnailview();
+            }
+        }
+ 
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const
         {
             return m_thumbnailViewWidget;
@@ -193,15 +222,21 @@ namespace AzToolsFramework
             return GetName() == ThumbnailViewMainViewName;
         }
 
+        void AssetBrowserThumbnailView::SetThumbnailActiveView(bool isActiveView)
+        {
+            m_isActiveView = isActiveView;
+        }
+
+        bool AssetBrowserThumbnailView::GetThumbnailActiveView()
+        {
+            return m_isActiveView;
+        }
+
         void AssetBrowserThumbnailView::DeleteEntries()
         {
             auto entries = GetSelectedAssets(false); // you cannot delete product files.
 
             AssetBrowserViewUtils::DeleteEntries(entries, this);
-            if (!entries.empty())
-            {
-                UpdateThumbnailview();
-            }
         }
 
         void AssetBrowserThumbnailView::MoveEntries()
@@ -209,27 +244,23 @@ namespace AzToolsFramework
             auto entries = GetSelectedAssets(false); // you cannot move product files.
 
             AssetBrowserViewUtils::MoveEntries(entries, this);
-            if (!entries.empty())
-            {
-                UpdateThumbnailview();
-            }
         }
 
         void AssetBrowserThumbnailView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets(false); // you may not duplicate product files.
             AssetBrowserViewUtils::DuplicateEntries(entries);
-            if (!entries.empty())
-            {
-                UpdateThumbnailview();
-            }
         }
 
         void AssetBrowserThumbnailView::RenameEntry()
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
 
-            AssetBrowserViewUtils::RenameEntry(entries, this);
+            if (AssetBrowserViewUtils::RenameEntry(entries, this))
+            {
+                QModelIndex selectedIndex = m_thumbnailViewWidget->selectionModel()->selectedIndexes()[0];
+                m_thumbnailViewWidget->edit(selectedIndex);
+            }
         }
 
         void AssetBrowserThumbnailView::AfterRename(QString newVal)
@@ -241,33 +272,24 @@ namespace AzToolsFramework
 
         AZStd::vector<const AssetBrowserEntry*> AssetBrowserThumbnailView::GetSelectedAssets(bool includeProducts) const
         {
-            QModelIndexList sourceIndexes;
+            AZStd::vector<const AssetBrowserEntry*> entries;
             if (m_thumbnailViewWidget->selectionModel())
             {
-                for (const auto& index : m_thumbnailViewWidget->selectionModel()->selectedIndexes())
+                AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(m_thumbnailViewWidget->selectionModel()->selectedIndexes(), entries);
+                if (!includeProducts)
                 {
-                    if (index.column() == 0)
-                    {
-                        sourceIndexes.push_back(m_thumbnailViewProxyModel->mapToSource((index)));
-                    }
+                    entries.erase(
+                        AZStd::remove_if(
+                            entries.begin(),
+                            entries.end(),
+                            [&](const AssetBrowserEntry* entry) -> bool
+                            {
+                                return entry->GetEntryType() ==
+                                    AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                            }),
+                        entries.end());
                 }
             }
-
-            AZStd::vector<const AssetBrowserEntry*> entries;
-            AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
-            if (!includeProducts)
-            {
-                entries.erase(
-                    AZStd::remove_if(
-                        entries.begin(),
-                        entries.end(),
-                        [&](const AssetBrowserEntry* entry) -> bool
-                        {
-                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
-                        }),
-                    entries.end());
-            }
-
             return entries;
         }
 

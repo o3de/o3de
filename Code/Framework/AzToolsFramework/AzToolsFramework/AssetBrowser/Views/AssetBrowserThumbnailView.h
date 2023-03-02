@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 #include <QItemSelection>
 #include <QWidget>
@@ -32,7 +33,9 @@ namespace AzToolsFramework
         class AssetBrowserThumbnailViewProxyModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserThumbnailView : public QWidget
+        class AssetBrowserThumbnailView
+            : public QWidget
+            , private AzToolsFramework::AssetBrowser::AssetBrowserModelNotificationBus::Handler
         {
             Q_OBJECT
         public:
@@ -45,11 +48,18 @@ namespace AzToolsFramework
 
             void HideProductAssets(bool checked);
 
+             // AssetBrowserModelNotificationBus
+            void EntryAdded(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
+            void EntryRemoved(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
+            // ~AssetBrowserModelNotificationBus
+
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
             QString& GetName();
             void SetIsAssetBrowserMainView();
             bool GetIsAssetBrowserMainView();
+            void SetThumbnailActiveView(bool isActiveView);
+            bool GetThumbnailActiveView();
 
             void DuplicateEntries();
             void MoveEntries();
@@ -77,6 +87,7 @@ namespace AzToolsFramework
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();
             QString m_name;
+            bool m_isActiveView = false;
         };
 
     } // namespace AssetBrowser

@@ -13,6 +13,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4244, "-Wunknown-warning-option")
 #include <QAbstractItemView>
+#include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -117,6 +118,7 @@ namespace AzQtComponents
         void rootIndexChanged(const QModelIndex& idx);
         void showInFolderTriggered(const QModelIndex& idx);
         void contextMenu(const QModelIndex& idx);
+        void afterRename(const QString& value) const;
 
     protected:
         friend class Style;
@@ -164,5 +166,27 @@ namespace AzQtComponents
         Config m_config;
         bool m_showSearchResultsMode = false;
         bool m_hideProductAssets = true;
+    };
+
+    class AssetFolderThumbnailViewDelegate
+        : public QStyledItemDelegate
+    {
+        Q_OBJECT
+    public:
+        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
+
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        void polish(const AssetFolderThumbnailView::Config& config);
+
+    signals:
+        void RenameThumbnail(const QString& value) const;
+
+    private:
+        AssetFolderThumbnailView::Config m_config;
     };
 }

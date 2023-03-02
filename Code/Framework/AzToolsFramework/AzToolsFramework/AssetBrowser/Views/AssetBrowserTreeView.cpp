@@ -582,7 +582,10 @@ namespace AzToolsFramework
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
 
-            AssetBrowserViewUtils::RenameEntry(entries, this);
+            if (AssetBrowserViewUtils::RenameEntry(entries, this))
+            {
+                edit(currentIndex());
+            }
         }
 
         void AssetBrowserTreeView::AfterRename(QString newVal)

@@ -12,10 +12,8 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -31,11 +29,11 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        void AssetBrowserViewUtils::RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        bool AssetBrowserViewUtils::RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.size() != 1)
             {
-                return;
+                return false;
             }
             using namespace AzFramework::AssetSystem;
             bool connectedToAssetProcessor = false;
@@ -54,10 +52,8 @@ namespace AzToolsFramework
                     // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
                     // This code is needed until that bug is fixed. GHI 13340
                     if (IsFolderEmpty(item->GetFullPath()))
-                    {
-                        EditName(callingWidget);
-                                                
-                        return;
+                    {                           
+                        return true;
                     }
                     fromPath = item->GetFullPath() + "/*";
                     toPath = item->GetFullPath() + "TempFolderTestName/*";
@@ -93,15 +89,16 @@ namespace AzToolsFramework
 
                         if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
                         {
-                            EditName(callingWidget);
+                            return true;
                         }
                     }
                     else
                     {
-                        EditName(callingWidget);
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         void AssetBrowserViewUtils::AfterRename(QString newVal, const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
@@ -198,21 +195,6 @@ namespace AzToolsFramework
         bool AssetBrowserViewUtils::IsFolderEmpty(AZStd::string_view path)
         {
             return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).isEmpty();
-        }
-
-        void AssetBrowserViewUtils::EditName(QWidget* callingWidget)
-        {
-            AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*>(callingWidget);
-            AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(callingWidget);
-
-            if (treeView)
-            {
-                treeView->edit(treeView->currentIndex());
-            }
-            else if (tableView)
-            {
-                tableView->edit(tableView->currentIndex());
-            }
         }
 
         void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)

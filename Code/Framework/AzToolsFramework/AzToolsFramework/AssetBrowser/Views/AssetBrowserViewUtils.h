@@ -20,7 +20,7 @@ namespace AzToolsFramework
         class AssetBrowserViewUtils
         {
         public:
-            static void RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
+            static bool RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
             static void AfterRename(QString newVal, const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
             static void DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
             static void MoveEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
@@ -28,7 +28,6 @@ namespace AzToolsFramework
             static void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
         private:
             static bool IsFolderEmpty(AZStd::string_view path);
-            static void EditName(QWidget* callingWidget);
         };
     } // namespace AssetBrowser
 
