@@ -217,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;

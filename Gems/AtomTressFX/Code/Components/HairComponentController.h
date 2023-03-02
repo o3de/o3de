@@ -53,7 +53,7 @@ namespace AZ
             public:
                 friend class EditorHairComponent;
 
-                AZ_TYPE_INFO(AZ::Render::HairComponentController, "{81D3EA93-7EAC-44B7-B8CB-0B573DD8D634}");
+                AZ_TYPE_INFO(HairComponentController, "{81D3EA93-7EAC-44B7-B8CB-0B573DD8D634}");
                 static void Reflect(AZ::ReflectContext* context);
                 static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
                 static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);

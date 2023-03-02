@@ -47,15 +47,12 @@ def create_temp_physx_mesh_collider(physx_mesh_id, prefab_filename):
     # Create initial entity
     root = EditorEntity.create_editor_entity(name=prefab_filename)
     assert root.exists(), "Failed to create entity"
-    # Add PhysX Collider component
-    collider_component = root.add_component("PhysX Collider")
+    # Add PhysX Mesh Collider component
+    collider_component = root.add_component("PhysX Mesh Collider")
     static_rigid_body_component = root.add_component("PhysX Static Rigid Body")
-    assert root.has_component("PhysX Collider") and collider_component.is_enabled() and \
-           static_rigid_body_component.is_enabled(), "Failed to add/activate PhysX Collider component"
-    # Set the Collider's Shape Configuration field to PhysicsAsset, and assign the specified PhysX Mesh asset
-    collider_component.set_component_property_value("Shape Configuration|Shape", 7)
-    assert collider_component.get_component_property_value("Shape Configuration|Shape") == 7, \
-        "Failed to set Collider Shape to PhysicsAsset"
+    assert root.has_component("PhysX Mesh Collider") and collider_component.is_enabled() and \
+           static_rigid_body_component.is_enabled(), "Failed to add/activate PhysX Mesh Collider component"
+    # Assign the specified PhysX Mesh asset to PhysX Mesh Collider
     collider_component.set_component_property_value("Shape Configuration|Asset|PhysX Mesh", physx_mesh_id)
     assert collider_component.get_component_property_value("Shape Configuration|Asset|PhysX Mesh") == physx_mesh_id, \
         "Failed to assign PhysX Mesh asset"

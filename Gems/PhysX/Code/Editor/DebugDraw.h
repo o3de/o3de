@@ -64,6 +64,7 @@ namespace PhysX
             void ClearCachedGeometry();
 
             void SetDisplayFlag(bool enable);
+            bool IsDisplayFlagEnabled() const;
 
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
