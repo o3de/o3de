@@ -114,7 +114,7 @@ def enable_gem_in_project(gem_name: str = None,
         # because most gems depend on engine gems which would not be found 
         if manifest.get_project_engine_path(project_path):
             # Note: we don't remove gems that are not active or dependencies
-            # because they will be implicitely found and activated via cmake 
+            # because they will be implicitly found and activated via cmake 
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path, gem_name=gem_name)
             if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} has the following dependency compatibility issues and '
