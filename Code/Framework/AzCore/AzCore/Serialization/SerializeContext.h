@@ -528,6 +528,7 @@ namespace AZ
          */
         class ClassData
         {
+            friend SerializeContext;
         public:
             AZ_TYPE_INFO_WITH_NAME_DECL(ClassData);
 
@@ -583,6 +584,9 @@ namespace AZ
             AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator> m_attributes{AZStdFunctorAllocator(&GetSystemAllocator) };
 
         private:
+            static ClassData CreateImpl(const char* name, const Uuid& typeUuid, IObjectFactory* factory,
+                IDataSerializer* serializer, IDataContainer* container,
+                IRttiHelper* rttiHelper);
             static IAllocator& GetSystemAllocator()
             {
                 return AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
@@ -821,10 +825,8 @@ namespace AZ
             ///< @param convertibleTypeId type to check to determine if it can converted to an element of class represent by this Class Data
             ///< @param classData reference to the metadata representing the type stored in classPtr
             ///< @return if the classData can store the convertible type element true is returned
-            virtual bool CanConvertFromType (const TypeId& convertibleTypeId, const SerializeContext::ClassData& classData, SerializeContext& /*serializeContext*/)
-            {
-                return classData.m_typeId == convertibleTypeId;
-            }
+            virtual bool CanConvertFromType(const TypeId& convertibleTypeId, const SerializeContext::ClassData& classData,
+                SerializeContext& /*serializeContext*/);
 
             ///< Callback that can be used to retrieve a memory address in which to store an element of the supplied convertible type
             ///< @param convertibleTypePtr result pointer that should be populated with an address that can store an element of the convertible type
@@ -832,16 +834,8 @@ namespace AZ
             ///< @param classPtr memory address of the class represented by the @classData type
             ///< @param classData reference to the metadata representing the type stored in classPtr
             ///< @return true if a non-null memory address has been returned that can store the convertible type
-            virtual bool ConvertFromType(void*& convertibleTypePtr, const TypeId& convertibleTypeId, void* classPtr, const SerializeContext::ClassData& classData, SerializeContext& /*serializeContext*/)
-            {
-                if (classData.m_typeId == convertibleTypeId)
-                {
-                    convertibleTypePtr = classPtr;
-                    return true;
-                }
-
-                return false;
-            }
+            virtual bool ConvertFromType(void*& convertibleTypePtr, const TypeId& convertibleTypeId, void* classPtr,
+                const SerializeContext::ClassData& classData, SerializeContext& /*serializeContext*/);
         };
 
         /**
@@ -1080,19 +1074,21 @@ namespace AZ
          *      ->Version(3,&MyVersionConverter)
          *      ->Field("data",&MyStruct::m_data);
          */
+
+        // Non-templated functions which can reflect or unreflect a class to the SerializeContext
+        using DeprecatedNameVisitWrapper = void(*)(const DeprecatedTypeNameCallback&);
+        ClassBuilder ReflectClassInternal(const char* className, const AZ::TypeId& classId,
+            IObjectFactory* factory, const DeprecatedNameVisitWrapper& callback,
+            IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc);
+
+        ClassBuilder UnreflectClassInternal(const char* className, const AZ::TypeId& classId,
+            const DeprecatedNameVisitWrapper& callback
+            );
     public:
         class ClassBuilder
         {
             friend class SerializeContext;
-            ClassBuilder(SerializeContext* context, const UuidToClassMap::iterator& classMapIter)
-                : m_context(context)
-                , m_classData(classMapIter)
-            {
-                if (!context->IsRemovingReflection())
-                {
-                    m_currentAttributes = &classMapIter->second.m_attributes;
-                }
-            }
+            ClassBuilder(SerializeContext* context, const UuidToClassMap::iterator& classMapIter);
             SerializeContext*           m_context;
             UuidToClassMap::iterator    m_classData;
             AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator>* m_currentAttributes = nullptr;
@@ -1200,6 +1196,14 @@ namespace AZ
              */
             template <class T>
             ClassBuilder* Attribute(Crc32 idCrc, T&& value);
+
+        private:
+            ClassBuilder* FieldImpl(AZStd::initializer_list<AttributePair> attributeIds,
+                const char* className, const AZ::TypeId& classId,
+                const char* fieldName, const AZ::TypeId& fieldTypeId,
+                size_t fieldOffset, size_t fieldSize, bool fieldIsPointer, bool fieldIsEnum,
+                const AZ::TypeId& fieldUnderlyingTypeId, IRttiHelper* fieldRttiHelper,
+                GenericClassInfo* fieldGenericClassInfo, CreateAnyFunc fieldCreateAnyFunc);
         };
 
         /**
@@ -1773,18 +1777,6 @@ namespace AZ
 
     namespace SerializeInternal
     {
-        template<class T>
-        struct ElementInfo;
-
-        template<class T, class C>
-        struct ElementInfo<T C::*>
-        {
-            typedef typename AZStd::RemoveEnum<T>::type ElementType;
-            typedef C ClassType;
-            typedef T Type;
-            typedef typename AZStd::remove_pointer<ElementType>::type ValueType;
-        };
-
         template<class Derived, class Base>
         size_t GetBaseOffset()
         {
@@ -1924,73 +1916,29 @@ namespace AZ
     SerializeContext::ClassBuilder
     SerializeContext::Class(IObjectFactory* factory)
     {
-        static_assert((AZStd::negation_v< AZStd::disjunction<AZStd::is_same<T, TBaseClasses>...> >), "You cannot reflect a type as its own base");
+        static_assert((AZStd::negation_v<AZStd::disjunction<AZStd::is_same<T, TBaseClasses>...> >), "You cannot reflect a type as its own base");
         static_assert(sizeof...(TBaseClasses) <= c_serializeMaxNumBaseClasses, "Only " AZ_STRINGIZE(c_serializeMaxNumBaseClasses) " base classes are supported. You can add more in c_serializeBaseClassStrings.");
 
         const Uuid& typeUuid = AzTypeInfo<T>::Uuid();
         const char* name = AzTypeInfo<T>::Name();
 
+        auto deprecatedNameVisitor = [](const DeprecatedTypeNameCallback& callback)
+        {
+            DeprecatedTypeNameVisitor<T>(callback);
+        };
+
         if (IsRemovingReflection())
         {
-            auto mapIt = m_uuidMap.find(typeUuid);
-            if (mapIt != m_uuidMap.end())
-            {
-                RemoveClassData(&mapIt->second);
-
-
-                // Remove the deprecated type name -> typeid mapping
-                auto RemoveDeprecatedNames = [this, &typeUuid = typeUuid](AZStd::string_view deprecatedName)
-                {
-                    auto deprecatedNameRange = m_deprecatedNameToTypeIdMap.equal_range(Crc32(deprecatedName));
-                    for (auto classNameRangeIter = deprecatedNameRange.first; classNameRangeIter != deprecatedNameRange.second;)
-                    {
-                        if (classNameRangeIter->second == typeUuid)
-                        {
-                            classNameRangeIter = m_deprecatedNameToTypeIdMap.erase(classNameRangeIter);
-                        }
-                        else
-                        {
-                            ++classNameRangeIter;
-                        }
-                    }
-                };
-                DeprecatedTypeNameVisitor<T>(RemoveDeprecatedNames);
-
-                // Remove the current class name -> typeid mapping
-                auto classNameRange = m_classNameToUuid.equal_range(Crc32(name));
-                for (auto classNameRangeIter = classNameRange.first; classNameRangeIter != classNameRange.second;)
-                {
-                    if (classNameRangeIter->second == typeUuid)
-                    {
-                        classNameRangeIter = m_classNameToUuid.erase(classNameRangeIter);
-                    }
-                    else
-                    {
-                        ++classNameRangeIter;
-                    }
-                }
-                m_uuidAnyCreationMap.erase(typeUuid);
-                m_uuidMap.erase(mapIt);
-            }
-            return ClassBuilder(this, m_uuidMap.end());
+            return UnreflectClassInternal(name, typeUuid, deprecatedNameVisitor);
         }
         else
         {
-            // Add any the deprecated type names to the deprecated type name to type id map
-            auto AddDeprecatedNames = [this, &typeUuid = typeUuid](AZStd::string_view deprecatedName)
-            {
-                m_deprecatedNameToTypeIdMap.emplace(deprecatedName, typeUuid);
-            };
-            DeprecatedTypeNameVisitor<T>(AddDeprecatedNames);
+            ClassBuilder builder = ReflectClassInternal(name, typeUuid,
+                factory, deprecatedNameVisitor,
+                GetRttiHelper<T>(), &AnyTypeInfoConcept<T>::CreateAny);
+            AddClassData<T, TBaseClasses...>(&builder.m_classData->second);
 
-            m_classNameToUuid.emplace(AZ::Crc32(name), typeUuid);
-            UuidToClassMap::pair_iter_bool result = m_uuidMap.insert(AZStd::make_pair(typeUuid, ClassData::Create<T>(name, typeUuid, factory)));
-            AZ_Assert(result.second, "This class type %s could not be registered with duplicated Uuid: %s.", name, typeUuid.ToString<AZStd::string>().c_str());
-            m_uuidAnyCreationMap.emplace(SerializeTypeInfo<T>::GetUuid(), &AnyTypeInfoConcept<T>::CreateAny);
-
-            AddClassData<T, TBaseClasses...>(&result.first->second);
-
-            return ClassBuilder(this, result.first);
+            return builder;
         }
     }
 
@@ -2001,9 +1949,6 @@ namespace AZ
     template<class ClassType, class FieldType>
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::Field(const char* name, FieldType ClassType::* member, AZStd::initializer_list<AttributePair> attributes)
     {
-        using UnderlyingType = AZStd::RemoveEnumT<FieldType>;
-        using ValueType = AZStd::remove_pointer_t<FieldType>;
-
         if (m_context->IsRemovingReflection())
         {
             // Delete any attributes allocated for this call.
@@ -2014,15 +1959,15 @@ namespace AZ
             return this; // we have already removed the class data for this class
         }
 
-        AZ_Assert(!m_classData->second.m_serializer,
-            "Class %s has a custom serializer, and can not have additional fields. Classes can either have a custom serializer or child fields.",
-            name);
+        using UnderlyingType = AZStd::RemoveEnumT<FieldType>;
+        using ValueType = AZStd::remove_pointer_t<FieldType>;
 
-        AZ_Assert(m_classData->second.m_typeId == AzTypeInfo<ClassType>::Uuid(),
-            "Field %s is serialized with class %s, but belongs to class %s. If you are trying to expose base class field use FieldFromBase",
-            name,
-            m_classData->second.m_name,
-            AzTypeInfo<ClassType>::Name());
+        const char* className = AzTypeInfo<ClassType>::Name();
+        const AZ::TypeId classId = AzTypeInfo<ClassType>::Uuid();
+        constexpr size_t fieldSize = sizeof(FieldType);
+        const size_t fieldOffset = reinterpret_cast<size_t>(&(reinterpret_cast<ClassType const volatile*>(0)->*member));
+        constexpr bool fieldIsPointer = AZStd::is_pointer_v<FieldType>;
+        constexpr bool fieldIsEnum = AZStd::is_enum_v<ValueType>;
 
         // SerializeGenericTypeInfo<ValueType>::GetClassTypeId() is needed solely because
         // the SerializeGenericTypeInfo specialization for AZ::Data::Asset<T> returns the GetAssetClassId() value
@@ -2030,61 +1975,14 @@ namespace AZ
         // Therefore in order to remain backwards compatible the SerializeGenericTypeInfo<ValueType>::GetClassTypeId specialization
         // is used for all cases except when the ValueType is an enum type.
         // In that case AzTypeInfo is used directly to retrieve the actual Uuid that the enum specializes
-        const AZ::TypeId& fieldTypeId = AZStd::is_enum<ValueType>::value ? AzTypeInfo<ValueType>::Uuid() : SerializeGenericTypeInfo<ValueType>::GetClassTypeId();
-        const AZ::TypeId& underlyingTypeId = AzTypeInfo<UnderlyingType>::Uuid();
-
-        m_classData->second.m_elements.emplace_back();
-        ClassElement& ed = m_classData->second.m_elements.back();
-        ed.m_name = name;
-        ed.m_nameCrc = AZ::Crc32(name);
-        // Not really portable but works for the supported compilers. It will crash and not work if we have virtual inheritance. Detect and assert at compile time about it. (something like is_virtual_base_of)
-        ed.m_offset = reinterpret_cast<size_t>(&(reinterpret_cast<ClassType const volatile*>(0)->*member));
-        //ed.m_offset = or pass it to the function with offsetof(typename ElementTypeInfo::ClassType,member);
-        ed.m_dataSize = sizeof(FieldType);
-        ed.m_flags = AZStd::is_pointer<FieldType>::value ? ClassElement::FLG_POINTER : 0;
-        ed.m_editData = nullptr;
-        ed.m_azRtti = GetRttiHelper<ValueType>();
-
-        ed.m_genericClassInfo = SerializeGenericTypeInfo<ValueType>::GetGenericInfo();
-        if (!fieldTypeId.IsNull())
-        {
-            ed.m_typeId = fieldTypeId;
-            // If the field is an enum type add it to the map of enum types -> underlying types
-            if (AZStd::is_enum<FieldType>::value)
-            {
-                m_context->m_enumTypeIdToUnderlyingTypeIdMap.emplace(fieldTypeId, underlyingTypeId);
-                m_context->m_uuidAnyCreationMap.emplace(fieldTypeId, &AnyTypeInfoConcept<FieldType>::CreateAny);
-            }
-        }
-        else
-        {
-            // If the Field typeid is null, fallback to using the Underlying typeid  in case the reflected field is an enum
-            // This allows reflected enum fields which doen't specialize AzTypeInfo using the AZ_TYPE_INFO_SPECIALIZE macro to still
-            // serialize out using  the underlying type for backwards compatibility
-            ed.m_typeId = underlyingTypeId;
-        }
-        AZ_Assert(!ed.m_typeId.IsNull(), "You must provide a valid class id for class %s", name);
-        for (const AttributePair& attributePair : attributes)
-        {
-            ed.m_attributes.emplace_back(attributePair.first, attributePair.second);
-        }
-
-        if (ed.m_genericClassInfo)
-        {
-            ed.m_genericClassInfo->Reflect(m_context);
-        }
-
-        m_currentAttributes = &ed.m_attributes;
-
-        // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
-        // We use Attribute here, so we have to do this after m_currentAttributes is assigned
-        const bool isSpecializedEnum = AZStd::is_enum<FieldType>::value && !AzTypeInfo<FieldType>::Uuid().IsNull();
-        if (isSpecializedEnum)
-        {
-            Attribute(AZ_CRC("EnumType", 0xb177e1b5), AzTypeInfo<FieldType>::Uuid());
-        }
-
-        return this;
+        const AZ::TypeId fieldTypeId = fieldIsEnum ? AzTypeInfo<ValueType>::Uuid() : SerializeGenericTypeInfo<ValueType>::GetClassTypeId();
+        const AZ::TypeId fieldUnderlyingTypeId = AzTypeInfo<UnderlyingType>::Uuid();
+        IRttiHelper* fieldRttiHelper = GetRttiHelper<ValueType>();
+        GenericClassInfo* fieldGenericClassInfo = SerializeGenericTypeInfo<ValueType>::GetGenericInfo();
+        CreateAnyFunc fieldCreateAnyFunc = &AnyTypeInfoConcept<FieldType>::CreateAny;
+        return FieldImpl(attributes, className, classId, name, fieldTypeId, fieldOffset,
+            fieldSize, fieldIsPointer, fieldIsEnum, fieldUnderlyingTypeId,
+            fieldRttiHelper, fieldGenericClassInfo, fieldCreateAnyFunc);
     }
 
     /// Declare a type change between serialized versions of a field
@@ -2490,21 +2388,7 @@ namespace AZ
     template<class T>
     SerializeContext::ClassData SerializeContext::ClassData::Create(const char* name, const Uuid& typeUuid, IObjectFactory* factory, IDataSerializer* serializer, IDataContainer* container)
     {
-        ClassData cd;
-        cd.m_name = name;
-        cd.m_typeId = typeUuid;
-        cd.m_version = 0;
-        cd.m_converter = nullptr;
-        // A raw ptr to an IDataSerializer isn't owned by the SerializeContext class data
-        cd.m_serializer = IDataSerializerPtr(serializer, IDataSerializer::CreateNoDeleteDeleter());
-        cd.m_factory = factory;
-        cd.m_persistentId = nullptr;
-        cd.m_doSave = nullptr;
-        cd.m_eventHandler = nullptr;
-        cd.m_container = container;
-        cd.m_azRtti = GetRttiHelper<T>();
-        cd.m_editData = nullptr;
-        return cd;
+        return CreateImpl(name, typeUuid, factory, serializer, container, GetRttiHelper<T>());
     }
 
     //=========================================================================
