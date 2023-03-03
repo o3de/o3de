@@ -463,7 +463,7 @@ namespace ScriptCanvasTests
     class ConvertibleToString
     {
     public:
-        AZ_TYPE_INFO(StringView, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
+        AZ_TYPE_INFO(ConvertibleToString, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
 
         static AZStd::string ConstCharPtrToString(const char* inputStr)
         {

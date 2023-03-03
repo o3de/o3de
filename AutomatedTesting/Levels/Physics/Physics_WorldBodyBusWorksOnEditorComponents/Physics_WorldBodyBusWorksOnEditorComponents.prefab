@@ -553,7 +553,7 @@
             "Name": "StaticMesh",
             "Components": {
                 "Component_[10271136976310200923]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 10271136976310200923,
                     "ColliderConfiguration": {
                         "MaterialSlots": {
@@ -649,7 +649,7 @@
             "Name": "Mesh",
             "Components": {
                 "Component_[16300212154464470531]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 16300212154464470531,
                     "ColliderConfiguration": {
                         "MaterialSlots": {

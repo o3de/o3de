@@ -24,12 +24,12 @@ namespace AzToolsFramework
     class EditorEntityUiHandlerBase
     {
     protected:
-        AZ_RTTI(EditorEntityUiHandlerBase, "{EFB6CBC0-3A0A-4302-92EB-62CAF1C47163}");
 
         EditorEntityUiHandlerBase();
         virtual ~EditorEntityUiHandlerBase();
 
     public:
+        AZ_RTTI(EditorEntityUiHandlerBase, "{EFB6CBC0-3A0A-4302-92EB-62CAF1C47163}");
         EditorEntityUiHandlerId GetHandlerId();
 
         // # Entity Outliner Item

@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <Artifact/TestImpactArtifactException.h>
 #include <Target/Native/TestImpactNativeTargetListCompiler.h>
 

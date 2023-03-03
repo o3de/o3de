@@ -111,7 +111,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                     AZ::AzToolsFramework
                     AZ::AtomCore
                     Gem::Atom_RHI.Public
-                    3rdParty::md5
         )
     endif()
 endif()

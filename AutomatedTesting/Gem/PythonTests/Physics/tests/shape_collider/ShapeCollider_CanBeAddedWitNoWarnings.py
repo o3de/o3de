@@ -12,29 +12,31 @@ Test Case Title : Verify that a shape collider component may be added to an enti
 
 # fmt: off
 class Tests():
-    create_collider_entity   = ("Created Collider Entity",    "Failed to create Collider Entity")
-    add_physx_shape_collider = ("PhysX Shape Collider added", "Failed to add PhysX Shape Collider")
-    add_box_shape            = ("Box Shape added",            "Failed to add Box Shape")
-    add_physx_collider       = ("PhysX Collider added",       "Failed to add PhysX Collider")
-    no_warnings_found        = ("Trace found no warnings",    "One or more components has been removed")
+    create_collider_entity       = ("Created Collider Entity",    "Failed to create Collider Entity")
+    add_physx_shape_collider     = ("PhysX Shape Collider added", "Failed to add PhysX Shape Collider")
+    add_box_shape                = ("Box Shape added",            "Failed to add Box Shape")
+    add_physx_primitive_collider = ("PhysX Primitive Collider added", "Failed to add PhysX Primitive Collider")
+    add_physx_mesh_collider      = ("PhysX Mesh Collider added",  "Failed to add PhysX Mesh Collider")
+    no_warnings_found            = ("Trace found no warnings",    "One or more components has been removed")
 # fmt: on
 
 
 def ShapeCollider_CanBeAddedWitNoWarnings():
     """
     Summary:
-     Adding a PhysX Collider component when a PhysX Shape Collider and Box Shape components are already present
+     Adding a PhysX Primitive Collider and PhysX Mesh Collider components when a PhysX Shape Collider and Box Shape components are already present
 
     Expected Behavior:
-     When adding the PhysX Collider, there should be no warnings in the entity outliner
+     When adding the PhysX Primitive Collider and PhysX Mesh Collider, there should be no warnings in the entity outliner
 
     Test Steps:
      1) Load the empty level
      2) Create an entity
      3) Add the PhysX Shape Collider and a Box Shape components
-     4) Start the Tracer to catch any warnings while adding the PhysX Collider
-     5) Add the PhysX Collider component
-     6) Verify there are no warnings in the entity outliner
+     4) Start the Tracer to catch any warnings
+     5) Add the PhysX Primitive Collider component
+     6) Add the PhysX Mesh Collider component
+     7) Verify there are no warnings in the entity outliner
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -60,6 +62,7 @@ def ShapeCollider_CanBeAddedWitNoWarnings():
 
     # 2) Create an entity
     collider_entity = Entity.create_editor_entity("Collider")
+    collider_entity.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_collider_entity, collider_entity.id.IsValid())
 
     # 3) Add the PhysX Shape Collider and a Box Shape components
@@ -71,11 +74,15 @@ def ShapeCollider_CanBeAddedWitNoWarnings():
 
     # 4) Start the Tracer to catch any warnings while adding the PhysX Collider
     with Tracer() as section_tracer:
-        # 5) Add the PhysX Collider component
-        collider_entity.add_component("PhysX Collider")
-        Report.result(Tests.add_physx_collider, collider_entity.has_component("PhysX Collider"))
+        # 5) Add the PhysX Primitive Collider component
+        collider_entity.add_component("PhysX Primitive Collider")
+        Report.result(Tests.add_physx_primitive_collider, collider_entity.has_component("PhysX Primitive Collider"))
+        
+        # 6) Add the PhysX Mesh Collider component
+        collider_entity.add_component("PhysX Mesh Collider")
+        Report.result(Tests.add_physx_mesh_collider, collider_entity.has_component("PhysX Mesh Collider"))
 
-    # 6) Verify there are no warnings in the entity outliner
+    # 7) Verify there are no warnings in the entity outliner
     success_condition = not section_tracer.has_warnings and not section_tracer.has_errors
     Report.result(Tests.no_warnings_found, success_condition)
 
