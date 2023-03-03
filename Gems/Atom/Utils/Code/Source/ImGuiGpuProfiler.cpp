@@ -1777,35 +1777,35 @@ namespace AZ
                 poolObject.AddMember(PoolNameAttribStr, rapidjson::StringRef(!pool.m_name.IsEmpty()?pool.m_name.GetCStr():"Unnamed Pool"), doc.GetAllocator());
                 if (const auto& heapMemoryUsageHost = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host); heapMemoryUsageHost.m_totalResidentInBytes > 0)
                 {
-                    poolObject.AddMember(MemoryTypeAttribStr,               HostMemoryTypeValueStr,                             doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr,            heapMemoryUsageHost.m_budgetInBytes,                doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr,     heapMemoryUsageHost.m_totalResidentInBytes.load(),  doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr,      heapMemoryUsageHost.m_usedResidentInBytes.load(),   doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr,            heapMemoryUsageHost.m_fragmentation,                doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, heapMemoryUsageHost.m_uniqueAllocationBytes.load(), doc.GetAllocator());
+                    poolObject.AddMember(MemoryTypeAttribStr, HostMemoryTypeValueStr, doc.GetAllocator());
+                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_budgetInBytes), doc.GetAllocator());
+                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_totalResidentInBytes.load()), doc.GetAllocator());
+                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_usedResidentInBytes.load()), doc.GetAllocator());
+                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageHost.m_fragmentation, doc.GetAllocator());
+                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_uniqueAllocationBytes.load()), doc.GetAllocator());
                 }
                 else if (const auto& heapMemoryUsageDevice = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device); heapMemoryUsageDevice.m_totalResidentInBytes > 0)
                 {
                     poolObject.AddMember(MemoryTypeAttribStr,               DeviceMemoryTypeValueStr, doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr,            heapMemoryUsageDevice.m_budgetInBytes,                doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr,     heapMemoryUsageDevice.m_totalResidentInBytes.load(),  doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr,      heapMemoryUsageDevice.m_usedResidentInBytes.load(),   doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr,            heapMemoryUsageDevice.m_fragmentation,                doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, heapMemoryUsageDevice.m_uniqueAllocationBytes.load(), doc.GetAllocator());
+                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_budgetInBytes), doc.GetAllocator());
+                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_totalResidentInBytes.load()), doc.GetAllocator());
+                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_usedResidentInBytes.load()), doc.GetAllocator());
+                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageDevice.m_fragmentation, doc.GetAllocator());
+                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_uniqueAllocationBytes.load()), doc.GetAllocator());
                 }
                 else
                 {
                     continue;
                 }
 
-                poolObject.AddMember(BufferCountAttribStr, pool.m_buffers.size(), doc.GetAllocator());
-                poolObject.AddMember(ImageCountAttribStr,  pool.m_images.size(),  doc.GetAllocator());
+                poolObject.AddMember(BufferCountAttribStr, static_cast<uint64_t>(pool.m_buffers.size()), doc.GetAllocator());
+                poolObject.AddMember(ImageCountAttribStr,  static_cast<uint64_t>(pool.m_images.size()),  doc.GetAllocator());
                 rapidjson::Value buffersArray(rapidjson::kArrayType);
                 for (const auto& buffer : pool.m_buffers)
                 {
                     rapidjson::Value bufferObject(rapidjson::kObjectType);
                     bufferObject.AddMember(BufferNameAttribStr, rapidjson::StringRef(!buffer.m_name.IsEmpty()?buffer.m_name.GetCStr():"Unnamed Buffer"), doc.GetAllocator());
-                    bufferObject.AddMember(SizeInBytesAttribStr, buffer.m_sizeInBytes, doc.GetAllocator());
+                    bufferObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(buffer.m_sizeInBytes), doc.GetAllocator());
                     bufferObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(buffer.m_bindFlags), doc.GetAllocator());
                     buffersArray.PushBack(bufferObject, doc.GetAllocator());
                 }
@@ -1816,7 +1816,7 @@ namespace AZ
                 {
                     rapidjson::Value imageObject(rapidjson::kObjectType);
                     imageObject.AddMember(ImageNameAttribStr, rapidjson::StringRef(!image.m_name.IsEmpty()?image.m_name.GetCStr():"Unnamed Image"), doc.GetAllocator());
-                    imageObject.AddMember(SizeInBytesAttribStr, image.m_sizeInBytes, doc.GetAllocator());
+                    imageObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(image.m_sizeInBytes), doc.GetAllocator());
                     imageObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(image.m_bindFlags), doc.GetAllocator());
                     imagesArray.PushBack(imageObject, doc.GetAllocator());
                 }
