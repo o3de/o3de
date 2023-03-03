@@ -47,6 +47,9 @@ parts:
      - libffi8
      - libnettle8
      - libhogweed6
+     - libunwind-dev
+     - zlib1g-dev
+     - libssl-dev
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
