@@ -42,7 +42,7 @@ class TestAutomation(EditorTestSuite):
             test_file_name = "bunny_material"
             original_files = original_file_set(test_file_name)
             renamed_files = renamed_file_set(test_file_name)
-            self.test_files = original_file_set(test_file_name) + renamed_file_set(test_file_name)
+            self.test_files = original_files + renamed_files
 
             cleanup_test_files(workspace, self.test_files)
 
