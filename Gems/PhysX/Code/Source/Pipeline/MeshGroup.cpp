@@ -594,7 +594,11 @@ namespace PhysX
                 serializeContext
             )
             {
-                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(5, &MeshGroup::VersionConverter)
+                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(5,
+                    [](AZ::SerializeContext& sc, AZ::SerializeContext::DataElementNode& classElement)
+                    {
+                        return MeshGroup::VersionConverter(sc, &classElement);
+                    })
                     ->Field("id", &MeshGroup::m_id)
                     ->Field("name", &MeshGroup::m_name)
                     ->Field("NodeSelectionList", &MeshGroup::m_nodeSelectionList)
@@ -829,8 +833,9 @@ namespace PhysX
             return GetExportAsConvex() || GetExportAsPrimitive();
         }
 
-        bool MeshGroup::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        bool MeshGroup::VersionConverter(AZ::SerializeContext& context, void* classElementPtr)
         {
+            auto& classElement = *static_cast<AZ::SerializeContext::DataElementNode*>(classElementPtr);
             // Remove the material rule.
             if (classElement.GetVersion() < 1)
             {

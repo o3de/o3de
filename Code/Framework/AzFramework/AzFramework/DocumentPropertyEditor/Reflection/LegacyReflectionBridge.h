@@ -9,9 +9,13 @@
 #pragma once
 
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Attribute.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Visitor.h>
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 namespace AZ::Reflection
 {

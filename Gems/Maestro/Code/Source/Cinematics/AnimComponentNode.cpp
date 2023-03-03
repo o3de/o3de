@@ -10,6 +10,7 @@
 #include "AnimComponentNode.h"
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
