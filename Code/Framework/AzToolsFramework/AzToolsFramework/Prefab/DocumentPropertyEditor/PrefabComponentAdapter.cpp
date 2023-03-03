@@ -33,44 +33,37 @@ namespace AzToolsFramework::Prefab
     void PrefabComponentAdapter::CreateLabel(
         AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
-        if (IsInspectorOverrideManagementEnabled())
+        using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+
+        adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
+        adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
+
+        AZ::Dom::Path relativePathFromEntity;
+        if (!serializedPath.empty())
         {
-            using PrefabPropertyEditorNodes::PrefabOverrideLabel;
+            relativePathFromEntity /= PrefabDomUtils::ComponentsName;
+            relativePathFromEntity /= m_componentAlias;
+            relativePathFromEntity /= AZ::Dom::Path(serializedPath);
+        }
 
-            adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-            adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
-
-            AZ::Dom::Path relativePathFromEntity;
-            if (!serializedPath.empty())
-            {
-                relativePathFromEntity /= PrefabDomUtils::ComponentsName;
-                relativePathFromEntity /= m_componentAlias;
-                relativePathFromEntity /= AZ::Dom::Path(serializedPath);
-            }
-
-            // Do not show override visualization on container entities or for empty serialized paths.
-            if (m_prefabPublicInterface->IsInstanceContainerEntity(m_entityId) || relativePathFromEntity.IsEmpty())
-            {
-                adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, false);
-            }
-            else
-            {
-                bool isOverridden = m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, relativePathFromEntity.ToString());
-                adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isOverridden);
-
-                if (isOverridden)
-                {
-                    adapterBuilder->Attribute(PrefabOverrideLabel::RelativePath, relativePathFromEntity.ToString());
-                    adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
-                }
-            }
-
-            adapterBuilder->EndPropertyEditor();
+        // Do not show override visualization on container entities or for empty serialized paths.
+        if (m_prefabPublicInterface->IsInstanceContainerEntity(m_entityId) || relativePathFromEntity.IsEmpty())
+        {
+            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, false);
         }
         else
         {
-            ComponentAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
+            bool isOverridden = m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, relativePathFromEntity.ToString());
+            adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isOverridden);
+
+            if (isOverridden)
+            {
+                adapterBuilder->Attribute(PrefabOverrideLabel::RelativePath, relativePathFromEntity.ToString());
+                adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
+            }
         }
+
+        adapterBuilder->EndPropertyEditor();
     }
 
     AZ::Dom::Value PrefabComponentAdapter::HandleMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message)

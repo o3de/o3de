@@ -151,7 +151,15 @@ namespace AzToolsFramework
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<Prefab::PrefabComponentAdapter>();
+            if (Prefab::IsInspectorOverrideManagementEnabled())
+            {
+                m_adapter = AZStd::make_shared<Prefab::PrefabComponentAdapter>();
+            }
+            else
+            {
+                m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            }
+
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);
