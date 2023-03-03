@@ -76,6 +76,8 @@ namespace AZ::Debug
         {
             if (isEnabled)
             {
+                // Signals to handle based on glibc may be defined at 
+                // [bits/signum-generic.h](https://sourceware.org/git/?p=glibc.git;a=blob;f=bits/signum-generic.h;h=67131853c220b942aa9bc599eca7db5e5e797f98;hb=e4e11b1dba261cb650e631978622bf3b4a4d8c37#l28)
                 signal(SIGSEGV, ExceptionHandler);
                 signal(SIGTRAP, ExceptionHandler);
                 signal(SIGILL, ExceptionHandler);
@@ -121,21 +123,16 @@ namespace AZ::Debug
         }
         Debug::Trace::Instance().RawOutput(nullptr, "==================================================================\n");
 
-        // Continue the overridden signal handlers by exiting with the matching exit code based on the signal
-        switch (signal)
-        {
-            case SIGSEGV:
-                _exit(139);
-                break;
-            case SIGKILL:
-                _exit(137);
-                break;
-            case SIGTRAP:
-                _exit(133);
-                break;
-            default:
-                break;
-        }
+        // Continue to exit the process when a signal is caught by this signal handler. 
+        // The exit code will conform to https://tldp.org/LDP/abs/html/exitcodes.html.
+        // - Signal based exit codes will be calculated based on 128+signal
+        // - Exit codes will not be greater than 255
+        //
+        // Any exit code that results in anything outside of this range will result in 255: Exit status out of range
+        constexpr int exitCodeSignalBase = 128;
+        constexpr int maxExitCode = 255;
+        int signalExitCode = exitCodeSignalBase + signal;
+        _exit(signalExitCode<maxExitCode?signalExitCode:maxExitCode);
     }
 #endif
 
