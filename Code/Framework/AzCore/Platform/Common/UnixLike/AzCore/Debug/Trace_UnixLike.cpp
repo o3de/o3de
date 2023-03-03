@@ -132,7 +132,7 @@ namespace AZ::Debug
         constexpr int exitCodeSignalBase = 128;
         constexpr int maxExitCode = 255;
         int signalExitCode = exitCodeSignalBase + signal;
-        _exit(signalExitCode<maxExitCode?signalExitCode:maxExitCode);
+        _exit(signalExitCode < maxExitCode ? signalExitCode : maxExitCode);
     }
 #endif
 
