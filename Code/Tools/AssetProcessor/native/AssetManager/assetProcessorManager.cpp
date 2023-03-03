@@ -1814,6 +1814,7 @@ namespace AssetProcessor
             return;
         }
 
+        // Check if this event should be delayed for a while to allow time for moving/renaming to be completed
         if (ShouldDelayProcessingFile(source, normalizedFilePath, triggeredByMetadata))
         {
             return;
