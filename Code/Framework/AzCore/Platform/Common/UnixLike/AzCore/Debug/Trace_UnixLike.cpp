@@ -6,11 +6,13 @@
  *
  */
 
+
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <cctype>
 #include <signal.h>
 
 namespace AZ::Debug
