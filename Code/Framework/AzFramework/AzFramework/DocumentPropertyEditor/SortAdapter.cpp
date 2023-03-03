@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/ranges/zip_view.h>
 #include <AzFramework/DocumentPropertyEditor/SortAdapter.h>
 
@@ -43,8 +44,10 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZ_Assert(m_rootNode, "if filter was enabled, m_rootNode should be populated");
-                GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), true, outgoingPatch);
+                if (m_rootNode)
+                {
+                    GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), true, outgoingPatch);
+                }
             }
             if (outgoingPatch.size())
             {
@@ -129,6 +132,11 @@ namespace AZ::DocumentPropertyEditor
             filteredContents = GetSortedValue(filteredContents, m_rootNode.get());
         }
         return filteredContents;
+    }
+
+    bool RowSortAdapter::LessThan(SortInfoNode* lhs, SortInfoNode* rhs) const
+    {
+        return (lhs->m_domIndex < rhs->m_domIndex);
     }
 
     void RowSortAdapter::HandleReset()
@@ -323,14 +331,17 @@ namespace AZ::DocumentPropertyEditor
     void RowSortAdapter::GenerateMovePatches(
         const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch)
     {
-        // move operations that we generate will affect the indices of the items between the move endpoints,
-        // so we will need to adjust our next move's starting index based on existing move operations we've generated.
-        // keep track of the existing number of operations before we start adding moves so that we can examine
-        // our own moves later.
-        const auto firstMoveIndex = outgoingPatch.size();
+        if (sortNode->m_indexSortedChildren.empty())
+        {
+            // no children, nothing to do
+            return;
+        }
+
+        AZStd::unordered_map<size_t, size_t> sourceToDestination;
+        auto firstMoveIndex = outgoingPatch.size();
 
         auto zippedView = AZStd::views::zip(sortNode->m_indexSortedChildren, sortNode->m_adapterSortedChildren);
-        // generate all move patch operations for this parent
+        // generate a map of child move patch operations for this parent
         for (auto [indexSortedNode, adapterSortedNode] : zippedView)
         {
             size_t sourceIndex, destinationIndex;
@@ -344,32 +355,72 @@ namespace AZ::DocumentPropertyEditor
                 destinationIndex = indexSortedNode->m_domIndex;
                 sourceIndex = adapterSortedNode->m_domIndex;
             }
+            sourceToDestination[sourceIndex] = destinationIndex;
+        }
 
-            // adjust sourceIndex based on the moves that have happened already; destination is already correct
-            for (auto operationIndex = firstMoveIndex; operationIndex < outgoingPatch.Size(); ++operationIndex)
+        // iterate over the mappings, adjusting the source index by any prior moves that have crossed it
+        auto currMapping = sourceToDestination.extract(sourceToDestination.begin());
+        while (!currMapping.empty())
+        {
+            auto& sourceIndex = currMapping.key();
+            auto& destinationIndex = currMapping.mapped();
+            for (auto operationIndex = firstMoveIndex, numMoves = outgoingPatch.size(); operationIndex < numMoves; ++operationIndex)
             {
                 auto& currMove = outgoingPatch[operationIndex];
                 const auto operationSource = currMove.GetSourcePath().Back().GetIndex();
                 const auto operationDest = currMove.GetDestinationPath().Back().GetIndex();
-                if (operationSource < operationDest && operationSource <= sourceIndex && operationDest >= sourceIndex)
+
+                if (operationSource > operationDest)
                 {
-                    --sourceIndex;
+                    // check if this prior operation crossed us moving backwards which would've incremented our source index
+                    if (operationSource > sourceIndex && operationDest <= sourceIndex)
+                    {
+                        ++sourceIndex;
+                    }
                 }
-                else if (operationSource > operationDest && operationSource >= sourceIndex && operationDest <= sourceIndex)
+                else
                 {
-                    ++sourceIndex;
+                    // check if this prior operation crossed us moving forwards which would've decremented our source index
+                    if (operationSource < sourceIndex && operationDest >= sourceIndex)
+                    {
+                        --sourceIndex;
+                    }
                 }
             }
-            // push the actual move operation now
-            if (mapToSource)
+
+            if (sourceIndex != destinationIndex)
             {
-                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(sortedPath / destinationIndex, indexPath / sourceIndex));
+                // it's an actual different index, generate the move patch
+                auto destPath = (mapToSource ? sortedPath : indexPath) / destinationIndex;
+                auto sourcePath = (mapToSource ? indexPath : sortedPath) / sourceIndex;
+                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(destPath, sourcePath));
+            }
+
+            // next do the mapping whose source is the previous operation's destination
+            auto nextMapping = sourceToDestination.find(destinationIndex);
+            if (nextMapping == sourceToDestination.end())
+            {
+                // there's no mapping starting there - we've reached the end of a loop
+                if (sourceToDestination.empty())
+                {
+                    // no remaining mappings, we're done!
+                    currMapping = {};
+                }
+                else
+                {
+                    // we've reached the end of a loop, but there are more mappings to account for
+                    // Grab one from the front and start a new loop
+                    // because this loop is finished, no mappings are displaced, we can reset firstMoveIndex
+                    firstMoveIndex = outgoingPatch.size();
+                    currMapping = sourceToDestination.extract(sourceToDestination.begin());
+                }
             }
             else
             {
-                outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(indexPath / destinationIndex, sortedPath / sourceIndex));
+                currMapping = sourceToDestination.extract(nextMapping);
             }
         }
+
         // Now loop through the children again so that they can generate their children's patches. Note that we can't recurse into children
         // until all moves for this level are done, because the move operations for this level should be adjacent in the patch for searching
         for (auto [indexSortedNode, adapterSortedNode] : zippedView)

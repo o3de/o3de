@@ -95,7 +95,9 @@ namespace AZ::DocumentPropertyEditor
         // pure virtual methods for new RowSortAdapter
         virtual SortInfoNode* NewSortInfoNode() const = 0;
         virtual void CacheDomInfoForNode(const Dom::Value& domValue, SortInfoNode* sortNode) const = 0;
-        virtual bool LessThan(SortInfoNode* lhs, SortInfoNode* rhs) const = 0;
+
+        // child classes should override this, but typically call this base implementation for otherwise equal values
+        virtual bool LessThan(SortInfoNode* lhs, SortInfoNode* rhs) const;
 
         // handlers for source adapter's messages
         void HandleReset() override;

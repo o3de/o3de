@@ -879,7 +879,7 @@ namespace AzToolsFramework
                         else
                         {
                             // this is a column widget move, just add it to the correct place in the (possibly) new layout
-                            // <apm>
+                            AZ_Assert(0, "dammit."); // <apm>
                         }
                     }
                     else if (destinationParentRow)
