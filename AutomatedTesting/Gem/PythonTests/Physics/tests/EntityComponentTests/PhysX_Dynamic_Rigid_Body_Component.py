@@ -33,7 +33,7 @@ def Component_TestComponentInit():
     from editor_python_test_tools.editor_component.editor_component_validation import \
         (validate_vector3_property, validate_float_property, validate_property_switch_toggle, validate_integer_property)
     from editor_python_test_tools.editor_component.test_values.common_test_values import (
-        INT_TESTS_NEGATIVE_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_TESTS_NEGATIVE_EXPECT_PASS)
+        INT_TESTS_NEGATIVE_BOUNDARY_EXPECT_FAIL, VECTOR3_TESTS_NEGATIVE_EXPECT_PASS, FLOAT_TESTS_NEGATIVE_EXPECT_PASS)
 
     general.idle_enable(True)
 
@@ -60,7 +60,7 @@ def Component_TestComponentInit():
     validate_integer_property("Solver Position Iterations",
                               dynamic_rigid_body_component.solver_position_iterations.get,
                               dynamic_rigid_body_component.solver_position_iterations.set, "PhysX Dynamic Rigid Body",
-                              INT_TESTS_NEGATIVE_EXPECT_FAIL)
+                              INT_TESTS_NEGATIVE_BOUNDARY_EXPECT_FAIL)
     validate_float_property("Linear dampening",
                             dynamic_rigid_body_component.linear_dampening.get,
                             dynamic_rigid_body_component.linear_dampening.set, "PhysX Dynamic Rigid Body",

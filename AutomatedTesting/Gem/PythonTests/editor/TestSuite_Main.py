@@ -57,19 +57,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
-    @pytest.mark.REQUIRES_gpu
-    class test_Component_PhysX_Dynamic_Rigid_Body(EditorSingleTest):
-        # Disable null renderer
-        use_null_renderer = False
-
-        # Custom teardown to remove level created during test
-        def setup(self, request, workspace):
-            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
-
-        def teardown(self, request, workspace, editor_test_results):
-            TestAutomationNoAutoTestMode.cleanup_test_level(self, workspace)
-
-        from .EditorScripts import Component_PhysX_Dynamic_Rigid_Body as test_module
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])

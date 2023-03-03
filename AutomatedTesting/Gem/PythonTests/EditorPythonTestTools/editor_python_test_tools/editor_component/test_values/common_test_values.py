@@ -26,6 +26,15 @@ INT_TESTS_NEGATIVE_EXPECT_FAIL = {
     "Large Value Boundary Test": (5000, True)
 }
 
+INT_TESTS_NEGATIVE_BOUNDARY_EXPECT_FAIL = {
+    "Negative Value Test": (-1, False),
+    "Zero Value Test": (0, True),
+    "Small Value Test": (1, True),
+    "Normal Value Test": (25, True),
+    "Large Value Test": (255, True),
+    "Large Value Boundary Test": (5000, False)
+}
+
 # Float Tests
 FLOAT_TESTS_NEGATIVE_EXPECT_PASS = {
     "Negative Value Test": (-1.0, True),
