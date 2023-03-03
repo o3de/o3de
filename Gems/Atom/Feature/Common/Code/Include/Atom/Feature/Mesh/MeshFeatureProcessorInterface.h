@@ -30,6 +30,15 @@ namespace AZ
             "Enable allowing systems to set shader options on a per-mesh basis."
         );
 
+        
+        AZ_CVAR(
+            bool,
+            r_enableMeshInstancing,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable instanced draw calls in the MeshFeatureProcessor.");
+
         class ModelDataInstance;
         
         //! Settings to apply to a mesh handle when acquiring it for the first time

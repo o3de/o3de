@@ -46,7 +46,6 @@ namespace AZ
 
         class iterator;
         class const_iterator;
-        class pageIterator;
 
         friend iterator;
         friend const_iterator;
@@ -58,6 +57,7 @@ namespace AZ
 
     public:
 
+        class pageIterator;
         using Handle = StableDynamicArrayHandle<T>;
         using WeakHandle = StableDynamicArrayWeakHandle<T>;
 
@@ -287,6 +287,9 @@ namespace AZ
 
         ValueType& operator*() const;
         ValueType* operator->() const;
+
+        bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+        bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         
     private:
         StableDynamicArrayWeakHandle(ValueType* data);

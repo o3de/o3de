@@ -27,6 +27,7 @@
 #include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
+#include <Mesh/MeshInstanceManager.h>
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
@@ -37,6 +38,7 @@ namespace AZ
         class TransformServiceFeatureProcessor;
         class RayTracingFeatureProcessor;
         class ReflectionProbeFeatureProcessor;
+        class MeshFeatureProcessor;
 
         class ModelDataInstance
             : public MaterialAssignmentNotificationBus::MultiHandler
@@ -80,35 +82,48 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            // Free all the resources owned by this mesh handle
+            void DeInit(MeshFeatureProcessor* meshFeatureProcessor);
+            // Clear all the data that is created by the MeshFeatureProcessor, such as the draw packets, cullable, and ray-tracing data,
+            // but preserve all the settings such as the model, material assignment, etc., then queue it for re-initialization
+            void ReInit(MeshFeatureProcessor* meshFeatureProcessor);
             void QueueInit(const Data::Instance<RPI::Model>& model);
-            void Init();
-            void BuildDrawPacketList(size_t modelLodIndex);
-            void SetRayTracingData(
-                RayTracingFeatureProcessor* rayTracingFeatureProcessor,
-                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
+            void Init(MeshFeatureProcessor* meshFeatureProcessor);
+            void BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
+            void SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
                     const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
-            void SetSortKey(RHI::DrawItemSortKey sortKey);
+            void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
-            void BuildCullable();
-            void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
-            void UpdateObjectSrg(
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
-                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
+            void BuildCullable(MeshFeatureProcessor* meshFeatureProcessor);
+            void UpdateCullBounds(const MeshFeatureProcessor* meshFeatureProcessor);
+            void UpdateObjectSrg(MeshFeatureProcessor* meshFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
             void UpdateMaterialChangeIds();
             bool CheckForMaterialChanges() const;
+            void HandleDrawPacketUpdate();
 
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
 
+            // When instancing is disabled, draw packets are owned by the ModelDataInstance
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
+            
+            // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
+            // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles
+            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
+            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
+            AZStd::vector<InstanceGroupHandleList> m_instanceGroupHandlesByLod;
+            
+            // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
+            // This is used to trigger an update to the cullable to use the new draw packet
+            using UpdateDrawPacketHandlerList = AZStd::vector<AZ::Event<>::Handler>;
+            AZStd::vector<UpdateDrawPacketHandlerList> m_updateDrawPacketEventHandlersByLod;
 
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
@@ -226,6 +241,14 @@ namespace AZ
 
             void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
 
+            // Quick functions to get other relevant feature processors that have already been cached by the MeshFeatureProcessor
+            // without needing to go through the RPI's list of feature processors
+            RayTracingFeatureProcessor* GetRayTracingFeatureProcessor() const;
+            ReflectionProbeFeatureProcessor* GetReflectionProbeFeatureProcessor() const;
+            TransformServiceFeatureProcessor* GetTransformServiceFeatureProcessor() const;
+
+            MeshInstanceManager& GetMeshInstanceManager();
+            bool IsMeshInstancingEnabled() const;
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
@@ -240,9 +263,18 @@ namespace AZ
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
-                        
+
+            void CheckForInstancingCVarChange();
+            AZStd::vector<AZ::Job*> CreateInitJobQueue();
+            AZStd::vector<AZ::Job*> CreatePerInstanceGroupJobQueue();
+            AZStd::vector<AZ::Job*> CreateUpdateCullingJobQueue();
+            void ExecuteSimulateJobQueue(AZStd::span<Job*> jobQueue, Job* parentJob);
+            void ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob);
+
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
+
+            MeshInstanceManager m_meshInstanceManager;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
@@ -253,6 +285,7 @@ namespace AZ
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;
+            bool m_enableMeshInstancing = false;
         };
     } // namespace Render
 } // namespace AZ

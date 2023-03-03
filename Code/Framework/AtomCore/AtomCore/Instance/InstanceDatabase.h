@@ -404,9 +404,9 @@ namespace AZ
             {
                 AZ_Assert(
                     m_database.find(id) == m_database.end(),
-                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
+                    "Instance creation for asset %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToString<AZStd::string>().c_str());
+                    asset.GetHint().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;
