@@ -33,7 +33,7 @@ namespace AZ
         public:
             
             AZ_CLASS_ALLOCATOR(MetalResource, AZ::SystemAllocator);
-            AZ_RTTI(Resource, "{ED5953FB-6B4B-4A3B-9566-7561EC284687}", RHI::Object);
+            AZ_RTTI(MetalResource, "{ED5953FB-6B4B-4A3B-9566-7561EC284687}", RHI::Object);
 
             static RHI::Ptr<MetalResource> Create(const MetalResourceDescriptor& metalResourceDescriptor)
             {
