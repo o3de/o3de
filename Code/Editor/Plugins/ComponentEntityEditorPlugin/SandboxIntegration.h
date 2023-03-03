@@ -19,6 +19,7 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -103,6 +104,7 @@ class SandboxIntegrationManager
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
+    , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
 public:
 
@@ -196,6 +198,12 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
+
+    // ActionManagerRegistrationNotificationBus overrides ...
+    void OnActionUpdaterRegistrationHook() override;
+    void OnMenuRegistrationHook() override;
+    void OnActionRegistrationHook() override;
+    void OnMenuBindingHook() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();

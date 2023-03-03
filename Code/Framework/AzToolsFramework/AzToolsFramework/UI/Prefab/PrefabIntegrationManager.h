@@ -27,8 +27,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-    class HotKeyManagerInterface;
     class ContainerEntityInterface;
+    class HotKeyManagerInterface;
+    class MenuManagerInterface;
     class ReadOnlyEntityPublicInterface;
     class ToolBarManagerInterface;
 
@@ -87,6 +88,7 @@ namespace AzToolsFramework
             void OnActionUpdaterRegistrationHook() override;
             void OnActionRegistrationHook() override;
             void OnWidgetActionRegistrationHook() override;
+            void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
 
         private:
@@ -150,6 +152,7 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
 
             ActionManagerInterface* m_actionManagerInterface = nullptr;
+            MenuManagerInterface* m_menuManagerInterface = nullptr;
             HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
             PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;

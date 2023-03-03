@@ -623,7 +623,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
             }
         );
 
-        auto outcome = m_actionManagerInterface->InstallEnabledStateCallback(
+        m_actionManagerInterface->InstallEnabledStateCallback(
             "o3de.action.edit.redo",
             []() -> bool
             {
@@ -1175,7 +1175,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.centerOnSelection";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Center on Selection";
+        actionProperties.m_name = "Find Selected Entities in Viewport";
         actionProperties.m_description = "Center the viewport to show selected entities.";
         actionProperties.m_category = "View";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
@@ -1708,6 +1708,19 @@ void EditorActionsHandler::OnMenuRegistrationHook()
             menuProperties.m_name = "GameDev Resources";
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, menuProperties);
         }
+
+    // Editor Menus
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Entity Outliner Context Menu";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, menuProperties);
+    }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport Context Menu";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportContextMenuIdentifier, menuProperties);
+    }
+
 }
 
 void EditorActionsHandler::OnMenuBindingHook()
@@ -1879,6 +1892,23 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::HelpMenuIdentifier, "o3de.action.help.welcome", 700);
     }
+
+    // Entity Outliner Context Menu
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 10000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 20000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 30000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 40000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 50000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 60000);
+    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 60100);
+
+    // Viewport Context Menu
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 10000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 20000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 30000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 40000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 50000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 60000);
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()

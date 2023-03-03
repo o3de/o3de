@@ -20,9 +20,11 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/sort.h>
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -587,98 +589,109 @@ namespace AzToolsFramework
             return;
         }
 
-        QMenu* contextMenu = new QMenu(this);
-
-        // Populate global context menu.
-        AzToolsFramework::EditorContextMenuBus::Broadcast(
-            &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
-            contextMenu,
-            AZStd::nullopt,
-            EditorEvents::eECMF_HIDE_ENTITY_CREATION);
-
-        PrepareSelection();
-
-        // Remove the "Find in Entity Outliner" option from the context menu
-        for (QAction* action : contextMenu->actions())
+        if (IsNewActionManagerEnabled())
         {
-            if (action->text() == "Find in Entity Outliner")
+            if (auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get())
             {
-                contextMenu->removeAction(action);
-                break;
+                menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::EntityOutlinerContextMenuIdentifier);
             }
         }
-
-        //register rename menu action
-        if (!m_selectedEntityIds.empty())
+        else
         {
-            contextMenu->addSeparator();
+            QMenu* contextMenu = new QMenu(this);
 
-            if (m_selectedEntityIds.size() == 1)
+            // Populate global context menu.
+            AzToolsFramework::EditorContextMenuBus::Broadcast(
+                &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
+                contextMenu,
+                AZStd::nullopt,
+                EditorEvents::eECMF_HIDE_ENTITY_CREATION);
+
+            PrepareSelection();
+
+            // Remove the "Find in Entity Outliner" option from the context menu
+            for (QAction* action : contextMenu->actions())
             {
-                auto entityId = m_selectedEntityIds.front();
-
-                // Only allow renaming the entity if the UI Handler did not block it.
-                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
-                bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
-
-                // Disable renaming for read-only entities.
-                bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
-
-                if (canRename && !isReadOnly)
+                if (action->text() == "Find in Entity Outliner")
                 {
-                    contextMenu->addAction(m_actionToRenameSelection);
+                    contextMenu->removeAction(action);
+                    break;
                 }
             }
 
-            if (m_selectedEntityIds.size() == 1)
+            // register rename menu action
+            if (!m_selectedEntityIds.empty())
             {
-                AZ::EntityId entityId = m_selectedEntityIds[0];
+                contextMenu->addSeparator();
 
-                // Don't allow moving the entity if it's the focus root.
-                if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
+                if (m_selectedEntityIds.size() == 1)
                 {
-                    AZ::EntityId parentId;
-                    EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+                    auto entityId = m_selectedEntityIds.front();
 
-                    EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
+                    // Only allow renaming the entity if the UI Handler did not block it.
+                    auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+                    bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
 
-                    if (entityOrderArray.size() > 1)
+                    // Disable renaming for read-only entities.
+                    bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+                    if (canRename && !isReadOnly)
                     {
-                        if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
-                        {
-                            if (entityOrderArray.front() != entityId)
-                            {
-                                contextMenu->addAction(m_actionToMoveEntityUp);
-                            }
+                        contextMenu->addAction(m_actionToRenameSelection);
+                    }
+                }
 
-                            if (entityOrderArray.back() != entityId)
+                if (m_selectedEntityIds.size() == 1)
+                {
+                    AZ::EntityId entityId = m_selectedEntityIds[0];
+
+                    // Don't allow moving the entity if it's the focus root.
+                    if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
+                    {
+                        AZ::EntityId parentId;
+                        EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+
+                        EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
+
+                        if (entityOrderArray.size() > 1)
+                        {
+                            if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
                             {
-                                contextMenu->addAction(m_actionToMoveEntityDown);
+                                if (entityOrderArray.front() != entityId)
+                                {
+                                    contextMenu->addAction(m_actionToMoveEntityUp);
+                                }
+
+                                if (entityOrderArray.back() != entityId)
+                                {
+                                    contextMenu->addAction(m_actionToMoveEntityDown);
+                                }
                             }
                         }
                     }
                 }
+
+                contextMenu->addSeparator();
+
+                bool canGoToEntitiesInViewport = true;
+                EditorRequestBus::BroadcastResult(canGoToEntitiesInViewport, &EditorRequestBus::Events::CanGoToSelectedEntitiesInViewports);
+                if (!canGoToEntitiesInViewport)
+                {
+                    m_actionGoToEntitiesInViewport->setEnabled(false);
+                    m_actionGoToEntitiesInViewport->setToolTip(
+                        QObject::tr("The selection contains no entities that exist in the viewport."));
+                }
+                else
+                {
+                    m_actionGoToEntitiesInViewport->setEnabled(true);
+                    m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("Moves the viewports to the bounding box for the selection."));
+                }
+                contextMenu->addAction(m_actionGoToEntitiesInViewport);
             }
 
-            contextMenu->addSeparator();
-
-            bool canGoToEntitiesInViewport = true;
-            EditorRequestBus::BroadcastResult(canGoToEntitiesInViewport, &EditorRequestBus::Events::CanGoToSelectedEntitiesInViewports);
-            if (!canGoToEntitiesInViewport)
-            {
-                m_actionGoToEntitiesInViewport->setEnabled(false);
-                m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("The selection contains no entities that exist in the viewport."));
-            }
-            else
-            {
-                m_actionGoToEntitiesInViewport->setEnabled(true);
-                m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("Moves the viewports to the bounding box for the selection."));
-            }
-            contextMenu->addAction(m_actionGoToEntitiesInViewport);
+            contextMenu->exec(m_gui->m_objectTree->mapToGlobal(pos));
+            delete contextMenu;
         }
-
-        contextMenu->exec(m_gui->m_objectTree->mapToGlobal(pos));
-        delete contextMenu;
     }
 
     AzFramework::EntityContextId EntityOutlinerWidget::GetPickModeEntityContextId()

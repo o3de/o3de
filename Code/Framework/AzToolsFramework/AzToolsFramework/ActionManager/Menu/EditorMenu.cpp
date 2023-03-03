@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <QCursor>
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -171,6 +172,16 @@ namespace AzToolsFramework
     const QMenu* EditorMenu::GetMenu() const
     {
         return m_menu;
+    }
+
+    void EditorMenu::DisplayAtPosition(QPoint screenPosition) const
+    {
+        m_menu->exec(screenPosition);
+    }
+
+    void EditorMenu::DisplayUnderCursor() const
+    {
+        m_menu->exec(QCursor::pos());
     }
 
     void EditorMenu::RefreshMenu()
