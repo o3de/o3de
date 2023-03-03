@@ -9,8 +9,10 @@
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <cctype>
 #include <signal.h>
 
 namespace AZ::Debug
@@ -45,7 +47,7 @@ namespace AZ::Debug
             }
             for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
             {
-                if (!std::isspace(processStatusView[i]))
+                if (!AZStd::isspace(processStatusView[i]))
                 {
                     return processStatusView[i] != '0';
                 }
