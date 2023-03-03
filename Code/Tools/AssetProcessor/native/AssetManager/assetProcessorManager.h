@@ -499,6 +499,7 @@ namespace AssetProcessor
 
         bool CheckMetadataIsAvailable(AZ::IO::PathView absolutePath);
         bool ShouldIgnorePendingMove(AZ::IO::PathView absolutePath, bool triggeredByMetadata, bool isDelete);
+        bool ShouldDelayProcessingFile(const FileEntry& source, QString normalizedFilePath, bool triggeredByMetadata);
 
         //! Returns true if elapsed time is close enough to the delay process wait time
         //! This is not an exact check since QTimer is not precise with its event timing
@@ -522,9 +523,9 @@ namespace AssetProcessor
         AZStd::unordered_map<AZ::IO::Path, QDateTime> m_delayProcessMetadataFiles;
         // Indicates if DelayedMetadataFileCheck has already been queued to run or not.
         bool m_delayProcessMetadataQueued = false;
-        // Max delay time before creating a metadata file.  Defaults to 1000ms.
+        // Max delay time before creating a metadata file.
         // Avoid setting this too high as it will delay processing of new files.
-        AZ::u32 m_metaCreationDelayMs = 1000;
+        AZ::u32 m_metaCreationDelayMs = 0;
         // Set of files/folders that have been reported as pending for move.  bool: false = old file path, true = new file path
         AZStd::unordered_map<AZ::IO::Path, bool> m_pendingMoves;
         AZStd::recursive_mutex m_pendingMovesMutex;
