@@ -395,7 +395,12 @@ namespace UnitTest
         EXPECT_FALSE(sliceInstanceAddress.IsValid());
     }
 
+#if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TEST_F(SliceEntityOwnershipDeathTests, DISABLED_AddEntity_RootSliceAssetAbsent_EntityNotCreated)
+#else
     TEST_F(SliceEntityOwnershipDeathTests, AddEntity_RootSliceAssetAbsent_EntityNotCreated)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         m_sliceEntityOwnershipService->Destroy();
         AZ::Entity testEntity = AZ::Entity("testEntity");
@@ -404,4 +409,5 @@ namespace UnitTest
                 m_sliceEntityOwnershipService->AddEntity(&testEntity);
             }, ".*");
     }
+#endif // GTEST_HAS_DEATH_TEST
 }

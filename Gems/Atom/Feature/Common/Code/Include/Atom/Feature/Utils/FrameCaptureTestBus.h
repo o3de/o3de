@@ -18,7 +18,7 @@ namespace AZ
         //! The errors met when calling frame capture test request bus.
         struct FrameCaptureTestError
         {
-            AZ_TYPE_INFO(FrameCaptureError, "{C96D1649-6B7C-42AE-87C3-3253EA5214E2}");
+            AZ_TYPE_INFO(FrameCaptureTestError, "{C96D1649-6B7C-42AE-87C3-3253EA5214E2}");
             static void Reflect(ReflectContext* context);
 
             AZStd::string m_errorMessage;
