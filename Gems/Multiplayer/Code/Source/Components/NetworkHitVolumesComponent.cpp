@@ -138,7 +138,7 @@ namespace Multiplayer
         m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
     }
 
-    void NetworkHitVolumesComponent::OnCharacterDeactivated(const AZ::EntityId& entityId)
+    void NetworkHitVolumesComponent::OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         m_physicsCharacter = nullptr;
     }
