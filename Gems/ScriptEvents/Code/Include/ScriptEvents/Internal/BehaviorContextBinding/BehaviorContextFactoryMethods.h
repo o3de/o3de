@@ -89,7 +89,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentName(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentName(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 
@@ -98,7 +98,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentToolTip(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentToolTip(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 

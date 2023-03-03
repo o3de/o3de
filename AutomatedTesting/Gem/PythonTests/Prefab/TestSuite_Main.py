@@ -15,9 +15,9 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationOverridesDisabled(EditorTestSuite):
 
-    # These tests will execute with Prefab Overrides/Inspector DPE/Inspector Overrides disabled
+    # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides disabled
     EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOverridesUx=false",
+        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=false",
          f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=false",
          f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=false"])
 
@@ -148,9 +148,9 @@ class TestAutomationOverridesDisabled(EditorTestSuite):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationOverrides(EditorTestSuite):
 
-    # These tests will execute with Prefab Overrides/Inspector DPE/Inspector Overrides enabled
+    # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides enabled
     EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOverridesUx=true",
+        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=true",
          f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=true",
          f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=true"])
 

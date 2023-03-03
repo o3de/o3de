@@ -30,7 +30,7 @@ def DuplicateEntity_WithNestedEntitiesAndNestedPrefabs():
     NESTED_PREFABS_FILE_NAME_PREFIX = Path(__file__).stem + '_' + 'nested_prefabs_'
     NESTED_PREFABS_NAME_PREFIX = 'NestedPrefabs_Prefab_'
     NESTED_PREFABS_TEST_ENTITY_NAME = 'TestEntity'
-    PHYSX_COLLIDER_NAME = 'PhysX Collider'
+    PHYSX_PRIMITIVE_COLLIDER_NAME = 'PhysX Primitive Collider'
     PARENT_CREATION_POSITION = azlmbr.math.Vector3(0.0, 0.0, 0.0)
     CHILDREN_CREATION_POSITION = azlmbr.math.Vector3(100.0, 100.0, 100.0)
     NUM_NESTED_ENTITIES_LEVELS = 3
@@ -76,8 +76,8 @@ def DuplicateEntity_WithNestedEntitiesAndNestedPrefabs():
     nested_prefab_root = EditorEntity.create_editor_entity_at(CHILDREN_CREATION_POSITION, name=NESTED_PREFABS_TEST_ENTITY_NAME,
                                                               parent_id=parent_entity.id)
     assert nested_prefab_root.id.IsValid(), "Couldn't create TestEntity"
-    nested_prefab_root.add_component(PHYSX_COLLIDER_NAME)
-    assert nested_prefab_root.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
+    nested_prefab_root.add_component(PHYSX_PRIMITIVE_COLLIDER_NAME)
+    assert nested_prefab_root.has_component(PHYSX_PRIMITIVE_COLLIDER_NAME), f"Failed to add a {PHYSX_PRIMITIVE_COLLIDER_NAME}"
     nested_prefabs, nested_prefab_instances = prefab_test_utils.create_linear_nested_prefabs(
         [nested_prefab_root], NESTED_PREFABS_FILE_NAME_PREFIX, NESTED_PREFABS_NAME_PREFIX, NUM_NESTED_PREFABS_LEVELS)
     prefab_test_utils.validate_linear_nested_prefab_instances_hierarchy(nested_prefab_instances)

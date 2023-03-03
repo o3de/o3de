@@ -16,19 +16,16 @@ namespace AWSClientAuth
 {
     void AWSClientAuthEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AWSClientAuthSystemComponent::Reflect(context);
-
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<AWSClientAuthEditorSystemComponent, AWSClientAuthSystemComponent>()
+            serialize->Class<AWSClientAuthEditorSystemComponent, AZ::Component>()
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AWSClientAuthSystemComponent>("AWSClientAuthEditor", "Provides Client Authentication and Authorization implementations")
+                ec->Class<AWSClientAuthEditorSystemComponent>("AWSClientAuthEditor", "Provides Client Authentication and Authorization implementations")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -53,22 +50,13 @@ namespace AWSClientAuth
     {
     }
 
-    void AWSClientAuthEditorSystemComponent::Init()
-    {
-        AWSClientAuthSystemComponent::Init();
-    }
-
     void AWSClientAuthEditorSystemComponent::Activate()
     {
-        AWSClientAuthSystemComponent::Activate();
-
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void AWSClientAuthEditorSystemComponent::Deactivate()
     {
-        AWSClientAuthSystemComponent::Deactivate();
-
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 

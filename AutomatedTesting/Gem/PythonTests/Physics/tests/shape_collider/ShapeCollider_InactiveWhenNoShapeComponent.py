@@ -72,6 +72,7 @@ def ShapeCollider_InactiveWhenNoShapeComponent():
 
     # 2) Add an entity with a PhysX Shape Collider component.
     collider = EditorEntity.create_editor_entity("Collider")
+    collider.add_component("PhysX Static Rigid Body")
     physx_component = collider.add_component("PhysX Shape Collider")
 
     # 3) Validate Collider Entity

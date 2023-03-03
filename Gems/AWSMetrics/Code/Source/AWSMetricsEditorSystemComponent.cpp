@@ -26,11 +26,9 @@ namespace AWSMetrics
 
     void AWSMetricsEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AWSMetricsSystemComponent::Reflect(context);
-
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<AWSMetricsEditorSystemComponent, AWSMetricsSystemComponent>()
+            serialize->Class<AWSMetricsEditorSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
@@ -38,7 +36,6 @@ namespace AWSMetrics
             {
                 ec->Class<AWSMetricsEditorSystemComponent>("AWSMetricsEditor", "Generate and submit metrics to the metrics analytics pipeline")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -66,8 +63,6 @@ namespace AWSMetrics
 
     void AWSMetricsEditorSystemComponent::Activate()
     {
-        AWSMetricsSystemComponent::Activate();
-
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
     }
@@ -163,8 +158,6 @@ namespace AWSMetrics
 
     void AWSMetricsEditorSystemComponent::Deactivate()
     {
-        AWSMetricsSystemComponent::Activate();
-
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
 

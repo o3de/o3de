@@ -30,6 +30,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // Add implementation of IPropertyEditor RTTI virtual functions in the cpp file along with the ReflectedPropertyEditor
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IPropertyEditor);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ReflectedPropertyEditor, IPropertyEditor);
     const AZ::SerializeContext::ClassData* CreateContainerElementSelectClassCallback(const AZ::Uuid& classId, const AZ::Uuid& typeId, AZ::SerializeContext* context)
     {
         AZStd::vector<const AZ::SerializeContext::ClassData*> derivedClasses;

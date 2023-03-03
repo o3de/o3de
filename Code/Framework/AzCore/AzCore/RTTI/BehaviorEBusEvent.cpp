@@ -1,32 +1,18 @@
 /*
-* Copyright (c) Contributors to the Open 3D Engine Project.
-* For complete copyright and license terms please see the LICENSE at the root of this distribution.
-*
-* SPDX-License-Identifier: Apache-2.0 OR MIT
-*
-*/
-#pragma once
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <AzCore/RTTI/BehaviorContext.h>
+
 
 namespace AZ::Internal
 {
     //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::BehaviorEBusEvent(FunctionPointer functionPointer, BehaviorContext* context)
-        : BehaviorMethod(context)
-        , m_functionPtr(functionPointer)
-    {
-        SetParameters<R>(m_parameters, this);
-        if constexpr (s_isBusIdParameter == 1)
-        {
-            // optional ID parameter
-            SetParameters<typename EBus::BusIdType>(&m_parameters[s_startArgumentIndex]);
-        }
-        SetParameters<Args...>(&m_parameters[s_startNamedArgumentIndex], this);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
+    bool BehaviorEBusEvent::Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
     {
         size_t totalArguments = GetNumArguments();
         if (arguments.size() < totalArguments)
@@ -56,16 +42,14 @@ namespace AZ::Internal
             arguments = newArguments;
         }
 
-        if constexpr (s_isBusIdParameter)
+        auto busIdArgument = HasBusId() ? GetArgument(0) : nullptr;
+        if (busIdArgument != nullptr && !arguments[0].ConvertTo(busIdArgument->m_typeId))
         {
-            if (!arguments[0].ConvertTo(m_parameters[1].m_typeId))
-            {
-                AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
-                return false;
-            }
+            AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
+            return false;
         }
 
-        for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
+        for (size_t i = m_startNamedArgumentIndex; i < m_parameters.size(); ++i)
         {
             // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
             bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
@@ -87,14 +71,12 @@ namespace AZ::Internal
             }
         }
 
-        AZ::Internal::EBusCaller<EventType, EBus, R, Args...>::Call(
-            m_functionPtr, arguments.data(), result, AZStd::make_index_sequence<sizeof...(Args)>());
+        m_functor(result, arguments);
 
         return true;
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    auto BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
+    auto BehaviorEBusEvent::IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const
         -> ResultOutcome
     {
         size_t totalArguments = GetNumArguments();
@@ -131,18 +113,16 @@ namespace AZ::Internal
                 m_name.c_str(), totalArguments, arguments.size()) };
         }
 
-        if constexpr (s_isBusIdParameter)
+        auto busIdArgument = HasBusId() ? GetArgument(0) : nullptr;
+        if (busIdArgument != nullptr && !arguments[0].ConvertTo(busIdArgument->m_typeId))
         {
-            if (!arguments[0].ConvertTo(m_parameters[1].m_typeId))
-            {
-                AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
-                return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
-                    "Invalid BusIdType type can't convert! %s -> %s",
-                    arguments[0].m_name, m_parameters[1].m_name) };
-            }
+            AZ_Warning("Behavior", false, "Invalid BusIdType type can't convert! %s -> %s", arguments[0].m_name, m_parameters[1].m_name);
+            return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType::format(
+                "Invalid BusIdType type can't convert! %s -> %s",
+                arguments[0].m_name, m_parameters[1].m_name) };
         }
 
-        for (size_t i = s_startNamedArgumentIndex; i < AZ_ARRAY_SIZE(m_parameters); ++i)
+        for (size_t i = m_startNamedArgumentIndex; i < m_parameters.size(); ++i)
         {
             // Verify that argument is a pointer for pointer type parameters and a value or reference for value type or reference type parameters
             bool isArgumentPointer = arguments[i - 1].m_traits & BehaviorParameter::Traits::TR_POINTER;
@@ -182,55 +162,42 @@ namespace AZ::Internal
         return AZ::Success();
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::HasResult() const
+    bool BehaviorEBusEvent::HasResult() const
     {
-        return !AZStd::is_same<R, void>::value;
+        return m_hasNonVoidReturn;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::IsMember() const
+    bool BehaviorEBusEvent::IsMember() const
     {
         return false;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    bool BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::HasBusId() const
+    bool BehaviorEBusEvent::HasBusId() const
     {
-        return s_isBusIdParameter != 0;
+        return m_eventType == BehaviorEventType::BE_EVENT_ID
+            || m_eventType == BehaviorEventType::BE_QUEUE_EVENT_ID;
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    const BehaviorParameter* BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetBusIdArgument() const
+    const BehaviorParameter* BehaviorEBusEvent::GetBusIdArgument() const
     {
         return HasBusId() ? GetArgument(0) : nullptr;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    size_t BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetNumArguments() const
+    size_t BehaviorEBusEvent::GetNumArguments() const
     {
-        return AZ_ARRAY_SIZE(m_parameters) - s_startArgumentIndex;
+        return m_parameters.size() - s_startArgumentIndex;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    size_t BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetMinNumberOfArguments() const
+    size_t BehaviorEBusEvent::GetMinNumberOfArguments() const
     {
-        // Iterate from end of MetadataParameters and count the number of consecutive valid BehaviorValue objects
         size_t numDefaultArguments = 0;
-        for (size_t i = GetNumArguments() - 1; i >= 0 && GetDefaultValue(i); --i, ++numDefaultArguments)
+        for (size_t i = GetNumArguments(); i > 0 && GetDefaultValue(i - 1); --i, ++numDefaultArguments)
         {
         }
         return GetNumArguments() - numDefaultArguments;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    const BehaviorParameter* BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetArgument(size_t index) const
+    const BehaviorParameter* BehaviorEBusEvent::GetArgument(size_t index) const
     {
         if (index < GetNumArguments())
         {
@@ -239,9 +206,7 @@ namespace AZ::Internal
         return nullptr;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits)
+    void BehaviorEBusEvent::OverrideParameterTraits(size_t index, AZ::u32 addTraits, AZ::u32 removeTraits)
     {
         if (index < GetNumArguments())
         {
@@ -249,9 +214,7 @@ namespace AZ::Internal
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    const AZStd::string* BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetArgumentName(size_t index) const
+    const AZStd::string* BehaviorEBusEvent::GetArgumentName(size_t index) const
     {
         if (index < GetNumArguments())
         {
@@ -260,18 +223,16 @@ namespace AZ::Internal
         return nullptr;
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetArgumentName(size_t index, const AZStd::string& name)
+    void BehaviorEBusEvent::SetArgumentName(size_t index, AZStd::string name)
     {
         if (index < GetNumArguments())
         {
-            m_metadataParameters[index + s_startArgumentIndex].m_name = name;
+            m_metadataParameters[index + s_startArgumentIndex].m_name = AZStd::move(name);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    const AZStd::string* BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetArgumentToolTip(size_t index) const
+    const AZStd::string* BehaviorEBusEvent::GetArgumentToolTip(size_t index) const
     {
         if (index < GetNumArguments())
         {
@@ -280,17 +241,15 @@ namespace AZ::Internal
         return nullptr;
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetArgumentToolTip(size_t index, const AZStd::string& toolTip)
+    void BehaviorEBusEvent::SetArgumentToolTip(size_t index, AZStd::string toolTip)
     {
         if (index < GetNumArguments())
         {
-            m_metadataParameters[index + s_startArgumentIndex].m_toolTip = toolTip;
+            m_metadataParameters[index + s_startArgumentIndex].m_toolTip = AZStd::move(toolTip);
         }
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    void BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
+    void BehaviorEBusEvent::SetDefaultValue(size_t index, BehaviorDefaultValuePtr defaultValue)
     {
         if (index < GetNumArguments())
         {
@@ -299,12 +258,11 @@ namespace AZ::Internal
                 AZ_Assert(false, "Argument %zu default value type, doesn't match! Default value should be the same type! Current type %s!", index, defaultValue->GetValue().m_name);
                 return;
             }
-            m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = defaultValue;
+            m_metadataParameters[index + s_startArgumentIndex].m_defaultValue = AZStd::move(defaultValue);
         }
     }
 
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    BehaviorDefaultValuePtr BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetDefaultValue(size_t index) const
+    BehaviorDefaultValuePtr BehaviorEBusEvent::GetDefaultValue(size_t index) const
     {
         if (index < GetNumArguments())
         {
@@ -314,10 +272,8 @@ namespace AZ::Internal
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<class EBus, BehaviorEventType EventType, class R, class BusType, class... Args>
-    const BehaviorParameter* BehaviorEBusEvent<EBus, EventType, R(BusType*, Args...)>::GetResult() const
+    const BehaviorParameter* BehaviorEBusEvent::GetResult() const
     {
         return &m_parameters[0];
     }
-}
-
+} // namespace AZ::Internal

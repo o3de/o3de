@@ -109,7 +109,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
                 if (attrValue->Read<AZStd::vector<AZStd::pair<AZ::EntityId, const char*> > >(attempt2))
                 {
                     for (auto it = attempt2.begin(); it != attempt2.end(); ++it)
-                        guiEnumValues.push_back(AZStd::make_pair<AZ::EntityId, AZStd::string>(it->first, it->second));
+                        guiEnumValues.push_back(AZStd::pair<AZ::EntityId, AZStd::string>(it->first, it->second));
                     GUI->addEnumValues(guiEnumValues);
                 }
                 else

@@ -420,6 +420,20 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    int ActionManager::GenerateActionAlphabeticalSortKey(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return AZStd::numeric_limits<int>::max();
+        }
+
+        const AZStd::string& actionName = actionIterator->second->GetName();
+
+        // Use the ASCII code of the first character as an integer sort key to sort alphabetically.
+        return static_cast<int>(actionName[0]);
+    }
+
     ActionManagerBooleanResult ActionManager::IsActionEnabled(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actions.find(actionIdentifier);
