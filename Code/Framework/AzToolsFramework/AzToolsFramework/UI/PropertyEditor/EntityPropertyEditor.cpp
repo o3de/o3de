@@ -1883,7 +1883,12 @@ namespace AzToolsFramework
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
             //create a new component editor since cache has been exceeded
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this);
+            auto componentEditor = new ComponentEditor(
+                m_serializeContext,
+                this,
+                this,
+                DocumentPropertyEditor::ShouldReplaceRPE(),
+                AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>()); // Note: this is where a custom prefab adapter will be created when ready
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()
