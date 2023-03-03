@@ -6,21 +6,19 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 This util is intended to store common test values for editor component tests.
 """
-import azlmbr.math as math
-from editor_python_test_tools.editor_component.EditorEntityComponentProperty import EditorEntityComponentProperty
+from editor_python_test_tools.editor_component.EditorComponentProperties.EditorEntityComponentProperty import EditorEntityComponentProperty
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 
 
-class EditorEntityVector3Property(EditorEntityComponentProperty):
+class EditorEntityFloatProperty(EditorEntityComponentProperty):
     """
-    Defines the behaviors for interacting with an Editor Entity Vector3 property
+    Defines the behaviors for interacting with an Editor Entity float property
     """
     def __init__(self, property_path: str, editor_component: EditorComponent):
         super().__init__(property_path, editor_component)
 
-    def get(self) -> math.Vector3:
+    def get(self) -> float:
         return self.editor_component.get_component_property_value(self.property_path)
 
-    def set(self, x: float, y: float, z: float):
-        value = math.Vector3(x, y, z)
+    def set(self, value: float):
         self.editor_component.set_component_property_value(self.property_path, value)

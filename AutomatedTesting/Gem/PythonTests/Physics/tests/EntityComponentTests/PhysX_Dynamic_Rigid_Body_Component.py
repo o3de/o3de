@@ -29,7 +29,7 @@ def Component_TestComponentInit():
     import azlmbr.math as math
     from editor_python_test_tools.utils import TestHelper
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.editor_component.PhysXDynamicRigidBodyComponent import PhysXDynamicRigidBodyComponent
+    from editor_python_test_tools.editor_component.EditorEntityComponents.PhysX.PhysXDynamicRigidBodyComponent import PhysXDynamicRigidBodyComponent
     from editor_python_test_tools.editor_component.editor_component_validation import \
         (validate_vector3_property, validate_float_property, validate_property_switch_toggle, validate_integer_property)
     from editor_python_test_tools.editor_component.test_values.common_test_values import (
