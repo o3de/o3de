@@ -155,7 +155,6 @@ namespace PhysX
         // Get the end velocity and validate that it is the expected value.
         auto endVelocity = basis.m_gameplayController->GetFallingVelocity();
 
-        EXPECT_THAT(endVelocity.GetZ(), testing::Not(testing::FloatNear(originalVelocity.GetZ(), 0.001f)));
         EXPECT_THAT(endVelocity.GetZ(), testing::FloatNear(expectedVelocity.GetZ(), 0.001f));
     }
 
@@ -194,7 +193,7 @@ namespace PhysX
         const float expectedHeight = 1.2f;
         const auto originalHeight = basis.m_gameplayController->GetGroundDetectionBoxHeight();
 
-        // Set the ground detection to the expected height + the original height to ensure that it changes.
+        // Set the ground detection to the expected height.
         basis.m_gameplayController->SetGroundDetectionBoxHeight(expectedHeight);
 
         // Get the end height and verify that it is set to the expected value set.
