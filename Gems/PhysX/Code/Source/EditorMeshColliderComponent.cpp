@@ -95,6 +95,7 @@ namespace PhysX
                         "Asset",
                         "Configuration of asset shape.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyAssetShapeConfig::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorProxyAssetShapeConfig::PhysXMeshAssetShapeTypeName)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorProxyAssetShapeConfig::m_subdivisionLevel,
@@ -112,6 +113,82 @@ namespace PhysX
         const Physics::PhysicsAssetShapeConfiguration& assetShapeConfiguration)
     {
         m_physicsAsset.m_configuration = assetShapeConfiguration;
+    }
+
+    AZStd::string EditorProxyAssetShapeConfig::PhysXMeshAssetShapeTypeName() const
+    {
+        const AZStd::string assetName = "Asset";
+
+        if (!m_physicsAsset.m_pxAsset.IsReady())
+        {
+            return assetName;
+        }
+
+        Physics::ColliderConfiguration defaultColliderConfiguration;
+        Physics::PhysicsAssetShapeConfiguration physicsAssetConfiguration = m_physicsAsset.m_configuration;
+        physicsAssetConfiguration.m_asset = m_physicsAsset.m_pxAsset;
+
+        AzPhysics::ShapeColliderPairList shapeConfigList;
+        Utils::GetColliderShapeConfigsFromAsset(
+            physicsAssetConfiguration,
+            defaultColliderConfiguration,
+            m_hasNonUniformScale,
+            m_subdivisionLevel,
+            shapeConfigList);
+
+        if (shapeConfigList.empty())
+        {
+            return assetName;
+        }
+
+        // It's enough looking at the first shape as the rest would be the same type.
+        const Physics::ShapeConfiguration* shapeConfiguration = shapeConfigList[0].second.get();
+        AZ_Assert(shapeConfiguration, "PhysXMeshAssetShapeTypeName: Invalid shape-collider configuration pair");
+
+        switch (shapeConfiguration->GetShapeType())
+        {
+        case Physics::ShapeType::CookedMesh:
+            {
+                const Physics::CookedMeshShapeConfiguration* cookedMeshShapeConfiguration =
+                    static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
+                switch (cookedMeshShapeConfiguration->GetMeshType())
+                {
+                case Physics::CookedMeshShapeConfiguration::MeshType::Convex:
+                    {
+                        return assetName + " (Convex)";
+                    }
+                case Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh:
+                    {
+                        return assetName + " (Triangle Mesh)";
+                    }
+                default:
+                    {
+                        AZ_Error(
+                            "EditorProxyAssetShapeConfig",
+                            false,
+                            "PhysXMeshAssetShapeTypeName: Unexpected MeshType %d",
+                            static_cast<AZ::u32>(cookedMeshShapeConfiguration->GetMeshType()));
+                        return assetName;
+                    }
+                }
+                break;
+            }
+        case Physics::ShapeType::Sphere:
+        case Physics::ShapeType::Box:
+        case Physics::ShapeType::Capsule:
+            {
+                return assetName + " (Primitive)";
+            }
+        default:
+            {
+                AZ_Error(
+                    "EditorProxyAssetShapeConfig",
+                    false,
+                    "PhysXMeshAssetShapeTypeName: Unexpected ShapeType %d.",
+                    static_cast<AZ::u32>(shapeConfiguration->GetShapeType()));
+                return assetName;
+            }
+        }
     }
 
     bool EditorProxyAssetShapeConfig::ShowingSubdivisionLevel() const
