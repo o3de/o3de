@@ -56,7 +56,7 @@ namespace Presence
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<PresenceDetails>()
-                ->Constructor<PresenceDetails&>()
+                ->Constructor<const PresenceDetails&>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("localUserId", BehaviorValueProperty(&PresenceDetails::localUserId))
                 ->Property("titleId", BehaviorValueProperty(&PresenceDetails::titleId))
