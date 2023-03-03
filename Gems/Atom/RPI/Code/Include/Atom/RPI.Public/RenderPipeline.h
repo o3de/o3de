@@ -98,6 +98,9 @@ namespace AZ
                                                                    const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
+            // Create a render pipeline which renders to the specified attachment image
+            static RenderPipelinePtr CreateRenderPipelineForImage(const RenderPipelineDescriptor& desc, Data::Asset<AttachmentImageAsset> imageAsset);
+
             // Data type for render pipeline's views' information
             using PipelineViewMap = AZStd::map<PipelineViewTag, PipelineViews, AZNameSortAscending>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
@@ -283,6 +286,9 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
+            // update viewport and scissor based on pass tree's output
+            void UpdateViewportScissor();
+
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
             // The Scene this pipeline was added to.
@@ -335,6 +341,10 @@ namespace AZ
 
             // View type associated with the Render Pipeline.
             ViewType m_viewType = ViewType::Default;
+
+            // viewport and scissor for frame update
+            RHI::Viewport m_viewport;
+            RHI::Scissor m_scissor;
         };
 
     } // namespace RPI
