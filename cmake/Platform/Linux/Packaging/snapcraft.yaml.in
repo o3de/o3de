@@ -50,6 +50,8 @@ parts:
      - libunwind-dev
      - zlib1g-dev
      - libssl-dev
+     - pkg-config
+     - libc6-dev
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
