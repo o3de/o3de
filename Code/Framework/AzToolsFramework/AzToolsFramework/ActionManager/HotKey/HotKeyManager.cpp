@@ -96,4 +96,9 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    void HotKeyManager::Reset()
+    {
+        m_hotKeyMapping.m_actionToHotKeyMap.clear();
+    }
+
 } // namespace AzToolsFramework

@@ -40,6 +40,7 @@ namespace AZ
             bool m_edgeBlendIbl = true;
             uint32_t m_frameUpdateCount = 1;
             DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
+            float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -114,6 +115,7 @@ namespace AZ
             void SetEdgeBlendIbl(bool edgeBlendIbl);
             void SetFrameUpdateCount(uint32_t frameUpdateCount);
             void SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode);
+            void SetEmissiveMultiplier(float emissiveMultiplier);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
             void SetVisualizationEnabled(bool visualizationEnabled);

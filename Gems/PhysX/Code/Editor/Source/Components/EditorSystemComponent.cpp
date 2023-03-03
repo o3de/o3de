@@ -128,6 +128,14 @@ namespace PhysX
 
         m_materialAssetBuilder.BusDisconnect();
 
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto editorMaterialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<PhysX::EditorMaterialAsset>*>(assetHandler.get());
+                editorMaterialAssetHandler != nullptr)
+            {
+                editorMaterialAssetHandler->Unregister();
+            }
+        }
         m_assetHandlers.clear();
     }
 

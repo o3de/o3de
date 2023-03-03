@@ -238,7 +238,7 @@ namespace UnitTest
         const char* tag = "test_mask";
         AzFramework::SurfaceData::SurfacePoint expectedOutput =
             CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
-            { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z, just so we can verify that the output returns the collision
         // result, not the input point.
@@ -255,7 +255,7 @@ namespace UnitTest
         const char* tag = "test_mask";
         AzFramework::SurfaceData::SurfacePoint expectedOutput =
             CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
-            { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z.  However, we're also telling our test to provide
         // a "no hit" result from physics, so the expectedOutput will be ignored on the result check, and instead
@@ -274,7 +274,7 @@ namespace UnitTest
         const char* tag2 = "test_mask2";
         AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
             AZ::Vector3(1.0f), AZ::Vector3::CreateAxisZ(),
-            { AZStd::make_pair<AZStd::string, float>(tag1, 1.0f), AZStd::make_pair<AZStd::string, float>(tag2, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag1, 1.0f), AZStd::pair<AZStd::string, float>(tag2, 1.0f) });
 
         // Query from the same XY, but one unit higher on Z, just so we can verify that the output returns the collision
         // result, not the input point.
@@ -292,7 +292,7 @@ namespace UnitTest
         const char* tag = "test_mask";
         AzFramework::SurfaceData::SurfacePoint expectedOutput =
             CreateSurfacePoint(input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag, 1.0f) });
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ tag }, input, pointInCollider, expectedOutput);
@@ -323,7 +323,7 @@ namespace UnitTest
         const char* tag2 = "test_mask2";
         AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
             input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag1, 1.0f), AZStd::make_pair<AZStd::string, float>(tag2, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag1, 1.0f), AZStd::pair<AZStd::string, float>(tag2, 1.0f) });
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ tag1, tag2 }, input, pointInCollider, expectedOutput);
@@ -338,12 +338,12 @@ namespace UnitTest
         const char* preservedTag = "preserved_tag";
         AzFramework::SurfaceData::SurfacePoint input =
             CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f),
-                                                             { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f) });
+                                                             { AZStd::pair<AZStd::string, float>(preservedTag, 1.0f) });
         // Output should match the input, but with two added tags
         const char* modifierTag = "modifier_tag";
         AzFramework::SurfaceData::SurfacePoint expectedOutput = CreateSurfacePoint(
             input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f), AZStd::make_pair<AZStd::string, float>(modifierTag, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(preservedTag, 1.0f), AZStd::pair<AZStd::string, float>(modifierTag, 1.0f) });
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ modifierTag }, input, pointInCollider, expectedOutput);
@@ -361,11 +361,11 @@ namespace UnitTest
         // Set arbitrary input data
         AzFramework::SurfaceData::SurfacePoint input =
             CreateSurfacePoint(AZ::Vector3(1.0f), AZ::Vector3(0.0f),
-                                                             { AZStd::make_pair<AZStd::string, float>(tag, inputValue) });
+                                                             { AZStd::pair<AZStd::string, float>(tag, inputValue) });
         // Output should match the input, except that the value on the tag gets the higher modifier value
         AzFramework::SurfaceData::SurfacePoint expectedOutput =
             CreateSurfacePoint(input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, 1.0f) });
+            { AZStd::pair<AZStd::string, float>(tag, 1.0f) });
 
         constexpr bool pointInCollider = true;
         TestSurfaceDataColliderModifier({ tag }, input, pointInCollider, expectedOutput);

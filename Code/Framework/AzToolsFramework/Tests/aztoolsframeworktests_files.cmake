@@ -96,6 +96,9 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/Overrides/PrefabInspectorOverrideTestFixture.cpp
+    Prefab/Overrides/PrefabInspectorOverrideTestFixture.h
+    Prefab/Overrides/PrefabInspectorOverrideTests.cpp
     Prefab/Overrides/PrefabOverridePublicInterfaceTests.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.cpp
     Prefab/Overrides/PrefabOverrideTestFixture.h
@@ -188,7 +191,6 @@ set(FILES
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
-    Viewport/ViewportUiManagerTests.h
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
     Viewport/ViewBookmarkTests.cpp

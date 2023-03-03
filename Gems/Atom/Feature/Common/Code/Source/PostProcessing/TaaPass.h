@@ -69,7 +69,7 @@ namespace AZ::Render
         void ResetInternal() override;
         void BuildInternal() override;
 
-        void UpdateAttachmentImage(uint32_t attachmentIndex);
+        bool UpdateAttachmentImage(uint32_t attachmentIndex);
 
         void SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length);
         void GenerateFilterWeights(AZ::Vector2 jitterOffset);

@@ -58,6 +58,8 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
+        using VisitComponentAdapterContentsCallback = AZStd::function<void(const AZ::Dom::Value&)>;
+
         explicit ComponentEditor(
             AZ::SerializeContext* context, IPropertyEditorNotify* notifyTarget = nullptr, QWidget* parent = nullptr);
         ~ComponentEditor();
@@ -96,6 +98,10 @@ namespace AzToolsFramework
         IPropertyEditor* GetPropertyEditor();
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
+
+        //! Visits the contents of the DPEComponentAdapter used by this ComponentEditor.
+        //! @param callback The callback to use to visit the DPEComponentAdapter contents.
+        void VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const;
 
         const AZ::Uuid& GetComponentType() const { return m_componentType; }
 
