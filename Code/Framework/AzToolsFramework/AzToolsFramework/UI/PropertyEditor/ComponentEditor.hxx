@@ -111,6 +111,10 @@ namespace AzToolsFramework
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
 
+        // Subscribe to document property editor change events
+        void ConnectPropertyChangeHandler(
+            const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback);
+
     Q_SIGNALS:
         void OnExpansionContractionDone();
         void OnDisplayComponentEditorMenu(const QPoint& position);
@@ -122,6 +126,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
+        void OnComponentIconClicked(const QPoint& position);
 
     private:
         /// Set up header for this component type.
@@ -135,6 +140,7 @@ namespace AzToolsFramework
 
         void OnExpanderChanged(bool expanded);
         void OnContextMenuClicked(const QPoint& position);
+        void OnIconLabelClicked(const QPoint& position);
 
         AzQtComponents::CardNotification* CreateNotification(const QString& message);
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
@@ -163,6 +169,8 @@ namespace AzToolsFramework
 
         AZStd::vector<AZ::Component*> m_components;
         AZ::Crc32 m_savedKeySeed;
+
+        AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
     };
 
 } // namespace AzToolsFramework

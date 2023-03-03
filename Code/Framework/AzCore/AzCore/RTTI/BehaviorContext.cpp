@@ -127,6 +127,153 @@ namespace AZ
         return azEventDescValid;
     }
 
+    // BehaviorParameterOverrides member definitions
+    BehaviorParameterOverrides::BehaviorParameterOverrides(AZStd::string_view name, AZStd::string_view toolTip, BehaviorDefaultValuePtr defaultValue,
+        u32 addTraits, u32 removeTraits)
+        : m_name(name)
+        , m_toolTip(toolTip)
+        , m_defaultValue(defaultValue)
+        , m_addTraits(addTraits)
+        , m_removeTraits(removeTraits)
+    {}
+
+    // BehaviorDefaultValue member definitions
+    BehaviorDefaultValue::~BehaviorDefaultValue()
+    {
+        if (m_value.m_value && m_destructor)
+        {
+            m_destructor(m_value.m_value);
+        }
+    }
+
+    const BehaviorArgument& BehaviorDefaultValue::GetValue() const
+    {
+        return m_value;
+    }
+
+    // BehaviorObject member functions
+    BehaviorObject::BehaviorObject()
+        : m_address(nullptr)
+        , m_typeId(AZ::Uuid::CreateNull())
+    {
+    }
+
+    BehaviorObject::BehaviorObject(void* address, const Uuid& typeId)
+        : m_address(address)
+        , m_typeId(typeId)
+    {
+    }
+
+    BehaviorObject::BehaviorObject(void* address, IRttiHelper* rttiHelper)
+        : m_address(address)
+        , m_rttiHelper(rttiHelper)
+    {
+        m_typeId = rttiHelper ? rttiHelper->GetTypeId() : AZ::Uuid::CreateNull();
+    }
+
+    bool BehaviorObject::IsValid() const
+    {
+        return m_address && !m_typeId.IsNull();
+    }
+
+
+    // BehaviorArgument member functions
+    BehaviorArgument::BehaviorArgument()
+        : m_value(nullptr)
+    {
+        m_name = nullptr;
+        m_typeId = Uuid::CreateNull();
+        m_azRtti = nullptr;
+        m_traits = 0;
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorArgument&& other)
+        : BehaviorParameter(AZStd::move(other))
+        , m_value(AZStd::move(other.m_value))
+        , m_onAssignedResult(AZStd::move(other.m_onAssignedResult))
+        , m_tempData(AZStd::move(other.m_tempData))
+    {
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorObject* value)
+    {
+        Set(value);
+    }
+
+    BehaviorArgument::BehaviorArgument(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        Set(BehaviorArgumentValueTypeTag, value);
+    }
+
+    void BehaviorArgument::Set(BehaviorObject* value)
+    {
+        m_value = &value->m_address;
+        m_typeId = value->m_typeId;
+        m_traits = BehaviorParameter::TR_POINTER;
+        m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
+        m_azRtti = value->m_rttiHelper;
+    }
+
+    void BehaviorArgument::Set(BehaviorArgumentValueTypeTag_t, BehaviorObject* value)
+    {
+        m_value = value->m_address;
+        m_typeId = value->m_typeId;
+        m_traits = BehaviorParameter::TR_NONE;
+        m_name = value->m_rttiHelper ? value->m_rttiHelper->GetActualTypeName(value->m_address) : nullptr;
+        m_azRtti = value->m_rttiHelper;
+    }
+
+    void BehaviorArgument::Set(const BehaviorParameter& param)
+    {
+        *static_cast<BehaviorParameter*>(this) = param;
+    }
+
+    void BehaviorArgument::Set(const BehaviorArgument& param)
+    {
+        *static_cast<BehaviorParameter*>(this) = static_cast<const BehaviorParameter&>(param);
+        m_value = param.m_value;
+        m_onAssignedResult = param.m_onAssignedResult;
+        m_tempData = param.m_tempData;
+    }
+
+    void* BehaviorArgument::GetValueAddress() const
+    {
+        void* valueAddress = m_value;
+        if (m_traits & BehaviorParameter::TR_POINTER)
+        {
+            valueAddress = *reinterpret_cast<void**>(valueAddress); // pointer to a pointer
+        }
+        return valueAddress;
+    }
+
+
+    bool BehaviorArgument::ConvertTo(const AZ::Uuid& typeId)
+    {
+        if (m_azRtti)
+        {
+            void* valueAddress = GetValueAddress();
+            if (valueAddress) // should we make null value to convert to anything?
+            {
+                return AZ::Internal::ConvertValueTo(valueAddress, m_azRtti, typeId, m_value, m_tempData);
+            }
+        }
+        return m_typeId == typeId;
+    }
+
+    BehaviorArgument::operator BehaviorObject() const
+    {
+        return BehaviorObject(m_value, m_azRtti);
+    }
+
+    BehaviorArgument& BehaviorArgument::operator=(BehaviorArgument&& other)
+    {
+        *static_cast<BehaviorParameter*>(this) = AZStd::move(static_cast<BehaviorParameter&&>(other));
+        m_value = AZStd::move(other.m_value);
+        m_onAssignedResult = AZStd::move(other.m_onAssignedResult);
+        m_tempData = AZStd::move(other.m_tempData);
+        return *this;
+    }
+
     //=========================================================================
     // BehaviorMethod
     //=========================================================================
@@ -151,6 +298,21 @@ namespace AZ
         }
 
         m_attributes.clear();
+    }
+
+    void BehaviorMethod::SetDeprecatedName(AZStd::string name)
+    {
+        m_deprecatedName = AZStd::move(name);
+    }
+    const AZStd::string& BehaviorMethod::GetDeprecatedName() const
+    {
+        return m_deprecatedName;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    bool BehaviorMethod::Invoke() const
+    {
+        return Call(nullptr, 0, nullptr);
     }
 
     //=========================================================================
@@ -319,9 +481,15 @@ namespace AZ
     {
     }
 
+
     //=========================================================================
     // BehaviorEBus
     //=========================================================================
+    BehaviorEBus::VirtualProperty::VirtualProperty(BehaviorEBusEventSender* getter, BehaviorEBusEventSender* setter)
+        : m_getter(getter)
+        , m_setter(setter)
+    {}
+
     BehaviorEBus::BehaviorEBus()
         : m_createHandler(nullptr)
         , m_destroyHandler(nullptr)
@@ -558,7 +726,6 @@ namespace AZ
         , m_alignment(0)
         , m_size(0)
         , m_unwrapper(nullptr)
-        , m_unwrapperUserData(nullptr)
         , m_wrappedTypeId(Uuid::CreateNull())
     {
     }
@@ -975,47 +1142,38 @@ namespace AZ
         return FindAttribute(attributeId) != nullptr;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
-    //=========================================================================
-    // InstallGenericHook
-    //=========================================================================
-    bool BehaviorEBusHandler::InstallGenericHook(int index, GenericHookType hook, void* userData)
+    // Deleter operator for the unwrapper unique_ptr deleter
+    void UnwrapperFuncDeleter::operator()(void* ptr) const
     {
-        if (index != -1)
+        if (m_deleter && ptr)
         {
-            // Check parameters
-            m_events[index].m_isFunctionGeneric = true;
-            m_events[index].m_function = reinterpret_cast<void*>(hook);
-            m_events[index].m_userData = userData;
-            return true;
+            m_deleter(ptr);
         }
-
-        return false;
     }
 
-    //=========================================================================
-    // InstallGenericHook
-    //=========================================================================
-    bool BehaviorEBusHandler::InstallGenericHook(const char* name, GenericHookType hook, void* userData)
-    {
-        return InstallGenericHook(GetFunctionIndex(name), hook, userData);
-    }
+    UnwrapperUserData::UnwrapperUserData() = default;
+    UnwrapperUserData::UnwrapperUserData(UnwrapperUserData&& other) = default;
+    UnwrapperUserData& UnwrapperUserData::operator=(UnwrapperUserData&& other) = default;
+    UnwrapperUserData::~UnwrapperUserData() = default;
 
-    //=========================================================================
-    // GetEvents
-    //=========================================================================
-    const BehaviorEBusHandler::EventArray& BehaviorEBusHandler::GetEvents() const
-    {
-        return m_events;
-    }
 
-    bool BehaviorEBusHandler::BusForwarderEvent::HasResult() const
-    {
-        return !m_parameters.empty() && !m_parameters.front().m_typeId.IsNull() && m_parameters.front().m_typeId != azrtti_typeid<void>();
-    }
+    //////////////////////////////////////////////////////////////////////////
+    void BehaviorContextEvents::OnAddGlobalMethod(const char*, BehaviorMethod*) {}
+    void BehaviorContextEvents::OnRemoveGlobalMethod(const char*, BehaviorMethod*) {}
+
+    /// Called when a new global property is reflected in behavior context or remove from it
+    void BehaviorContextEvents::OnAddGlobalProperty(const char*, BehaviorProperty*) {}
+    void BehaviorContextEvents::OnRemoveGlobalProperty(const char*, BehaviorProperty*) {}
+
+    /// Called when a class is added or removed
+    void BehaviorContextEvents::OnAddClass(const char*, BehaviorClass*) {}
+    void BehaviorContextEvents::OnRemoveClass(const char*, BehaviorClass*) {}
+
+    /// Called when a ebus is added or removed
+    void BehaviorContextEvents::OnAddEBus(const char*, BehaviorEBus*) {}
+    void BehaviorContextEvents::OnRemoveEBus(const char*, BehaviorEBus*) {}
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     CheckedOperationInfo::CheckedOperationInfo
         ( AZStd::string_view safetyCheckName
@@ -1234,6 +1392,23 @@ namespace AZ
             }
             return enumRttiHelper.GetTypeId();
         }
-    }
 
+        bool ConvertValueTo(void* sourceAddress, const IRttiHelper* sourceRtti, const AZ::Uuid& targetType, void*& targetAddress, BehaviorParameter::TempValueParameterAllocator& tempAllocator)
+        {
+            // Check see if the underlying typeid is an enum whose typeIds match
+            if (GetUnderlyingTypeId(*sourceRtti) == targetType)
+            {
+                return true;
+            }
+            // convert
+            void* convertedAddress = sourceRtti->Cast(sourceAddress, targetType);
+            if (convertedAddress && convertedAddress != sourceAddress) // if we converted as we have a different address
+            {
+                // allocate temp storage and store it
+                targetAddress = tempAllocator.allocate(sizeof(void*), AZStd::alignment_of<void*>::value, 0);
+                *reinterpret_cast<void**>(targetAddress) = convertedAddress;
+            }
+            return convertedAddress != nullptr;
+        }
+    }
 } // namespace AZ
