@@ -27,6 +27,7 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
@@ -2559,6 +2560,28 @@ namespace AzToolsFramework
                 actionProperties,
                 []()
                 {
+                    auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+                    if (!readOnlyEntityPublicInterface)
+                    {
+                        return;
+                    }
+
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+                    for (const auto& entityId : selectedEntities)
+                    {
+                        AZ::EntityId parentEntityId;
+                        AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+                        if (parentEntityId.IsValid() && readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                        {
+                            return;
+                        }
+                    }
+
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                     ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
@@ -2572,6 +2595,39 @@ namespace AzToolsFramework
                     // selection update handled in AfterEntitySelectionChanged
                 }
             );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []() -> bool
+                {
+                    auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+                    if (!readOnlyEntityPublicInterface)
+                    {
+                        return true;
+                    }
+
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+                    for (const auto& entityId : selectedEntities)
+                    {
+                        AZ::EntityId parentEntityId;
+                        AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+                        if (parentEntityId.IsValid() && readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return selectedEntities.size() > 0;
+                }
+            );
+
+            // Trigger update whenever entity selection changes.
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
             m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -2604,7 +2660,41 @@ namespace AzToolsFramework
 
                     m_selectedEntityIds.clear();
                     m_pivotOverrideFrame.Reset();
-                });
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []() -> bool
+                {
+                    auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+                    if (!readOnlyEntityPublicInterface)
+                    {
+                        return true;
+                    }
+
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
+                    for (const auto& entityId : selectedEntities)
+                    {
+                        AZ::EntityId parentEntityId;
+                        AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+                        if (parentEntityId.IsValid() && readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return selectedEntities.size() > 0;
+                }
+            );
+
+            // Trigger update whenever entity selection changes.
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
             m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -3166,12 +3256,12 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
 
         // Entity Outliner Context Menu
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.duplicate", 30100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.delete", 30200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.delete", 40200);
 
         // Viewport Context Menu
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 30100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 30200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 40200);
     }
 
     void EditorTransformComponentSelection::UnregisterActions()

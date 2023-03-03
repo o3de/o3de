@@ -110,6 +110,11 @@ namespace AzToolsFramework
             // Ensures entities owned by procedural prefab instances are marked as read-only correctly.
             ProceduralPrefabReadOnlyHandler m_proceduralPrefabReadOnlyHandler;
 
+            // Helper functions
+            bool CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanDetachPrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanInstantiatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+
             // Context menu item handlers
             void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             void ContextMenu_InstantiatePrefab();

@@ -153,6 +153,7 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
     AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(DefaultViewportId);
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+    AzToolsFramework::ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
 
     m_editorViewportDisplayInfoHandler = new EditorViewportDisplayInfoHandler();
 
@@ -163,6 +164,7 @@ EditorActionsHandler::~EditorActionsHandler()
 {
     if (m_initialized)
     {
+        AzToolsFramework::ContainerEntityNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
@@ -212,6 +214,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
 void EditorActionsHandler::OnActionUpdaterRegistrationHook()
 {
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::AngleSnappingStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ContainerEntityStatesChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::DrawHelpersStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::OnlyShowHelpersForSelectedEntitiesUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
@@ -1900,7 +1903,8 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 40000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 50000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 60000);
-    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 60100);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 70000);
+    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 70100);
 
     // Viewport Context Menu
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 10000);
@@ -1909,6 +1913,7 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 40000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 50000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 60000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 70000);
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
@@ -2145,6 +2150,11 @@ void EditorActionsHandler::OnEntityPickModeStarted()
 void EditorActionsHandler::OnEntityPickModeStopped()
 {
     m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnContainerEntityStatusChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool open)
+{
+    m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::ContainerEntityStatesChangedUpdaterIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
