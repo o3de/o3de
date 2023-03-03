@@ -775,9 +775,7 @@ namespace AZ
 
                                     if (attributeArrayMemberName == "count")
                                     {
-                                        uint32_t count = itr4->value.GetInt();
-                                        AZ_Assert(count == 1, "Invalid buffer count %d", count);
-                                        buffer.m_count = count;
+                                        buffer.m_count = itr4->value.GetInt();
                                     }
                                     else if (attributeArrayMemberName == "id")
                                     {

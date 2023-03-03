@@ -22,7 +22,7 @@ namespace AZ::RPI
         AZ_RPI_PASS(DownsampleSinglePassMipChainPass);
 
     public:
-        AZ_RTTI(DownsampleSinglePassMipChainPass, "{6842F4D2-D884-4E2A-B48B-E9240BCB8F45}", ComputePass);
+        AZ_RTTI(DownsampleSinglePassLuminancePass, "{6842F4D2-D884-4E2A-B48B-E9240BCB8F45}", ComputePass);
         AZ_CLASS_ALLOCATOR(DownsampleSinglePassLuminancePass, SystemAllocator);
 
         static Ptr<DownsampleSinglePassLuminancePass> Create(const PassDescriptor& descriptor);

@@ -20,6 +20,8 @@ set(FILES
     Source/EditorStaticRigidBodyComponent.h
     Source/EditorColliderComponent.cpp
     Source/EditorColliderComponent.h
+    Source/EditorMeshColliderComponent.cpp
+    Source/EditorMeshColliderComponent.h
     Source/EditorShapeColliderComponent.cpp
     Source/EditorShapeColliderComponent.h
     Source/EditorForceRegionComponent.cpp

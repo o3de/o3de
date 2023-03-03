@@ -51,6 +51,7 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;
+            const Data::Instance<RPI::Buffer> GetLightPointBuffer()const;
             uint32_t GetLightCount()const;
 
         private:

@@ -68,6 +68,7 @@ def ShapeCollider_CylinderShapeCollides():
     
     # Create terrain entity 
     terrain = EditorEntity.create_editor_entity_at([30.0, 30.0, 33.96], "Terrain")
+    terrain.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_terrain, terrain.id.IsValid())
     
     terrain.add_component("PhysX Shape Collider")

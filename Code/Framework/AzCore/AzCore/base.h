@@ -41,10 +41,6 @@ namespace AZ::Internal
     #define AZ_SIZE_ALIGN(_size, _align)         AZ_SIZE_ALIGN_UP(_size, _align)
 #endif // AZ_SIZE_ALIGN
 
-#define AZ_JOIN(X, Y) AZSTD_DO_JOIN(X, Y)
-#define AZSTD_DO_JOIN(X, Y) AZSTD_DO_JOIN2(X, Y)
-#define AZSTD_DO_JOIN2(X, Y) X##Y
-
 /**
  * Macros for calling into strXXX functions. These are simple wrappers that call into the platform
  * implementation. Definitions provide inputs for destination size to allow calling to strXXX_s functions

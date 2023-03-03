@@ -304,7 +304,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
             }
             actionProperties.m_category = "Level";
-            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+            actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
 
@@ -1053,6 +1053,30 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 
+    // -- Tools Actions
+
+    // Lua Editor
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.tools.luaEditor";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Lua Editor";
+        actionProperties.m_category = "Tools";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::LaunchLuaEditor, nullptr);
+            }
+        );
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
     // --- View Actions
 
     // Component Entity Layout
@@ -1785,6 +1809,15 @@ void EditorActionsHandler::OnMenuBindingHook()
         }
     }
 
+    // Tools
+    {
+        m_menuManagerInterface->AddActionToMenu(
+            EditorIdentifiers::ToolsMenuIdentifier,
+            "o3de.action.tools.luaEditor",
+            m_actionManagerInterface->GenerateActionAlphabeticalSortKey("o3de.action.tools.luaEditor")
+        );
+    }
+
     // View
     {
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewMenuIdentifier, EditorIdentifiers::LayoutsMenuIdentifier, 100);
@@ -2169,20 +2202,29 @@ void EditorActionsHandler::UpdateRecentFileActions()
     const QString gameDirPath = gameDir.absolutePath();
 
     m_recentFileActionsCount = 0;
-    int counter = 0;
+
+    int index = 0;
 
     // Update all names
-    for (int index = 0; (index < maxRecentFiles) || (index < recentFilesSize); ++index)
+    for (int counter = 0; counter < maxRecentFiles; ++counter)
     {
-        if (!IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
-        {
-            continue;
-        }
-
+        // Loop through all Recent Files Menu entries, even the hidden ones.
         AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", counter + 1);
+
+        // Check if the recent file at index is valid. If not, increment index until you find one, or the list ends.
+        while (index < recentFilesSize)
+        {
+            if (IsRecentFileEntryValid((*recentFiles)[index], gameDirPath))
+            {
+                break;
+            }
+
+            ++index;
+        }
 
         if (index < recentFilesSize)
         {
+            // If the index is valid, use it to populate the action's name and then increment for the next menu item.
             QString displayName;
             recentFiles->GetDisplayName(displayName, index, sCurDir);
 
@@ -2190,13 +2232,14 @@ void EditorActionsHandler::UpdateRecentFileActions()
                 actionIdentifier, AZStd::string::format("%i | %s", counter + 1, displayName.toUtf8().data()));
 
             ++m_recentFileActionsCount;
+            ++index;
         }
         else
         {
+            // If the index is invalid, give the default name for consistency.
+            // The menu item will not show as it will be disabled by its enabled state callback.
             m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", counter + 1));
         }
-
-        ++counter;
     }
 
     // Trigger the updater
@@ -2388,11 +2431,6 @@ void EditorActionsHandler::RefreshToolActions()
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsMenuItems;
     AZStd::vector<AZStd::pair<AZStd::string, int>> toolsToolBarItems;
 
-    // Place all actions in the same sort index in the menu and toolbar.
-    // This will display them in order of addition (alphabetical) and ensure no external tool
-    // can add items in-between tools without passing through the QtViewPanes system.
-    const int sortKey = 0;
-
     // Get the tools list and refresh the menu.
     const QtViewPanes& viewpanes = m_qtViewPaneManager->GetRegisteredPanes();
     for (const auto& viewpane : viewpanes)
@@ -2434,6 +2472,11 @@ void EditorActionsHandler::RefreshToolActions()
         }
 
         m_toolActionIdentifiers.push_back(toolActionIdentifier);
+
+        // Set the sortKey as the ASCII of the first character in the toolName.
+        // This will allow Tool actions to always be sorted alphabetically even if they are
+        // plugged in by Gems, as long as they use this same logic.
+        int sortKey = m_actionManagerInterface->GenerateActionAlphabeticalSortKey(toolActionIdentifier);
 
         if (viewpane.m_options.showInMenu)
         {
