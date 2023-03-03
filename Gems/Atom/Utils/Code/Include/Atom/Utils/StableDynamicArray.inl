@@ -646,6 +646,18 @@ namespace AZ
         return m_data;
     }
 
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data == rhs.m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
     // StableDynamicArray::Handle
 
 
