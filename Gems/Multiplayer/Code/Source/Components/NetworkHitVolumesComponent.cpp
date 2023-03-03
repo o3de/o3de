@@ -136,15 +136,21 @@ namespace Multiplayer
     void NetworkHitVolumesComponent::OnCharacterActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
-        Physics::CharacterNotificationBus::Handler::BusDisconnect();
+    }
+
+    void NetworkHitVolumesComponent::OnCharacterDeactivated(const AZ::EntityId& entityId)
+    {
+        m_physicsCharacter = nullptr;
     }
 
     void NetworkHitVolumesComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        m_debugDisplay = nullptr;
         m_syncRewindHandler.Disconnect();
         m_preRenderHandler.Disconnect();
         m_transformChangedHandler.Disconnect();
         DestroyHitVolumes();
+        Physics::CharacterNotificationBus::Handler::BusDisconnect();
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusDisconnect();
     }
 

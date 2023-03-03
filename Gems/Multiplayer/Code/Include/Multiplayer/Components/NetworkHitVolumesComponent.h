@@ -83,6 +83,7 @@ namespace Multiplayer
         //! Physics::CharacterNotificationBus overrides ...
         //! @{
         void OnCharacterActivated(const AZ::EntityId& entityId) override;
+        void OnCharacterDeactivated(const AZ::EntityId& entityId) override;
         //! @}
 
         void DrawDebugHitVolumes();
