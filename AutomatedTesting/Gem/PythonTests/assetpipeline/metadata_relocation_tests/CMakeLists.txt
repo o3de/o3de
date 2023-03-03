@@ -1,6 +1,6 @@
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
-        NAME AutomatedTesting::MyFeature_Main
+        NAME AutomatedTesting::MetadataRelocation_Main
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
@@ -9,6 +9,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
-            MyFeature
+            MetadataRelocation
     )
 endif()
