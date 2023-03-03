@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -150,7 +151,7 @@ namespace AzToolsFramework
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            m_adapter = AZStd::make_shared<Prefab::PrefabComponentAdapter>();
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);

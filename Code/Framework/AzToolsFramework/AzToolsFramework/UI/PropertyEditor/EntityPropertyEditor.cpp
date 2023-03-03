@@ -51,6 +51,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -506,7 +507,10 @@ namespace AzToolsFramework
 
         if (Prefab::IsInspectorOverrideManagementEnabled())
         {
-            m_prefabAdapter = AZStd::make_unique<Prefab::PrefabAdapter>();
+            auto* propertyEditorToolsSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+            AZ_Assert(propertyEditorToolsSystemInterface != nullptr, "EntityPropertyEditor - "
+                "PropertyEditorToolsSystemInterface is not available for registering prefab override label handler.");
+            propertyEditorToolsSystemInterface->RegisterHandler<Prefab::PrefabOverrideLabelHandler>();
         }
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();

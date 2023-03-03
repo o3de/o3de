@@ -146,17 +146,6 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
-        auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
-        if (prefabAdapterInterface)
-        {
-            AZ::Dom::Path relativePathFromEntity;
-            if (!serializedPath.empty())
-            {
-                relativePathFromEntity /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
-                relativePathFromEntity /= m_componentAlias;
-                relativePathFromEntity /= AZ::Dom::Path(serializedPath);
-            }
-            prefabAdapterInterface->AddPropertyLabelNode(adapterBuilder, labelText, relativePathFromEntity, m_entityId);
-        }
+        ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
     }
 } // namespace AZ::DocumentPropertyEditor
