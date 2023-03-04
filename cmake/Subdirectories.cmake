@@ -206,6 +206,12 @@ endfunction()
 #! named "@GEMROOT:${gem_name}@"
 function(resolve_gem_dependencies object_type object_path)
 
+    # Avoid resolving dependencies for the same object type and path multiple times
+    get_property(resolved_dependencies GLOBAL PROPERTY "O3DE_RESOLVED_GEM_DEPENDENCIES_${object_type}_${object_path}")
+    if(resolved_dependencies)
+        return()
+    endif()
+
     set(ENV{PYTHONNOUSERSITE} 1)
     cmake_path(SET output_path "${CMAKE_BINARY_DIR}/${object_type}_external_subdirectories.out")
     message(VERBOSE "Writing resolved gem dependencies for ${object_path} to '${output_path}'")
@@ -256,6 +262,8 @@ function(resolve_gem_dependencies object_type object_path)
             unset(gem_name)
         endif()
     endforeach()
+
+    set_property(GLOBAL PROPERTY "O3DE_RESOLVED_GEM_DEPENDENCIES_${object_type}_${object_path}" TRUE)
 endfunction()
 
 #! Queries the list of gem names against the list of ALL registered external subdirectories
