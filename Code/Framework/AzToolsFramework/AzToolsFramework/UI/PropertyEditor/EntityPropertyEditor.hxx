@@ -493,6 +493,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;
@@ -688,6 +689,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();

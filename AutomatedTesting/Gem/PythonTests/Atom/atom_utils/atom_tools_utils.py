@@ -353,15 +353,15 @@ class ScreenshotHelper(object):
         """
         self.done = False
         self.captured_screenshot = False
-        frame_capture_id = azlmbr.atom.FrameCaptureRequestBus(azlmbr.bus.Broadcast, "CaptureScreenshot", filename)
-        if frame_capture_id != -1:
+        outcome = azlmbr.atom.FrameCaptureRequestBus(azlmbr.bus.Broadcast, "CaptureScreenshot", filename)
+        if outcome.IsSuccess():
             self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-            self.handler.connect(frame_capture_id)
+            self.handler.connect(outcome.GetValue())
             self.handler.add_callback("OnCaptureFinished", self.on_screenshot_captured)
             self.wait_until_screenshot()
             print("Screenshot taken.")
         else:
-            print("screenshot failed")
+            print(f"Screenshot failed. {outcome.GetError().error_message}")
         return self.captured_screenshot
 
     def on_screenshot_captured(self, parameters: tuple[any, any]) -> None:

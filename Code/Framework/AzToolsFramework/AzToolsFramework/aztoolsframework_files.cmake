@@ -788,6 +788,7 @@ set(FILES
     Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
     Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
     Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
+    Prefab/DocumentPropertyEditor/Resources/OverrideResources.qrc
     Prefab/EditorPrefabComponent.h
     Prefab/EditorPrefabComponent.cpp
     Prefab/PrefabEditorPreferences.h

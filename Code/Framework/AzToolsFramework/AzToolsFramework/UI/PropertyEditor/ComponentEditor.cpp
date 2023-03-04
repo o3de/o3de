@@ -183,6 +183,7 @@ namespace AzToolsFramework
         m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
+        connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
 
         SetExpanded(true);
         SetSelected(false);
@@ -209,7 +210,12 @@ namespace AzToolsFramework
 
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
-            m_adapter->SetComponent(componentInstance);
+            if (!aggregateInstance)
+            {
+                // Set the adapter component to this instance.
+                // Note: multiple selection with DPE is not yet supported
+                m_adapter->SetComponent(componentInstance);
+            }
         }
         else
         {
@@ -764,6 +770,11 @@ namespace AzToolsFramework
         event->accept();
     }
 
+    void ComponentEditor::OnIconLabelClicked(const QPoint& position)
+    {
+        emit OnComponentIconClicked(position);
+    }
+
     void ComponentEditor::UpdateExpandability()
     {
         //updating whether or not expansion is allowed and forcing collapse if it's not
@@ -965,6 +976,13 @@ namespace AzToolsFramework
     {
         // refresh which Component Editor/Card looks selected in the Entity Outliner
         SetSelected(componentType == m_componentType);
+    }
+
+    void ComponentEditor::ConnectPropertyChangeHandler(
+        const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback)
+    {
+        m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(callback);
+        m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
     }
 }
 
