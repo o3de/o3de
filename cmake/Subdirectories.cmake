@@ -8,6 +8,8 @@
 
 include_guard()
 
+set(O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION FALSE CACHE BOOL "Option to forcibly disable the resolution of gem dependencies")
+
 ################################################################################
 # Subdirectory processing
 ################################################################################
@@ -32,10 +34,15 @@ function(add_o3de_object_gem_json_external_subdirectories object_type object_nam
     if(EXISTS ${gem_json_path})
         o3de_read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
         # Read the gem_name from the gem.json and map it to the gem path
-        o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
-        if (gem_name)
-            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
+        o3de_read_json_key(gem_name_with_version_specifier "${gem_path}/gem.json" "gem_name")
+        if(NOT gem_name_with_version_specifier)
+            MESSAGE(FATAL_ERROR "Failed to read the gem name from '${gem_path/gem.json}' or the gem name is empty.")
+            return()
         endif()
+
+        # Remove any version specifier
+        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+        set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
 
         # Push the gem name onto the visited set
         list(APPEND ${visited_gem_name_set_ref} ${gem_name})
@@ -153,17 +160,40 @@ endfunction()
 #! A fatal error is logged indicating that is not gem could not be found in the list of external subdirectories
 function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registered_external_subdirs)
     if (gem_names)
-        foreach(gem_name IN LISTS gem_names)
+        foreach(gem_name_with_version_specifier IN LISTS gem_names)
             unset(gem_path)
+
+            # Remove the version specifier from the gem name before fetching properties
+            o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+
             get_property(gem_optional GLOBAL PROPERTY ${gem_name}_OPTIONAL)
-            o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
+            get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+            if(NOT gem_path)
+                if(NOT O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION)
+                    message(WARNING "Failed to find resolved gem path for gem '${gem_name_with_version_specifier}'")
+                    # Make a best effort attempt to find the most compatible gem
+                    o3de_find_most_compatible_gem_with_registered_external_subdirs(${gem_name_with_version_specifier} gem_path "${registered_external_subdirs}")
+                else()
+                    o3de_find_gem_with_registered_external_subdirs(${gem_name_with_version_specifier} gem_path "${registered_external_subdirs}")
+                endif()
+
+                if(gem_path)
+                    set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
+                endif()
+            endif()
+
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
             elseif(NOT gem_optional)
-                list(JOIN registered_external_subdirs "\n" external_subdirs_formatted)
+                # Sort the list so it is easier to search visually
+                list(SORT registered_external_subdirs COMPARE NATURAL CASE INSENSITIVE ORDER ASCENDING)
+                # Indent the text to be easier to read. If the indent is removed CMake will add an
+                # additional newline automatically because "non-indented text is formatted in 
+                # line-wrapped paragraphs delimited by newlines"
+                list(JOIN registered_external_subdirs "\n  " external_subdirs_formatted)
                 message(SEND_ERROR "The gem \"${gem_name}\""
-                " could not be found in any gem.json from the following list of registered external subdirectories:\n"
-                "${external_subdirs_formatted}")
+                " could not be found in any gem.json from the following list of registered external subdirectories:"
+                "\n  ${external_subdirs_formatted}")
                 break()
             endif()
         endforeach()
@@ -171,12 +201,116 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
     set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
 endfunction()
 
+#! Use cmake.py to get a resolved list of gem names and paths for this object (engine or project)
+#! If dependencies are resolved successfully, save each gem's resolved path in a global property
+#! named "@GEMROOT:${gem_name}@"
+function(resolve_gem_dependencies object_type object_path)
+
+    set(ENV{PYTHONNOUSERSITE} 1)
+    cmake_path(SET output_path "${CMAKE_BINARY_DIR}/${object_type}_external_subdirectories.out")
+    message(VERBOSE "Writing resolved gem dependencies for ${object_path} to '${output_path}'")
+    string(TOLOWER ${object_type} object_type_lower)
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" -gpof "${output_path}"
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}
+        RESULT_VARIABLE O3DE_CLI_RESULT
+        OUTPUT_VARIABLE O3DE_CLI_OUT 
+        ERROR_VARIABLE O3DE_CLI_OUT
+        )
+
+    if(O3DE_CLI_RESULT)
+        message(WARNING "Dependecy resolution failed\n  Error: ${O3DE_CLI_OUT}")
+        return()
+    endif()
+
+    file(READ "${output_path}" resolved_gem_dependency_output)
+
+    # Set each gem's global path property "@GEMROOT:${gem_name}@" to the resolved gem path
+    unset(gem_name)
+    foreach(entry IN LISTS resolved_gem_dependency_output)
+        if(NOT gem_name)
+            # The first entry is the gem name
+            set(gem_name ${entry})
+        else()
+            # The next entry after every gem name is the gem path
+            cmake_path(SET gem_path "${entry}")
+
+            # Most gem root properties were already been set by
+            # add_o3de_object_gem_json_external_subdirectories() but
+            # if multiple gems exist with the same name, only the path for the last
+            # gem.json parsed is used, but gem resolution will provide us with the 
+            # correct gem path to use 
+
+            get_property(current_gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+            if(current_gem_path)
+                cmake_path(SET current_gem_path "${current_gem_path}")
+                cmake_path(COMPARE "${gem_path}" NOT_EQUAL "${current_gem_path}" paths_are_different)
+                if (paths_are_different)
+                    message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current: ${current_gem_path}\n  New:${gem_path}")
+                endif()
+            else()
+                message(VERBOSE "New path found for gem '${gem_name}' ${current_gem_path}")
+            endif()
+
+            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
+            unset(gem_name)
+        endif()
+    endforeach()
+endfunction()
+
 #! Queries the list of gem names against the list of ALL registered external subdirectories
 #! in order to determine the paths corresponding to the gem names
-function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names)
-    get_all_external_subdirectories(registered_external_subdirs)
-    query_gem_paths_from_external_subdirs(gem_dirs "${gem_names}" "${registered_external_subdirs}")
-    set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
+function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names object_path object_type)
+    #if(NOT O3DE_GEM_DEPENDENCY_RESOLUTION_ENABLED)
+        get_all_external_subdirectories(registered_external_subdirs)
+        query_gem_paths_from_external_subdirs(gem_dirs "${gem_names}" "${registered_external_subdirs}")
+        set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
+        return()
+    #endif()
+
+    # query the resolved list of gems
+    set(ENV{PYTHONNOUSERSITE} 1)
+    cmake_path(SET input_path "${CMAKE_BINARY_DIR}/${object_type}_gem_names.in")
+    cmake_path(SET output_path "${CMAKE_BINARY_DIR}/${object_type}_external_subdirectories.out")
+    file(WRITE "${input_path}" "${gem_names}")
+    #message(VERBOSE "resolved external subdirs: '${input_path}'")
+    string(TOLOWER ${object_type} object_type_lower)
+    execute_process(COMMAND 
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" -esof "${output_path}"
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}
+        RESULT_VARIABLE O3DE_CLI_RESULT
+        OUTPUT_VARIABLE O3DE_CLI_OUT 
+        ERROR_VARIABLE O3DE_CLI_OUT
+        )
+    if(O3DE_CLI_RESULT)
+        message(FATAL_ERROR "****cmake.py result ${O3DE_CLI_RESULT}\n error: ${O3DE_CLI_OUT} *****")
+    endif()
+    file(READ "${output_path}" all_resolved_external_subdirs)
+
+    # save every resolved gem path in a global property for easy lookup
+    unset(gem_path)
+    foreach(entry IN LISTS all_resolved_external_subdirs)
+        if(NOT gem_name)
+            # the first entry is the gem name (lower case)
+            set(gem_name ${entry})
+        else()
+            # this next entry after every gem name is the gem path
+            #set_property(GLOBAL PROPERTY "${gem_name}:ResolvedPath" "${entry}")
+            get_property(existing_gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+            cmake_path(SET new_gem_path "${entry}")
+            if(existing_gem_path)
+                cmake_path(SET existing_gem_path "${existing_gem_path}")
+                cmake_path(COMPARE "${new_gem_path}" NOT_EQUAL "${existing_gem_path}" paths_are_different)
+                if (paths_are_different)
+                    message(WARNING "Multiple paths were found for the same gem '${gem_name}':\n  ${existing_gem_path}\n  ${new_gem_path}")
+                endif()
+            endif()
+            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${new_gem_path}")
+            unset(gem_name)
+        endif()
+    endforeach()
+
+    #set(${output_gem_dirs} ${all_external_subdirs_resolved} PARENT_SCOPE)
 endfunction()
 
 #! Recurses "dependencies" array if the external subdirectory is a gem(contains a gem.json)
@@ -251,31 +385,47 @@ endfunction()
 #! - The <o3de_object> path
 #! - The list of external_subdirectories found by recursively visting the <o3de_object>.json "external_subdirectories"
 function(get_all_external_subdirectories_for_o3de_object output_subdirs object_type object_name object_path object_json_filename)
+
     # Append the gems referenced by name from "gem_names" field in the <object>.json
     # These gems are registered in the users o3de_manifest.json
     o3de_read_json_array(initial_gem_names ${object_path}/${object_json_filename} "gem_names")
     set(gem_names "")
-    foreach(gem_name IN LISTS initial_gem_names)
+
+    # Gem dependency resolution can be disabled to speed up configuration 
+    # for projects where it is not needed
+    if(initial_gem_names AND NOT O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION)
+        # Resolve gem dependency names to gem paths before adding them to external subdirectories 
+        resolve_gem_dependencies(${object_type} "${object_path}")
+    endif()
+
+    foreach(gem_name_with_version_specifier IN LISTS initial_gem_names)
+
         # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
-        string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name})
+        string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name_with_version_specifier})
         set(gem_optional FALSE)
         if(${json_type} STREQUAL "OBJECT")
-            string(JSON gem_optional GET ${gem_name} "optional")
-            string(JSON gem_name GET ${gem_name} "name")
+            string(JSON gem_optional GET ${gem_name_with_version_specifier} "optional")
+            string(JSON gem_name_with_version_specifier GET ${gem_name_with_version_specifier} "name")
         endif()
+
+        # Remove any version specifier from the gem name
+        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
 
         # Set a global "optional" property on the gem name
         set_property(GLOBAL PROPERTY "${gem_name}_OPTIONAL" ${gem_optional})
+
         # Build the gem_names list with extracted names
-        list(APPEND gem_names ${gem_name})
+        list(APPEND gem_names ${gem_name_with_version_specifier})
     endforeach()
 
-    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
+    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}" "${object_path}" "${object_type}")
     list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 
     # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
     # field
-    foreach(gem_name IN LISTS gem_names)
+    foreach(gem_name_with_version_specifier IN LISTS gem_names)
+        # Remove any version specifier from the gem name e.g. 'atom>=1.2.3' becomes 'atom'
+        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
         list(APPEND subdirs_for_object ${gem_real_external_subdirs})
     endforeach()
@@ -324,7 +474,7 @@ function(get_external_subdirectories_in_use output_subdirs)
     set(${output_subdirs} ${all_external_subdirs} PARENT_SCOPE)
 endfunction()
 
-#! Visit all external subdirectories that is in use by the engine and each project
+#! Visit all external subdirectories that are in use by the engine and each project
 #! This visits "external_subdirectories" listed in the engine.json,
 #! the "external_subdirectories" listed in the each LY_PROJECTS project.json,
 #! and the "external_subdirectories" listed o3de_manifest.json in which the engine.json/project.json

@@ -10,7 +10,6 @@ import pytest
 import pathlib
 
 from o3de import compatibility 
-from resolvelib import InconsistentCandidate, ResolutionImpossible
 
 @pytest.mark.parametrize(
     "gem_json_data, all_gem_json_data, expected_number_incompatible", [
@@ -116,6 +115,13 @@ def test_get_incompatible_gem_version_specifiers(gem_json_data, all_gem_json_dat
         pytest.param(['gemA'], {}, []),
         # when the gem dependency with correct version doesn't exist expect failure
         pytest.param(['gemA~=1.2.0'], {'gemA':[{'gem_name':'gemA','version':'2.4.0'}]}, []),
+        # when two gems exist with different versions expect higher version is selected 
+        pytest.param(['gemA'], {
+            'gemA':[
+                {'gem_name':'gemA','version':'3.2.3'},
+                {'gem_name':'gemA','version':'20.3.4'},
+                {'gem_name':'gemA','version':'0.1.2'}
+            ]}, ['gemA==20.3.4']),
         # when the gem sub dependency exists and no version specifiers are provided expect found
         pytest.param(['gemA'], {
             'gemA':[{'gem_name':'gemA','dependencies':['gemB']}],
@@ -125,6 +131,21 @@ def test_get_incompatible_gem_version_specifiers(gem_json_data, all_gem_json_dat
         pytest.param(['gemA'], {
             'gemA':[{'gem_name':'gemA','dependencies':['gemB']}]
             }, []),
+        # when the gem is compatible with the engine expect it is found 
+        pytest.param(['gemA'], {
+            'gemA':[{'gem_name':'gemA','compatible_engines':['o3de==1.0.0']}]
+            }, ['gemA==0.0.0']),
+        # when the gem is not compatible with the engine expect failure 
+        pytest.param(['gemA'], {
+            'gemA':[{'gem_name':'gemA','compatible_engines':['o3de==2.0.0']}]
+            }, []),
+        # when a gem that is compatible with the engine exists expect it is found 
+        pytest.param(['gemA'], {
+            'gemA':[
+                {'gem_name':'gemA',"version":"1.0.0",'compatible_engines':['o3de==1.0.0']},
+                {'gem_name':'gemA',"version":"2.0.0",'compatible_engines':['o3de==2.0.0']}
+                ]
+            }, ['gemA==1.0.0']),
         # when the circular dependency exists expect still succeeds 
         pytest.param(['gemA'], {
             'gemA':[{'gem_name':'gemA','dependencies':['gemB']}],

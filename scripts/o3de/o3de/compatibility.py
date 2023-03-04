@@ -373,7 +373,12 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):  # noqa
     def __repr__(self):
         return f"<GemRequirement({self.name}{self.specifier})>"
-    
+
+    def identify(self):
+        # IMPORTANT don't use the specifier or we will get multiple mappings
+        # for gems instead of unique mappings for each gem name
+        return f"GemRequirement:{self.name}"
+
     def failure_reason(self, object_name):
         return f'{object_name} requires {self.name}{self.specifier}'
 
@@ -381,8 +386,12 @@ class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):  # 
     def __repr__(self):
         return f"<EngineRequirement({self.gem_json_data.get('compatible_engines','')}{self.gem_json_data.get('engine_api_dependencies','')})>"
 
+    def identify(self):
+        # Use a singular identifier because there is only one engine being considered
+        return "EngineRequirement"
+
     def failure_reason(self, engine_json_data):
-        gem_name = self.requirement.gem_json_data['gem_name']
+        gem_name = self.gem_json_data['gem_name']
         incompatible_engine_objects = get_incompatible_objects_for_engine(self.gem_json_data, engine_json_data)
         incompatible_engine_objects = [f'{gem_name} is incompatible because: {error}' for error in incompatible_engine_objects]
         return f'\n'.join(incompatible_engine_objects)
@@ -392,6 +401,10 @@ class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", 
         return "<Engine {name}=={version}>".format(
             name=self.name, version=self.version
         )
+
+    def identify(self):
+        return repr(self)
+
     def __hash__(self) -> int:
         return hash(('engine', self.name, self.version))
 
@@ -400,6 +413,11 @@ class GemCandidate(namedtuple("Candidate",["name", "version","requirements","gem
         return "<Gem {name}=={version}>".format(
             name=self.name, version=self.version
         )
+    def identify(self):
+        # IMPORTANT identify with just the name and don't include a specifier
+        # or we will get conflicting mappings. Use a prefix to avoid collisions with Engines
+        #return f"Gem:{self.name}"
+        return repr(self)
     def __hash__(self) -> int:
         return hash(('gem', self.name, self.version))
 
@@ -408,19 +426,25 @@ class GemDependencyProvider(AbstractProvider):
         self.candidates = candidates
 
     def identify(self, requirement_or_candidate):
-        return repr(requirement_or_candidate)
+        return requirement_or_candidate.identify()
 
     def get_preference(self, identifier, resolutions, candidates, information, **_):
-        # candidates should already be sorted by version
+        # This function could be used in the future to make good choices 
+        # to speed up dependency resolution when selecting the order in which
+        # candidates are evaluated
         return 0
 
     def find_matches(self, identifier, requirements, incompatibilities):
         name = identifier
+        # Returns a list of candidates that satisfy the requirements
+        # sorted by version so we prefer higher version numbers
         return sorted(
-            c
+            (c
             for c in self.candidates
             if all(self.is_satisfied_by(r, c) for r in requirements[name])
-            and all(c.version != i.version for i in incompatibilities[name])
+            and all(c.version != i.version for i in incompatibilities[name])),
+            key=lambda candidate: candidate.version,
+            reverse=True
         )
 
     def is_satisfied_by(self, requirement, candidate):
@@ -487,7 +511,9 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
     errors = None
     try:
         result = resolver.resolve(requirements=project_gem_requirements)
-        result_mapping = result.mapping
+
+        # Remove any EngineCandidates that may appear in the mappings
+        result_mapping = {k: v for k, v in result.mapping.items() if isinstance(v, GemCandidate)}
     except InconsistentCandidate as e:
         # An error exists in our dependency resolver provider
         # need to fix find_matches() and/or is_satisfied_by().
@@ -500,7 +526,7 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             if isinstance(cause.requirement, EngineRequirement):
                 reason += cause.requirement.failure_reason(engine_json_data)
             else:
-                # if cause.parent isn't set it's a project dependency
+                # If cause.parent isn't set it's a project dependency
                 reason += cause.requirement.failure_reason(cause.parent if cause.parent else 'The project')
 
         errors.add(reason) 

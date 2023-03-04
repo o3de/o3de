@@ -9,11 +9,13 @@
 Contains methods for query CMake gem target information
 """
 
+import argparse
 import logging
 import pathlib
 import re
+import sys
 
-from o3de import manifest, utils
+from o3de import manifest, utils, compatibility, cmake
 
 logger = logging.getLogger('o3de.cmake')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -35,7 +37,7 @@ def add_gem_dependency(cmake_file: pathlib.Path,
         return 1
 
     gem_name_with_version_specifier = gem_name
-    gem_name, gem_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
+    gem_name, _ = utils.get_object_name_and_optional_version_specifier(gem_name)
 
     pre_gem_names = ''
     post_gem_names = ''
@@ -240,3 +242,107 @@ def get_enabled_gem_cmake_file(project_name: str = None,
             if possible_project_platform_enable_gem_filename_path.is_file():
                 return possible_project_platform_enable_gem_filename_path.resolve()
         return possible_project_platform_enable_gem_filename_paths[0].resolve()
+
+
+def resolve_gem_dependency_paths(
+        engine_path:pathlib.Path,
+        project_path:pathlib.Path,
+        resolved_gem_dependencies_output_path:pathlib.Path):
+    """
+    Resolves gem dependencies for the given engine and project and
+    writes the output to the path provided.  This is used during CMake
+    configuration because writing a CMake depencency resolver would be
+    difficult and Python already has a solver with unit tests.
+    :param engine_path: optional path to the engine, if not provided, the project's engine will be determined 
+    :param project_path: optional path to the project, if not provided the engine path must be provided
+    :param resolved_gem_dependencies_output_path: optional path to the project, if not provided the engine path must be provided
+    :return: 0 for success or non 0 failure code
+    """
+
+    if not engine_path and not project_path:
+        logger.error(f'project path or engine path are required to resolve dependencies')
+        return 1
+
+    if not engine_path:
+        engine_path = manifest.get_project_engine_path(project_path=project_path)
+        if not engine_path:
+            engine_path = manifest.get_this_engine_path()
+            if not engine_path:
+                logger.error(f'Failed to find a valid engine path for the project at "{project_path}" which is required to resolve gem dependencies.')
+                return 1
+
+            logger.warning(f'Failed to determine the correct engine for the project at "{project_path}", falling back to this engine at {engine_path}.')
+    
+    engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error(f'Failed to retrieve engine json data for the engine at  "{engine_path}" which is required to resolve gem dependencies.')
+        return 1
+
+    if project_path:
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+        active_gem_names = project_json_data.get('gem_names',[])
+        enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+    else:
+        active_gem_names = engine_json_data.get('gem_names',[])
+
+    # some gem name entries will be dictionaries - convert to a set of strings 
+    gem_names_with_optional_gems = utils.get_gem_names_set(active_gem_names, include_optional=True)
+    if not gem_names_with_optional_gems:
+        logger.info(f'No gem names were found to use as input to resolve gem dependencies.')
+        with resolved_gem_dependencies_output_path.open('w') as output:
+            output.write('')
+        return 0
+
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, project_path=project_path, include_manifest_gems=True, include_engine_gems=True)
+
+    # First try to resolve with optional gems
+    results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, all_gems_json_data, engine_json_data)
+    if errors:
+        logger.warning('Failed to resolve dependencies when including optional gems, trying again without optional gems.')
+
+        # Try without optional gems
+        gem_names_without_optional = utils.get_gem_names_set(active_gem_names, include_optional=False)
+        results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, all_gems_json_data, engine_json_data)
+
+    if errors:
+        logger.error(f'Failed to resolve dependencies:\n '+ 
+                    "\n  ".join(errors))
+        return 1
+
+    with resolved_gem_dependencies_output_path.open('w') as output:
+        # make a list of <gem_name>;<gem_path> for cmake
+        gem_paths = sorted(f"{gem.gem_json_data['gem_name'].strip()};{gem.gem_json_data['path'].resolve().as_posix()}" for _, gem in results.items())
+        # use dict to remove duplicates and preserve order so it's easier to read/debug
+        gem_paths = list(dict.fromkeys(gem_paths))
+        # join everything with a ';' character which is a list entry delimiter in CMake
+        # so the keys and values are all list entries
+        output.write(';'.join(gem_paths))
+
+    return 0
+
+def _resolve_gem_dependency_paths(args: argparse) -> int:
+    return resolve_gem_dependency_paths(
+                            engine_path=args.engine_path,
+                            project_path=args.project_path,
+                            resolved_gem_dependencies_output_path=args.gem_paths_output_file
+                             )
+def add_parser_args(parser):
+    group = parser.add_argument_group("resolve gem dependencies")
+    group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
+                       help='The path to the project.')
+    group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
+                       help='The path to the engine.')
+    group.add_argument('-gpof', '--gem-paths-output-file', type=pathlib.Path, required=True,
+                       help='The path to the resolved gem paths output file.')
+    parser.set_defaults(func=_resolve_gem_dependency_paths)
+
+def main():
+    the_parser = argparse.ArgumentParser()
+    add_parser_args(the_parser)
+    the_args = the_parser.parse_args()
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+    sys.exit(ret)
+
+if __name__ == "__main__":
+    main()
