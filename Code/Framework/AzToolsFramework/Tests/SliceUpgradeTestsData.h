@@ -11,6 +11,17 @@
 
 #include <AzFramework/Asset/SimpleAsset.h>
 
+namespace AZ
+{
+    // Added definition of type info and rtti for the DataPatchTypeUpgrade class
+    // to this Unit Test file to allow rtti functions to be accessible from the SerializeContext::TypeChange
+    // call
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(SerializeContext::DataPatchTypeUpgrade, \
+        "DataPatchTypeUpgrade", "{E5A2F519-261C-4B81-925F-3730D363AB9C}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, \
+        AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
+}
+
 namespace UnitTest
 {
     static const float TestDataA_ExpectedVal = 1.5f;
@@ -22,7 +33,7 @@ namespace UnitTest
 
     public:
         AZ_RTTI(TestDataA, "{3B7949D0-07BF-408E-8101-264466AEC403}");
-        
+
         virtual ~TestDataA() = default;
 
         static void Reflect(AZ::ReflectContext* reflection)
@@ -42,7 +53,7 @@ namespace UnitTest
     class TestComponentA_V0
         : public AzToolsFramework::Components::EditorComponentBase
     {
-    public: 
+    public:
         TestDataA m_data;
 
     public:
@@ -75,7 +86,7 @@ namespace UnitTest
 
     public:
         AZ_RTTI(NewTestDataA, "{2CEC8357-5156-4C8C-B664-501EA19213CB}");
-        
+
         virtual ~NewTestDataA() = default;
 
         static void Reflect(AZ::ReflectContext* reflection)
@@ -146,9 +157,9 @@ namespace UnitTest
             : m_persistentId(++PersistentIdCounter)
             , m_data(data)
         {}
-        
+
         virtual ~TestDataB_V0() = default;
-        
+
 
         static void Reflect(AZ::ReflectContext* reflection)
         {
@@ -177,7 +188,7 @@ namespace UnitTest
             : m_persistentId(++TestDataB_V0::PersistentIdCounter)
             , m_info(0)
         {}
-        
+
         virtual ~TestDataB_V1() = default;
 
         static float TestDataB_V0_V1(int in)
@@ -270,8 +281,8 @@ namespace UnitTest
     };
 
     // TestComponentB_V0_1 is NOT a version upgrade of TestComponentB_V0. It is TestComponentB_V0.
-    // We have to create a different class to represent TestComponentB_V0 so we can simulate 
-    // version upgrade of TestDataB. 
+    // We have to create a different class to represent TestComponentB_V0 so we can simulate
+    // version upgrade of TestDataB.
     class TestComponentB_V0_1
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -329,8 +340,8 @@ namespace UnitTest
     };
 
     // TestComponentC_V0_1 is NOT a version upgrade of TestComponentC_V0. It is TestComponentC_V0.
-    // We have to create a different class to represent TestComponentC_V0 so we can simulate 
-    // version upgrade of TestDataB. 
+    // We have to create a different class to represent TestComponentC_V0 so we can simulate
+    // version upgrade of TestDataB.
     class TestComponentC_V0_1
         : public AzToolsFramework::Components::EditorComponentBase
     {

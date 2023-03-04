@@ -256,6 +256,11 @@ namespace AZ::Render
         return m_lightBufferHandler.GetBuffer();
     }
 
+    const Data::Instance<RPI::Buffer> PolygonLightFeatureProcessor::GetLightPointBuffer() const
+    {
+        return m_lightPolygonPointBufferHandler.GetBuffer();
+    }
+
     uint32_t PolygonLightFeatureProcessor::GetLightCount() const
     {
         return m_lightBufferHandler.GetElementCount();

@@ -10,9 +10,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <Editor/EditorJointConfiguration.h>
-#include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
-#include <Source/EditorShapeColliderComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 
 namespace
 {
@@ -486,14 +485,12 @@ namespace PhysX
         {
             [[maybe_unused]] const bool leadEntityHasRigidActor =
                 (entity->FindComponent<PhysX::EditorRigidBodyComponent>() ||
-                 entity->FindComponent<PhysX::EditorColliderComponent>() ||
-                 entity->FindComponent<PhysX::EditorShapeColliderComponent>());
+                 entity->FindComponent<PhysX::EditorStaticRigidBodyComponent>());
 
             AZ_Warning("EditorJointComponent",
                 leadEntityHasRigidActor,
                 "Joints require either a dynamic or static rigid body on the lead entity. "
-                "Please add either a rigid body component (to create a dynamic rigid body) "
-                "or a collider component (to create a static rigid body) to entity %s",
+                "Please add either a static or a dynamic rigid body component to entity %s",
                 entity->GetName().c_str());
         }
         else

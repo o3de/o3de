@@ -1559,7 +1559,7 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.push_back(legacyAssetId);
                 }
 
-                SourceAssetReference sourceAsset(source.m_scanFolderPK, source.m_sourceName.c_str());
+                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
                 AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
                 auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
 
@@ -2731,6 +2731,9 @@ namespace AssetProcessor
             return;
         }
 
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+        AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests interface is not available.");
+
         // During unit tests, it can be the case that cache folders are actually in a temp folder structure
         // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
         // for deletions may report the canonical path (/private/var/...) when the 'cache root' or watched folder
@@ -3066,6 +3069,18 @@ namespace AssetProcessor
                 }
                 else
                 {
+                    AssetProcessor::FileStateInfo fileStateInfo;
+
+                    if (fileStateInterface->GetFileInfo(
+                            sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo) &&
+                        fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
+                    {
+                        // File on disk has different case compared to the file being processed
+                        // This usually means a file was renamed and a "change" event was fired for both the old and new name
+                        // Ignore this event as its for the old file name
+                        continue;
+                    }
+
                     // log-spam-reduction - the lack of the prior tag (input was deleted) which is rare can infer that the above branch was taken
                     //AZ_TracePrintf(AssetProcessor::DebugChannel, "Input is modified or is overriding something.\n");
                     CheckModifiedSourceFile(sourceAssetReference, scanFolderInfo);
@@ -4297,7 +4312,7 @@ namespace AssetProcessor
         if (!sourceDependency.m_sourceFileDependencyUUID.IsNull())
         {
             // if the UUID has been provided, we will use that
-            resultDatabaseSourceName = sourceDependency.m_sourceFileDependencyUUID.ToString<QString>();
+            resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
         }
         else if (!sourceDependency.m_sourceFileDependencyPath.empty())
         {
@@ -5346,9 +5361,19 @@ namespace AssetProcessor
         m_allowModtimeSkippingFeature = enable;
     }
 
+    bool AssetProcessorManager::GetModtimeSkippingFeatureEnabled() const
+    {
+        return m_allowModtimeSkippingFeature;
+    }
+
     void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
     {
         m_initialScanSkippingFeature = enable;
+    }
+
+    bool AssetProcessorManager::GetInitialScanSkippingFeatureEnabled() const
+    {
+        return m_initialScanSkippingFeature;
     }
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)

@@ -117,6 +117,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
@@ -164,6 +165,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }

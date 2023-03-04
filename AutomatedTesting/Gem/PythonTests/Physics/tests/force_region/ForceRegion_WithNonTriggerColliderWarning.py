@@ -14,7 +14,7 @@ Test Case Title : Check that user is warned if non-trigger collider component is
 class Tests():
     create_test_entity     = ("Entity created successfully",        "Failed to create Entity")
     add_physx_force_region = ("PhysX Force Region component added", "Failed to add PhysX Force Region component")
-    add_physx_collider     = ("PhysX Collider component added",     "Failed to add PhysX Collider component")
+    add_physx_collider     = ("PhysX Primitive Collider component added", "Failed to add PhysX Primitive Collider component")
     warnings_found         = ("Warnings found in logs",             "No warnings found in logs")
 # fmt: on
 
@@ -22,18 +22,18 @@ class Tests():
 def ForceRegion_WithNonTriggerColliderWarning():
     """
     Summary:
-     Create entity with PhysX Force Region component. Check that user is warned if new PhysX Collider component is
+     Create entity with PhysX Force Region component. Check that user is warned if new PhysX Primitive Collider component is
      added to Entity.
 
     Expected Behavior:
-     User is warned by message in the console that the PhysX Collider component was not marked as a trigger
+     User is warned by message in the console that the PhysX Primitive Collider component was not marked as a trigger
 
     Test Steps:
      1) Load the empty level
      2) Create test entity
      3) Add PhysX Force Region component
      4) Start the Tracer to catch any errors and warnings
-     5) Add PhysX Collider component to the Entity
+     5) Add PhysX Primitive Collider component to the Entity
      6) Verify there is warning in the logs
 
     Note:
@@ -60,18 +60,19 @@ def ForceRegion_WithNonTriggerColliderWarning():
 
     # 3) Add PhysX Force Region component
     test_entity.add_component("PhysX Force Region")
+    test_entity.add_component("PhysX Static Rigid Body")
     Report.result(Tests.add_physx_force_region, test_entity.has_component("PhysX Force Region"))
 
     # 4) Start the Tracer to catch any errors and warnings
     Report.info("Starting warning monitoring")
     with Tracer() as section_tracer:
-        # 5) Add the PhysX Collider component
-        test_entity.add_component("PhysX Collider")
-        Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Collider"))
+        # 5) Add the PhysX Primitive Collider component
+        test_entity.add_component("PhysX Primitive Collider")
+        Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Primitive Collider"))
         general.idle_wait_frames(1)
     Report.info("Ending warning monitoring")
     
-    # ) Verify there is warning in the logs
+    # 6) Verify there is warning in the logs
     success_condition = section_tracer.has_warnings
     # Checking if warning exist and the exact warning is caught in the expected lines in Test file
     Report.result(Tests.warnings_found, success_condition)
