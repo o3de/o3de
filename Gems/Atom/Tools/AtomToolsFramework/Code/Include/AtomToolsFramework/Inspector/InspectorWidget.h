@@ -39,7 +39,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(InspectorWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InspectorWidget, AZ::SystemAllocator);
         AZ_RTTI(AtomToolsFramework::InspectorWidget, "{D77A5F5F-0536-4249-916F-328B272E1AAB}");
         static void Reflect(AZ::ReflectContext* context);
 

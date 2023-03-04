@@ -50,7 +50,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(RootAssetBrowserEntry, "{A35CA80E-E1EB-420B-8BFE-B7792E3CCEDB}");
-            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RootAssetBrowserEntry, AZ::SystemAllocator);
 
             RootAssetBrowserEntry();
 

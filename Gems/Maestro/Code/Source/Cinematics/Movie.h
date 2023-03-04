@@ -45,7 +45,7 @@ class CMovieSystem
     typedef std::vector<PlayingSequence> PlayingSequences;
 
 public:
-    AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CMovieSystem, AZ::SystemAllocator);
     AZ_RTTI(CMovieSystem, "{760D45C1-08F2-4C70-A506-BD2E69085A48}", IMovieSystem);
 
     CMovieSystem(ISystem* system);
@@ -239,7 +239,7 @@ private:
     int m_captureFrame;
     bool m_bEndCapture;
     ICaptureKey m_captureKey;
-    AZ::TimeMs m_fixedTimeStepBackUp;
+    AZ::TimeUs m_fixedTimeStepBackUp;
     float m_maxTimeStepForMovieSystemBackUp;
     ICVar* m_cvar_capture_frame_once;
     ICVar* m_cvar_capture_folder;

@@ -71,6 +71,7 @@ def ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor():
     for i in range(1, 513):
         # Create Entity
         entity = Entity.create_editor_entity(f"Entity_{i}")
+        entity.add_component("PhysX Static Rigid Body")
 
         # Add components
         entity.add_component("PhysX Shape Collider")

@@ -19,7 +19,7 @@ namespace AzToolsFramework
     //! @brief struct that store viewport camera properties that can be serialized and loaded
     struct ViewBookmark
     {
-        AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ViewBookmark, AZ::SystemAllocator);
         AZ_TYPE_INFO(ViewBookmark, "{9D6601B9-922F-4E90-BEB2-4D3D709DADD7}");
 
         ViewBookmark() = default;

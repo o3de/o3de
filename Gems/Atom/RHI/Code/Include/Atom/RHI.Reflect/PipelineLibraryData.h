@@ -39,7 +39,7 @@ namespace AZ
         {
             friend class PipelineLibrary;
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLibraryData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLibraryData, SystemAllocator);
             AZ_TYPE_INFO(PipelineLibraryData, "{6A349BB4-4787-46B5-A70A-7BA90515391F}");
 
             static void Reflect(ReflectContext* reflectContext);

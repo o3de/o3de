@@ -28,7 +28,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugRequest, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugRequest, "{2137E01A-F2AE-4137-A17E-6B82F3B7E4DE}", RemoteToolsMessage);
 
         ScriptDebugRequest()
@@ -49,7 +49,7 @@ namespace AzFramework
         : public ScriptDebugRequest
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugBreakpointRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugBreakpointRequest, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugBreakpointRequest, "{707F97AB-1CA0-4191-82E0-FFE9C9D0F788}", ScriptDebugRequest);
 
         ScriptDebugBreakpointRequest() {}
@@ -64,7 +64,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugSetValue, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugSetValue, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugSetValue, "{11E0E012-BD54-457D-A44B-FDDA55736ED3}", RemoteToolsMessage);
 
         ScriptDebugSetValue()
@@ -77,7 +77,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugAck, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugAck, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugAck, "{0CA1671A-BAFD-499C-B2CD-7B7E3DD5E2A8}", RemoteToolsMessage);
 
         ScriptDebugAck(AZ::u32 request = 0, AZ::u32 ackCode = 0)
@@ -94,7 +94,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugAckBreakpoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugAckBreakpoint, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugAckBreakpoint, "{D9644B8A-92FD-43B6-A579-77E123A72EC2}",  RemoteToolsMessage);
 
         ScriptDebugAckBreakpoint()
@@ -109,7 +109,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugAckExecute, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugAckExecute, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugAckExecute, "{F5B24F7E-85DA-4FE8-B720-AABE35CE631D}", RemoteToolsMessage);
 
         ScriptDebugAckExecute()
@@ -123,7 +123,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugEnumLocalsResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugEnumLocalsResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugEnumLocalsResult, "{201701DD-0B74-4886-AB84-93BDB338A8DD}", RemoteToolsMessage);
 
         ScriptDebugEnumLocalsResult()
@@ -136,7 +136,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugEnumContextsResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugEnumContextsResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugEnumContextsResult, "{8CE74569-9B7D-4993-AFE8-38BB8CE419F5}", RemoteToolsMessage);
 
         ScriptDebugEnumContextsResult()
@@ -149,7 +149,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugGetValueResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugGetValueResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugGetValueResult, "{B10720F1-B8FE-476F-A39D-6E80711580FD}", RemoteToolsMessage);
 
         ScriptDebugGetValueResult()
@@ -162,7 +162,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugSetValueResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugSetValueResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugSetValueResult, "{2E2BD168-1805-43D6-8602-FDE14CED8E53}", RemoteToolsMessage);
 
         ScriptDebugSetValueResult()
@@ -176,7 +176,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugCallStackResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugCallStackResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugCallStackResult, "{B2606AC6-F966-4991-8144-BA6117F4A54E}", RemoteToolsMessage);
 
         ScriptDebugCallStackResult()
@@ -189,7 +189,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredGlobalsResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredGlobalsResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugRegisteredGlobalsResult, "{CEE4E889-0249-4D59-9D56-CD4BD159E411}", RemoteToolsMessage);
 
         ScriptDebugRegisteredGlobalsResult()
@@ -203,7 +203,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredClassesResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredClassesResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugRegisteredClassesResult, "{7DF455AB-9AB1-4A95-B906-5DB1D1087EBB}", RemoteToolsMessage);
 
         ScriptDebugRegisteredClassesResult()
@@ -216,7 +216,7 @@ namespace AzFramework
         : public RemoteToolsMessage
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredEBusesResult, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredEBusesResult, AZ::SystemAllocator);
         AZ_RTTI(ScriptDebugRegisteredEBusesResult, "{D2B5D77C-09F3-476D-A611-49B0A1B9EDFB}", RemoteToolsMessage);
 
         ScriptDebugRegisteredEBusesResult()

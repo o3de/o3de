@@ -29,7 +29,7 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator);
             explicit AssetBrowserTableModel(QObject* parent = nullptr);
 
             ////////////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@ namespace VirtualGamepad
     {
     public:
         AZ_RTTI(VirtualGamepadModule, "{0454CF83-A35E-443B-A9BE-858EBE9C908F}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(VirtualGamepadModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VirtualGamepadModule, AZ::SystemAllocator);
 
         VirtualGamepadModule()
             : CryHooksModule()

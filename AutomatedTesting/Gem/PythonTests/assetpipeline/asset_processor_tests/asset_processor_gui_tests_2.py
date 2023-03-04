@@ -16,6 +16,7 @@ import configparser
 from pathlib import Path
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -109,7 +110,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
 
         assert key_value.lower() == "true", f"The fast scan setting found was {key_value}"
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
+    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline

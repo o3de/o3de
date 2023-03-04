@@ -28,7 +28,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DisplayMapperFullScreenPass, "{11E9EBE0-DF6D-4260-9281-C99E386231BF}", RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DisplayMapperFullScreenPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperFullScreenPass, SystemAllocator);
             virtual ~DisplayMapperFullScreenPass();
 
             /// Creates a DisplayMapperFullScreenPass

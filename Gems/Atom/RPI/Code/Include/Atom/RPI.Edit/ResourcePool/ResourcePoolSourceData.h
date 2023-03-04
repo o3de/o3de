@@ -31,7 +31,7 @@ namespace AZ
         struct ResourcePoolSourceData
         {
             AZ_TYPE_INFO(ResourcePoolSourceData, "{8BFF0760-20E3-446D-9E3D-39D0266F7104}");
-            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator);
             
             static void Reflect(ReflectContext* context);
 

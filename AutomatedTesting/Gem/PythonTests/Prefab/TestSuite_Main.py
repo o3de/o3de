@@ -13,13 +13,15 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
+class TestAutomationOverridesDisabled(EditorTestSuite):
 
-    # These tests will execute without enabling prefab overrides
-    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=false")
+    # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides disabled
+    EditorTestSuite.global_extra_cmdline_args.extend(
+        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=false",
+         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=false",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=false"])
 
     # Add Entity Tests
-
     class test_AddEntity_UnderAnotherEntity(EditorBatchedTest):
         from .tests.add_entity import AddEntity_UnderAnotherEntity as test_module
 
@@ -146,8 +148,11 @@ class TestAutomation(EditorTestSuite):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationOverrides(EditorTestSuite):
 
-    # These tests will execute with prefab overrides enabled
-    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=true")
+    # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides enabled
+    EditorTestSuite.global_extra_cmdline_args.extend(
+        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=true",
+         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=true",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=true"])
 
     # Overrides Tests
 

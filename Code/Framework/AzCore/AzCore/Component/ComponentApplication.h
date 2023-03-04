@@ -89,7 +89,7 @@ namespace AZ
 
     public:
         AZ_RTTI(ComponentApplication, "{1F3B070F-89F7-4C3D-B5A3-8832D5BC81D7}");
-        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator);
 
         /**
          * Configures the component application.
@@ -102,7 +102,7 @@ namespace AZ
             : public SerializeContext::IObjectFactory
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
-            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);
 
             ///////////////////////////////////////////////
             // SerializeContext::IObjectFactory

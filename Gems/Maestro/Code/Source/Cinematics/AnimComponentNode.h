@@ -28,7 +28,7 @@ class CAnimComponentNode
     , public Maestro::EditorSequenceAgentComponentNotificationBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimComponentNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimComponentNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimComponentNode, "{722F3D0D-7AEB-46B7-BF13-D5C7A828E9BD}", CAnimNode);
 
     CAnimComponentNode(const int id);

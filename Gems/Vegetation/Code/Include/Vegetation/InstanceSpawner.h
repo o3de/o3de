@@ -32,7 +32,7 @@ namespace Vegetation
     {
     public:
         AZ_RTTI(InstanceSpawner, "{01AD0758-B04A-4B43-BC2B-BDCD77F4EF6A}");
-        AZ_CLASS_ALLOCATOR(InstanceSpawner, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InstanceSpawner, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context)
         {

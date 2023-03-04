@@ -94,7 +94,7 @@ namespace EditorPythonBindings
         class PythonProxyNotificationHandler final
         {
         public:
-            AZ_CLASS_ALLOCATOR(PythonProxyNotificationHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PythonProxyNotificationHandler, AZ::SystemAllocator);
 
             PythonProxyNotificationHandler(AZStd::string_view busName)
             {

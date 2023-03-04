@@ -27,7 +27,7 @@ namespace LUAEditor
             : public QTextBlockUserData
         {
         public:
-            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OriginalLineNumber, AZ::SystemAllocator);
             OriginalLineNumber(int lineNumber, AZStd::function<void(int)> callback)
                 : m_Callback(callback)
                 , m_LineNumber(lineNumber) {}

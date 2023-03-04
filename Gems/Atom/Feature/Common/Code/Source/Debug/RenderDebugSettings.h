@@ -23,7 +23,7 @@ namespace AZ::Render
 
     public:
         AZ_RTTI(AZ::Render::RenderDebugSettings, "{942CB951-C5D0-4E90-9F55-633DAA561A03}", AZ::Render::RenderDebugSettingsInterface);
-        AZ_CLASS_ALLOCATOR(RenderDebugSettings, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RenderDebugSettings, SystemAllocator);
 
         RenderDebugSettings(RenderDebugFeatureProcessor* featureProcessor);
         ~RenderDebugSettings() = default;

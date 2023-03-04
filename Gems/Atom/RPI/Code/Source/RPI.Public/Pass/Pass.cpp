@@ -212,24 +212,25 @@ namespace AZ
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
+            auto index = static_cast<uint8_t>(m_attachmentBindings.size());
+            // Add the binding. This will assert if the fixed size array is full.
+            m_attachmentBindings.push_back(attachmentBinding);
+
             // Add the index of the binding to the input, output or input/output list based on the slot type
             switch (attachmentBinding.m_slotType)
             {
             case PassSlotType::Input:
-                m_inputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_inputBindingIndices.push_back(index);
                 break;
             case PassSlotType::InputOutput:
-                m_inputOutputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_inputOutputBindingIndices.push_back(index);
                 break;
             case PassSlotType::Output:
-                m_outputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_outputBindingIndices.push_back(index);
                 break;
             default:
                 break;
             }
-
-            // Add the binding
-            m_attachmentBindings.push_back(attachmentBinding);
         }
 
         // --- Finders ---

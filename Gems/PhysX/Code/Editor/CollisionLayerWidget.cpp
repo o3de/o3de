@@ -34,7 +34,8 @@ namespace PhysX
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionLayerWidget::OnEditButtonClicked);
@@ -66,8 +67,7 @@ namespace PhysX
 
         bool CollisionLayerWidget::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->clear();
+            GUI->clearElements();
 
             auto layerNames = GetLayerNames();
             for (auto& layerName : layerNames)
@@ -75,9 +75,7 @@ namespace PhysX
                 GUI->Add(layerName);
             }
 
-            auto layerName = GetNameFromLayer(instance);
-            GUI->GetComboBox()->setCurrentText(layerName.c_str());
-
+            GUI->setValue(GetNameFromLayer(instance));
             return true;
         }
 

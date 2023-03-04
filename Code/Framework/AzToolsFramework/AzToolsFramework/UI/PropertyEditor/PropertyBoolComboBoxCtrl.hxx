@@ -34,7 +34,7 @@ namespace AzToolsFramework
     public:
 
         AZ_RTTI(PropertyBoolComboBoxCtrl, "{44255BDF-38E1-43E1-B920-2F5118B66996}", ComboBoxBase);
-        AZ_CLASS_ALLOCATOR(PropertyBoolComboBoxCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyBoolComboBoxCtrl, AZ::SystemAllocator);
         PropertyBoolComboBoxCtrl(QWidget* pParent);
 
         virtual ~PropertyBoolComboBoxCtrl();
@@ -50,7 +50,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(BoolPropertyComboBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BoolPropertyComboBoxHandler, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::ComboBox; }
         virtual void UpdateWidgetInternalTabbing(PropertyBoolComboBoxCtrl* widget) override { widget->UpdateTabOrder(); }

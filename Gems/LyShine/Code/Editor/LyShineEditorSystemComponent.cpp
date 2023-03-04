@@ -53,7 +53,6 @@ namespace LyShineEditor
                 auto editInfo = ec->Class<LyShineEditorSystemComponent>("UI Canvas Editor", "UI Canvas Editor System Component");
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

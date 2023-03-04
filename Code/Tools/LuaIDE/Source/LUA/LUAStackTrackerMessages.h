@@ -23,7 +23,7 @@ namespace LUAEditor
     struct StackEntry
     {
     public:
-        AZ_CLASS_ALLOCATOR(StackEntry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StackEntry, AZ::SystemAllocator);
 
         AZStd::string m_blob; // the name of the debug blob
         int m_blobLine; // the line relative to the start of that blob

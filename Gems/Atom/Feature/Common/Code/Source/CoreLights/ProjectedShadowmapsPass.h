@@ -26,7 +26,7 @@ namespace AZ
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator);
             AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
 
             virtual ~ProjectedShadowmapsPass();

@@ -23,7 +23,7 @@ namespace AZ
         struct MaterialAssignment final
         {
             AZ_RTTI(AZ::Render::MaterialAssignment, "{C66E5214-A24B-4722-B7F0-5991E6F8F163}");
-            AZ_CLASS_ALLOCATOR(AZ::Render::MaterialAssignment, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::Render::MaterialAssignment, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             MaterialAssignment() = default;

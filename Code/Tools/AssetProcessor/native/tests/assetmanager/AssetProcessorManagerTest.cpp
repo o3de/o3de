@@ -145,10 +145,10 @@ void AssetProcessorManagerTest::SetUp()
     m_config->AddMetaDataType("assetinfo", "");
     m_config->AddIntermediateScanFolder();
 
-    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
-    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
-    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
-    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+    m_aUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"))).GetValueOr(AZ::Uuid());
+    m_bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"))).GetValueOr(AZ::Uuid());
+    m_cUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"))).GetValueOr(AZ::Uuid());
+    m_dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"))).GetValueOr(AZ::Uuid());
 
     ASSERT_FALSE(m_aUuid.IsNull());
     ASSERT_FALSE(m_bUuid.IsNull());
@@ -213,9 +213,9 @@ void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelati
 
     auto uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
 
-    ASSERT_FALSE(uuid.IsNull());
+    ASSERT_TRUE(uuid);
 
-    AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
+    AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid.GetValue(), "fingerprint");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
 }
 
@@ -262,7 +262,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -549,6 +549,7 @@ class AssetProcessorIntermediateAssetTests
     : public UnitTests::AssetManagerTestingBase
 {
 protected:
+
     void DeleteSourceAndValidateNoAdditionalJobs(QString expectedIntermediatePath)
     {
         // Delete the originating source for the intermediate asset
@@ -581,6 +582,7 @@ protected:
         m_assetProcessorManager->CheckJobEntries(0);
 
         m_assetProcessorManager->ProcessFilesToExamineQueue();
+        QCoreApplication::processEvents();
 
         // Make sure nothing is left to process - the intermediate asset should never have had a job added
         // because the source was deleted at the same time it was modified.
@@ -706,6 +708,144 @@ TEST_F(AssetProcessorIntermediateAssetTests, NestedIntermediateAsset_SourceDelet
     DeleteSourceAndValidateNoAdditionalJobs(expectedIntermediatePath.c_str());
 }
 
+
+TEST_F(AssetProcessorIntermediateAssetTests, IntermediateAsset_SourceNoLongerEmitsJobIntermediateWouldFailToProcess_NoFailure)
+{
+    // This is a regression test for this situation:
+    // 1. A source asset would emit one of two different jobs from CreateJobs, based on data in the source asset itself. One of these emits intermediate assets, but not the other.
+    // 2. The AssetProcessor would run once, and the source asset would run with the job that emits intermediate assets.
+    // 3. The source asset was changed so that it no longer emits the job that creates the intermediate asset, it emits a different job with different products.
+    // 4. The Asset Processor is run again.
+    // Expected, and what this test verifies: The intermediate asset is removed, because it is no longer a product of the source asset.
+    // Before the regression fix: The intermediate asset was not being removed.
+
+    using namespace AssetBuilderSDK;
+
+    // Given:
+    // Asset builder that emits different jobs based on information in the source asset.
+    // A source asset that initially is marked to emit an intermediate asset product.
+    // This chain of assets (source and intermediate) processed without error or issue.
+
+    bool outputIntermediateProduct = true;
+
+    m_builderInfoHandler.CreateBuilderDesc(
+        "stage1",
+        AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+        { AssetBuilderPattern{ "*.stage1", AssetBuilderPattern::Wildcard } },
+        [&outputIntermediateProduct]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+        {
+            // The first time this job is run - create an intermediate asset job.
+            if (outputIntermediateProduct)
+            {
+                response.m_createJobOutputs.push_back(JobDescriptor{ "fingerprint", "stage1 - Intermediate", CommonPlatformName });
+            }
+            // The second time this job is run - Create a non-intermediate asset, just regular product job.
+            else
+            {
+                for (const auto& platform : request.m_enabledPlatforms)
+                {
+                    response.m_createJobOutputs.push_back(JobDescriptor{
+                        "fingerprint",
+                        "stage1 - Product",
+                        platform.m_identifier.c_str() });
+                }
+            }
+            response.m_result = CreateJobsResultCode::Success;
+        },
+        [&outputIntermediateProduct](const ProcessJobRequest& request, ProcessJobResponse& response)
+        {
+            AZ::IO::Path outputFile = request.m_sourceFile;
+            AZStd::string outputExtension = "stage2";
+
+            if (!outputIntermediateProduct)
+            {
+                outputExtension = "stage2_product";
+            }
+
+            outputFile.ReplaceExtension(outputExtension.c_str());
+            AZ::IO::LocalFileIO::GetInstance()->Copy(
+                request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
+            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
+
+            if (outputIntermediateProduct)
+            {
+                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
+            }
+            else
+            {
+                product.m_outputFlags = ProductOutputFlags::ProductAsset;
+            }
+
+            product.m_dependenciesHandled = true;
+            response.m_outputProducts.push_back(product);
+            response.m_resultCode = ProcessJobResult_Success;
+        },
+        "fingerprint");
+
+    CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+    ProcessFileMultiStage(2, true);
+
+    AZStd::string intermediateAssetPath = MakePath("test.stage2", true);
+    // Verify the intermediate asset exists
+    EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
+
+    // When:
+    // The source asset has been modified to no longer emit the intermediate asset as a product, and emit a different product.
+    // This chain of assets is processed again.
+
+    // Modify the source asset, so it shows up as needing to be reprocessed.
+    EXPECT_TRUE(AZ::Utils::WriteFile("Arbitrary text to mark this file as modified.", m_testFilePath.c_str()).IsSuccess());
+
+    // Mark the source asset to no longer emit the intermediate product asset
+    outputIntermediateProduct = false;
+
+    // Call AssessModifiedFile on the source asset.
+    m_assetProcessorManager->AssessModifiedFile(m_testFilePath.c_str());
+
+    // There is one active file, because it has been modified.
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(1);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Assess the modified file
+    QCoreApplication::processEvents();
+
+    // The file has been moved from active, to the examine list, after assessing it.
+    m_assetProcessorManager->CheckFilesToExamine(1);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Process the file, which triggers CheckMissingJobs to be called, which actually deletes the no longer emitted file.
+    // This doesn't call ProcessSingleStep because the files to examine and active files won't match what ProcessSingleStep expects.
+
+    // m_jobDetailsList lets this test verify the job ran that was expected to run.
+    m_jobDetailsList.clear();
+    m_fileCompiled = false;
+    m_fileFailed = false;
+    QCoreApplication::processEvents(); // execute ProcessFilesToExamineQueue
+    QCoreApplication::processEvents(); // execute CheckForIdle
+    ASSERT_EQ(m_jobDetailsList.size(), 1);
+    ProcessJob(*m_rc, m_jobDetailsList[0]);
+    ASSERT_TRUE(m_fileCompiled);
+    m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
+
+    // Then:
+    // Asset processing completes and the intermediate asset is deleted, because it's no longer a product of this source asset.
+
+    // Make sure nothing is left to process
+    m_assetProcessorManager->CheckFilesToExamine(0);
+    m_assetProcessorManager->CheckActiveFiles(0);
+    m_assetProcessorManager->CheckJobEntries(0);
+
+    // Nothing should have failed to process.
+    EXPECT_FALSE(m_fileFailed);
+
+    // The intermediate asset should be deleted and gone, because CheckMissingJobs removed it for no longer being a product
+    // of any source asset.
+    EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(intermediateAssetPath.c_str()));
+
+}
+
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
 {
     // This tests the JobDiagnosticTracker:  Warnings/errors reported to it should be recorded in the database when AssetProcessed is fired and able to be retrieved when querying job status
@@ -737,7 +877,7 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -808,7 +948,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDFailure)
 
     QString absolutePath = m_assetRootDir.absoluteFilePath("assetProcessorManagerTestFailed.txt");
 
-    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data()));
+    AZ::Uuid uuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().data())).GetValue();
     AssetJobsInfoRequest request;
     request.m_assetId = AZ::Data::AssetId(uuid, 0);
     request.m_escalateJobs = false;
@@ -833,7 +973,7 @@ TEST_F(AssetProcessorManagerTest, UnitTestForCancelledJob)
     entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
     entry.m_jobRunKey = 1;
 
-    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference);
+    AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(entry.m_sourceAssetReference).GetValue();
     bool sourceFound = false;
 
     //Checking the response of the APM when we cancel a job in progress
@@ -3272,7 +3412,7 @@ void SourceFileDependenciesTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
 
-    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt")));
+    m_sourceFileUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/assetProcessorManagerTest.txt"))).GetValueOr(AZ::Uuid());
 
     ASSERT_FALSE(m_sourceFileUuid.IsNull());
 
@@ -3282,10 +3422,10 @@ void SourceFileDependenciesTest::SetUp()
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
 
-    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")));
-    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")));
-    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")));
-    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")));
+    m_uuidOfA = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfB = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfC = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/c.txt"))).GetValueOr(AZ::Uuid());
+    m_uuidOfD = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder1/d.txt"))).GetValueOr(AZ::Uuid());
 
     // Clean up the files, different tests have different requirements for which files should exist
     QFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt")).remove();
@@ -3331,7 +3471,7 @@ void SourceFileDependenciesTest::SetupData(
     // construct the dummy job to feed to the database updater function:
     job.m_sourceFileInfo.m_sourceAssetReference = AssetProcessor::SourceAssetReference(m_absPath);
     job.m_sourceFileInfo.m_scanFolder = m_scanFolder;
-    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference);
+    job.m_sourceFileInfo.m_uuid = AssetUtilities::GetSourceUuid(job.m_sourceFileInfo.m_sourceAssetReference).GetValueOr(AZ::Uuid());
 
     if (primeMap)
     {
@@ -3695,7 +3835,7 @@ TEST_F(SourceFileDependenciesTest, UpdateSourceFileDependenciesDatabase_MissingF
     // now make c exist too and pretend a job came in to process it:
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
     AssetProcessor::SourceAssetReference cAssetReference(m_watchFolderPath, "c.txt");
-    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference);
+    AZ::Uuid uuidOfC = AssetUtilities::GetSourceUuid(cAssetReference).GetValue();
 
     AssetProcessorManager::JobToProcessEntry job3;
     job3.m_sourceFileInfo.m_sourceAssetReference = cAssetReference;
@@ -4287,14 +4427,14 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
 
     // construct the dummy job to feed to the database updater function:
     AssetProcessor::SourceAssetReference sourceAsset(absPath);
-    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset);
+    AZ::Uuid wildcardTestUuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValue();
     AssetProcessorManager::JobToProcessEntry job;
     job.m_sourceFileInfo.m_sourceAssetReference = sourceAsset;
     job.m_sourceFileInfo.m_scanFolder = scanFolder;
     job.m_sourceFileInfo.m_uuid = wildcardTestUuid;
 
     // each file we will take a different approach to publishing:  rel path, and UUID:
-    job.m_sourceFileDependencies.push_back(AZStd::make_pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>(dummyBuilderUUID, { "b*.txt", AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards }));
+    job.m_sourceFileDependencies.emplace_back(dummyBuilderUUID, AssetBuilderSDK::SourceFileDependency{ "b*.txt", AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards });
 
     // it is currently assumed that the only fields that we care about in JobDetails is the builder busId and the job dependencies themselves:
     JobDetails newDetails;
@@ -4603,7 +4743,7 @@ void JobDependencyTest::SetUp()
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
     m_mockApplicationManager->BusDisconnect();
 
-    m_data->m_mockBuilderInfoHandler.CreateBuilderDescInfoRef("test builder", m_data->m_builderUuid.ToString<QString>(), { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, m_data->m_assetBuilderConfig);
+    m_data->m_mockBuilderInfoHandler.CreateBuilderDescInfoRef("test builder", m_data->m_builderUuid.ToFixedString().c_str(), { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, m_data->m_assetBuilderConfig);
     m_data->m_mockBuilderInfoHandler.BusConnect();
 
     QString watchFolderPath = m_assetRootDir.absoluteFilePath("subfolder1");
@@ -4702,7 +4842,7 @@ void ChainJobDependencyTest::SetUp()
             jobDependencyPath = QString("%1.txt").arg(i - 1);
         }
 
-        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(QString("test builder %1").arg(i), AZ::Uuid::CreateRandom().ToString<QString>(), { AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*%d.txt", i), AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
+        m_data->m_mockBuilderInfoHandler.CreateBuilderDesc(QString("test builder %1").arg(i), AZ::Uuid::CreateRandom().ToFixedString().c_str(), { AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*%d.txt", i), AssetBuilderSDK::AssetBuilderPattern::Wildcard) },
             UnitTests::MockMultiBuilderInfoHandler::AssetBuilderExtraInfo{ "", "", jobDependencyPath, "", {} });
     }
 
@@ -4952,27 +5092,35 @@ void WildcardSourceDependencyTest::SetUp()
     auto bUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/b.foo")));
     auto dUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_assetRootDir.absoluteFilePath("subfolder2/folder/one/d.foo")));
 
-    ASSERT_FALSE(aUuid.IsNull());
-    ASSERT_FALSE(bUuid.IsNull());
-    ASSERT_FALSE(dUuid.IsNull());
+    ASSERT_TRUE(aUuid);
+    ASSERT_TRUE(bUuid);
+    ASSERT_TRUE(dUuid);
 
     // Relative path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), aUuid, PathOrUuid("%a.foo"),
+        AZ::Uuid::CreateRandom(),
+        aUuid.GetValue(),
+        PathOrUuid("%a.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Absolute path wildcard dependency
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), bUuid, PathOrUuid(m_assetRootDir.absoluteFilePath("%b.foo").toUtf8().constData()),
+        AZ::Uuid::CreateRandom(),
+        bUuid.GetValue(),
+        PathOrUuid(m_assetRootDir.absoluteFilePath("%b.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     // Test what happens when we have 2 dependencies on the same file
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid("%c.foo"),
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
+        PathOrUuid("%c.foo"),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid, PathOrUuid(m_assetRootDir.absoluteFilePath("%c.foo").toUtf8().constData()),
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
+        PathOrUuid(m_assetRootDir.absoluteFilePath("%c.foo").toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 
 #ifdef AZ_PLATFORM_WINDOWS
@@ -4983,7 +5131,8 @@ void WildcardSourceDependencyTest::SetUp()
     // This only applies to windows because on other OSes if the dependency starts with /, then its an abs path dependency
     auto test = (m_assetRootDir.absolutePath().left(1) + "%.foo");
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
-        AZ::Uuid::CreateRandom(), dUuid,
+        AZ::Uuid::CreateRandom(),
+        dUuid.GetValue(),
         PathOrUuid(test.toUtf8().constData()),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0, ""));
 #endif

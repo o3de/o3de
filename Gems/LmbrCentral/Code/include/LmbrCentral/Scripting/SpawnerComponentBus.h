@@ -130,7 +130,7 @@ namespace LmbrCentral
     {
     public:
         AZ_RTTI(SpawnerConfig, "{D4D68E8E-9031-448F-9D56-B5575CF4833C}", AZ::ComponentConfig);
-        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator);
 
         SpawnerConfig() = default;
 

@@ -121,7 +121,6 @@ namespace AzToolsFramework
                     "Archive", "Handles creation and extraction of zip archives.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ;
             }
         }

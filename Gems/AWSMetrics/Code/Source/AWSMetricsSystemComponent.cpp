@@ -10,11 +10,6 @@
 #include <AWSMetricsSystemComponent.h>
 #include <MetricsManager.h>
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -64,7 +59,6 @@ namespace AWSMetrics
             {
                 ec->Class<AWSMetricsSystemComponent>("AWSMetrics", "Generate and submit metrics to the metrics analytics pipeline")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -206,8 +200,6 @@ namespace AWSMetrics
         AWSMetricsRequestBus::Handler::BusConnect();
 
         m_metricsManager->StartMetrics();
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSMetricsEnabled);
     }
 
     void AWSMetricsSystemComponent::Deactivate()

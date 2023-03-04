@@ -20,7 +20,7 @@ class CCompoundSplineTrack
     : public IAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(CCompoundSplineTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CCompoundSplineTrack, AZ::SystemAllocator);
     AZ_RTTI(CCompoundSplineTrack, "{E6B88EF4-6DB7-48E7-9758-DF6C9E40D4D2}", IAnimTrack);
 
     CCompoundSplineTrack(int nDims, AnimValueType inValueType, CAnimParamType subTrackParamTypes[MAX_SUBTRACKS], bool expanded);

@@ -32,7 +32,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(ConstantsLayout, "{66EDAC32-7730-4F05-AF9D-B3CB0F5D90E0}");
-            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ConstantsLayout> Create();

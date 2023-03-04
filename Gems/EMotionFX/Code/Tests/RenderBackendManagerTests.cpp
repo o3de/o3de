@@ -29,7 +29,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderActor, "{560849A4-7767-4654-8C61-EDA9A0059BE1}", RenderActor)
-            AZ_CLASS_ALLOCATOR(TestRenderActor, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderActor, EMotionFXAllocator)
 
             TestRenderActor(ActorAsset* actorAsset)
                 : RenderActor()
@@ -46,7 +46,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderActorInstance, "{8F5CD404-9661-4A71-9583-EB8E66F3C0E8}", RenderActorInstance)
-            AZ_CLASS_ALLOCATOR(TestRenderActorInstance, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderActorInstance, EMotionFXAllocator)
 
             TestRenderActorInstance(AZ::EntityId entityId,
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
@@ -83,7 +83,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderBackend, "{22CC2C55-8019-4302-8DFD-E08E0CA48114}", RenderBackend)
-            AZ_CLASS_ALLOCATOR(TestRenderBackend, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderBackend, EMotionFXAllocator)
 
             RenderActor* CreateActor(ActorAsset* actorAsset) override
             {

@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -59,7 +60,8 @@ namespace AZ
                 return RHI::ResultCode::InvalidArgument;
             }
 
-            const VkResult result = device.GetContext().CreateFence(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFence);
+            const VkResult result =
+                device.GetContext().CreateFence(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeFence);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -73,7 +75,7 @@ namespace AZ
             if (m_nativeFence != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, nullptr);
+                device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, VkSystemAllocator::Get());
                 m_nativeFence = VK_NULL_HANDLE;
             }
             // Signal any pending thread.

@@ -25,7 +25,7 @@ namespace GraphCanvas
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteTreeView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteTreeView, AZ::SystemAllocator);
         explicit NodePaletteTreeView(QWidget* parent = nullptr);
         
         void resizeEvent(QResizeEvent* event) override;

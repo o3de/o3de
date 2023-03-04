@@ -23,7 +23,7 @@ namespace WhiteBox
         public:
             inline static constexpr char AssetFileExtension[] = "wbm";
 
-            AZ_CLASS_ALLOCATOR(WhiteBoxMeshAssetHandler, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(WhiteBoxMeshAssetHandler, AZ::SystemAllocator)
 
             WhiteBoxMeshAssetHandler();
             ~WhiteBoxMeshAssetHandler();

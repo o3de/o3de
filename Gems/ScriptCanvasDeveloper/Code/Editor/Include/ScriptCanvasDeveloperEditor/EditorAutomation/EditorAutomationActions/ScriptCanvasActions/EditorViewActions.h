@@ -20,7 +20,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CenterOnScenePointAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CenterOnScenePointAction, AZ::SystemAllocator);
         AZ_RTTI(CenterOnScenePointAction, "{527B3EE0-258F-4D0C-8642-6923D81A9C40}", EditorAutomationAction);
 
         CenterOnScenePointAction(GraphCanvas::GraphId graphId, QPointF scenePoint);
@@ -41,7 +41,7 @@ namespace ScriptCanvas::Developer
         : public DelayAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(EnsureSceneRectVisibleAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EnsureSceneRectVisibleAction, AZ::SystemAllocator);
         AZ_RTTI(EnsureSceneRectVisibleAction, "{BF412F21-62F1-48AA-891E-266C986820FA}", DelayAction);
 
         EnsureSceneRectVisibleAction(GraphCanvas::GraphId graphId, QRectF sceneRect);
@@ -65,7 +65,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SceneMouseMoveAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneMouseMoveAction, AZ::SystemAllocator);
         AZ_RTTI(SceneMouseMoveAction, "{A26D0034-0682-4F61-9425-EF659D1ABAD0}", CompoundAction);
 
         SceneMouseMoveAction(GraphCanvas::GraphId graphId, QPointF scenePoint);
@@ -91,7 +91,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SceneMouseDragAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneMouseDragAction, AZ::SystemAllocator);
         AZ_RTTI(SceneMouseDragAction, "{5A422603-1A84-40B2-B051-94D324F94C7A}", CompoundAction);
 
         SceneMouseDragAction(GraphCanvas::GraphId graphId, QPointF sceneStart, QPointF sceneEnd, Qt::MouseButton mouseButton = Qt::MouseButton::LeftButton);
