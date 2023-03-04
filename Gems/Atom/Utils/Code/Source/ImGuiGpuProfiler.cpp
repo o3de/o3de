@@ -2045,7 +2045,6 @@ namespace AZ
         static constexpr const char* MemoryCSVHeader =
             "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
             "1 == Texture), Byte Size, Flags\n";
-        static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %zu, %" PRIu32 "\n";
         static constexpr size_t MemoryCSVFieldCount = 6;
 
         void ImGuiGpuMemoryView::LoadFromCSV(const AZStd::string& fileName)
