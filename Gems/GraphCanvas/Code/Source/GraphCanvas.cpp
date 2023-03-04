@@ -127,7 +127,6 @@ namespace GraphCanvas
                     "LmbrCentral", "Provides factory methods for Graph Canvas components")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }            
             

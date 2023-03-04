@@ -112,7 +112,6 @@ namespace LmbrCentral
                         "LmbrCentral Allocator Component", "Manages initialization of memory allocators required by LmbrCentral")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }
@@ -148,7 +147,6 @@ namespace LmbrCentral
                         "LmbrCentral Asset Builder Allocator Component", "Manages initialization of memory allocators required by LmbrCentral during asset building")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }
@@ -274,7 +272,6 @@ namespace LmbrCentral
                     "LmbrCentral", "Coordinates initialization of systems within LmbrCentral")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Game")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }

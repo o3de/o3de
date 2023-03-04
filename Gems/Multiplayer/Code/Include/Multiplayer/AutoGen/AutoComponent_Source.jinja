@@ -1073,9 +1073,9 @@ m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ Service.attrib['Na
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
 {%          if Property.attrib['IsRewindable']|booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%          else %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%          endif %}
 {%      endif %}
 {% endcall -%}
@@ -1109,7 +1109,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% macro DefineArchetypePropertyEditReflection(Component, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseArchetypeProperties(Component) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%      endif %}
 {%      if Property.attrib['Suffix'] %}
 ->Attribute(AZ::Edit::Attributes::Suffix, " {{ Property.attrib['Suffix'] }}")

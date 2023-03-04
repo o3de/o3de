@@ -90,7 +90,7 @@ namespace EMotionFX
 
         for (size_t i = 0; i < numJointNames; ++i)
         {
-            weightedJointNames[i] = AZStd::make_pair<AZStd::string, float>(jointNames[i], 0.0f);
+            weightedJointNames[i] = AZStd::make_pair(jointNames[i], 0.0f);
         }
 
         SetWeightedJointNames(weightedJointNames);
@@ -225,8 +225,12 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                    });
         });
 
         return picker;
@@ -269,9 +273,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                        handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                    });
         });
 
         return picker;
@@ -314,9 +322,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                {
+                    handler->RequestWrite(picker);
+                    handler->OnEditingFinished(picker);
+                    handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                });
         });
 
         return picker;

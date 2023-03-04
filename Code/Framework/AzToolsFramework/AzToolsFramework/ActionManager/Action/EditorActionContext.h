@@ -27,10 +27,7 @@ namespace AzToolsFramework
     //! Editor Action Context class definition.
     //! Identifies a collection of Actions and their accessibility in the context of the whole O3DE Editor.
     class EditorActionContext
-        : public QObject
     {
-        Q_OBJECT
-
     public:
         EditorActionContext() = default;
         EditorActionContext(AZStd::string identifier, AZStd::string name);

@@ -36,7 +36,6 @@ namespace AZ
                     editContext->Class<EditorModeFeedbackSystemComponent>(
                         "Editor Mode Feedback System", "Manages discovery of Editor Mode Feedback effects")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }

@@ -395,7 +395,8 @@ namespace EMStudio
         QDir dir(appDataFolder.c_str());
         dir.mkpath(appDataFolder.c_str());
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, appDataFolder);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, appDataFolder);
         return appDataFolder.c_str();
     }
 

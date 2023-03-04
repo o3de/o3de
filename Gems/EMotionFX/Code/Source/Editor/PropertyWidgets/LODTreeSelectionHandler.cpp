@@ -26,7 +26,8 @@ namespace EMotionFX
                 connect(instance, &LODTreeSelectionWidget::valueChanged, this,
                     [instance]()
                     {
-                        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, instance);
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                            &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, instance);
                     });
                 return instance;
             }

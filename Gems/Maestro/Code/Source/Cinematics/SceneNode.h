@@ -150,7 +150,7 @@ private:
 
     std::vector<SSoundInfo> m_SoundInfo;
 
-    AZ::TimeMs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeMs;
+    AZ::TimeUs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeUs;
     float m_timeScaleBackup = 1.0f;
 };
 

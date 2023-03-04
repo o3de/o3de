@@ -71,7 +71,6 @@ endif()
 
 set(registration_error [=[
 To enable more verbose logging, run the cmake command again with '--log-level VERBOSE'
-
 Engine registration is required before configuring a project.
 Run 'scripts/o3de register --this-engine' from the engine root.
 ]=])
@@ -153,13 +152,19 @@ endif()
 if(NOT user_project_engine)
     file(READ ${CMAKE_CURRENT_SOURCE_DIR}/project.json o3de_project_json)
     string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} engine)
-    if(json_error)
+    if(json_error AND ${project_engine} STREQUAL "NOTFOUND")
         message(FATAL_ERROR "Unable to read key 'engine' from 'project.json'\nError: ${json_error}")
     endif()
 endif()
 
 if(user_project_engine)
     message(FATAL_ERROR "The local '${O3DE_USER_PROJECT_JSON_PATH}' engine is '${user_project_engine}' but no compatible engine with that name and version was found.  Please register the compatible engine, or remove the local engine override.\n${registration_error}")
-else()
+elseif(project_engine)
     message(FATAL_ERROR "The project.json engine is '${project_engine}' but no engine with that name and version was found.\n${registration_error}")
+else()
+    set(project_registration_error [=[
+    Project registration is required before configuring a project.
+    Run 'scripts/o3de register -pp PROJECT_PATH --engine-path ENGINE_PATH' from the engine root.
+    ]=])
+    message(FATAL_ERROR "${project_registration_error}")
 endif()

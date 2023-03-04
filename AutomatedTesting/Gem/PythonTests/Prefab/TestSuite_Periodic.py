@@ -15,8 +15,8 @@ from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomationNoOverrides(EditorTestSuite):
 
-    # These tests will execute with prefab overrides disabled
-    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOverridesUx=false")
+    # These tests will execute with prefab outliner overrides disabled
+    EditorTestSuite.global_extra_cmdline_args.append("--regset=O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=false")
 
     # Spawnables Tests
 

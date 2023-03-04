@@ -251,7 +251,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -317,7 +318,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
         return picker;
@@ -343,7 +345,8 @@ namespace EMotionFX
         picker->SetFilterTypes({azrtti_typeid<Vector2Parameter>()});
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters) {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -370,7 +373,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
