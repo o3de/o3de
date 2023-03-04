@@ -59,7 +59,11 @@ namespace AZ
 
         void ProjectedShadowmapsPass::SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge)
         {
-            m_atlasAttachmentImage = atlasAttachmentIamge;
+            if (m_atlasAttachmentImage != atlasAttachmentIamge)
+            {
+                m_atlasAttachmentImage = atlasAttachmentIamge;
+                QueueForBuildAndInitialization();
+            }
         }
 
         void ProjectedShadowmapsPass::BuildInternal()

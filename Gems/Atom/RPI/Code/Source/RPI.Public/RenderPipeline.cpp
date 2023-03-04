@@ -443,6 +443,9 @@ namespace AZ
 
                 // Reset change flags
                 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
+
+                // Process any changes that may have happened due to SceneNotification Events.
+                m_passTree.ProcessQueuedChanges();
             }
         }
 

@@ -104,27 +104,20 @@ namespace AZ
 
         void EsmShadowmapsPass::BuildInternal()
         {
-            if (GetOutputCount() > 0 && m_isProjected)
+            if (GetInputOutputCount() > 0 && m_isProjected)
             {
                 if (!m_atlasAttachmentImage)
                 {
-                    auto binding = GetOutputBinding(0);
+                    auto binding = GetInputOutputBinding(0);
                     if (binding.GetAttachment() == nullptr)
                     {
                         auto tempAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::R16_FLOAT);
                         AttachImageToSlot(AZ::Name("EsmShadowmaps"), tempAttachmentImage);
-                        AZ_TracePrintf("EsmShadowmapsPass", "Attaching temp image %s to %s.", tempAttachmentImage->GetAttachmentId().GetCStr(), GetPathName().GetCStr());
-                    }
-                    else
-                    {
-
-                        AZ_TracePrintf("EsmShadowmapsPass", "Leaving %s with current attachment %s.", GetPathName().GetCStr(), binding.GetAttachment()->GetAttachmentId().GetCStr());
                     }
                 }
                 else
                 {
                     AttachImageToSlot(AZ::Name("EsmShadowmaps"), m_atlasAttachmentImage);
-                    AZ_TracePrintf("EsmShadowmapsPass", "Attaching esm atlas image %s to %s.", m_atlasAttachmentImage->GetAttachmentId().GetCStr(), GetPathName().GetCStr());
                 }
             }
 
@@ -166,7 +159,11 @@ namespace AZ
 
         void EsmShadowmapsPass::SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge)
         {
-            m_atlasAttachmentImage = atlasAttachmentIamge;
+            if (m_atlasAttachmentImage != atlasAttachmentIamge)
+            {
+                m_atlasAttachmentImage = atlasAttachmentIamge;
+                QueueForBuildAndInitialization();
+            }
         }
 
         void EsmShadowmapsPass::UpdateChildren()

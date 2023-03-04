@@ -96,7 +96,10 @@ namespace AZ::Render
         void InitializeShadow(ShadowId shadowId);
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
-        void CachePasses();
+        void CheckRemovePrimaryPasses(RPI::RenderPipeline* renderPipeline);
+        void RemoveCachedPasses(RPI::RenderPipeline* renderPipeline);
+        void CachePasses(RPI::RenderPipeline* renderPipeline);
+        void UpdatePrimaryPasses();
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();
@@ -136,8 +139,8 @@ namespace AZ::Render
         Data::Instance<RPI::AttachmentImage> m_atlasImage;
         Data::Instance<RPI::AttachmentImage> m_esmAtlasImage;
 
-        AZStd::vector<ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
-        AZStd::vector<EsmShadowmapsPass*> m_esmShadowmapsPasses;
+        AZStd::unordered_map<RPI::RenderPipeline*, ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
+        AZStd::unordered_map<RPI::RenderPipeline*, EsmShadowmapsPass*> m_esmShadowmapsPasses;
         ProjectedShadowmapsPass* m_primaryProjectedShadowmapsPass = nullptr;
         EsmShadowmapsPass* m_primaryEsmShadowmapsPass = nullptr;
 
