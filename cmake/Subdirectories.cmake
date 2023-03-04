@@ -235,7 +235,7 @@ function(resolve_gem_dependencies object_type object_path)
             # The next entry after every gem name is the gem path
             cmake_path(SET gem_path "${entry}")
 
-            # Most gem root properties were already been set by
+            # Most gem root properties have already been set by
             # add_o3de_object_gem_json_external_subdirectories() but
             # if multiple gems exist with the same name, only the path for the last
             # gem.json parsed is used, but gem resolution will provide us with the 
@@ -260,57 +260,10 @@ endfunction()
 
 #! Queries the list of gem names against the list of ALL registered external subdirectories
 #! in order to determine the paths corresponding to the gem names
-function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names object_path object_type)
-    #if(NOT O3DE_GEM_DEPENDENCY_RESOLUTION_ENABLED)
-        get_all_external_subdirectories(registered_external_subdirs)
-        query_gem_paths_from_external_subdirs(gem_dirs "${gem_names}" "${registered_external_subdirs}")
-        set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
-        return()
-    #endif()
-
-    # query the resolved list of gems
-    set(ENV{PYTHONNOUSERSITE} 1)
-    cmake_path(SET input_path "${CMAKE_BINARY_DIR}/${object_type}_gem_names.in")
-    cmake_path(SET output_path "${CMAKE_BINARY_DIR}/${object_type}_external_subdirectories.out")
-    file(WRITE "${input_path}" "${gem_names}")
-    #message(VERBOSE "resolved external subdirs: '${input_path}'")
-    string(TOLOWER ${object_type} object_type_lower)
-    execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" -esof "${output_path}"
-        WORKING_DIRECTORY ${LY_ROOT_FOLDER}
-        RESULT_VARIABLE O3DE_CLI_RESULT
-        OUTPUT_VARIABLE O3DE_CLI_OUT 
-        ERROR_VARIABLE O3DE_CLI_OUT
-        )
-    if(O3DE_CLI_RESULT)
-        message(FATAL_ERROR "****cmake.py result ${O3DE_CLI_RESULT}\n error: ${O3DE_CLI_OUT} *****")
-    endif()
-    file(READ "${output_path}" all_resolved_external_subdirs)
-
-    # save every resolved gem path in a global property for easy lookup
-    unset(gem_path)
-    foreach(entry IN LISTS all_resolved_external_subdirs)
-        if(NOT gem_name)
-            # the first entry is the gem name (lower case)
-            set(gem_name ${entry})
-        else()
-            # this next entry after every gem name is the gem path
-            #set_property(GLOBAL PROPERTY "${gem_name}:ResolvedPath" "${entry}")
-            get_property(existing_gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-            cmake_path(SET new_gem_path "${entry}")
-            if(existing_gem_path)
-                cmake_path(SET existing_gem_path "${existing_gem_path}")
-                cmake_path(COMPARE "${new_gem_path}" NOT_EQUAL "${existing_gem_path}" paths_are_different)
-                if (paths_are_different)
-                    message(WARNING "Multiple paths were found for the same gem '${gem_name}':\n  ${existing_gem_path}\n  ${new_gem_path}")
-                endif()
-            endif()
-            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${new_gem_path}")
-            unset(gem_name)
-        endif()
-    endforeach()
-
-    #set(${output_gem_dirs} ${all_external_subdirs_resolved} PARENT_SCOPE)
+function(add_registered_gems_to_external_subdirs output_gem_dirs gem_names)
+    get_all_external_subdirectories(registered_external_subdirs)
+    query_gem_paths_from_external_subdirs(gem_dirs "${gem_names}" "${registered_external_subdirs}")
+    set(${output_gem_dirs} ${gem_dirs} PARENT_SCOPE)
 endfunction()
 
 #! Recurses "dependencies" array if the external subdirectory is a gem(contains a gem.json)
@@ -385,7 +338,6 @@ endfunction()
 #! - The <o3de_object> path
 #! - The list of external_subdirectories found by recursively visting the <o3de_object>.json "external_subdirectories"
 function(get_all_external_subdirectories_for_o3de_object output_subdirs object_type object_name object_path object_json_filename)
-
     # Append the gems referenced by name from "gem_names" field in the <object>.json
     # These gems are registered in the users o3de_manifest.json
     o3de_read_json_array(initial_gem_names ${object_path}/${object_json_filename} "gem_names")
@@ -418,7 +370,7 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
         list(APPEND gem_names ${gem_name_with_version_specifier})
     endforeach()
 
-    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}" "${object_path}" "${object_type}")
+    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
     list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 
     # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"

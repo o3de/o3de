@@ -413,11 +413,13 @@ class GemCandidate(namedtuple("Candidate",["name", "version","requirements","gem
         return "<Gem {name}=={version}>".format(
             name=self.name, version=self.version
         )
+
     def identify(self):
         # IMPORTANT identify with just the name and don't include a specifier
         # or we will get conflicting mappings. Use a prefix to avoid collisions with Engines
         #return f"Gem:{self.name}"
         return repr(self)
+
     def __hash__(self) -> int:
         return hash(('gem', self.name, self.version))
 
@@ -450,7 +452,7 @@ class GemDependencyProvider(AbstractProvider):
     def is_satisfied_by(self, requirement, candidate):
         if isinstance(candidate, EngineCandidate) and isinstance(requirement, EngineRequirement):
             incompatible_engine_objects = get_incompatible_objects_for_engine(requirement.gem_json_data, candidate.engine_json_data)
-            return incompatible_engine_objects == set()
+            return not incompatible_engine_objects
         elif isinstance(candidate, GemCandidate) and isinstance(requirement,GemRequirement):
             return (
                 candidate.name == requirement.name
@@ -462,7 +464,7 @@ class GemDependencyProvider(AbstractProvider):
     def get_dependencies(self, candidate):
         return candidate.requirements
 
-def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict) -> bool:
+def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> bool:
     # start with the engine candidate
     candidates = [
         EngineCandidate(engine_json_data.get('engine_name'), engine_json_data.get('version','0.0.0'), [], engine_json_data)
@@ -476,9 +478,8 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             gem_version = gem_json_data.get('version','0.0.0') or '0.0.0'
             gem_dependencies = gem_json_data.get('dependencies',[])
 
-            # add gem requirements
-            # remove all optional gems
-            gem_dependency_names = utils.get_gem_names_set(gem_dependencies, include_optional=False)
+            # add gem requirements without optional gems
+            gem_dependency_names = utils.get_gem_names_set(gem_dependencies, include_optional=include_optional)
             for gem_dependency in gem_dependency_names:
                 dep_name, dep_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_dependency)
                 if not dep_version_specifier:

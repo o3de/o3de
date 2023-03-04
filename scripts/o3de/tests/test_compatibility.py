@@ -22,7 +22,7 @@ from o3de import compatibility
                 'gemB':[{'gem_name':'gemB'}]
             },
             0),
-        # when dependency is missing expect expect incompatible
+        # when dependency is missing expect incompatible
         pytest.param({'gem_name':'gemA','dependencies':['gemB']}, 
             {
                 'gemA':[{'gem_name':'gemA', 'dependencies':'gemB'}]
@@ -38,7 +38,7 @@ from o3de import compatibility
                     ]
             },
             0),
-        # when multiple compatible gems exists with version specifier expect compatible
+        # when multiple compatible gems exist with versions expect compatible
         pytest.param({'gem_name':'gemA','dependencies':['gemB>1.0.0']}, 
             {
                 'gemA':[{'gem_name':'gemA', 'dependencies':'gemB>1.0.0'}],

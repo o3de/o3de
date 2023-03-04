@@ -255,7 +255,8 @@ def resolve_gem_dependency_paths(
     difficult and Python already has a solver with unit tests.
     :param engine_path: optional path to the engine, if not provided, the project's engine will be determined 
     :param project_path: optional path to the project, if not provided the engine path must be provided
-    :param resolved_gem_dependencies_output_path: optional path to the project, if not provided the engine path must be provided
+    :param resolved_gem_dependencies_output_path: optional path to the project, 
+           if not provided the engine path must be provided
     :return: 0 for success or non 0 failure code
     """
 
@@ -268,14 +269,17 @@ def resolve_gem_dependency_paths(
         if not engine_path:
             engine_path = manifest.get_this_engine_path()
             if not engine_path:
-                logger.error(f'Failed to find a valid engine path for the project at "{project_path}" which is required to resolve gem dependencies.')
+                logger.error('Failed to find a valid engine path for the project at '
+                             f'"{project_path}" which is required to resolve gem dependencies.')
                 return 1
 
-            logger.warning(f'Failed to determine the correct engine for the project at "{project_path}", falling back to this engine at {engine_path}.')
+            logger.warning('Failed to determine the correct engine for the project at '
+                           f'"{project_path}", falling back to this engine at {engine_path}.')
     
     engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
-        logger.error(f'Failed to retrieve engine json data for the engine at  "{engine_path}" which is required to resolve gem dependencies.')
+        logger.error('Failed to retrieve engine json data for the engine at '
+                     f'"{engine_path}" which is required to resolve gem dependencies.')
         return 1
 
     if project_path:
@@ -294,16 +298,24 @@ def resolve_gem_dependency_paths(
             output.write('')
         return 0
 
-    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, project_path=project_path, include_manifest_gems=True, include_engine_gems=True)
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, 
+                                                             project_path=project_path, 
+                                                             include_manifest_gems=True, 
+                                                             include_engine_gems=True)
 
     # First try to resolve with optional gems
-    results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, all_gems_json_data, engine_json_data)
+    results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, 
+                                                             all_gems_json_data, 
+                                                             engine_json_data, 
+                                                             include_optional=True)
     if errors:
-        logger.warning('Failed to resolve dependencies when including optional gems, trying again without optional gems.')
+        logger.warning('Failed to resolve dependencies with optional gems, trying without optional gems.')
 
         # Try without optional gems
         gem_names_without_optional = utils.get_gem_names_set(active_gem_names, include_optional=False)
-        results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, all_gems_json_data, engine_json_data)
+        results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, 
+                                                                 all_gems_json_data, 
+                                                                 engine_json_data)
 
     if errors:
         logger.error(f'Failed to resolve dependencies:\n '+ 

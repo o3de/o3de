@@ -73,7 +73,7 @@ endfunction()
 
 #! o3de_get_gem_candidate_paths: Get a list of all candidate gem paths
 # based on gem name.  Create a global property for each gem 
-#  containing a list of paths to every version of that gem to speed things up
+# containing a list of paths to every version of that gem to speed things up
 # \arg:gem_name the gem name (without version specifier) to find
 function(o3de_get_gem_candidate_paths gem_name registered_external_subdirs candidate_gem_paths)
     get_property(cache_exists GLOBAL PROPERTY "CachedGemCandidatePaths")

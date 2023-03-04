@@ -766,14 +766,14 @@ def get_most_compatible_object(object_name: str,
                               name_key: str, 
                               objects: list) -> pathlib.Path or None:
     """
-        Looks for the most compatible object based on object_name which may contain a version specifier.
-        Example: o3de>=1.2.3
+    Looks for the most compatible object based on object_name which may contain a version specifier.
+    Example: o3de>=1.2.3
 
-       :param object_name: Name of the object with optional version specifier 
-       :param object_typename: Type of object e.g. 'engine','project' or 'gem' 
-       :param object_validator: Validator to use for json file 
-       :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
-       :param objects: List of paths to search
+    :param object_name: Name of the object with optional version specifier 
+    :param object_typename: Type of object e.g. 'engine','project' or 'gem' 
+    :param object_validator: Validator to use for json file 
+    :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
+    :param objects: List of paths to search
     """
     matching_paths = deque()
     most_compatible_version = Version('0.0.0')
