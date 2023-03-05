@@ -20,7 +20,7 @@
 
 Surface EvaluateSurface_MaterialGraphName(
     float3 positionWS,
-    float3 vertexNormal,
+    float3 normalWS,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
@@ -28,13 +28,13 @@ Surface EvaluateSurface_MaterialGraphName(
 {
     #define O3DE_MC_POSITION positionWS
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
-    #define O3DE_MC_NORMAL vertexNormal
+    #define O3DE_MC_NORMAL normalWS
     #define O3DE_MC_TANGENT tangents[0]
     #define O3DE_MC_BITANGENT bitangents[0]
     #define O3DE_MC_WORLD_POSITION positionWS
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
-    float3 inNormal = vertexNormal;
+    float3 inNormal = normalWS;
     float3 inBaseColor = {1.0, 1.0, 1.0};
     float inMetallic = 0.0;
     float inRoughness = 0.0;
@@ -50,8 +50,8 @@ Surface EvaluateSurface_MaterialGraphName(
 
     Surface surface;
     surface.position = positionWS;
-    surface.vertexNormal = vertexNormal;
-    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((float2)inNormal, vertexNormal, tangents[0], bitangents[0]) : vertexNormal);
+    surface.vertexNormal = normalWS;
+    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((float2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();

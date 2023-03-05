@@ -24,19 +24,20 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float2 uv0,
     float2 uv1)
 {
+    float3 bitangent = cross(normal, (float3)tangent);
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
+    float4 positionWS = mul(objectToWorld, float4(position, 1.0));
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     #define O3DE_MC_POSITION position
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
-    #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT vertexTangent
-    #define O3DE_MC_BITANGENT vertexBitangent
-    #define O3DE_MC_WORLD_POSITION worldPosition
+    #define O3DE_MC_NORMAL normalWS
+    #define O3DE_MC_TANGENT tangentWS
+    #define O3DE_MC_BITANGENT bitangentWS
+    #define O3DE_MC_WORLD_POSITION positionWS
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
@@ -50,7 +51,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     #undef O3DE_MC_WORLD_POSITION
 
     VsOutput output;
-    output.worldPosition = (float3)worldPosition + (float3)inPositionOffset;
+    output.worldPosition = (float3)positionWS + (float3)inPositionOffset;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
     output.uvs[0] = uv0;
     output.uvs[1] = uv1;

@@ -21,6 +21,7 @@ struct PsDepthOutput
 PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
     Surface surface = EvaluateSurface(geoData);
 
 #if !FORCE_OPAQUE
