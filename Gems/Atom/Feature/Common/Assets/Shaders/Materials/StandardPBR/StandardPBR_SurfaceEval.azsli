@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_StandardPBR(geoData)
+#define EvaluateSurface EvaluateSurface_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_SurfaceEval.azsli"

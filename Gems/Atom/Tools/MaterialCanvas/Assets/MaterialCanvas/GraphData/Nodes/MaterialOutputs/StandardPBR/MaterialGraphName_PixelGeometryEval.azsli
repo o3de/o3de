@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_MaterialGraphName(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_MaterialGraphName
 #endif
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>

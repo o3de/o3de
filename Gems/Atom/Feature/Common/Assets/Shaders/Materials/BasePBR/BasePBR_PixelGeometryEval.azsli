@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_BasePBR(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_BasePBR
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"

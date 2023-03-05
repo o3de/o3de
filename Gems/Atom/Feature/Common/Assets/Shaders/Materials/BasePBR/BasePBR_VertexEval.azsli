@@ -12,7 +12,7 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_BasePBR(IN)
+#define EvaluateVertexGeometry EvaluateVertexGeometry_BasePBR
 #endif
 
 #include <viewsrg.srgi>
