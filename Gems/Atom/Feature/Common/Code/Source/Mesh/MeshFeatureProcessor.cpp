@@ -84,20 +84,20 @@ namespace AZ
 
         static void CacheRootConstantInterval(MeshInstanceGroupData& meshInstanceGroupData)
         {
+            meshInstanceGroupData.m_drawRootConstantInterval = RHI::Interval{};
+
             RHI::ConstPtr<RHI::ConstantsLayout> rootConstantsLayout = meshInstanceGroupData.m_drawPacket.GetRootConstantsLayout();
-
-            // Get the root constant layout
-            RHI::ShaderInputConstantIndex shaderInputIndex =
-                rootConstantsLayout->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
-
-            if (shaderInputIndex.IsValid())
+            if (rootConstantsLayout)
             {
-                RHI::Interval interval = rootConstantsLayout->GetInterval(shaderInputIndex);
-                meshInstanceGroupData.m_drawRootConstantInterval = interval;
-            }
-            else
-            {
-                meshInstanceGroupData.m_drawRootConstantInterval = RHI::Interval{};
+                // Get the root constant layout
+                RHI::ShaderInputConstantIndex shaderInputIndex =
+                    rootConstantsLayout->FindShaderInputIndex(s_m_rootConstantInstanceDataOffset_Name);
+
+                if (shaderInputIndex.IsValid())
+                {
+                    RHI::Interval interval = rootConstantsLayout->GetInterval(shaderInputIndex);
+                    meshInstanceGroupData.m_drawRootConstantInterval = interval;
+                }
             }
         }
 

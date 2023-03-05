@@ -312,9 +312,13 @@ namespace AZ
 
                 if(!m_rootConstantsLayout)
                 {
-                    m_rootConstantsLayout = pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
-                    AZStd::vector<uint8_t> constants(m_rootConstantsLayout->GetDataSize());
-                    drawPacketBuilder.SetRootConstants(constants);
+                    const RHI::ConstantsLayout* rootConstantsLayout = pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
+                    if (rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0)
+                    {
+                        m_rootConstantsLayout = rootConstantsLayout;
+                        AZStd::vector<uint8_t> constants(m_rootConstantsLayout->GetDataSize());
+                        drawPacketBuilder.SetRootConstants(constants);
+                    }
                 }
                 else
                 {
