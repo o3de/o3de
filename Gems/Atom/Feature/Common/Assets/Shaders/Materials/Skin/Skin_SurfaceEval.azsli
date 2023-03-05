@@ -218,7 +218,7 @@ Surface EvaluateSurface_Skin(
     return surface;
 }
 
-Surface EvaluateSurface_Skin(PixelGeometryData geoData)
+Surface EvaluateSurface_Skin(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_Skin(
         geoData.positionWS,

@@ -558,7 +558,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return surface;
     }
 
-    Surface EvaluateSurface_StandardMultilayerPBR(PixelGeometryData geoData)
+    Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData)
     {
         return EvaluateSurface_StandardMultilayerPBR(
             geoData.positionWS,
@@ -585,7 +585,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return ShouldHandleParallax();
     }
     
-    void EvaluateSurface(PixelGeometryData geoData)
+    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         // do nothing, this is where alpha clip can be done if it's supported
     }

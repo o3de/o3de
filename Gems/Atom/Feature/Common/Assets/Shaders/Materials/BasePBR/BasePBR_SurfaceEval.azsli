@@ -64,7 +64,7 @@ Surface EvaluateSurface_BasePBR(
     return surface;
 }
 
-Surface EvaluateSurface_BasePBR(PixelGeometryData geoData)
+Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_BasePBR(
         geoData.positionWS,

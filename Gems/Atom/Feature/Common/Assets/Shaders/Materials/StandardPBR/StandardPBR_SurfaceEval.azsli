@@ -79,7 +79,7 @@ Surface EvaluateSurface_StandardPBR(
     return surface;
 }
 
-Surface EvaluateSurface_StandardPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_StandardPBR(
         geoData.positionWS,

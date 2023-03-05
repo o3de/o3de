@@ -101,7 +101,7 @@ Surface EvaluateSurface_MaterialGraphName(
     return surface;
 }
 
-Surface EvaluateSurface_MaterialGraphName(PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_MaterialGraphName(
         geoData.positionWS,

@@ -149,7 +149,7 @@ Surface EvaluateSurface_Eye(
     return surface;
 }
 
-Surface EvaluateSurface_Eye(PixelGeometryData geoData)
+Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_Eye(
         geoData.positionWS,

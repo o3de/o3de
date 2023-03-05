@@ -168,7 +168,7 @@ Surface EvaluateSurface_EnhancedPBR(
     return surface;
 }
 
-Surface EvaluateSurface_EnhancedPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_EnhancedPBR(
         geoData.positionWS,
