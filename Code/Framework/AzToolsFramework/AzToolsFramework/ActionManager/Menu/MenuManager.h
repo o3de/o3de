@@ -31,7 +31,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager(QWidget* defaultParentWidget);
+        explicit MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -77,6 +77,7 @@ namespace AzToolsFramework
         void RefreshMenuBars() override;
         MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
+        void Reset() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

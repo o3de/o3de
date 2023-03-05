@@ -36,7 +36,6 @@ namespace AZ
                 {
                     ec->Class<MeshletsSystemComponent>("Meshlets", "[Description of functionality provided by this System Component]")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }

@@ -535,6 +535,10 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "SplashScreenPassTemplate",
+                "Path": "Passes/SplashScreen.pass"
             }
         ]
     }

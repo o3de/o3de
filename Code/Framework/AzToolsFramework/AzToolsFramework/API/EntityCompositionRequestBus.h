@@ -207,9 +207,6 @@ namespace AzToolsFramework
     //! ComponentFilter for components that users can add to game entities.
     static bool AppearsInGameComponentMenu(const AZ::SerializeContext::ClassData&);
 
-    //! ComponentFilter for components that can be added to system entities.
-    static bool AppearsInSystemComponentMenu(const AZ::SerializeContext::ClassData&);
-
     //
     // Implementation
     //
@@ -294,11 +291,6 @@ namespace AzToolsFramework
         return false;
     }
 
-    inline bool AppearsInSystemComponentMenu(const AZ::SerializeContext::ClassData& classData)
-    {
-        return AppearsInAddComponentMenu(classData, AZ_CRC("System", 0xc94d118b));
-    }
-
     inline bool AppearsInLayerComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
         return AppearsInAddComponentMenu(classData, AZ_CRC("Layer", 0xe4db211a));
@@ -311,6 +303,6 @@ namespace AzToolsFramework
 
     inline bool AppearsInAnyComponentMenu(const AZ::SerializeContext::ClassData& classData)
     {
-        return (AppearsInGameComponentMenu(classData) || AppearsInSystemComponentMenu(classData) || AppearsInLayerComponentMenu(classData) || AppearsInLevelComponentMenu(classData));
+        return (AppearsInGameComponentMenu(classData) || AppearsInLayerComponentMenu(classData) || AppearsInLevelComponentMenu(classData));
     }
 }

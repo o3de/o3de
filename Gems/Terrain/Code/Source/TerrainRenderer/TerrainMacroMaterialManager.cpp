@@ -28,22 +28,18 @@ namespace Terrain
             AZ::Vector2::CreateFromFloat2(m_boundsMax.data()).IsGreaterThan(min);
     }
 
-    void TerrainMacroMaterialManager::Initialize(
-        const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    void TerrainMacroMaterialManager::Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        AZ_Error(TerrainMacroMaterialManagerName, bindlessImageHandler, "bindlessImageHandler must not be null.");
         AZ_Error(TerrainMacroMaterialManagerName, terrainSrg, "terrainSrg must not be null.");
         AZ_Error(TerrainMacroMaterialManagerName, !m_isInitialized, "Already initialized.");
 
-        if (!bindlessImageHandler || !terrainSrg || m_isInitialized)
+        if (!terrainSrg || m_isInitialized)
         {
             return;
         }
         
         if (UpdateSrgIndices(terrainSrg))
         {
-            m_bindlessImageHandler = bindlessImageHandler;
             TerrainMacroMaterialNotificationBus::Handler::BusConnect();
             
             m_terrainSizeChanged = true;
@@ -64,8 +60,6 @@ namespace Terrain
         m_materialRefGridShaderData.clear();
         m_entityToMaterialHandle.clear();
         
-        m_bindlessImageHandler = {};
-
         TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
     }
     
@@ -212,9 +206,6 @@ namespace Terrain
             }
         );
         
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_colorMapId));
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_normalMapId));
-
         m_materialData.Release(materialHandle.GetIndex());
         m_entityToMaterialHandle.erase(entityId);
         m_bufferNeedsUpdate = true;
@@ -235,22 +226,7 @@ namespace Terrain
 
         auto UpdateImageIndex = [&](uint32_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView)
         {
-            if (indexRef != InvalidImageIndex)
-            {
-                if (imageView)
-                {
-                    m_bindlessImageHandler->UpdateBindlessImage(aznumeric_cast<uint16_t>(indexRef), imageView->GetImageView());
-                }
-                else
-                {
-                    m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(indexRef));
-                    indexRef = InvalidImageIndex;
-                }
-            }
-            else if (imageView)
-            {
-                indexRef = m_bindlessImageHandler->AppendBindlessImage(imageView->GetImageView());
-            }
+            indexRef = imageView ? imageView->GetImageView()->GetBindlessReadIndex() : InvalidImageIndex;
         };
 
         UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);
@@ -519,8 +495,8 @@ namespace Terrain
     void TerrainMacroMaterialManager::RemoveImagesForMaterial(MaterialHandle materialHandle)
     {
         MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_colorMapId));
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_normalMapId));
+        shaderData.m_colorMapId = InvalidImageIndex;
+        shaderData.m_normalMapId = InvalidImageIndex;
     }
 
 }

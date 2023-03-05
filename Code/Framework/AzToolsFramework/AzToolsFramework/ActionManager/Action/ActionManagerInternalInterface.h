@@ -22,6 +22,8 @@ namespace AzToolsFramework
     class ActionContextWidgetWatcher;
     class EditorAction;
 
+    enum class ActionVisibility;
+
     //! ActionManagerInternalInterface
     //! Internal Interface to query implementation details for actions.
     class ActionManagerInternalInterface
@@ -74,6 +76,12 @@ namespace AzToolsFramework
         //! Update all actions that are parented to a specific action context.
         //! @param actionContextIdentifier The action context identifier for the context to update all actions for.
         virtual void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) = 0;
+
+        //! Completely reset the Action Manager from all items registered after initialization.
+        //! Clears all Action Contexts, Actions and Widget Actions.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
+
     };
 
 } // namespace AzToolsFramework

@@ -18,6 +18,12 @@
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/std/containers/set.h>
 
+namespace AZ
+{
+    // Specialize TypeInfo for HphaSchemaBase only for the UnitTest
+    AZ_TYPE_INFO_TEMPLATE(AZ::HphaSchemaBase, "{FC350AF7-31D9-4B70-ABF5-CC99787BE830}", AZ_TYPE_INFO_AUTO);
+}
+
 namespace UnitTest
 {
     // allocator implementation of the HphaSchema with the debugging functionality enabled 

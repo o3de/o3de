@@ -72,7 +72,7 @@ namespace AZ
         FallbackToDefaultWrite,
         AbortWrite
     };
-    AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideResponse, "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(ObjectStreamWriteOverrideResponse);
 
     namespace Edit
     {
@@ -143,7 +143,8 @@ namespace AZ
         using IDataSerializerPtr = AZStd::unique_ptr<IDataSerializer, IDataSerializerDeleter>;
 
         AZ_CLASS_ALLOCATOR(SerializeContext, SystemAllocator);
-        AZ_RTTI(SerializeContext, "{83482F97-84DA-4FD4-BF9E-7FE34C8E091F}", ReflectContext);
+        AZ_TYPE_INFO_WITH_NAME_DECL(SerializeContext);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         /// Callback to process data conversion.
         typedef bool(* VersionConverter)(SerializeContext& /*context*/, DataElementNode& /* elements to convert */);
@@ -346,7 +347,8 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(DataPatchUpgrade, SystemAllocator);
-            AZ_RTTI(DataPatchUpgrade, "{FD1C3109-0883-45FF-A12F-CAF5E323E954}");
+            AZ_TYPE_INFO_WITH_NAME_DECL(DataPatchUpgrade);
+            AZ_RTTI_NO_TYPE_INFO_DECL();
 
             DataPatchUpgrade(AZStd::string_view fieldName, unsigned int fromVersion, unsigned int toVersion);
             virtual ~DataPatchUpgrade() = default;
@@ -440,7 +442,8 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(DataPatchNameUpgrade, SystemAllocator);
-            AZ_RTTI(DataPatchNameUpgrade, "{9991F242-7D3B-4E76-B3EA-2E09AE14187D}", DataPatchUpgrade);
+            AZ_TYPE_INFO_WITH_NAME_DECL(DataPatchNameUpgrade);
+            AZ_RTTI_NO_TYPE_INFO_DECL();
 
             DataPatchNameUpgrade(unsigned int fromVersion, unsigned int toVersion, AZStd::string_view oldName, AZStd::string_view newName)
                 : DataPatchUpgrade(oldName, fromVersion, toVersion)
@@ -466,87 +469,9 @@ namespace AZ
             AZStd::string m_newNodeName;
         };
 
+        // Forward declare DataPatchTypeUpgrade class
         template<class FromT, class ToT>
-        class DataPatchTypeUpgrade : public DataPatchUpgrade
-        {
-        public:
-            AZ_CLASS_ALLOCATOR(DataPatchTypeUpgrade, SystemAllocator);
-            AZ_RTTI(DataPatchTypeUpgrade, "{E5A2F519-261C-4B81-925F-3730D363AB9C}", DataPatchUpgrade);
-
-            DataPatchTypeUpgrade(AZStd::string_view nodeName, unsigned int fromVersion, unsigned int toVersion, AZStd::function<ToT(const FromT& data)> upgradeFunc)
-                : DataPatchUpgrade(nodeName, fromVersion, toVersion)
-                , m_upgrade(AZStd::move(upgradeFunc))
-                , m_fromTypeID(azrtti_typeid<FromT>())
-                , m_toTypeID(azrtti_typeid<ToT>())
-            {
-                m_upgradeType = TYPE_UPGRADE;
-            }
-
-            ~DataPatchTypeUpgrade() override = default;
-
-            bool operator<(const DataPatchTypeUpgrade& RHS) const
-            {
-                return DataPatchUpgrade::operator<(RHS);
-            }
-
-            AZStd::any Apply(const AZStd::any& in) const override
-            {
-                const FromT& inValue = AZStd::any_cast<const FromT&>(in);
-                return AZStd::any(m_upgrade(inValue));
-            }
-
-            void Apply(AZ::SerializeContext& context, SerializeContext::DataElementNode& node) const override
-            {
-                auto targetElementIndex = node.FindElement(m_targetFieldCRC);
-
-                AZ_Assert(targetElementIndex >= 0, "Invalid node. Field %s is not a valid element of class %s (Version %d). Check your reflection function.", m_targetFieldName.data(), node.GetNameString(), node.GetVersion());
-
-                if (targetElementIndex >= 0)
-                {
-                    AZ::SerializeContext::DataElementNode& targetElement = node.GetSubElement(targetElementIndex);
-
-                    // We're replacing the target node so store the name off for use later
-                    const char* targetElementName = targetElement.GetNameString();
-
-                    FromT fromData;
-
-                    // Get the current value at the target node
-                    bool success = targetElement.GetData<FromT>(fromData);
-
-                    AZ_Assert(success, "A single node type conversion of class %s (version %d) failed on field %s. The original node exists but isn't the correct type. Check your class reflection.", node.GetNameString(), node.GetVersion(), targetElementName);
-
-                    if (success)
-                    {
-                        node.RemoveElement(targetElementIndex);
-
-                        // Apply the user's provided data converter function
-                        ToT toData = m_upgrade(fromData);
-
-                        // Add the converted data back into the node as a new element with the same name
-                        auto newIndex = node.AddElement<ToT>(context, targetElementName);
-                        auto& newElement = node.GetSubElement(newIndex);
-                        newElement.SetData(context, toData);
-                    }
-                }
-            }
-
-            AZ::TypeId GetFromType() const override
-            {
-                return m_fromTypeID;
-            }
-
-            AZ::TypeId GetToType() const override
-            {
-                return m_toTypeID;
-            }
-
-        private:
-            AZStd::function<ToT(const FromT& data)> m_upgrade;
-
-            // Used for comparison of upgrade functions to determine uniqueness
-            AZ::TypeId m_fromTypeID;
-            AZ::TypeId m_toTypeID;
-        };
+        class DataPatchTypeUpgrade;
 
         /**
          * Class element. When a class doesn't have a direct serializer,
@@ -554,7 +479,7 @@ namespace AZ
          */
         struct ClassElement
         {
-            AZ_TYPE_INFO(ClassElement, "{7D386902-A1D9-4525-8284-F68435FE1D05}");
+            AZ_TYPE_INFO_WITH_NAME_DECL(ClassElement);
             enum Flags
             {
                 FLG_POINTER             = (1 << 0),       ///< Element is stored as pointer (it's not a value).
@@ -604,7 +529,7 @@ namespace AZ
         class ClassData
         {
         public:
-            AZ_TYPE_INFO(ClassData, "{20EB8E2E-D807-4039-84E2-CE37D7647CD4}");
+            AZ_TYPE_INFO_WITH_NAME_DECL(ClassData);
 
             ClassData();
             ~ClassData() { ClearAttributes(); }
@@ -740,7 +665,7 @@ namespace AZ
         class IDataContainer
         {
         public:
-            AZ_TYPE_INFO(IDataContainer, "{8565CBEA-C077-4A49-927B-314533A6EDB1}");
+            AZ_TYPE_INFO_WITH_NAME_DECL(IDataContainer);
 
             typedef AZStd::function< bool (void* /* instance pointer */, const Uuid& /*elementClassId*/, const ClassData* /* elementGenericClassData */, const ClassElement* /* genericClassElement */) > ElementCB;
             typedef AZStd::function< bool(const Uuid& /*elementClassId*/, const ClassElement* /* genericClassElement */) > ElementTypeCB;
@@ -756,7 +681,7 @@ namespace AZ
                 virtual void    FreeKey(void* key) = 0;
 
             public:
-                AZ_TYPE_INFO(IAssociativeDataContainer, "{58CF6250-6B0F-4A25-9864-25A64EB55DB1}");
+                AZ_TYPE_INFO_WITH_NAME_DECL(IAssociativeDataContainer);
                 virtual ~IAssociativeDataContainer() {}
 
                 struct KeyPtrDeleter
@@ -1062,7 +987,7 @@ namespace AZ
         */
         struct EnumerateInstanceCallContext
         {
-            AZ_TYPE_INFO(EnumerateInstanceCallContext, "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
+            AZ_TYPE_INFO_WITH_NAME_DECL(EnumerateInstanceCallContext);
             EnumerateInstanceCallContext(const BeginElemEnumCB& beginElemCB, const EndElemEnumCB& endElemCB, const SerializeContext* context, unsigned int accessflags, ErrorHandler* errorHandler);
 
             BeginElemEnumCB                 m_beginElemCB;          ///< Optional callback when entering an element's hierarchy.
@@ -1374,6 +1299,92 @@ namespace AZ
 
     SerializeContext::PerModuleGenericClassInfo& GetCurrentSerializeContextModule();
 
+    // As the SerializeContext::DataPatchTypeUpgrade class was forward declared
+    // in the SerializeContext class definition, TypeInfo GetO3de* functions can be now declared as well
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_DECL(SerializeContext::DataPatchTypeUpgrade, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+
+    template<class FromT, class ToT>
+    class SerializeContext::DataPatchTypeUpgrade : public DataPatchUpgrade
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(DataPatchTypeUpgrade, SystemAllocator);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+
+        DataPatchTypeUpgrade(AZStd::string_view nodeName, unsigned int fromVersion, unsigned int toVersion, AZStd::function<ToT(const FromT& data)> upgradeFunc)
+            : DataPatchUpgrade(nodeName, fromVersion, toVersion)
+            , m_upgrade(AZStd::move(upgradeFunc))
+            , m_fromTypeID(AZ::AzTypeInfo<FromT>::Uuid())
+            , m_toTypeID(AZ::AzTypeInfo<ToT>::Uuid())
+        {
+            m_upgradeType = TYPE_UPGRADE;
+        }
+
+        ~DataPatchTypeUpgrade() override = default;
+
+        bool operator<(const DataPatchTypeUpgrade& RHS) const
+        {
+            return DataPatchUpgrade::operator<(RHS);
+        }
+
+        AZStd::any Apply(const AZStd::any& in) const override
+        {
+            const FromT& inValue = AZStd::any_cast<const FromT&>(in);
+            return AZStd::any(m_upgrade(inValue));
+        }
+
+        void Apply(AZ::SerializeContext& context, SerializeContext::DataElementNode& node) const override
+        {
+            auto targetElementIndex = node.FindElement(m_targetFieldCRC);
+
+            AZ_Assert(targetElementIndex >= 0, "Invalid node. Field %s is not a valid element of class %s (Version %d). Check your reflection function.", m_targetFieldName.data(), node.GetNameString(), node.GetVersion());
+
+            if (targetElementIndex >= 0)
+            {
+                AZ::SerializeContext::DataElementNode& targetElement = node.GetSubElement(targetElementIndex);
+
+                // We're replacing the target node so store the name off for use later
+                const char* targetElementName = targetElement.GetNameString();
+
+                FromT fromData;
+
+                // Get the current value at the target node
+                bool success = targetElement.GetData<FromT>(fromData);
+
+                AZ_Assert(success, "A single node type conversion of class %s (version %d) failed on field %s. The original node exists but isn't the correct type. Check your class reflection.", node.GetNameString(), node.GetVersion(), targetElementName);
+
+                if (success)
+                {
+                    node.RemoveElement(targetElementIndex);
+
+                    // Apply the user's provided data converter function
+                    ToT toData = m_upgrade(fromData);
+
+                    // Add the converted data back into the node as a new element with the same name
+                    auto newIndex = node.AddElement<ToT>(context, targetElementName);
+                    auto& newElement = node.GetSubElement(newIndex);
+                    newElement.SetData(context, toData);
+                }
+            }
+        }
+
+        AZ::TypeId GetFromType() const override
+        {
+            return m_fromTypeID;
+        }
+
+        AZ::TypeId GetToType() const override
+        {
+            return m_toTypeID;
+        }
+
+    private:
+        AZStd::function<ToT(const FromT& data)> m_upgrade;
+
+        // Used for comparison of upgrade functions to determine uniqueness
+        AZ::TypeId m_fromTypeID;
+        AZ::TypeId m_toTypeID;
+    };
+
     /**
     * Base class that will provide various information for a generic entry.
     *
@@ -1560,7 +1571,7 @@ namespace AZ
         static AZStd::any CreateAny(SerializeContext* serializeContext)
         {
             AZStd::any::type_info typeinfo;
-            typeinfo.m_id = azrtti_typeid<ValueType>();
+            typeinfo.m_id = AZ::AzTypeInfo<ValueType>::Uuid();
             typeinfo.m_handler = NonCopyableAnyHandler(serializeContext);
             typeinfo.m_isPointer = AZStd::is_pointer<ValueType>::value;
             typeinfo.m_useHeap = AZStd::GetMax(sizeof(ValueType), AZStd::alignment_of<ValueType>::value) > AZStd::Internal::ANY_SBO_BUF_SIZE;
@@ -1875,7 +1886,7 @@ namespace AZ
         ed.m_nameCrc = AZ_CRC(c_serializeBaseClassStrings[index]);
         ed.m_flags = ClassElement::FLG_BASE_CLASS;
         ed.m_dataSize = sizeof(BaseClass);
-        ed.m_typeId = azrtti_typeid<BaseClass>();
+        ed.m_typeId = AZ::AzTypeInfo<BaseClass>::Uuid();
         ed.m_offset = SerializeInternal::GetBaseOffset<T, BaseClass>();
         ed.m_genericClassInfo = SerializeGenericTypeInfo<BaseClass>::GetGenericInfo();
         ed.m_azRtti = GetRttiHelper<BaseClass>();
@@ -2561,7 +2572,7 @@ namespace AZ
         using GenericClassInfoType = typename SerializeGenericTypeInfo<T>::ClassInfoType;
         static_assert(AZStd::is_base_of<AZ::GenericClassInfo, GenericClassInfoType>::value, "GenericClassInfoType must be be derived from AZ::GenericClassInfo");
 
-        const AZ::TypeId& canonicalTypeId = azrtti_typeid<T>();
+        const AZ::TypeId& canonicalTypeId = AZ::AzTypeInfo<T>::Uuid();
         auto findIt = m_moduleLocalGenericClassInfos.find(canonicalTypeId);
         if (findIt != m_moduleLocalGenericClassInfos.end())
         {
@@ -2579,7 +2590,7 @@ namespace AZ
     template<typename T>
     AZ::GenericClassInfo* SerializeContext::PerModuleGenericClassInfo::FindGenericClassInfo() const
     {
-        return FindGenericClassInfo(azrtti_typeid<T>());
+        return FindGenericClassInfo(AZ::AzTypeInfo<T>::Uuid());
     }
 
     /// Creates AZ::Attribute that is allocated using the the SerializeContext PerModule allocator

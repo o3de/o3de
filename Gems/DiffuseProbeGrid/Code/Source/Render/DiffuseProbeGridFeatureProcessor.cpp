@@ -563,6 +563,12 @@ namespace AZ
             probeGrid->SetTransparencyMode(transparencyMode);
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetEmissiveMultiplier(const DiffuseProbeGridHandle& probeGrid, float emissiveMultiplier)
+        {
+            AZ_Assert(probeGrid.get(), "SetEmissiveMultiplier called with an invalid handle");
+            probeGrid->SetEmissiveMultiplier(emissiveMultiplier);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(probeGrid.get(), "SetBakedTextures called with an invalid handle");

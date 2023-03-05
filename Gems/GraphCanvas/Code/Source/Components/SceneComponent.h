@@ -679,7 +679,7 @@ namespace GraphCanvas
         : public QGraphicsScene
     {
     public:
-        AZ_TYPE_INFO(Scene, "{48C47083-2CF2-4BB5-8058-FF25084FC2AA}");
+        AZ_TYPE_INFO(GraphCanvasGraphicsScene, "{48C47083-2CF2-4BB5-8058-FF25084FC2AA}");
         AZ_CLASS_ALLOCATOR(GraphCanvasGraphicsScene, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext*) = delete;

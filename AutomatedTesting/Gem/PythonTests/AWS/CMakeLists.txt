@@ -23,5 +23,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.Assets
         COMPONENT
             AWS
+        LABELS REQUIRES_tiaf
     )
 endif()

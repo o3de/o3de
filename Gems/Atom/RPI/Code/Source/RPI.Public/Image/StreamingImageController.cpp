@@ -272,25 +272,26 @@ namespace AZ
         bool StreamingImageController::EvictOneMipChain()
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-            if (m_streamableImages.size() == 0)
+            for (auto ritr = m_streamableImages.rbegin(); ritr != m_streamableImages.rend(); ritr++)
             {
-                return false; 
-            }
-            auto ritr = m_streamableImages.rbegin();
-            StreamingImage* image = *ritr;
+                StreamingImage* image = *ritr;
 
-            if (image->IsTrimmable())
-            {
-                RHI::ResultCode success = image->TrimOneMipChain();
-                if (success == RHI::ResultCode::Success)
+                if (image->IsTrimmable())
                 {
-                    StreamingDebugOutput("StreamingImageController", "Image [%s] has one mipchain released; Current resident mip: %d\n",
-                        image->GetRHIImage()->GetName().GetCStr(), image->GetRHIImage()->GetResidentMipLevel());
-                    // update the image's priority and re-insert the image 
-                    m_streamableImages.erase(image);
-                    UpdateImagePriority(image);
-                    m_streamableImages.insert(image);
-                    return true;
+                    RHI::ResultCode success = image->TrimOneMipChain();
+                    if (success == RHI::ResultCode::Success)
+                    {
+                        StreamingDebugOutput(
+                            "StreamingImageController",
+                            "Image [%s] has one mipchain released; Current resident mip: %d\n",
+                            image->GetRHIImage()->GetName().GetCStr(),
+                            image->GetRHIImage()->GetResidentMipLevel());
+                        // update the image's priority and re-insert the image
+                        m_streamableImages.erase(image);
+                        UpdateImagePriority(image);
+                        m_streamableImages.insert(image);
+                        return true;
+                    }
                 }
             }
 
