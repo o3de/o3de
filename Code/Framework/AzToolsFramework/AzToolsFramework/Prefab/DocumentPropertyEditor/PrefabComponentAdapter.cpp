@@ -50,6 +50,8 @@ namespace AzToolsFramework::Prefab
         AZ::Dom::Path relativePathFromEntity;
         if (!serializedPath.empty())
         {
+            AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::CreateLabel - Component alias should not be empty.");
+
             relativePathFromEntity /= PrefabDomUtils::ComponentsName;
             relativePathFromEntity /= m_componentAlias;
             relativePathFromEntity /= AZ::Dom::Path(serializedPath);
