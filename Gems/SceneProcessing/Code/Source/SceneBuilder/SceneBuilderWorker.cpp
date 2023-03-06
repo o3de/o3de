@@ -438,10 +438,10 @@ namespace SceneBuilder
 
         if (scene->HasDimension())
         {
-            char folder[512];
+            AZStd::string folder;
             AZStd::string jsonName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
-            sprintf_s(folder, "%s\\%s.metadata.json", outputFolder.c_str(), jsonName.c_str());
+            folder = AZStd::string::format("%s\\%s.metadata.json", outputFolder.c_str(), jsonName.c_str());
             rapidjson::StringBuffer s;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
             writer.StartObject();
@@ -457,7 +457,7 @@ namespace SceneBuilder
             writer.EndObject();
             writer.EndObject();
             FILE* f1;
-            azfopen(&f1, folder, "w");
+            azfopen(&f1, folder.c_str(), "w");
             fwrite(s.GetString(), 1, s.GetSize(), f1);
             fclose(f1);
             AssetBuilderSDK::JobProduct jsonProduct(folder);
