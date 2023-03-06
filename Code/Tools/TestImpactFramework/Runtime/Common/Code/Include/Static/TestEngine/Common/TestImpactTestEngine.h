@@ -244,25 +244,16 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        //
         TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
-
-        //
         TestJobRunnerNotificationHandler<TestJobRunner, TestTarget> handler(
             testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, errorCheckerCallback);
-
-        //
         auto [result, runnerJobs] = testRunner->RunTests(
             jobInfos,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdErrorRouting::None : StdErrorRouting::ToParent,
             testTargetTimeout,
             globalTimeout);
-
-        //
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
-
-        //
         return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 } // namespace TestImpact
