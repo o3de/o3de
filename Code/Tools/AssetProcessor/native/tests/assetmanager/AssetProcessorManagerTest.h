@@ -41,9 +41,6 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(
         AssetProcessorManagerTest, AssetProcessedImpl_DifferentProductDependenciesPerProduct_SavesCorrectlyToDatabase);
 
-    friend class GTEST_TEST_CLASS_NAME_(
-        AssetProcessorIntermediateAssetTests, SourceDependencyIsIntermediateAsset_NotInitiallyAvailable_DependencyResolvesWhenAvailable);
-
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms);

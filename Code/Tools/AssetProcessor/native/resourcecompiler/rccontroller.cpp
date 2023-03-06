@@ -440,18 +440,6 @@ namespace AssetProcessor
         {
             return;
         }
-        if (AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
-        {
-            AZ_Error("AssetProcessor", false, "JobComplete: %s", completeEntry.m_sourceAssetReference.AbsolutePath().c_str());
-        }
-        else if (
-            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("basepbr_generated.materialtype") ||
-            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str())
-                .ends_with("basepbr_generated.azmaterialtype") ||
-            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("StandardPBR.materialtype"))
-        {
-            AZ_Error("AssetProcessor", false, "!!!!JobComplete: %s", completeEntry.m_sourceAssetReference.AbsolutePath().c_str());
-        }
 
         QueueElementID jobQueueId(completeEntry.m_sourceAssetReference, completeEntry.m_platformInfo.m_identifier.c_str(), completeEntry.m_jobKey);
 
