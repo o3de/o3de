@@ -245,7 +245,7 @@ namespace TestImpact
 
         // Extract the client facing representation of selected test targets
         const Client::TestRunSelection selectedTests(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
-    
+
         // Inform the client that the sequence is about to start
         RegularTestSequenceNotificationsBus::Broadcast(
             &RegularTestSequenceNotificationsBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
@@ -442,8 +442,6 @@ namespace TestImpact
         // continuous test sequence to the client rather than three discrete test runs
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
 
-        //
-        TestEngineNotificationHandler<NativeTestTarget> testRunCompleteHandler(totalNumTestRuns);
         
         // Functor for running instrumented test targets
         const auto instrumentedTestRun =
@@ -484,6 +482,7 @@ namespace TestImpact
             testRunData.m_duration = testRunTimer.GetElapsedMs();
         };
 
+        TestEngineNotificationHandler<NativeTestTarget> testRunCompleteHandler(totalNumTestRuns);
         if (!includedSelectedTestTargets.empty())
         {
             // Run the selected test targets and collect the test run results
@@ -586,10 +585,8 @@ namespace TestImpact
         RegularTestSequenceNotificationsBus::Broadcast(
             &RegularTestSequenceNotificationsBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
 
-        //
-        TestEngineNotificationHandler<NativeTestTarget> handler(includedTestTargets.size());
-
         // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<NativeTestTarget> handler(includedTestTargets.size());
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
