@@ -33,6 +33,15 @@ parts:
      - libxcb-xinerama0
      - libxcb-xinput0
      - libxcb-xkb1
+     - libxcb-xinput-dev
+     - libxcb-xfixes0-dev
+     - libxcb-xkb-dev
+     - libfontconfig1-dev
+     - libsdl2-dev
+     - libcurl4-openssl-dev
+     - mesa-common-dev
+     - libxkbcommon-x11-dev
+     - libxkbcommon-dev
      - libxkbcommon-x11-0
      - libxkbcommon0
      - libpcre2-16-0
