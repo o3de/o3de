@@ -418,6 +418,13 @@ namespace AzQtComponents
             {
                 emit afterRename(value);
             });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -784,6 +791,8 @@ namespace AzQtComponents
             selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
             emit clicked(idx);
             update();
+            // Pass event to base class to enable drag/drop selections.
+            QAbstractItemView::mousePressEvent(event);
             return;
         }
 
@@ -1055,6 +1064,28 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
+    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsInserted(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::reset()
+    {
+        m_itemGeometry.clear();
+        m_expandedIndexes.clear();
+        m_childFrames.clear();
+
+        QAbstractItemView::reset();
+    }
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderThumbnailView.cpp"
