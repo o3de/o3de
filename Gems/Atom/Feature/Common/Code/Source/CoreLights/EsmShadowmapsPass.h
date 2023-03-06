@@ -92,7 +92,15 @@ namespace AZ
             void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
             bool m_computationEnabled = false;
-            bool m_isProjected = false;
+
+            enum class EsmLightType : uint8_t
+            {
+                Projected,
+                Directional,
+                Unknown,
+            };
+
+            EsmLightType m_lightType = EsmLightType::Unknown;
             Name m_lightTypeName;
             RHI::Size m_shadowmapImageSize;
             uint16_t m_shadowmapArraySize;

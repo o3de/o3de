@@ -38,7 +38,15 @@ namespace AZ
             }
 
             m_lightTypeName = esmData->m_lightType;
-            m_isProjected = m_lightTypeName == AZ::Name("projected");
+
+            if (m_lightTypeName == AZ::Name("projected"))
+            {
+                m_lightType = EsmLightType::Projected;
+            }
+            else if (m_lightTypeName == AZ::Name("directional"))
+            {
+                m_lightType = EsmLightType::Directional;
+            }
         }
 
         // --- Setters/Getters ---
@@ -50,7 +58,7 @@ namespace AZ
 
         bool EsmShadowmapsPass::GetIsProjected() const
         {
-            return m_isProjected;
+            return m_lightType == EsmLightType::Projected;
         }
 
         void EsmShadowmapsPass::SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer)
@@ -104,13 +112,15 @@ namespace AZ
 
         void EsmShadowmapsPass::BuildInternal()
         {
-            if (GetInputOutputCount() > 0 && m_isProjected)
+            if (GetInputOutputCount() > 0 && GetIsProjected())
             {
                 if (!m_atlasAttachmentImage)
                 {
                     auto binding = GetInputOutputBinding(0);
                     if (binding.GetAttachment() == nullptr)
                     {
+                        // Make sure at least a dummy image is attached if lacking any other attachments.
+                        // This may be necessary for a few frames during initialization.
                         auto tempAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::R16_FLOAT);
                         AttachImageToSlot(AZ::Name("EsmShadowmaps"), tempAttachmentImage);
                     }
@@ -140,11 +150,11 @@ namespace AZ
             {
                 auto* exponentiationPass = azrtti_cast<DepthExponentiationPass*>(GetChildren()[static_cast<uint32_t>(EsmChildPassKind::Exponentiation)].get());
                 AZ_Assert(exponentiationPass, "Child not found or not of type DepthExponentiationPass.");
-                if (m_lightTypeName == Name("directional"))
+                if (m_lightType == EsmLightType::Directional)
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Directional);
                 }
-                else if (m_lightTypeName == Name("projected"))
+                else if (m_lightType == EsmLightType::Projected)
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Projected);
                 }

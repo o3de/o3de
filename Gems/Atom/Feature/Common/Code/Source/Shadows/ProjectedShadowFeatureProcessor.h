@@ -14,6 +14,7 @@
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 #include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
+#include <CoreLights/ShadowmapPass.h>
 
 namespace AZ::Render
 {
