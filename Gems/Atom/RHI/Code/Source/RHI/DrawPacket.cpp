@@ -13,7 +13,6 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 
 #include <AzCore/Memory/Memory.h>
-#include <cstdint>
 
 namespace AZ
 {
