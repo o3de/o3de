@@ -211,10 +211,6 @@ namespace PhysX
             const ConvexDecompositionParams& GetConvexDecompositionParams() const;
 
         protected:
-            // void* parameter is used for the ClassElement to avoid the need to reference
-            // the SerializeContext::ClassElement type. That would require the include
-            // of SerializeContext
-            static bool VersionConverter(AZ::SerializeContext& context, void* classElement);
 
             AZ::u32 OnNodeSelectionChanged();
             AZ::u32 OnExportMethodChanged();
