@@ -534,9 +534,6 @@ namespace TestImpact
         // continuous test sequence to the client rather than two discrete test runs
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size();
 
-        //
-        TestEngineNotificationHandler<TestTarget> testRunCompleteHandler(totalNumTestRuns);
-
         const auto gatherTestRunData = [&](const AZStd::vector<const TestTarget*>& testsTargets, TestRunData<TestJob>& testRunData)
         {
             const Timer testRunTimer;
@@ -547,6 +544,7 @@ namespace TestImpact
             testRunData.m_duration = testRunTimer.GetElapsedMs();
         };
 
+        TestEngineNotificationHandler<TestTarget> testRunCompleteHandler(totalNumTestRuns);
         if (!includedSelectedTestTargets.empty())
         {
             // Run the selected test targets and collect the test run results
