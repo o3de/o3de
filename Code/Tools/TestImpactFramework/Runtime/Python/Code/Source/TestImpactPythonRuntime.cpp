@@ -246,10 +246,8 @@ namespace TestImpact
         RegularTestSequenceNotificationsBus::Broadcast(
             &RegularTestSequenceNotificationsBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
 
-        //
-        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
-
         // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->RegularRun(
             includedTestTargets,
@@ -414,9 +412,6 @@ namespace TestImpact
         const size_t totalNumTestRuns =
             includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
 
-        //
-        TestEngineNotificationHandler<PythonTestTarget> testRunCompleteHandler(totalNumTestRuns);
-
         // Functor for running instrumented test targets
         const auto instrumentedTestRun = [&](const AZStd::vector<const PythonTestTarget*>& testsTargets)
         {
@@ -453,6 +448,7 @@ namespace TestImpact
             testRunData.m_duration = testRunTimer.GetElapsedMs();
         };
 
+        TestEngineNotificationHandler<PythonTestTarget> testRunCompleteHandler(totalNumTestRuns);
         if (!includedSelectedTestTargets.empty())
         {
             // Run the selected test targets and collect the test run results
