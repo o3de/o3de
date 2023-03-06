@@ -917,7 +917,7 @@ namespace AzToolsFramework
                                 );
                             }
 
-                            if (IsPrefabOverridesUxEnabled())
+                            if (IsOutlinerOverrideManagementEnabled())
                             {
                                 if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
                                 {
@@ -1184,7 +1184,7 @@ namespace AzToolsFramework
 
             // Revert Overrides
             {
-                if (IsPrefabOverridesUxEnabled() && selectedEntities.size() == 1)
+                if (IsOutlinerOverrideManagementEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
                     if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
@@ -1192,7 +1192,7 @@ namespace AzToolsFramework
                     {
                         QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
                         revertAction->setToolTip(QObject::tr("Revert all overrides on this entity."));
-                        if (m_prefabOverridePublicInterface->GetOverrideType(selectedEntity) == OverrideType::AddEntity)
+                        if (m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntity) == OverrideType::AddEntity)
                         {
                             revertAction->setToolTip(QObject::tr("Cannot revert overrides on entities that are added as overrides. Use Delete instead."));
                             revertAction->setEnabled(false);
