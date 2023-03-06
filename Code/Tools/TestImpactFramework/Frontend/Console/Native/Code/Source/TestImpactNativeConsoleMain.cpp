@@ -73,50 +73,47 @@ namespace TestImpact::Console
                 std::cout << "Test impact analysis data for this repository was not found, seed or regular sequence fallbacks will be used.\n";
             }
 
+            // Use buffered console output to avoid interlacing of concurrent test target output
+            const auto consoleOutputMode = ConsoleOutputMode::Buffered;
+
             switch (const auto type = options.GetTestSequenceType())
             {
             case TestSequenceType::Regular:
             {
+                RegularTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
                     runtime.RegularTestSequence(
                         options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        RegularTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
+                        options.GetGlobalTimeout()),
                     options);
             }
             case TestSequenceType::Seed:
             {
+                SeedTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
                     runtime.SeededTestSequence(
                         options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        SeedTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
+                        options.GetGlobalTimeout()),
                     options);
             }
             case TestSequenceType::ImpactAnalysisNoWrite:
             case TestSequenceType::ImpactAnalysis:
             {
-                return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+                return WrappedImpactAnalysisTestSequence(options, runtime, changeList, consoleOutputMode);
             }
             case TestSequenceType::ImpactAnalysisOrSeed:
             {
                 if (runtime.HasImpactAnalysisData())
                 {
-                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList, consoleOutputMode);
                 }
                 else
                 {
+                    SeedTestSequenceNotificationHandler handler(consoleOutputMode);
                     return ConsumeSequenceReportAndGetReturnCode(
                         runtime.SeededTestSequence(
                             options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout(),
-                            TestSequenceStartCallback,
-                            SeedTestSequenceCompleteCallback,
-                            TestRunCompleteCallback),
+                            options.GetGlobalTimeout()),
                         options);
                 }
             }
