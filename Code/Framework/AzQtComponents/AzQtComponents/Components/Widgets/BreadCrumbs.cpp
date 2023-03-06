@@ -84,6 +84,7 @@ namespace AzQtComponents
         // This needs to be done because QStackWidget by default expands, regardless
         // of what is inside it.
         m_labelEditStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        m_labelEditStack->setAttribute(Qt::WA_Hover, true);
         m_labelEditStack->installEventFilter(this);
 
         // create the label
@@ -98,7 +99,6 @@ namespace AzQtComponents
         m_lineEdit->installEventFilter(this);
         connect(m_lineEdit, &QLineEdit::returnPressed, this, &BreadCrumbs::confirmEdit);
         Style::flagToIgnore(m_lineEdit);
-
         m_lineEdit->setStyleSheet("QLineEdit {color: black; background-color: white;}");
         m_labelEditStack->addWidget(m_lineEdit);
 
@@ -403,12 +403,17 @@ namespace AzQtComponents
 
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
     {
-        if (obj == m_labelEditStack)
+        if (obj == m_labelEditStack && isEditable())
         {
-            if (ev->type() == QEvent::ToolTip && isEditable())
+            switch (ev->type())
             {
+            case QEvent::HoverEnter:
                 m_labelEditStack->setCursor(Qt::IBeamCursor);
                 return true;
+            case QEvent::HoverLeave:
+                m_labelEditStack->setCursor(Qt::ArrowCursor);
+                return true;
+            default:;
             }
         }
         if (obj == m_label)
@@ -454,8 +459,9 @@ namespace AzQtComponents
                 if (!m_contextMenu)
                 {
                     cancelEdit();
+                    return true;
                 }
-                return true;
+                break;
             case QEvent::KeyPress:
                 if (const auto* keyEvent = static_cast<QKeyEvent*>(ev); keyEvent->key() == Qt::Key_Escape)
                 {
