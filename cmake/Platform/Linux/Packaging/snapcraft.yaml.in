@@ -18,8 +18,8 @@ parts:
      - cmake
      - clang-14
      - ninja-build
-     - libatomic1
-     - libfreetype6
+     #- libatomic1
+     #- libfreetype6
      - libpng16-16
      - libgl1
      - libglu1-mesa-dev
