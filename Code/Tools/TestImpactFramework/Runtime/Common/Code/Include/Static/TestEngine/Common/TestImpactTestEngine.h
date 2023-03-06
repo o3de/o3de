@@ -7,8 +7,8 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <TestEngine/Common/TestImpactTestEngineBus.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -27,33 +27,13 @@ namespace TestImpact
     template<typename TestJobRunner>
     using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
 
-    //!
+    //! Result of regular test engine runs.
     template<typename TestTarget>
     using TestEngineRegularRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<TestTarget>>>;
 
-    //!
+    //! Result of instrumented test engine runs.
     template<typename TestTarget, typename Coverage>
     using TestEngineInstrumentedRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<TestTarget, Coverage>>>;
-
-    //!
-    template<typename TestTarget>
-    class TestEngineNotifications
-    : public AZ::EBusTraits
-    {
-    public:
-        //////////////////////////////////////////////////////////////////////////
-        // EBusTraits overrides
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        //////////////////////////////////////////////////////////////////////////
-
-        //! Callback completed test engine jobs.
-        //! @param testJob The test engine job that has completed.
-        virtual void OnJobComplete([[maybe_unused]] const TestEngineJob<TestTarget>& testJob) {}
-    };
-
-    template<typename TestTarget>
-    using TestEngineNotificationsBus = AZ::EBus<TestEngineNotifications<TestTarget>>;
 
     // Calculate the sequence result by analyzing the state of the test targets that were run.
     template<typename TestEngineJobType>

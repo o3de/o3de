@@ -64,6 +64,7 @@ set(FILES
     Include/Static/TestRunner/Common/Run/TestImpactTestRunSerializer.h
     Include/Static/TestEngine/Common/TestImpactTestEngineException.h
     Include/Static/TestEngine/Common/TestImpactTestEngine.h
+    Include/Static/TestEngine/Common/TestImpactTestEngineBus.h
     Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h

@@ -18,6 +18,7 @@
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
+#include <Process/Scheduler/TestImpactProcessSchedulerBus.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/TestImpactTestEngine.h>

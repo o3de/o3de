@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <Process/Scheduler/TestImpactProcessSchedulerBus.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
