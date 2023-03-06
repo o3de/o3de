@@ -102,9 +102,25 @@ namespace AZ
                 m_originalOrientation = orientation;
             }
 
+            void Scene::SetSceneDimension(Vector3 dimension)
+            {
+                m_sceneDimension = dimension;
+                m_hasDimension = true;
+            }
+
+            bool Scene::HasDimension() const
+            {
+                return m_hasDimension;
+            }
+
             Scene::SceneOrientation Scene::GetOriginalSceneOrientation() const
             {
                 return m_originalOrientation;
+            }
+
+            Vector3& Scene::GetSceneDimension()
+            {
+                return m_sceneDimension;
             }
 
             void Scene::Reflect(ReflectContext* context)

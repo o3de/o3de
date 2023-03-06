@@ -203,6 +203,11 @@ namespace AzToolsFramework
             return m_diskSize;
         }
 
+        const AZ::Vector3& AssetBrowserEntry::GetDimension() const
+        {
+            return m_dimension;
+        }
+
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const
         {
             if (index < m_children.size())

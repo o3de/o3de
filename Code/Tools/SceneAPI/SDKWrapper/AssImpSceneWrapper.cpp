@@ -11,7 +11,6 @@
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -84,7 +83,10 @@ namespace AZ
             m_sceneFileName = fileName;
             m_assImpScene = m_importer->ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
+                | static_cast<unsigned long>(aiProcess_GenBoundingBoxes) // Generate bounding boxes
                 | aiProcess_GenNormals); //Generate normals for meshes
+
+            CalculateAABB(m_assImpScene, m_aabb);
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
             // Reset abort behavior for anything else that may call abort.
@@ -112,9 +114,34 @@ namespace AZ
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
         }
+
         std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode()
         {
             return std::shared_ptr<SDKNode::NodeWrapper>(new AssImpNodeWrapper(m_assImpScene->mRootNode));
+        }
+
+        void AssImpSceneWrapper::CalculateAABB(const aiScene* scene, aiAABB& aabb)
+        {
+            if (scene->HasMeshes())
+            {
+                aabb = scene->mMeshes[0]->mAABB;
+                for (unsigned int i = 1; i < scene->mNumMeshes; ++i)
+                {
+                    const aiAABB& thisAabb = scene->mMeshes[i]->mAABB;
+                    if (thisAabb.mMin.x < aabb.mMin.x)
+                        aabb.mMin.x = thisAabb.mMin.x;
+                    if (thisAabb.mMin.y < aabb.mMin.y)
+                        aabb.mMin.y = thisAabb.mMin.y;
+                    if (thisAabb.mMin.z < aabb.mMin.z)
+                        aabb.mMin.z = thisAabb.mMin.z;
+                    if (thisAabb.mMax.x > aabb.mMax.x)
+                        aabb.mMax.x = thisAabb.mMax.x;
+                    if (thisAabb.mMax.y > aabb.mMax.y)
+                        aabb.mMax.y = thisAabb.mMax.y;
+                    if (thisAabb.mMax.z > aabb.mMax.z)
+                        aabb.mMax.z = thisAabb.mMax.z;
+                }
+            }
         }
 
         void AssImpSceneWrapper::Clear()

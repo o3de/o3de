@@ -1726,7 +1726,7 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
         AZStd::this_thread::sleep_for(AZStd::chrono::seconds(delay));
     }
 }
-
+#pragma optimize("", off)
 void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::AssetBuilderDesc& builderDesc)
 {
     if (!builderDesc.IsExternalBuilder())
@@ -1869,7 +1869,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         m_matcherBuilderPatterns.push_back(patternMatcher);
     }
 }
-
+#pragma optimize("", on)
 void ApplicationManagerBase::RegisterComponentDescriptor(AZ::ComponentDescriptor* descriptor)
 {
     ApplicationManager::RegisterComponentDescriptor(descriptor);

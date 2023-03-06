@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Math/Vector3.h>
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -115,6 +116,8 @@ namespace AzToolsFramework
             const AZStd::string GetFullPath() const;
             //! Return the size on disk of the asset
             const size_t GetDiskSize() const;
+            //! Returns the dimension of the model
+            const AZ::Vector3& GetDimension() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -148,6 +151,7 @@ namespace AzToolsFramework
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
             size_t m_diskSize;
+            AZ::Vector3 m_dimension{ NAN, NAN, NAN };
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

@@ -59,6 +59,15 @@ namespace AzToolsFramework
                             return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
                         }
                         return "";
+                    case 4:
+                        if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
+                        {
+                            const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
+                            if (abs(dim.GetX())<1.0f && abs(dim.GetY())<1.0f && abs(dim.GetZ())<1.0f)
+                                return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
+                            return QString{ "%1 x %2 x %3" }.arg(int(dim.GetX())).arg(int(dim.GetY())).arg(int(dim.GetZ()));
+                        }
+                        return "";
                     default:
                         return "No data";
                     }
@@ -66,7 +75,7 @@ namespace AzToolsFramework
             case Qt::TextAlignmentRole:
                 if (index.column() == 2)
                 {
-                    return Qt::AlignRight;
+                    return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
                 break;
             case Qt::UserRole:

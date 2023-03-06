@@ -12,6 +12,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace AZ
 {
@@ -40,6 +41,7 @@ namespace AZ
                 void SetManifestFilename(const AZStd::string& name);
                 void SetManifestFilename(AZStd::string&& name);
                 const AZStd::string& GetManifestFilename() const;
+                bool HasDimension() const;
 
                 SceneGraph& GetGraph();
                 const SceneGraph& GetGraph() const;
@@ -52,8 +54,9 @@ namespace AZ
                 enum class SceneOrientation {YUp, ZUp, XUp, NegYUp, NegZUp, NegXUp};
 
                 void SetOriginalSceneOrientation(SceneOrientation orientation);
+                void SetSceneDimension(Vector3 dimension);
                 SceneOrientation GetOriginalSceneOrientation() const;
-
+                Vector3& GetSceneDimension();
                 static void Reflect(ReflectContext* context);
 
             private:
@@ -67,6 +70,8 @@ namespace AZ
                 SceneGraph m_graph;
                 SceneManifest m_manifest;
                 SceneOrientation m_originalOrientation = SceneOrientation::YUp;
+                Vector3 m_sceneDimension;
+                bool m_hasDimension{ false };
             AZ_POP_DISABLE_WARNING
             };
         } // Containers

@@ -8,10 +8,13 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
@@ -128,6 +131,33 @@ namespace AzToolsFramework
                 source->m_scanFolderId = fileDatabaseEntry.m_scanFolderPK;
                 source->m_extension = absoluteFilePath.Extension().Native();
                 source->m_diskSize = AZ::IO::SystemFile::Length(absoluteFilePath.c_str());
+                AZ::IO::FixedMaxPath assetPath;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(assetPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+                    assetPath /= fileDatabaseEntry.m_fileName + ".metadata.json";
+                    FILE* f1;
+                    azfopen(&f1, assetPath.c_str(), "r");
+                    if (f1)
+                    {
+                        AZ_TracePrintf("Editor", "Found metatdata file %s\n", assetPath.c_str());
+                        char readBuffer[65536];
+                        rapidjson::FileReadStream is(f1, readBuffer, sizeof(readBuffer));
+
+                        rapidjson::Document doc;
+                        doc.ParseStream(is);
+                        fclose(f1);
+
+                        const rapidjson::Value& metadata = doc["metadata"];
+                        const rapidjson::Value& dimension = metadata["dimension"];
+                        if (dimension.IsArray())
+                        {
+                            source->m_dimension.SetX(static_cast<float>(dimension[0].GetDouble()));
+                            source->m_dimension.SetY(static_cast<float>(dimension[1].GetDouble()));
+                            source->m_dimension.SetZ(static_cast<float>(dimension[2].GetDouble()));
+                        }
+                    }
+                }
                 parent->AddChild(source);
                 file = source;
             }
