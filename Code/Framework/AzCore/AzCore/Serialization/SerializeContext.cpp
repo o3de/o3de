@@ -3199,13 +3199,13 @@ namespace AZ::Serialize
     // FreeElementPointer
     // [12/7/2012]
     //=========================================================================
-    void SerializeContext::IDataContainer::DeletePointerData(SerializeContext* context, const ClassElement* classElement, const void* element)
+    void IDataContainer::DeletePointerData(SerializeContext* context, const ClassElement* classElement, const void* element)
     {
         AZ_Assert(context != nullptr && classElement != nullptr && element != nullptr, "Invalid input");
         AZ::Uuid elemUuid = classElement->m_typeId;
         // find the class data for the specific element
-        const SerializeContext::ClassData* classData = classElement->m_genericClassInfo ? classElement->m_genericClassInfo->GetClassData() : context->FindClassData(elemUuid, nullptr, 0);
-        if (classElement->m_flags & SerializeContext::ClassElement::FLG_POINTER)
+        const ClassData* classData = classElement->m_genericClassInfo ? classElement->m_genericClassInfo->GetClassData() : context->FindClassData(elemUuid, nullptr, 0);
+        if (classElement->m_flags & ClassElement::FLG_POINTER)
         {
             const void* dataPtr = *reinterpret_cast<void* const*>(element);
             // if dataAddress is a pointer in this case, cast it's value to a void* (or const void*) and dereference to get to the actual class.
@@ -3287,7 +3287,7 @@ namespace AZ::Serialize
     // EnumerateInstanceCallContext
     //=========================================================================
 
-    Serialize::EnumerateInstanceCallContext::EnumerateInstanceCallContext(
+    EnumerateInstanceCallContext::EnumerateInstanceCallContext(
         const SerializeContext::BeginElemEnumCB& beginElemCB,
         const SerializeContext::EndElemEnumCB& endElemCB,
         const SerializeContext* context,
@@ -3309,7 +3309,7 @@ namespace AZ::Serialize
     //=========================================================================
     // ~ClassElement
     //=========================================================================
-    SerializeContext::ClassElement::~ClassElement()
+    ClassElement::~ClassElement()
     {
         if (m_attributeOwnership == AttributeOwnership::Self)
         {
@@ -3320,7 +3320,7 @@ namespace AZ::Serialize
     //=========================================================================
     // ClassElement::operator=
     //=========================================================================
-    SerializeContext::ClassElement& SerializeContext::ClassElement::operator=(const SerializeContext::ClassElement& other)
+    ClassElement& ClassElement::operator=(const ClassElement& other)
     {
         m_name = other.m_name;
         m_nameCrc = other.m_nameCrc;
