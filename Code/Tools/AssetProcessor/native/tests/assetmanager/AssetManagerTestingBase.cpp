@@ -97,7 +97,7 @@ namespace UnitTests
 
         // Configure our mock builder so APM can find the builder and run CreateJobs
         m_builderInfoHandler.CreateBuilderDesc(
-            "test", AZ::Uuid::CreateRandom().ToString<QString>(),
+            "test", AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, {});
         m_builderInfoHandler.BusConnect();
 

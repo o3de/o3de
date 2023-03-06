@@ -13,6 +13,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QtCore/QTimer>
+
 namespace AZ::DocumentPropertyEditor
 {
     ComponentAdapter::ComponentAdapter() = default;
@@ -26,7 +27,10 @@ namespace AZ::DocumentPropertyEditor
     {
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_componentInstance->GetEntityId());
+        if (m_entityId.IsValid())
+        {
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
+        }
     }
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
@@ -143,19 +147,19 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
-    void ComponentAdapter::OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath)
+    void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
-        if (!serializedPath.empty())
+        auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
+        if (prefabAdapterInterface)
         {
-            AZ::Dom::Path relativePathFromEntity(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
-            relativePathFromEntity /= m_componentAlias;
-            relativePathFromEntity /= AZ::Dom::Path(serializedPath);
-
-            auto* prefabAdapterInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabAdapterInterface>::Get();
-            if (prefabAdapterInterface != nullptr)
+            AZ::Dom::Path relativePathFromEntity;
+            if (!serializedPath.empty())
             {
-                prefabAdapterInterface->AddPropertyHandlerIfOverridden(adapterBuilder, relativePathFromEntity, m_entityId);
+                relativePathFromEntity /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
+                relativePathFromEntity /= m_componentAlias;
+                relativePathFromEntity /= AZ::Dom::Path(serializedPath);
             }
+            prefabAdapterInterface->AddPropertyLabelNode(adapterBuilder, labelText, relativePathFromEntity, m_entityId);
         }
     }
 } // namespace AZ::DocumentPropertyEditor

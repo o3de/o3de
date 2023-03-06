@@ -114,7 +114,7 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::Destroy()
     {
         // Save all of the graph view configuration settings to the settings registry.
-        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/MaterialCanvas/GraphViewSettings", m_graphViewSettingsPtr);
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
 
         m_graphViewSettingsPtr.reset();
         m_window.reset();
@@ -225,7 +225,7 @@ namespace MaterialCanvas
     {
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         m_graphViewSettingsPtr = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/MaterialCanvas/GraphViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
+            "/O3DE/Atom/GraphView/ViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
 
         // Initialize the application specific graph view settings that are not serialized.
         m_graphViewSettingsPtr->m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
@@ -242,7 +242,7 @@ namespace MaterialCanvas
 
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/MaterialCanvas/GraphViewSettings/DefaultGroupPresets",
+            "/O3DE/Atom/GraphView/DefaultGroupPresets",
             AZStd::map<AZStd::string, AZ::Color>{ { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
                                                   { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
                                                   { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },

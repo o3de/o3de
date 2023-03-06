@@ -16,6 +16,11 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+namespace AZ
+{
+    class SerializeContext;
+}
+
 // These flags are mostly applicable for hermit based splines.
 enum ESplineKeyTangentType
 {

@@ -9,13 +9,6 @@
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## AP Python Tests ##
 
-## Non-Linux Tests ##
-
-    set(SUPPORTED_PLATFORMS "Windows" "Mac")
-    if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
-        return()
-    endif()
-
 ## Periodic Tests ##
 
     ly_add_pytest(
@@ -26,7 +19,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::AssetBundlerBatch
+            AutomatedTesting.Assets
     )
+
+## Non-Linux Tests ##
+
+    set(SUPPORTED_PLATFORMS "Windows" "Mac")
+    if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
+        return()
+    endif()
+
+## Periodic Tests ##
 
     ly_add_pytest(
         NAME APTests.BundleMode

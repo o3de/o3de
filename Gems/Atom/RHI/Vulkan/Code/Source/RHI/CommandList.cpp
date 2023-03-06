@@ -1048,7 +1048,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot])
+                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");

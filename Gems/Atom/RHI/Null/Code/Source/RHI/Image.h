@@ -37,7 +37,7 @@ namespace AZ
             // RHI::Image
             void GetSubresourceLayoutsInternal(
                 [[maybe_unused]] const RHI::ImageSubresourceRange& subresourceRange,
-                [[maybe_unused]] RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                [[maybe_unused]] RHI::ImageSubresourceLayout* subresourceLayouts,
                 [[maybe_unused]] size_t* totalSizeInBytes) const override
             {
             }

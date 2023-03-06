@@ -344,16 +344,22 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(
         m_assetBrowserModel,
         &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
-        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::OpenItemForEditing);
-
-    connect(
-        m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestThumbnailviewUpdate,
-            m_ui->m_thumbnailView, &AzAssetBrowser::AssetBrowserThumbnailView::UpdateThumbnailview);
+        this,
+        [this](const QModelIndex& index)
+        {
+            if (m_ui->m_thumbnailView->GetThumbnailActiveView())
+            {
+                m_ui->m_thumbnailView->OpenItemForEditing(index);
+            }
+            m_ui->m_assetBrowserTreeViewWidget->OpenItemForEditing(index);
+        });
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
+
+    m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -369,7 +375,7 @@ void AzAssetBrowserWindow::AddCreateMenu()
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
                                                                                  : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
-    AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
+    const AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
     if (!entry || selectedAssets.size() != 1)
     {
         return;
@@ -442,7 +448,7 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
 {
-    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget;
+    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget || m_ui->m_thumbnailView == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
@@ -501,6 +507,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
         m_ui->m_assetBrowserTableViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
+        m_ui->m_thumbnailView->SetThumbnailActiveView(true);
     }
     else
     {
@@ -651,12 +658,17 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     m_ui->m_middleStackWidget->show();
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
     m_ui->m_searchWidget->AddFolderFilter();
+    if (qobject_cast<AssetBrowserThumbnailView*>(viewToShow))
+    {
+        m_ui->m_thumbnailView->SetThumbnailActiveView(true);
+    }
 }
 
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
     m_ui->m_middleStackWidget->hide();
     m_ui->m_searchWidget->RemoveFolderFilter();
+    m_ui->m_thumbnailView->SetThumbnailActiveView(false);
 }
 
 static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)
