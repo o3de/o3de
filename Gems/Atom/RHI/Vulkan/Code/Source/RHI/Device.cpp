@@ -1084,6 +1084,9 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = deviceLimits.maxImageDimensionCube;
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
+            m_limits.m_minTexelBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minTexelBufferOffsetAlignment);
+            m_limits.m_minStorageBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minStorageBufferOffsetAlignment);
+            m_limits.m_maxMemoryAllocationCount = deviceLimits.maxMemoryAllocationCount;
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
             m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
             m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;

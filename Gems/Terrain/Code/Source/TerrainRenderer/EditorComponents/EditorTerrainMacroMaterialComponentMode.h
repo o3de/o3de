@@ -26,6 +26,7 @@ namespace Terrain
         , private TerrainMacroColorModificationNotificationBus::Handler
     {
     public:
+        AZ_TYPE_INFO(EditorTerrainMacroMaterialComponentMode, "{24B7280F-2344-4BB4-A0BC-4ADAD6715EE4}");
         AZ_CLASS_ALLOCATOR(EditorTerrainMacroMaterialComponentMode, AZ::SystemAllocator)
 
         EditorTerrainMacroMaterialComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);

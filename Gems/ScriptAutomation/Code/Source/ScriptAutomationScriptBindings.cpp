@@ -276,9 +276,16 @@ namespace ScriptAutomation
 
         bool PrepareForScreenCapture(const AZStd::string& imageName)
         {
-            AZStd::string fullFilePath;
+            AZ::Render::FrameCapturePathOutcome pathOutcome;
             AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                fullFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+                pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+            if (!pathOutcome.IsSuccess())
+            {
+                return false;
+            }
+
+            AZStd::string fullFilePath = pathOutcome.GetValue();
 
             if (!AZ::IO::PathView(fullFilePath).IsRelativeTo(Utils::ResolvePath("@user@")))
             {
@@ -355,16 +362,22 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
+                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
-                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
+
+                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
+                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
+                    if (captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
+                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
                     }
                     else
                     {
@@ -384,16 +397,22 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
+                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
-                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
+
+                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
+                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
+                    if (captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
+                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
                     }
                     else
                     {
@@ -487,16 +506,28 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(imageName))
                 {
-                    AZStd::string screenshotFilePath;
+                    AZ::Render::FrameCapturePathOutcome pathOutcome;
                     AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        screenshotFilePath, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
+                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, screenshotFilePath, readbackOption);
-                    if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                        captureOutcome,
+                        &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
+                        screenshotFilePath,
+                        passHierarchy,
+                        slot,
+                        readbackOption);
+
+                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
+                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
+                    if (captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
+                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
                     }
                     else
                     {
@@ -516,35 +547,28 @@ namespace ScriptAutomation
                 AZStd::string resolvedPathA = ResolvePath(filePathA);
                 AZStd::string resolvedPathB = ResolvePath(filePathB);
 
-                AZ::Utils::ImageDiffResult result;
+                AZ::Render::FrameCaptureComparisonOutcome compareOutcome;
                 AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                    result,
+                    compareOutcome,
                     &AZ::Render::FrameCaptureTestRequestBus::Events::CompareScreenshots,
                     resolvedPathA,
                     resolvedPathB,
                     minDiffFilter);
 
-                if (result.m_resultCode == AZ::Utils::ImageDiffResultCode::Success)
+                AZ_Error("ScriptAutomation", compareOutcome.IsSuccess(),
+                    "Image comparison failed. %s", compareOutcome.GetError().m_errorMessage.c_str());
+                if (compareOutcome.IsSuccess())
                 {
                     AZ_Printf(
                         "ScriptAutomation",
                         "Diff score is %.5f from %s and %s.",
-                        result.m_diffScore,
+                        compareOutcome.GetValue().m_diffScore,
                         resolvedPathA.c_str(),
                         resolvedPathB.c_str());
                     AZ_Printf(
                         "ScriptAutomation",
                         "Filtered diff score is %.5f from %s and %s.",
-                        result.m_filteredDiffScore,
-                        resolvedPathA.c_str(),
-                        resolvedPathB.c_str());
-                }
-                else
-                {
-                    AZ_Error(
-                        "ScriptAutomation",
-                        false,
-                        "Screenshots compare failed for %s and %s.",
+                        compareOutcome.GetValue().m_filteredDiffScore,
                         resolvedPathA.c_str(),
                         resolvedPathB.c_str());
                 }

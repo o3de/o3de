@@ -47,21 +47,22 @@ function ResetAlphaBlending(shaderItem)
 end
 
 function Process(context)
-    local opacityMode = context:GetMaterialPropertyValue_enum("general.opacity_mode")
+    local opacityMode = OpacityMode_Opaque
+    if context:HasMaterialProperty("general.opacity_mode") then
+        opacityMode = context:GetMaterialPropertyValue_enum("general.opacity_mode")
+    end
 
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
-
-    if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("transparent")
-    else
-        ResetAlphaBlending(forwardPassEDS)
-        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
+    if forwardPassEDS then
+        if opacityMode == OpacityMode_Blended then
+            ConfigureAlphaBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("transparent")
+        elseif opacityMode == OpacityMode_TintedTransparent then
+            ConfigureDualSourceBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("transparent")
+        else
+            ResetAlphaBlending(forwardPassEDS)
+            forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
+        end
     end
-end
-
-function ProcessEditor(context)
 end

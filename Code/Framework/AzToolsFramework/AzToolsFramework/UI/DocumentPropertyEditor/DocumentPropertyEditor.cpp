@@ -1101,8 +1101,9 @@ namespace AzToolsFramework
         auto pathToRoot = GetDPE()->GetPathToRoot(this);
         AZ::Dom::Path rowPath = AZ::Dom::Path();
 
-        for (auto reversePathEntry : pathToRoot | AZStd::views::reverse)
+        for (auto pathIter =  pathToRoot.rbegin(); pathIter != pathToRoot.rend(); ++pathIter)
         {
+            auto&& reversePathEntry = *pathIter;
             rowPath.Push(reversePathEntry);
         }
 

@@ -76,7 +76,7 @@
                     }
                 },
                 "Component_[17072051774364123210]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 17072051774364123210,
                     "ColliderConfiguration": {
                         "MaterialSlots": {

@@ -6,7 +6,6 @@
  *
  */
 
-#pragma once
 
 #include <TestImpactFramework/TestImpactUtils.h>
 

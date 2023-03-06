@@ -22,6 +22,7 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
             TEST_SERIAL
             COMPONENT 
                 TestImpactFramework
+            LABELS REQUIRES_tiaf
         )
         
         ly_add_pytest(
@@ -30,6 +31,7 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
             TEST_SERIAL
             COMPONENT
                 TestImpactFramework
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()
