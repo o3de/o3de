@@ -242,7 +242,7 @@ namespace TestImpact
                 includedTestTargets.push_back(&testTarget);
             }
         }
-    
+
         // Extract the client facing representation of selected test targets
         const Client::TestRunSelection selectedTests(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets));
     
@@ -250,10 +250,8 @@ namespace TestImpact
         RegularTestSequenceNotificationsBus::Broadcast(
             &RegularTestSequenceNotificationsBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
 
-        //
-        TestEngineNotificationHandler<NativeTestTarget> handler(includedTestTargets.size());
-    
         // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<NativeTestTarget> handler(includedTestTargets.size());
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->RegularRun(
             includedTestTargets,
@@ -263,7 +261,7 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout);
         const auto testRunDuration = testRunTimer.GetElapsedMs();
-    
+
         // Generate the sequence report for the client
         const auto sequenceReport = Client::RegularSequenceReport(
             m_maxConcurrency,
@@ -274,11 +272,11 @@ namespace TestImpact
             m_suiteLabelExcludeSet,
             selectedTests,
             GenerateTestRunReport(result, testRunTimer.GetStartTimePointRelative(sequenceTimer), testRunDuration, testJobs));
-    
+
         // Inform the client that the sequence has ended
         RegularTestSequenceNotificationsBus::Broadcast(
             &RegularTestSequenceNotificationsBus::Events::OnTestSequenceComplete, sequenceReport);
-    
+
         return sequenceReport;
     }
 
