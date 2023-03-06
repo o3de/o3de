@@ -47,12 +47,12 @@ namespace TestImpact
 
         //! Bus for job runner notifications.
         class Notifications
-        : public AZ::EBusTraits
+            : public AZ::EBusTraits
         {
         public:
             // EBusTraits overrides ...
-            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
             //! Callback for job completion/failure.
             //! @param jobInfo The job information associated with this job.
@@ -142,6 +142,7 @@ namespace TestImpact
             const AZStd::string& stdOutputDelta,
             const AZStd::string& stdErrorDelta) override;
 
+        //! Map of job ids and job metas/job infos to update the job states as their processes change state.
         AZStd::unordered_map<typename Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>>* m_metas = nullptr;
     };
 
@@ -256,7 +257,7 @@ namespace TestImpact
             processes.emplace_back(jobId, stdOutRouting, stdErrRouting, jobInfo->GetCommand().m_args);
         }
 
-        // Notification handler instance to translate low level process scheduler notifications into higher level job notifications
+        // Handler for low level process scheduler notifications
         ProcessSchedulerNotificationHandler processSchedulerNotificationHandler(metas);
 
         // Schedule all jobs for execution
