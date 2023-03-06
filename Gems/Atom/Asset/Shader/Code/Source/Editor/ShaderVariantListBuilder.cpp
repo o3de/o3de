@@ -434,10 +434,10 @@ namespace AZ
                 return;
             }
 
-            auto resultOutcome = RPI::ShaderVariantTreeAssetCreator::ValidateStableIdsAreUnique(shaderVariantList.m_shaderVariants);
-            if (!resultOutcome.IsSuccess())
+            auto uniqueStableIdOutcome = RPI::ShaderVariantTreeAssetCreator::ValidateStableIdsAreUnique(shaderVariantList.m_shaderVariants);
+            if (!uniqueStableIdOutcome.IsSuccess())
             {
-                AZ_Error(ShaderVariantListBuilderName, false, "Variant info validation error: %s", resultOutcome.GetError().c_str());
+                AZ_Error(ShaderVariantListBuilderName, false, "Variant info validation error: %s", uniqueStableIdOutcome.GetError().c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
