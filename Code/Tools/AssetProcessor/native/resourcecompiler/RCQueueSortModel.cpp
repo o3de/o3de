@@ -56,14 +56,6 @@ namespace AssetProcessor
             RCJob* actualJob = m_sourceModel->getItem(parentIndex.row());
             if ((actualJob) && (actualJob->GetState() == RCJob::pending))
             {
-                bool skip = false;
-
-                if (actualJob->GetHasMissingSourceDependency() &&
-                    (m_sourceModel->jobsInFlight() > 0 || m_sourceModel->jobsInQueueWithoutMissingDependencies() > 0 ||
-                     m_sourceModel->jobsPendingCatalog() > 0))
-                {
-                    skip = true;
-                }
                 // If this job has a missing dependency, and there are any jobs in flight,
                 // don't queue it until those jobs finish, in case they resolve the dependency.
                 // This does mean that if there are multiple queued jobs with missing dependencies,
@@ -73,107 +65,27 @@ namespace AssetProcessor
                     (m_sourceModel->jobsInFlight() > 0 || m_sourceModel->jobsInQueueWithoutMissingDependencies() > 0 ||
                      m_sourceModel->jobsPendingCatalog() > 0))
                 {
+                    // There is a race condition where this can fail:
+                    // Asset A generates an intermediate asset.
+                    // Asset B has a source dependency on that intermediate asset. Asset B's "HasMissingSourceDependency" flag is true.
+                    // Asset A is the last job in the queue without a missing job/source dependency, so it runs.
+                    // Asset A finishes processing job, and outputs the product.
+                    // Intermediate A has not yet been scanned and discovered by Asset Processor, so it's not in flight or in the queue yet.
+                    // Asset Processor goes to pull the next job in the queue. Asset B still technically has a missing job dependency on the intermediate asset output.
+                    // Asset B gets pulled from the queue to process here, even though Intermediate A hasn't run yet, because Intermediate A hasn't gone into the queue yet.
+                    // This happened with FBX files and a dependency on an intermediate asset materialtype, before Common platform jobs were made higher priority than host platform jobs.
+                    // Why not just check if the target file exists at this point? Because the job key has to match up.
+                    // When a check was added here to see if all the dependency files existed, other material jobs started to end up in the queue indefinitely
+                    // because they had a dependency on a file that existed but a job key that did not exist for that file.
                     continue;
                 }
-                else if (actualJob->GetHasMissingSourceDependency())
-                {
-                    // One last try - see if the pending source dependency exists. There can be a race condition where
-                    // the only jobs left in the queue have missing dependencies, and the missing dependency file job hasn't yet been created because the file was just emitted.
-                    bool allDependenciesExistNow = true;
-                    for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
-                    {
-                        if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order ||
-                            jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
-                        {
-                            const AssetBuilderSDK::JobDependency& jobDependency = jobDependencyInternal.m_jobDependency;
-                            if (AZ::IO::PathView(jobDependency.m_sourceFile.m_sourceFileDependencyPath).IsAbsolute())
-                            {
-                                if (!AZ::IO::FileIOBase::GetInstance()->Exists(
-                                        jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()))
-                                {
-                                    allDependenciesExistNow = false;
-                                    break;
-                                }
 
-                                // TODO: This works for FBX files, but it doesn't work for material files
-                                // This is specifically looking for files newly created that haven't been processed yet, so skip
-                                // files that were completed already.
-                                // This is because a dependency may be on a specific job and not just a source asset.
-                                // For example, a material might have a dependency on the job key "Material Type Builder (Final Stage)" for a material type,
-                                // but the job dependency might be on the key "Material Type Builder (Pipeline Stage)", which may not exist.
-                                // In that case, don't block this job from running if it's the last thing in the queue, just provide a warning and run it.
-
-                                // TODO : only set the has missing dependencies flag if the absolute path is in the intermediate assets folder
-
-                                // How can I verify that the source dependency has already been scanned at this point?
-                                // In check source, when jobs are created and dependencies are updated,
-                                // I can flip this job to mark it has all dependencies and put in a warning "Job keys didn't match"
-
-                                QString normalizedFullFile =
-                                    AssetUtilities::NormalizeFilePath(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str());
-                                AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
-                                QString relativePath, scanfolderPath;
-                                m_platformConfig->ConvertToRelativePath(absolutePath.c_str(), relativePath, scanfolderPath);
-
-                                AssetDatabaseConnection dbConnection;
-                                dbConnection.OpenDatabase();
-                                AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
-                                #if 0
-                                bool foundInDatabase = dbConnection.GetJobsBySourceName(
-                                    actualJob->GetJobEntry().m_sourceAssetReference,
-                                    jobs,
-                                    actualJob->GetJobEntry().m_builderGuid,
-                                    actualJob->GetJobEntry().m_jobKey,
-                                    actualJob->GetJobEntry().m_platformInfo.m_identifier.c_str());
-                                #endif
-                                    
-                                }
-                            }
-                        }
-                    }
-                    // The dependency exists, but has not been queued yet. Delay processing this job until Asset Processor picks it up.
-                    // Otherwise continue and just process the asset with the missing dependency: It may still resolve if
-                    // another asset with a missing dependency is in the same place and that other asset emits the file to fill this dependency.
-                    // In that situation, this job would run once with the missing depedency, and get re-queued to run again because the dependency resolves.
-                    if (allDependenciesExistNow)
-                    {
-                        AZ_Error(
-                            "AssetProcessor",
-                            false,
-                            "Waiting to start job for %s because dependency exists and hasn't been processed.",
-                            actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
-                        for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
-                        {
-                            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::Order ||
-                                jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
-                            {
-                                const AssetBuilderSDK::JobDependency& jobDependency = jobDependencyInternal.m_jobDependency;
-                                if (AZ::IO::PathView(jobDependency.m_sourceFile.m_sourceFileDependencyPath).IsAbsolute())
-                                {
-                                    if (AZ::IO::FileIOBase::GetInstance()->Exists(
-                                            jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()))
-                                    {
-                                        AZ_Error(
-                                            "AssetProcessor",
-                                            false,
-                                            "\t%d - %s - %s",
-                                            AZ::IO::FileIOBase::GetInstance()->Exists(jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
-                                            jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
-                                            jobDependency.m_jobKey.c_str());
-                                    }
-                                }
-                            }
-                        }
-                        continue;
-                    }
-                }
-                if (!skip && actualJob->GetHasMissingSourceDependency())
+                if (actualJob->GetHasMissingSourceDependency())
                 {
                     AZ_Error(
                         "AssetProcessor",
                         false,
-                        "%d - Job with missing dependency is running. %s. %d, %d, %d",
-                        skip,
+                        "Job with missing dependency is running. %s. %d, %d, %d",
                         actualJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(),
                         m_sourceModel->jobsInFlight(),
                         m_sourceModel->jobsInQueueWithoutMissingDependencies(),
@@ -312,20 +224,38 @@ namespace AssetProcessor
             return false; // Right does not have a missing source dependency, but left does, so right wins.
         }
 
-        // first thing to check is in platform.
-        bool leftActive = m_currentlyConnectedPlatforms.contains(leftJob->GetPlatformInfo().m_identifier.c_str());
-        bool rightActive = m_currentlyConnectedPlatforms.contains(rightJob->GetPlatformInfo().m_identifier.c_str());
+        // Common platform jobs generate intermediate assets. These generate additional jobs, and the intermediate assets
+        // can be source and/or job dependencies for other, queued assets.
+        // Run intermediate assets before active platform and host platform jobs.
+        // Critical jobs should run first, so skip the comparison here if either job is critical, to allow criticality to come in first.
+        bool platformsMatch = leftJob->GetPlatformInfo().m_identifier == rightJob->GetPlatformInfo().m_identifier;
 
-        if (leftActive)
+        // first thing to check is in platform.
+        if (!platformsMatch)
         {
-            if (!rightActive)
+            if (leftJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName)
             {
-                return true; // left before right
+                return true;
             }
-        }
-        else if (rightActive)
-        {
-            return false; // right before left.
+            if (rightJob->GetPlatformInfo().m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                return false;
+            }
+
+            bool leftActive = m_currentlyConnectedPlatforms.contains(leftJob->GetPlatformInfo().m_identifier.c_str());
+            bool rightActive = m_currentlyConnectedPlatforms.contains(rightJob->GetPlatformInfo().m_identifier.c_str());
+
+            if (leftActive)
+            {
+                if (!rightActive)
+                {
+                    return true; // left before right
+                }
+            }
+            else if (rightActive)
+            {
+                return false; // right before left.
+            }
         }
 
         // critical jobs take priority
@@ -353,7 +283,7 @@ namespace AssetProcessor
         }
 
         // arbitrarily, lets have PC get done first since pc-format assets are what the editor uses.
-        if (leftJob->GetPlatformInfo().m_identifier != rightJob->GetPlatformInfo().m_identifier)
+        if (!platformsMatch)
         {
             if (leftJob->GetPlatformInfo().m_identifier == AzToolsFramework::AssetSystem::GetHostAssetPlatform())
             {
