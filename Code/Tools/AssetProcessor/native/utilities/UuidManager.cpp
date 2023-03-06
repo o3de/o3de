@@ -13,6 +13,7 @@
 #include <Metadata/MetadataManager.h>
 #include <native/AssetManager/FileStateCache.h>
 #include "UuidManager.h"
+#include <QDir>
 
 namespace AssetProcessor
 {
@@ -67,14 +68,11 @@ namespace AssetProcessor
     {
         AZStd::string extension = file.Extension().Native();
 
-        // Only metadata files are cached, so make sure the file is a metadata file before continuing
-        if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
+        if (extension == AzToolsFramework::MetadataManager::MetadataFileExtension)
         {
-            return;
+            // Remove the metadata part of the extension since the cache is actually keyed by the source file path
+            file.ReplaceExtension("");
         }
-
-        // Remove the metadata part of the extension since the cache is actually keyed by the source file path
-        file.ReplaceExtension("");
 
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
@@ -124,13 +122,43 @@ namespace AssetProcessor
             return AZ::Failure(AZStd::string("Programmer Error - IFileStateRequests interface is not available"));
         }
 
-        const bool fileExists = fileStateInterface->Exists(AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str()).c_str());
+        const AZ::IO::Path metadataFilePath = AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str());
+        AssetProcessor::FileStateInfo metadataFileInfo;
+        bool metadataFileExists = fileStateInterface->GetFileInfo(metadataFilePath.c_str(), &metadataFileInfo);
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
 
+        if constexpr (ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
+        {
+            // On case sensitive filesystems, the above exists check will fail if the case is not correct
+            // In that case, try to update the case to determine if the file actually exists
+            if (!metadataFileExists)
+            {
+                QString parentPath = QString::fromStdString(AZStd::string(metadataFilePath.ParentPath().Native()).c_str());
+                QString caseCorrectedMetadataRelPath = QString::fromStdString(AZStd::string(metadataFilePath.Filename().Native()).c_str());
+                metadataFileExists = AssetUtilities::UpdateToCorrectCase(parentPath, caseCorrectedMetadataRelPath);
+
+                if (metadataFileExists)
+                {
+                    AZ::IO::FixedMaxPath correctAbsolutePath(parentPath.toUtf8().constData());
+                    correctAbsolutePath /= caseCorrectedMetadataRelPath.toUtf8().constData();
+                    fileStateInterface->GetFileInfo(correctAbsolutePath.c_str(), &metadataFileInfo);
+                }
+            }
+        }
+
         // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
-        if (fileExists)
+        if (metadataFileExists)
         {
             AzToolsFramework::MetaUuidEntry uuidInfo;
+
+            // Check if the path computed based on the source asset's filename is different from the on-disk path
+            if (metadataFileInfo.m_absolutePath.compare(metadataFilePath.c_str()) != 0)
+            {
+                // Metadata filename case does not match source filename case
+                // Rename the metadata file to match
+                AZ::IO::FileIOBase::GetInstance()->Rename(
+                    metadataFileInfo.m_absolutePath.toUtf8().constData(), metadataFilePath.c_str());
+            }
 
             // Check if there's a metadata file that already contains a saved UUID
             if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo))

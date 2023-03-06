@@ -15,6 +15,7 @@
 #include <gmock/gmock.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 #include <AssetManager/FileStateCache.h>
+#include <QDir>
 
 namespace UnitTests
 {
@@ -198,7 +199,7 @@ namespace UnitTests
                         // Any mode besides OPEN_READ_ONLY creates a file
                         if ((systemMode & ~int(IO::SystemFile::SF_OPEN_READ_ONLY)) > 0)
                         {
-                            m_mockFiles[handle] = "";
+                            m_mockFiles[handle] = { filePath, "" };
                         }
 
                         return AZ::IO::Result(AZ::IO::ResultCode::Success);
@@ -218,7 +219,7 @@ namespace UnitTests
                     {
                         auto itr = m_mockFiles.find(handle);
 
-                        size = itr != m_mockFiles.end() ? itr->second.size() : 0;
+                        size = itr != m_mockFiles.end() ? itr->second.second.size() : 0;
 
                         return AZ::IO::ResultCode::Success;
                     }));
@@ -230,7 +231,7 @@ namespace UnitTests
                         auto handle = ComputeHandle(filePath);
                         auto itr = m_mockFiles.find(handle);
 
-                        size = itr != m_mockFiles.end() ? itr->second.size() : 0;
+                        size = itr != m_mockFiles.end() ? itr->second.second.size() : 0;
 
                         return AZ::IO::ResultCode::Success;
                     }));
@@ -254,8 +255,14 @@ namespace UnitTests
 
                         if (itr != m_mockFiles.end())
                         {
-                            m_mockFiles[newHandle] = itr->second;
-                            m_mockFiles.erase(itr);
+                            auto& [path, contents] = itr->second;
+                            path = newPath;
+
+                            if (originalHandle != newHandle)
+                            {
+                                m_mockFiles[newHandle] = itr->second;
+                                m_mockFiles.erase(itr);
+                            }
 
                             return AZ::IO::ResultCode::Success;
                         }
@@ -285,8 +292,8 @@ namespace UnitTests
                             return AZ::IO::ResultCode::Error;
                         }
 
-                        memcpy(buffer, itr->second.c_str(), itr->second.size());
-                        *bytesRead = itr->second.size();
+                        memcpy(buffer, itr->second.second.c_str(), itr->second.second.size());
+                        *bytesRead = itr->second.second.size();
                         return AZ::IO::ResultCode::Success;
                     }));
 
@@ -294,10 +301,10 @@ namespace UnitTests
                 .WillByDefault(Invoke(
                     [this](IO::HandleType fileHandle, const void* buffer, AZ::u64 size, AZ::u64* bytesWritten)
                     {
-                        AZStd::string& file = m_mockFiles[fileHandle];
+                        auto& pair = m_mockFiles[fileHandle];
 
-                        file.resize(size);
-                        memcpy((void*)file.c_str(), buffer, size);
+                        pair.second.resize(size);
+                        memcpy((void*)pair.second.c_str(), buffer, size);
 
                         if (bytesWritten)
                         {
@@ -306,8 +313,26 @@ namespace UnitTests
 
                         return AZ::IO::ResultCode::Success;
                     }));
-        }
 
+            ON_CALL(*m_fileIOMock, FindFiles(_, _, _))
+                .WillByDefault(Invoke(
+                    [this](const char* filePath, const char* filter, auto callback)
+                    {
+                        for (const auto& [hash, pair] : m_mockFiles)
+                        {
+                            const auto& [path, contents] = pair;
+                            if(AZStd::wildcard_match(AZStd::string::format("%s%s", filePath, filter), path))
+                            {
+                                if(!callback(path.c_str()))
+                                {
+                                    return AZ::IO::ResultCode::Success;
+                                }
+                            }
+                        }
+
+                        return AZ::IO::ResultCode::Success;
+                    }));
+        }
         ~MockVirtualFileIO()
         {
             AZ::IO::FileIOBase::SetInstance(nullptr);
@@ -315,7 +340,7 @@ namespace UnitTests
         }
 
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
-        AZStd::unordered_map<AZ::IO::HandleType, AZStd::string> m_mockFiles;
+        AZStd::unordered_map<AZ::IO::HandleType, AZStd::pair<AZStd::string, AZStd::string>> m_mockFiles;
         AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
     };
 
@@ -328,7 +353,19 @@ namespace UnitTests
                 auto* io = AZ::IO::FileIOBase::GetInstance();
                 AZ::u64 size;
                 io->Size(absolutePath.toUtf8().constData(), size);
-                *foundFileInfo = AssetProcessor::FileStateInfo(absolutePath, QDateTime::fromMSecsSinceEpoch(io->ModificationTime(absolutePath.toUtf8().constData())), size, io->IsDirectory(absolutePath.toUtf8().constData()));
+
+                QString parentPath = AZ::IO::FixedMaxPath(absolutePath.toUtf8().constData()).ParentPath().FixedMaxPathStringAsPosix().c_str();
+                QString relPath = AZ::IO::FixedMaxPath(absolutePath.toUtf8().constData()).Filename().FixedMaxPathStringAsPosix().c_str();
+                AssetUtilities::UpdateToCorrectCase(parentPath, relPath);
+
+                AZ::IO::FixedMaxPath correctedPath{parentPath.toUtf8().constData()};
+                correctedPath /= relPath.toUtf8().constData();
+
+                *foundFileInfo = AssetProcessor::FileStateInfo(
+                    correctedPath.c_str(),
+                    QDateTime::fromMSecsSinceEpoch(io->ModificationTime(absolutePath.toUtf8().constData())),
+                    size,
+                    io->IsDirectory(absolutePath.toUtf8().constData()));
 
                 return true;
             }

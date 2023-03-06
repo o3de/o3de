@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(5) // Added EdgeBlendIbl
+                    ->Version(6) // Added EmissiveMultiplier
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
@@ -45,6 +45,7 @@ namespace AZ
                     ->Field("EdgeBlendIbl", &DiffuseProbeGridComponentConfig::m_edgeBlendIbl)
                     ->Field("FrameUpdateCount", &DiffuseProbeGridComponentConfig::m_frameUpdateCount)
                     ->Field("TransparencyMode", &DiffuseProbeGridComponentConfig::m_transparencyMode)
+                    ->Field("EmissiveMultiplier", &DiffuseProbeGridComponentConfig::m_emissiveMultiplier)
                     ->Field("EditorMode", &DiffuseProbeGridComponentConfig::m_editorMode)
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
@@ -152,6 +153,7 @@ namespace AZ
             m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
             m_featureProcessor->SetFrameUpdateCount(m_handle, m_configuration.m_frameUpdateCount);
             m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
+            m_featureProcessor->SetEmissiveMultiplier(m_handle, m_configuration.m_emissiveMultiplier);
             m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
             m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
             m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
@@ -400,6 +402,17 @@ namespace AZ
 
             m_configuration.m_transparencyMode = transparencyMode;
             m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
+        }
+
+        void DiffuseProbeGridComponentController::SetEmissiveMultiplier(float emissiveMultiplier)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_emissiveMultiplier = emissiveMultiplier;
+            m_featureProcessor->SetEmissiveMultiplier(m_handle, m_configuration.m_emissiveMultiplier);
         }
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)

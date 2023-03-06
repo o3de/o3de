@@ -99,7 +99,6 @@ namespace AzFramework
                     "Input System", "Controls which core input devices are made available")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &InputSystemComponent::m_mouseMovementSampleRateHertz,
                         "Mouse Movement Sample Rate", "The mouse movement sample rate in Hertz (cycles per second), which directly\n"
                                                       "correlates to the max number of mouse movement events dispatched each frame.\n"

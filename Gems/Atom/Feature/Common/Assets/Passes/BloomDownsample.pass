@@ -54,7 +54,7 @@
                     },
                     "ImageDescriptor": {
                         "MipLevels": "5",
-                        "SharedQueueMask": 3
+                        "SharedQueueMask": "Copy"
                     }
                 },
                 {
@@ -75,7 +75,7 @@
                     },
                     "ImageDescriptor": {
                         "MipLevels": "5",
-                        "SharedQueueMask": 3
+                        "SharedQueueMask": "Copy"
                     }
                 }
             ],

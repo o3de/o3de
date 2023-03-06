@@ -55,16 +55,15 @@ namespace Achievements
             {
                 ec->Class<AchievementDetails>("AchievementDetails", "Struct to hold platform agnostic achievement details for query results")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            
+
             behaviorContext->Class<AchievementDetails>()
-                ->Constructor<AchievementDetails&>()
+                ->Constructor<const AchievementDetails&>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("id", BehaviorValueProperty(&AchievementDetails::id))
                 ->Property("name", BehaviorValueProperty(&AchievementDetails::name))
@@ -100,7 +99,6 @@ namespace Achievements
             {
                 ec->Class<AchievementsSystemComponent>("Achievements", "Platform agnostic interface for retrieving achievement details and unlocking achievements")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
