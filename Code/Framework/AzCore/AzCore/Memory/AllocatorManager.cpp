@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/IAllocator.h>

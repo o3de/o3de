@@ -144,7 +144,6 @@ namespace ExpressionEvaluation
             {
                 ec->Class<ExpressionEvaluationSystemComponent>("ExpressionEvaluationGem", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

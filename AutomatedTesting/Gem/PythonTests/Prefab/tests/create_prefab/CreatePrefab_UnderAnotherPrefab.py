@@ -29,8 +29,8 @@ def CreatePrefab_UnderAnotherPrefab():
     # Asserts if creation didn't succeed
     entity = EditorEntity.create_editor_entity_at((100.0, 100.0, 100.0), name="TestEntity")
     assert entity.id.IsValid(), "Couldn't create entity"
-    entity.add_component("PhysX Collider")
-    assert entity.has_component("PhysX Collider"), "Failed to add a PhysX Collider"
+    entity.add_component("PhysX Primitive Collider")
+    assert entity.has_component("PhysX Primitive Collider"), "Failed to add a PhysX Primitive Collider"
 
     # Create a prefab based on that entity and focus it
     outer_prefab, outer_instance = Prefab.create_prefab([entity], OUTER_PREFAB_FILE_NAME)
@@ -39,7 +39,7 @@ def CreatePrefab_UnderAnotherPrefab():
     entity = outer_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before
     assert entity.get_name() == "TestEntity", f"Entity name inside outer_prefab doesn't match the original name, original:'TestEntity' current:'{entity.get_name()}'"
-    assert entity.has_component("PhysX Collider"), "Entity name inside outer_prefab doesn't have the collider component it should"
+    assert entity.has_component("PhysX Primitive Collider"), "Entity name inside outer_prefab doesn't have the collider component it should"
 
     # Now, create another prefab, based on the entity that is inside outer_prefab
     inner_prefab, inner_instance = Prefab.create_prefab([entity], INNER_PREFAB_FILE_NAME)
@@ -51,7 +51,7 @@ def CreatePrefab_UnderAnotherPrefab():
     entity = inner_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before
     assert entity.get_name() == "TestEntity", f"Entity name inside inner_prefab doesn't match the original name, original:'TestEntity' current:'{entity.get_name()}'"
-    assert entity.has_component("PhysX Collider"), "Entity name inside inner_prefab doesn't have the collider component it should"
+    assert entity.has_component("PhysX Primitive Collider"), "Entity name inside inner_prefab doesn't have the collider component it should"
 
     # Verify hierarchy of entities:
     # Outer_prefab

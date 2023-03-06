@@ -20,6 +20,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.GameLauncher
         COMPONENT
             Multiplayer
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_pytest(

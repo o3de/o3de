@@ -106,6 +106,15 @@ namespace EMotionFX
 
 
     // Define the pool allocators
+    class AnimGraphConditionAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph condition allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphConditionAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphConditionAllocator final
         : public AZ::ThreadPoolBase<AnimGraphConditionAllocator>
     {
@@ -117,6 +126,15 @@ namespace EMotionFX
     };
 
 
+    class AnimGraphObjectDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>
     {
@@ -128,6 +146,15 @@ namespace EMotionFX
     };
 
 
+    class AnimGraphObjectUniqueDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object unique data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectUniqueDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectUniqueDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>
     {

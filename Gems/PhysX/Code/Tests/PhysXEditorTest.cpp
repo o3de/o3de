@@ -16,6 +16,7 @@
 #include <EditorComponentDescriptors.h>
 #include <SystemComponent.h>
 #include <TestColliderComponent.h>
+#include <TestMeshColliderComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Configuration/PhysXSettingsRegistryManager.h>
 #include <System/PhysXSystem.h>
@@ -50,7 +51,8 @@ namespace Physics
             AZStd::vector<AZ::ComponentDescriptor*> descriptors(physxDescriptors.begin(), physxDescriptors.end());
             descriptors.insert(descriptors.end(), physxEditorDescriptors.begin(), physxEditorDescriptors.end());
 
-            descriptors.emplace_back( UnitTest::TestColliderComponentMode::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestColliderComponent::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestMeshColliderComponent::CreateDescriptor());
 
             AddComponentDescriptors(descriptors);
 

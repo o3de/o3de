@@ -413,7 +413,7 @@ namespace AZ
             : public GenericClassInfo
         {
         public:
-            AZ_TYPE_INFO(GenericClassVariant, AZ::s_variantTypeId);
+            AZ_TYPE_INFO(GenericClassVariant, "{12E371FD-AF57-44A7-9329-9BCA6E6F4158}");
             GenericClassVariant()
                 : m_classData{ SerializeContext::ClassData::Create<VariantType>(AZ::AzTypeInfo<VariantType>::Name(), GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {

@@ -558,26 +558,29 @@ namespace AZ::Reflection
                 using DocumentPropertyEditor::Nodes::PropertyVisibility;
                 PropertyVisibility visibility = PropertyVisibility::Show;
 
-                AZ::Name handlerName;
+                Name handlerName;
 
-                // This array node is for caching related GenericValue attributes if any are seen
+                // This array node is for caching related GenericValue and EnumValueKey attributes if any are seen
                 Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
-                const AZ::Name genericValueName = AZ::Name("GenericValue");
+                const Name genericValueName = Name("GenericValue");
+                const Name enumValueKeyName = Name("EnumValueKey");
+                const Name genericValueListName = Name("GenericValueList");
+                const Name enumValuesCrcName = Name(static_cast<u32>(Crc32("EnumValues")));
 
-                auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
+                auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
                     }
 
-                    AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
+                    Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If an attribute of the same name is already loaded then ignore the new value
-                        // unless it is a GenericValue attribute since each represents an individual
-                        // pair destined for a combobox and thus multiple are expected
-                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
+                        // If an attribute of the same name is already loaded then ignore the new value unless
+                        // it is a GenericValue or EnumValueKey attribute since each represents an individual
+                        // (value, description) pair destined for a combobox and thus multiple are expected
+                        if (visitedAttributes.contains(name) && name != genericValueName && name != enumValueKeyName)
                         {
                             return;
                         }
@@ -595,19 +598,13 @@ namespace AZ::Reflection
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
-                            [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
                             {
                                 if (attributeValue.IsNull())
                                 {
                                     attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                                 }
                             });
-
-                        // Collect related GenericValue attributes so they can be stored together
-                        if (name == genericValueName && !attributeValue.IsNull())
-                        {
-                            genericValueCache.ArrayPushBack(attributeValue);
-                        }
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -622,11 +619,29 @@ namespace AZ::Reflection
                             // omit our normal synthetic Handler attribute.
                             if (name == DescriptorAttributes::Handler)
                             {
-                                handlerName = AZ::Name();
+                                handlerName = Name();
                             }
 
+                            // Collect related GenericValue attributes so they can be stored together as GenericValueList
                             if (name == genericValueName)
                             {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                return;
+                            }
+                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
+                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // because such nodes also have internal EnumValueKey attributes that we won't use.
+                            // The cached values will be stored as a GenericValueList attribute.
+                            if (name == enumValueKeyName &&
+                                !visitedAttributes.contains(enumValuesCrcName) &&
+                                !visitedAttributes.contains(genericValueListName))
+                            {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
+                                // in the PropertyEditorSystem.
+                                // This is reasonable since the attribute's value is an enum with an underlying integral
+                                // type which is safely convertible to AZ::u64.
+                                nodeData.m_typeId = AzTypeInfo<u64>::Uuid();
                                 return;
                             }
 
