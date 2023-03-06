@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
 #ifndef EvaluateLighting
-#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_StandardPBR(surface, screenPosition)
+#define EvaluateLighting EvaluateLighting_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_LightingEval.azsli"
