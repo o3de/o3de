@@ -43,7 +43,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorJointLimitConfig>()
-                ->Version(2, &VersionConverter)
+                ->Version(1)
                 ->Field("Name", &EditorJointLimitConfig::m_name)
                 ->Field("Is Limited", &EditorJointLimitConfig::m_isLimited)
                 ->Field("Is Soft Limit", &EditorJointLimitConfig::m_isSoftLimit)
@@ -92,21 +92,6 @@ namespace PhysX
     bool EditorJointLimitConfig::IsSoftLimited() const
     {
         return m_isSoftLimit && m_isLimited;
-    }
-
-    bool EditorJointLimitConfig::VersionConverter([[maybe_unused]] AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& classElement)
-    {
-        bool result = true;
-
-        // conversion from version 1:
-        // - Remove "Read Only" m_readOnly
-        if (classElement.GetVersion() == 1)
-        {
-            result = classElement.RemoveElementByName(AZ_CRC_CE("Read Only")) && result;
-        }
-
-        return result;
     }
 
     void EditorJointLimitPairConfig::Reflect(AZ::ReflectContext* context)
@@ -286,7 +271,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorJointConfig>()
-                ->Version(5, &EditorJointConfig::VersionConverter)
+                ->Version(1)
                 ->Field("Local Position", &EditorJointConfig::m_localPosition)
                 ->Field("Local Rotation", &EditorJointConfig::m_localRotation)
                 ->Field("Parent Entity", &EditorJointConfig::m_leadEntity)
@@ -408,66 +393,6 @@ namespace PhysX
     bool EditorJointConfig::IsInComponentMode() const
     {
         return m_inComponentMode;
-    }
-
-    bool EditorJointConfig::VersionConverter(AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& classElement)
-    {
-        bool result = true;
-
-        // conversion from version 1:
-        // - Remove "Read Only" m_readOnly
-        if (classElement.GetVersion() == 1)
-        {
-            result = classElement.RemoveElementByName(AZ_CRC_CE("Read Only")) && result;
-        }
-
-        // conversion from version 1 & 2:
-        if (classElement.GetVersion() <= 2)
-        {
-            result = classElement.AddElementWithData(context, "Self Collide", false) && result;
-        }
-
-        // conversion from version 1, 2 and 3: Replace quaternion representation of local rotation with rotation angles about axes in degrees.
-        if (classElement.GetVersion() <= 3)
-        {
-            const int localRotationIndex = classElement.FindElement(AZ_CRC_CE("Local Rotation"));
-            if (localRotationIndex >= 0)
-            {
-                AZ::SerializeContext::DataElementNode& localRotationElement = classElement.GetSubElement(localRotationIndex);
-                AZ::Quaternion localRotationQuat = AZ::Quaternion::CreateZero();
-                localRotationElement.GetData<AZ::Quaternion>(localRotationQuat);
-                classElement.RemoveElement(localRotationIndex);
-                classElement.AddElementWithData(context, "Local Rotation", localRotationQuat.GetEulerDegrees());
-            }
-        }
-
-        // convert m_displayJointSetup from a bool to the enum with the option Never,Selected,Always show joint setup helpers.
-        if (classElement.GetVersion() <= 4)
-        {
-            // get the current bool setting and remove it.
-            bool oldSetting = false;
-            const int displayJointSetupIndex = classElement.FindElement(AZ_CRC_CE("Display Debug"));
-            if (displayJointSetupIndex >= 0)
-            {
-                AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(displayJointSetupIndex);
-                elementNode.GetData<bool>(oldSetting);
-                classElement.RemoveElement(displayJointSetupIndex);
-            }
-
-            //if the old setting was on set it to 'Selected'. otherwise 'Never'
-            if (oldSetting)
-            {
-                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Selected);
-            }
-            else
-            {
-                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Never);
-            }
-        }
-
-
-        return result;
     }
 
     void EditorJointConfig::ValidateLeadEntityId()

@@ -9,11 +9,16 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include "EditorRigidBodyComponent.h"
+#include "RigidBody.h"
+#include "Editor/EditorJointConfiguration.h"
 
 namespace PhysX
 {
     //! Class for in-editor PhysX Static Rigid Body Component.
-    class EditorArticulatedBodyComponent : public AzToolsFramework::Components::EditorComponentBase
+    class EditorArticulatedBodyComponent
+        : public AzToolsFramework::Components::EditorComponentBase
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -29,6 +34,20 @@ namespace PhysX
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // EditorComponentBase
+        void Activate() override;
+        void Deactivate() override;
+
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // AZ::TickBus::Handler overrides...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        void UpdateArticulationHierarchy();
+        bool IsRootArticulation() const;
+
+        ArticulationLinkData m_articulationLinkData;
+        EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
+        RigidBodyConfiguration m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
+        EditorJointConfig m_jointConfig;
     };
 } // namespace PhysX

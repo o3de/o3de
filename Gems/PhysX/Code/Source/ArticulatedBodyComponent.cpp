@@ -36,6 +36,10 @@ namespace PhysX
 
     }
 
+    ArticulationLinkData::~ArticulationLinkData()
+    {
+    }
+
     void ArticulationLinkData::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -46,8 +50,17 @@ namespace PhysX
                 ->Field("ColliderConfiguration", &ArticulationLinkData::m_colliderConfiguration)
                 ->Field("EntityId", &ArticulationLinkData::m_entityId)
                 ->Field("ChildLinks", &ArticulationLinkData::m_childLinks)
+                ->Field("PhysxSpecificConfig", &ArticulationLinkData::m_physxSpecificConfig)
+                ->Field("GenericProperties", &ArticulationLinkData::m_genericProperties)
+                ->Field("Limits", &ArticulationLinkData::m_limits)
+                ->Field("Motor", &ArticulationLinkData::m_motor)
             ;
         }
+    }
+
+    void ArticulationLinkData::Reset()
+    {
+        *this = ArticulationLinkData();
     }
 
     void ArticulatedBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -125,66 +138,66 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
-    void ArticulatedBodyComponent::Activate()
+    bool ArticulatedBodyComponent::IsRootArticulation() const
     {
+        AZ::EntityId parentId = GetEntity()->GetTransform()->GetParentId();
+        if (parentId.IsValid())
         {
-            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+            AZ::Entity* parentEntity = nullptr;
+
+            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
+
+            if (parentEntity && parentEntity->FindComponent<ArticulatedBodyComponent>())
+            {
+                return false;
+            }
         }
 
-        //if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
-        //{
-        //    // Early out if there's no relevant physics world present.
-        //    // It may be a valid case when we have game-time components assigned to editor entities via a script
-        //    // so no need to print a warning here.
-        //    return;
-        //}
-
-
-        using namespace physx;
-
-
-        SetupSample();
-
-
-        m_sceneFinishSimHandler = AzPhysics::SceneEvents::OnSceneSimulationFinishHandler(
-            [&driveJoint = this->m_driveJoint,
-             &tempClosing = this->m_tempClosing]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle, [[maybe_unused]] float fixedDeltatime)
-            {
-                using namespace physx;
-                const PxReal dt = 1.0f / 60.f;
-                PxReal driveValue = driveJoint->getDriveTarget(PxArticulationAxis::eZ);
-
-                if (tempClosing && driveValue < -1.2f)
-                    tempClosing = false;
-                else if (!tempClosing && driveValue > 0.f)
-                    tempClosing = true;
-
-                if (tempClosing)
-                    driveValue -= dt * 0.25f;
-                else
-                    driveValue += dt * 0.25f;
-                driveJoint->setDriveTarget(PxArticulationAxis::eZ, driveValue);
-
-            },
-            aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Components));
-
-        AZ::Interface<AzPhysics::SceneInterface>::Get()->RegisterSceneSimulationFinishHandler(
-            m_attachedSceneHandle, m_sceneFinishSimHandler);
-
-
-        // During activation all the collider components will create their physics shapes.
-        // Delaying the creation of the rigid body to OnEntityActivated so all the shapes are ready.
-        //AZ::EntityBus::Handler::BusConnect(GetEntityId());
+        return true;
     }
 
-    //void ArticulatedBodyComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
-    //{
-    //    AZ::EntityBus::Handler::BusDisconnect();
+    void ArticulatedBodyComponent::Activate()
+    {
+        if (IsRootArticulation())
+        {
+            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+            CreateArticulation();
+        }
+    }
 
-    //    CreateRigidBody();
+    void ArticulatedBodyComponent::CreateArticulation()
+    {
+        using namespace physx;
 
-    //    EnablePhysics();
-    //}
+        PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
+        AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
+        PxScene* pxScene = static_cast<PxScene*>(scene->GetNativePointer());
+        pxScene;
+        m_articulation = pxPhysics->createArticulationReducedCoordinate();
+    }
+
+    
+    void ArticulatedBodyComponent::UpdateArticulationHierarchy()
+    {
+        AZStd::vector<AZ::EntityId> children = GetEntity()->GetTransform()->GetChildren();
+        for (auto childId : children)
+        {
+            AZ::Entity* childEntity = nullptr;
+
+            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, childId);
+
+            if (!childEntity)
+            {
+                continue;
+            }
+
+            if (auto* articulatedComponent = childEntity->FindComponent<ArticulatedBodyComponent>())
+            {
+                articulatedComponent->UpdateArticulationHierarchy();
+                m_articulationLinkData.m_childLinks.emplace_back(&articulatedComponent->m_articulationLinkData);
+            }
+        }
+    }
 
     void ArticulatedBodyComponent::Deactivate()
     {
@@ -194,17 +207,12 @@ namespace PhysX
         }
 
         DestroyRigidBody();
-
-        //AZ::EntityBus::Handler::BusDisconnect();
     }
 
     void ArticulatedBodyComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
-        //if (AzPhysics::SimulatedBody* body = GetSimulatedBody())
-        //{
-        //    body->SetTransform(world);
-        //}
+
     }
 
     void ArticulatedBodyComponent::SetupSample()

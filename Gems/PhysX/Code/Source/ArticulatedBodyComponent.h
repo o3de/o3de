@@ -15,6 +15,8 @@
 #include <PhysX/ComponentTypeIds.h>
 #include "AzFramework/Physics/Common/PhysicsEvents.h"
 #include "AzFramework/Physics/Shape.h"
+#include "RigidBody.h"
+#include "PhysX/Joint/Configuration/PhysXJointConfiguration.h"
 
 namespace physx
 {
@@ -34,14 +36,23 @@ namespace PhysX
 
     struct ArticulationLinkData
     {
-        AZ_TYPE_INFO(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
-
+        AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator, 0);
+        AZ_RTTI(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
+        virtual ~ArticulationLinkData();
         static void Reflect(AZ::ReflectContext* context);
-
+        void Reset();
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         Physics::ColliderConfiguration m_colliderConfiguration;
         AZ::EntityId m_entityId;
-        AZStd::vector<ArticulationLinkData> m_childLinks;
+
+        AzPhysics::RigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
+        RigidBodyConfiguration
+            m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
+        JointGenericProperties m_genericProperties;
+        JointLimitProperties m_limits;
+        JointMotorProperties m_motor;
+
+        AZStd::vector<AZStd::shared_ptr<ArticulationLinkData>> m_childLinks;
     };
 
     class ArticulatedBodyComponent final
@@ -67,8 +78,14 @@ namespace PhysX
         void CreateRigidBody();
         void DestroyRigidBody();
 
+        bool IsRootArticulation() const;
+        void UpdateArticulationHierarchy();
+
         // AZ::Component
         void Activate() override;
+
+        void CreateArticulation();
+
         void Deactivate() override;
 
         // AZ::TransformNotificationsBus
