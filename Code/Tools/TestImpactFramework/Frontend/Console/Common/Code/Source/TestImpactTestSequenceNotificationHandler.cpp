@@ -145,8 +145,6 @@ namespace TestImpact
                 }
             }
 
-            const auto progress = AZStd::string::format("(%03zu/%03zu)", numTestRunsCompleted, totalNumTestRuns);
-
             AZStd::string result;
             switch (testRun.GetResult())
             {
@@ -185,6 +183,7 @@ namespace TestImpact
                 }
             }
 
+            const auto progress = AZStd::string::format("(%03zu/%03zu)", numTestRunsCompleted, totalNumTestRuns);
             std::cout << progress.c_str() << " " << result.c_str() << " " << testRun.GetTargetName().c_str() << " ("
                       << (testRun.GetDuration().count() / 1000.f) << "s)\n";
 
