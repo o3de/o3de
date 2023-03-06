@@ -10,7 +10,6 @@
 
 #include <Process/TestImpactProcessInfo.h>
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>

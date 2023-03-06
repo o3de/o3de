@@ -7,6 +7,7 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <Process/Scheduler/TestImpactProcessSchedulerBus.h>
 #include <Process/TestImpactProcess.h>
 #include <Process/TestImpactProcessException.h>
 #include <Process/TestImpactProcessInfo.h>
@@ -14,13 +15,6 @@
 
 namespace TestImpact
 {
-    ProcessCallbackResult GetAggregateProcessCallbackResult(
-        const AZ::EBusAggregateResults<ProcessCallbackResult>& results)
-    {
-        return std::count(results.values.begin(), results.values.end(), ProcessCallbackResult::Abort) ? ProcessCallbackResult::Abort
-                                                                                                      : ProcessCallbackResult::Continue;
-    }
-
     struct ProcessInFlight
     {
         AZStd::unique_ptr<Process> m_process;

@@ -35,7 +35,7 @@ namespace TestImpact
 
         private:
             // TestSequenceNotificationsBaseBus overrides ...
-            void OnTestRunComplete(Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns) override;
+            void OnTestRunComplete(const Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns) override;
             void OnRealtimeStdContent(const AZStd::string& stdOutDelta, const AZStd::string& stdErrDelta) override;
 
             ConsoleOutputMode m_consoleOutputMode;

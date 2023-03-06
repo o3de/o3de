@@ -33,7 +33,7 @@ namespace TestImpact
         //! @param numTestRunsCompleted The number of test runs that have completed.
         //! @param totalNumTestRuns The total number of test runs in the sequence.
         virtual void OnTestRunComplete(
-            [[maybe_unused]] Client::TestRunBase& testRun,
+            [[maybe_unused]] const Client::TestRunBase& testRun,
             [[maybe_unused]] size_t numTestRunsCompleted,
             [[maybe_unused]] size_t totalNumTestRuns)
         {
