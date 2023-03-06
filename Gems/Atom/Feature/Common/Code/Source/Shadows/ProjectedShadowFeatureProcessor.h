@@ -25,11 +25,11 @@ namespace AZ::Render
         : public ProjectedShadowFeatureProcessorInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(ProjectedShadowFeatureProcessor, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(ProjectedShadowFeatureProcessor, SystemAllocator)
 
         AZ_RTTI(AZ::Render::ProjectedShadowFeatureProcessor, "{02AFA06D-8B37-4D47-91BD-849CAC7FB330}", AZ::Render::ProjectedShadowFeatureProcessorInterface);
 
-        static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(ReflectContext* context);
 
         ProjectedShadowFeatureProcessor() = default;
         virtual ~ProjectedShadowFeatureProcessor() = default;
@@ -90,7 +90,7 @@ namespace AZ::Render
         static constexpr float MinimumFieldOfView = 0.001f;
 
         // RPI::SceneNotificationBus::Handler overrides...
-        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+        void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
         
         // Shadow specific functions
         void UpdateShadowView(ShadowProperty& shadowProperty);
@@ -144,9 +144,10 @@ namespace AZ::Render
         AZStd::unordered_map<RPI::RenderPipeline*, EsmShadowmapsPass*> m_esmShadowmapsPasses;
         ProjectedShadowmapsPass* m_primaryProjectedShadowmapsPass = nullptr;
         EsmShadowmapsPass* m_primaryEsmShadowmapsPass = nullptr;
+        RPI::RenderPipeline* m_primaryShadowPipeline = nullptr;
 
-        Data::Instance<AZ::RPI::Shader> m_clearShadowShader;
-        RHI::ConstPtr<AZ::RHI::DrawPacket> m_clearShadowDrawPacket;
+        Data::Instance<RPI::Shader> m_clearShadowShader;
+        RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
 
         RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
         RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };

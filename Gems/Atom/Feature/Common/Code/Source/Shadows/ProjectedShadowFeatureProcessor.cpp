@@ -21,6 +21,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <CoreLights/Shadow.h>
@@ -317,7 +318,7 @@ namespace AZ::Render
         ShadowProperty& shadowProperty = m_shadowProperties.GetData(shadowPropertyIndex);
         shadowProperty.m_shadowId = shadowId;
 
-        AZ::Name viewName(AZStd::string::format("ProjectedShadowView (shadowId:%d)", shadowId.GetIndex()));
+        Name viewName(AZStd::string::format("ProjectedShadowView (shadowId:%d)", shadowId.GetIndex()));
         shadowProperty.m_shadowmapView = RPI::View::CreateView(viewName, RPI::View::UsageShadow);
 
         UpdateShadowView(shadowProperty);
@@ -335,6 +336,8 @@ namespace AZ::Render
     {
         if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
         {
+            // Check for cases where the pipeline containing the primary render passes has been removed, which means the pointers
+            // to those passes are no longer valid.
             CheckRemovePrimaryPasses(renderPipeline);
         }
         if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
@@ -345,6 +348,10 @@ namespace AZ::Render
         {
             CachePasses(renderPipeline);
         }
+
+        // Check to see if the primary passes have changed, and if so removes the children from the old primary pass and creates them
+        // on the new primary pass. This is necessary if an earlier render pipeline adds or removes references to the shadow map
+        // passes, forcing this feature processor to change which pipeline it uses to render shadows for all pipelines in the scene.
         UpdatePrimaryPasses();
     }
 
@@ -366,10 +373,44 @@ namespace AZ::Render
     {
         m_projectedShadowmapsPasses.erase(renderPipeline);
         m_esmShadowmapsPasses.erase(renderPipeline);
+
+        // Handle the case where the render pipeline containing the primary projected shadow pass is changed, and the
+        // projected shadow pass was altered or removed as part of that change.
+        if (renderPipeline == m_primaryShadowPipeline && m_primaryProjectedShadowmapsPass != nullptr)
+        {
+            RPI::PassFilter projectedPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("ProjectedShadowmapsTemplate"), renderPipeline);
+            bool primaryPassChanged = true;
+            RPI::PassSystemInterface::Get()->ForEachPass(projectedPassFilter,
+                [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    primaryPassChanged = m_primaryProjectedShadowmapsPass != pass;
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                }
+            );
+            if (primaryPassChanged)
+            {
+                m_primaryProjectedShadowmapsPass = nullptr;
+
+                // Check to see if the esm pass still exists on this pipeline. If so, turn it off before setting the pointer to null.
+                RPI::PassFilter esmPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("EsmShadowmapsTemplate"), renderPipeline);
+                RPI::PassSystemInterface::Get()->ForEachPass(esmPassFilter,
+                    [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        if (pass == m_primaryEsmShadowmapsPass)
+                        {
+                            m_primaryEsmShadowmapsPass->SetEnabledComputation(false);
+                        }
+                        return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                    }
+                );
+                m_primaryEsmShadowmapsPass = nullptr;
+            }
+        }
     }
 
     void ProjectedShadowFeatureProcessor::CachePasses(RPI::RenderPipeline* renderPipeline)
     {
+        // Find the Projected Shadow pass in a given render pipeline and update it.
         RPI::PassFilter projectedPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("ProjectedShadowmapsTemplate"), renderPipeline);
         RPI::PassSystemInterface::Get()->ForEachPass(projectedPassFilter,
             [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -387,12 +428,13 @@ namespace AZ::Render
             }
         );
 
+        // Find the ESM shadow pass in a given render pipeline and update it.
         RPI::PassFilter esmPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("EsmShadowmapsTemplate"), renderPipeline);
         RPI::PassSystemInterface::Get()->ForEachPass(esmPassFilter,
             [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 EsmShadowmapsPass* esmShadowmapsPass = static_cast<EsmShadowmapsPass*>(pass);
-                if (esmShadowmapsPass->GetLightTypeName() == AZ::Name("projected"))
+                if (esmShadowmapsPass->GetLightTypeName() == Name("projected"))
                 {
                     if (m_esmShadowmapsPasses.contains(renderPipeline))
                     {
@@ -441,6 +483,7 @@ namespace AZ::Render
                         m_primaryProjectedShadowmapsPass->QueueAddChild(shadowmapPass);
                     }
                 }
+                m_primaryShadowPipeline = pipeline.get();
                 found = true;
                 break;
             }
@@ -448,10 +491,12 @@ namespace AZ::Render
         if (!found)
         {
             m_primaryProjectedShadowmapsPass = nullptr;
+            m_primaryShadowPipeline = nullptr;
         }
 
-        if (m_primaryProjectedShadowmapsPass != nullptr)
+        if (found && m_esmShadowmapsPasses.contains(m_primaryProjectedShadowmapsPass->GetRenderPipeline()))
         {
+            // Update the primary esm pass to be the one that's on the same pipeline as the primary projected shadowmaps pass.
             EsmShadowmapsPass* firstEsmShadomapsPass = m_esmShadowmapsPasses.at(m_primaryProjectedShadowmapsPass->GetRenderPipeline());
             if (firstEsmShadomapsPass != m_primaryEsmShadowmapsPass)
             {
@@ -460,14 +505,27 @@ namespace AZ::Render
                     m_primaryEsmShadowmapsPass->SetEnabledComputation(false);
                 }
                 m_primaryEsmShadowmapsPass = firstEsmShadomapsPass;
+
+                // This will enable computation of the primary esm shadow pass later if necessary.
                 m_filterParameterNeedsUpdate = m_shadowProperties.GetDataCount() > 0;
             }
         }
         else if (m_primaryEsmShadowmapsPass != nullptr)
         {
-            AZ_Error("ProjectedShadowFeatureProcessor", false, "Found an esm shadowmap pass for projected shadows on a pipeline without a projected shadowmap pass.");
+            // Either there's no primary projected shadowmaps pass, or there is but there's no esm pass on the same pipeline, so disable
+            // the primary esm pass if necessary.
+            RPI::PassFilter esmPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ_NAME_LITERAL("EsmShadowmapsTemplate"), m_primaryShadowPipeline);
+            RPI::PassSystemInterface::Get()->ForEachPass(esmPassFilter,
+                [&](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    if (pass == m_primaryEsmShadowmapsPass)
+                    {
+                        m_primaryEsmShadowmapsPass->SetEnabledComputation(false);
+                    }
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                }
+            );
             m_primaryEsmShadowmapsPass = nullptr;
-            m_primaryEsmShadowmapsPass->SetEnabledComputation(false);
         }
 
         if (m_primaryProjectedShadowmapsPass && !m_clearShadowDrawPacket)
@@ -661,10 +719,10 @@ namespace AZ::Render
         Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>
             (clearShadowShaderFilePath, RPI::AssetUtils::TraceLevel::Assert);
 
-        m_clearShadowShader = AZ::RPI::Shader::FindOrCreate(shaderAsset);
-        const AZ::RPI::ShaderVariant& variant = m_clearShadowShader->GetRootVariant();
+        m_clearShadowShader = RPI::Shader::FindOrCreate(shaderAsset);
+        const RPI::ShaderVariant& variant = m_clearShadowShader->GetRootVariant();
 
-        AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
+        RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
         variant.ConfigurePipelineState(pipelineStateDescriptor);
 
         bool foundPipelineState = GetParentScene()->ConfigurePipelineState(m_clearShadowShader->GetDrawListTag(), pipelineStateDescriptor);
@@ -673,18 +731,18 @@ namespace AZ::Render
         RHI::InputStreamLayoutBuilder layoutBuilder;
         pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
 
-        const AZ::RHI::PipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
+        const RHI::PipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
         if (!pipelineState)
         {
             AZ_Assert(false, "Shader '%s'. Failed to acquire default pipeline state", shaderAsset->GetName().GetCStr());
             return;
         }
 
-        AZ::RHI::DrawPacketBuilder drawPacketBuilder;
+        RHI::DrawPacketBuilder drawPacketBuilder;
         drawPacketBuilder.Begin(nullptr);
-        drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawLinear(1, 0, 3, 0));
+        drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
 
-        AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
+        RHI::DrawPacketBuilder::DrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();
         drawRequest.m_pipelineState = pipelineState;
         drawRequest.m_sortKey = AZStd::numeric_limits<RHI::DrawItemSortKey>::min();
@@ -711,7 +769,7 @@ namespace AZ::Render
         m_atlas.Finalize();
 
         auto createAtlas = [&](RHI::Format format, RHI::ImageBindFlags bindFlags, RHI::ImageAspectFlags aspectFlags, AZStd::string name)
-            ->AZ::Data::Instance<RPI::AttachmentImage>
+            ->Data::Instance<RPI::AttachmentImage>
         {
             RHI::ImageDescriptor imageDescriptor;
             const uint32_t shadowmapSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());

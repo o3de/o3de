@@ -30,7 +30,7 @@ namespace AZ
 
             // RPI::Pass overrides
             RHI::DrawListTag GetDrawListTag() const override;
-            const AZ::RPI::PipelineViewTag& GetPipelineViewTag() const override;
+            const RPI::PipelineViewTag& GetPipelineViewTag() const override;
 
             //! Sets the image to use as the output for all esm passes. This is needed so multiple pipelines in a scene can share the same resource.
             void SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge);

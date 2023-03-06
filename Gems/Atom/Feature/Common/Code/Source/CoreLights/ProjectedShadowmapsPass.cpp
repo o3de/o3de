@@ -83,12 +83,12 @@ namespace AZ
             if (!m_atlasAttachmentImage)
             {
                 auto depthAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::D32_FLOAT);
-                AttachImageToSlot(AZ::Name("Shadowmap"), depthAttachmentImage);
+                AttachImageToSlot(Name("Shadowmap"), depthAttachmentImage);
                 this->SetEnabled(false);
                 return;
             }
 
-            AttachImageToSlot(AZ::Name("Shadowmap"), m_atlasAttachmentImage);
+            AttachImageToSlot(Name("Shadowmap"), m_atlasAttachmentImage);
             this->SetEnabled(true);
             Base::BuildInternal();
         }

@@ -39,11 +39,11 @@ namespace AZ
 
             m_lightTypeName = esmData->m_lightType;
 
-            if (m_lightTypeName == AZ::Name("projected"))
+            if (m_lightTypeName == Name("projected"))
             {
                 m_lightType = EsmLightType::Projected;
             }
-            else if (m_lightTypeName == AZ::Name("directional"))
+            else if (m_lightTypeName == Name("directional"))
             {
                 m_lightType = EsmLightType::Directional;
             }
@@ -92,7 +92,7 @@ namespace AZ
             {
                 m_kawaseBlurConstantIndices[kawaseBlurIndex] = srg->FindShaderInputConstantIndex(Name("m_rcpResolutionAndIteration"));
             }
-            const AZ::Vector4 data(
+            const Vector4 data(
                 1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0.0f);
 
             srg->SetConstant(m_kawaseBlurConstantIndices[kawaseBlurIndex], data);
@@ -122,12 +122,12 @@ namespace AZ
                         // Make sure at least a dummy image is attached if lacking any other attachments.
                         // This may be necessary for a few frames during initialization.
                         auto tempAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::R16_FLOAT);
-                        AttachImageToSlot(AZ::Name("EsmShadowmaps"), tempAttachmentImage);
+                        AttachImageToSlot(Name("EsmShadowmaps"), tempAttachmentImage);
                     }
                 }
                 else
                 {
-                    AttachImageToSlot(AZ::Name("EsmShadowmaps"), m_atlasAttachmentImage);
+                    AttachImageToSlot(Name("EsmShadowmaps"), m_atlasAttachmentImage);
                 }
             }
 
