@@ -73,6 +73,7 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
+    // Exposes protected data to automated tests.
     class TestingRCController
         : public AssetProcessor::RCController
     {
@@ -84,6 +85,9 @@ namespace UnitTests
 
         }
 
+        // There are many queues in the asset processing process.
+        // This allows automated tests to examine the RCQueueSortModel, and compare
+        // to the other queues, to make sure the state of these systems matches what's expected.
         AssetProcessor::RCQueueSortModel& GetRCQueueSortModel()
         {
             return m_RCQueueSortModel;
