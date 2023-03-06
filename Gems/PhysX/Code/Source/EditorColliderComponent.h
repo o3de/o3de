@@ -66,9 +66,9 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         //! Cylinder specific parameters.
-        AZ::u8 m_subdivisionCount = 16;
-        float m_height = 1.0f;
-        float m_radius = 1.0f;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
+        float m_height = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_radius = Physics::ShapeConstants::DefaultCylinderRadius;
 
         //! Configuration stores the convex geometry for the cylinder and shape scale.
         Physics::CookedMeshShapeConfiguration m_configuration;
