@@ -95,28 +95,6 @@ namespace GraphModelIntegrationTest
         AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
     };
 
-    class BadNode
-        : public GraphModel::Node
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(BadNode, AZ::SystemAllocator)
-        AZ_RTTI(BadNode, "{8ECC580C-1AFC-4D66-863D-72AC9971CEC8}", Node);
-
-        using BadNodePtr = AZStd::shared_ptr<BadNode>;
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        BadNode() = default;
-        explicit BadNode(GraphModel::GraphPtr graph, AZStd::shared_ptr<TestGraphContext> graphContext);
-
-        const char* GetTitle() const override;
-
-    protected:
-        void RegisterSlots() override;
-
-        AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
-    };
-
     class GraphModelTestEnvironment
         : public AZ::Test::ITestEnvironment
     {

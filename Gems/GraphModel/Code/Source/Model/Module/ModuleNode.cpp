@@ -7,15 +7,16 @@
  */
 
 // AZ
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 // Graph Model
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/Slot.h>
-#include <GraphModel/Model/Module/ModuleNode.h>
-#include <GraphModel/Model/Module/ModuleGraphManager.h>
-#include <GraphModel/Model/Module/InputOutputNodes.h>
 #include <GraphModel/Model/GraphContext.h>
+#include <GraphModel/Model/Module/InputOutputNodes.h>
+#include <GraphModel/Model/Module/ModuleGraphManager.h>
+#include <GraphModel/Model/Module/ModuleNode.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace GraphModel
 {
@@ -49,7 +50,6 @@ namespace GraphModel
 
         CreateSlotData();
     }
-
     void ModuleNode::PostLoadSetup(GraphPtr ownerGraph, NodeId id)
     {
         LoadModuleGraph(ownerGraph->GetContext()->GetModuleGraphManager());
@@ -84,20 +84,24 @@ namespace GraphModel
                 ConstNodePtr node = iter.second;
                 if (AZStd::shared_ptr<const GraphInputNode> inputNode = azrtti_cast<const GraphInputNode*>(node))
                 {
-                    RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+                    RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+                        GraphModel::SlotDirection::Input,
+                        GraphModel::SlotType::Data,
                         inputNode->GetName(), 
-                        inputNode->GetDisplayName(), 
-                        inputNode->GetNodeDataType(),
-                        inputNode->GetDefaultValue(), 
-                        inputNode->GetDescription()));
+                        inputNode->GetDisplayName(),
+                        inputNode->GetDescription(),
+                        GraphModel::DataTypeList{ inputNode->GetNodeDataType() },
+                        inputNode->GetDefaultValue()));
                 }
                 else if (AZStd::shared_ptr<const GraphOutputNode> outputNode = azrtti_cast<const GraphOutputNode*>(node))
                 {
-                    RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
-                        outputNode->GetName(), 
-                        outputNode->GetDisplayName(), 
-                        outputNode->GetNodeDataType(), 
-                        outputNode->GetDescription()));
+                    RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+                        GraphModel::SlotDirection::Output,
+                        GraphModel::SlotType::Data,
+                        outputNode->GetName(),
+                        outputNode->GetDisplayName(),
+                        outputNode->GetDescription(),
+                        GraphModel::DataTypeList{ outputNode->GetNodeDataType() }));
                 }
             }
         }
