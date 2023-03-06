@@ -74,6 +74,8 @@ namespace AZ
 
             const DrawPacket* End();
 
+            const DrawPacket* Clone(const DrawPacket* original);
+
         private:
             void ClearData();
 
