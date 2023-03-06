@@ -166,13 +166,13 @@ namespace AZ::DocumentPropertyEditor
         void ExtractLabel(const Reflection::IAttributes& attributes)
         {
             AZStd::string_view serializedPath = "";
-            if (auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
+            if (auto serializedPathAttribute = attributes.Find(Reflection::DescriptorAttributes::SerializedPath);
                 serializedPathAttribute.IsString())
             {
                 serializedPath = serializedPathAttribute.GetString();
             }
 
-            AZ::Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+            Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
             if (!labelAttribute.IsNull() && labelAttribute.IsString())
             {
                 m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPath);
@@ -448,13 +448,13 @@ namespace AZ::DocumentPropertyEditor
 
             // Retrieve serialized path and label attributes.
             AZStd::string_view serializedPath = "";
-            if (auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
+            if (auto serializedPathAttribute = attributes.Find(Reflection::DescriptorAttributes::SerializedPath);
                 serializedPathAttribute.IsString())
             {
                 serializedPath = serializedPathAttribute.GetString();
             }
 
-            AZ::Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+            Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
             bool isLabelAvailable = !labelAttribute.IsNull() && labelAttribute.IsString();
 
             if (access.GetType() == azrtti_typeid<AZStd::string>())
@@ -480,7 +480,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
+                auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
                 if (!containerAttribute.IsNull())
                 {
                     auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(containerAttribute);
