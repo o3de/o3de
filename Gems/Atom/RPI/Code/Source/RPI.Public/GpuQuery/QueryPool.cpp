@@ -19,6 +19,29 @@ namespace AZ
 {
     namespace RPI
     {
+        static const char* GetQueryTypeString(RHI::QueryType queryType)
+        {
+            switch (queryType)
+            {
+            case RHI::QueryType::Occlusion:
+            {
+                return "Occlusion";
+            }
+            case RHI::QueryType::Timestamp:
+            {
+                return "Timestamp";
+            }
+            case RHI::QueryType::PipelineStatistics:
+            {
+                return "PipelineStatistics";
+            }
+            default:
+            {
+                AZ_Assert(false, "Unknown QueryType supplied");
+                return "UnknownQueryType";
+            }
+            };
+        }
         QueryPoolPtr QueryPool::CreateQueryPool(uint32_t queryCount, uint32_t rhiQueriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags pipelineStatisticsFlags)
         {
             return AZStd::unique_ptr<QueryPool>(aznew QueryPool(queryCount, rhiQueriesPerResult, queryType, pipelineStatisticsFlags));
@@ -53,6 +76,8 @@ namespace AZ
                 queryPoolDesc.m_pipelineStatisticsMask = m_statisticsFlags;
 
                 m_rhiQueryPool = RHI::Factory::Get().CreateQueryPool();
+                AZStd::string poolName = AZStd::string::format("%sQueryPool", GetQueryTypeString(queryType));
+                m_rhiQueryPool->SetName(AZ::Name(poolName));
                 [[maybe_unused]] auto result = m_rhiQueryPool->Init(*device, queryPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to create the query pool");
             }
