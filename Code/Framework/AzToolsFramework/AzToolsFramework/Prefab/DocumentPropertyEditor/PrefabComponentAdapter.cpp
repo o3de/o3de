@@ -35,6 +35,7 @@ namespace AzToolsFramework::Prefab
         // Set the component alias before calling SetValue() in base SetComponent().
         // Otherwise, an empty component alias will be used in DOM data.
         m_componentAlias = componentInstance->GetSerializedIdentifier();
+        AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
 
         ComponentAdapter::SetComponent(componentInstance);
     }
