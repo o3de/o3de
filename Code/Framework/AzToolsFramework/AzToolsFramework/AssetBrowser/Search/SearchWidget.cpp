@@ -169,15 +169,15 @@ namespace AzToolsFramework
                 SetTypeFilters(buildTypesFilterList());
             }
 
-            auto productFilter = new EntryTypeFilter();
-            productFilter->SetName("Product");
-            productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
-            auto inverseProductFilter = new InverseFilter();
-            inverseProductFilter->SetFilter(FilterConstType(productFilter));
-            m_projectSourceFilter->AddFilter(FilterConstType(inverseProductFilter));
+            //auto productFilter = new EntryTypeFilter();
+            //productFilter->SetName("Product");
+            //productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+            //auto inverseProductFilter = new InverseFilter();
+            //inverseProductFilter->SetFilter(FilterConstType(productFilter));
+            //m_projectSourceFilter->AddFilter(FilterConstType(inverseProductFilter));
 
             auto pathFilter = new AssetPathFilter();
-            pathFilter->SetAssetPath(AZStd::string_view{ AZ::Utils::GetProjectPath() });
+            pathFilter->SetAssetPath(AZ::IO::Path(AZ::Utils::GetProjectPath()));
             m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));
 
             auto directoryFilter = new EntryTypeFilter();
