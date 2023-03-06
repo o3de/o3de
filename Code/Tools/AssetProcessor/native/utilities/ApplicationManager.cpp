@@ -446,7 +446,7 @@ void ApplicationManager::PopulateApplicationDependencies()
             AZ::DynamicModuleHandle* handle = moduleData.GetDynamicModuleHandle();
             if (handle)
             {
-                QFileInfo fi(handle->GetFilename().c_str());
+                QFileInfo fi(handle->GetFilename());
                 if (fi.exists())
                 {
                     m_filesOfInterest.push_back(fi.absoluteFilePath());

@@ -27,7 +27,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(BenchmarkAsset, "{FEDD2FFE-C8E6-4627-9B88-C3A6E9BA8A98}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(BenchmarkAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BenchmarkAsset, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         uint64_t m_bufferSize;

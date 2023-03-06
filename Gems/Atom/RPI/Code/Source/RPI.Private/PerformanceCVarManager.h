@@ -30,7 +30,7 @@ namespace AZ
         class IPerformanceCollectorOwner
         {
         public:
-            AZ_CLASS_ALLOCATOR(IPerformanceCollectorOwner, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IPerformanceCollectorOwner, AZ::SystemAllocator);
             AZ_RTTI(IPerformanceCollectorOwner, "{D157F48E-8D9C-4F4F-93CE-961860371965}");
 
             IPerformanceCollectorOwner() = default;

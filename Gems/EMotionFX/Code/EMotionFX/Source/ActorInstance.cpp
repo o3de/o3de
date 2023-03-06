@@ -38,7 +38,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator)
 
     ActorInstance::ActorInstance(Actor* actor, AZ::Entity* entity, uint32 threadIndex)
         : BaseObject()

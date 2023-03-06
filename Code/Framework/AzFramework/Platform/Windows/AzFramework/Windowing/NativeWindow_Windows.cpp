@@ -20,7 +20,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator);
         NativeWindowImpl_Win32();
         ~NativeWindowImpl_Win32() override;
 

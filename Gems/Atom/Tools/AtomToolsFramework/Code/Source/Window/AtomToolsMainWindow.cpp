@@ -302,12 +302,16 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                   "Update Interval When Active",
                   "Minimum delay between ticks (in milliseconds) when the application has focus",
-                  aznumeric_cast<AZ::s64>(1)),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
                   "Update Interval When Not Active",
                   "Minimum delay between ticks (in milliseconds) when the application does not have focus",
-                  aznumeric_cast<AZ::s64>(250)),
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
                   "Allow Multiple Instances",
@@ -333,7 +337,9 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
                   "Prompt To Open Multiple Files Threshold",
                   "Maximum number of files that can be selected before prompting for confirmation",
-                  aznumeric_cast<AZ::s64>(10)) });
+                  aznumeric_cast<AZ::s64>(10),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(100)) });
 
         inspector->AddGroup(
             m_assetBrowserSettingsGroup->m_name,

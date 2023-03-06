@@ -49,7 +49,6 @@ namespace AZ
                     ec->Class<EditorCommonFeaturesSystemComponent>("AtomEditorCommonFeaturesSystemComponent",
                         "Configures editor- and tool-specific functionality for common render features.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath, "Atom Level Default Asset Path",
                             "path to the slice the instantiate for a new Atom level")

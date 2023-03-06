@@ -24,7 +24,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(GpuQuerySystem, "{7A314998-AB21-464B-8AFC-525018D2150A}");
-            AZ_CLASS_ALLOCATOR(GpuQuerySystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GpuQuerySystem, AZ::SystemAllocator);
 
             GpuQuerySystem() = default;
 

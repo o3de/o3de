@@ -25,7 +25,7 @@ namespace Physics
     class ColliderConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ColliderConfiguration, "{16206828-F867-4DA9-9E4E-549B7B2C6174}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -79,12 +79,13 @@ namespace Physics
     class Shape
     {
     public:
-        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);
         AZ_RTTI(Shape, "{0A47DDD6-2BD7-43B3-BF0D-2E12CC395C13}");
         virtual ~Shape() = default;
 
         virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
         virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
+        virtual Physics::MaterialId GetMaterialId() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;

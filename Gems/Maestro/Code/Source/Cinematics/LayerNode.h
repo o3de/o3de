@@ -22,7 +22,7 @@ class CLayerNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CLayerNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CLayerNode, AZ::SystemAllocator);
     AZ_RTTI(CLayerNode, "{C2E65C31-D469-4DE0-8F67-B5B00DE96E52}", CAnimNode);
 
     //-----------------------------------------------------------------------------

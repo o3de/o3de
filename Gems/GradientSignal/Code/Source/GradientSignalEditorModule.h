@@ -18,7 +18,7 @@ namespace GradientSignal
     {
     public:
         AZ_RTTI(GradientSignalEditorModule, "{F8AB732B-3563-4727-9326-3DF2AC42A6D8}", GradientSignalModule);
-        AZ_CLASS_ALLOCATOR(GradientSignalEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSignalEditorModule, AZ::SystemAllocator);
 
         GradientSignalEditorModule();
 

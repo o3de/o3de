@@ -34,7 +34,7 @@ namespace AZ
             using ChildPassIndex = RHI::Handle<uint32_t, class ChildPass>;
 
             AZ_RTTI(ParentPass, "{0801AD74-85A8-4895-A5E5-C500AEE535A6}", Pass);
-            AZ_CLASS_ALLOCATOR(ParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ParentPass, SystemAllocator);
 
             virtual ~ParentPass();
 

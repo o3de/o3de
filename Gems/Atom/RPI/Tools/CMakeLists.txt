@@ -14,6 +14,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             NAME RPI::atom_rpi_tools_tests
             PATH ${CMAKE_CURRENT_LIST_DIR}/atom_rpi_tools/tests/
             TIMEOUT 30
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

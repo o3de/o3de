@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ComputePass, "{61464A74-BD35-4954-AB27-492644EA6C2A}", RenderPass);
-            AZ_CLASS_ALLOCATOR(ComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComputePass, SystemAllocator);
             virtual ~ComputePass();
 
             //! Creates a ComputePass

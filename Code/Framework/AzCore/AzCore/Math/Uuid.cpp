@@ -12,6 +12,11 @@
 
 #include <AzCore/std/algorithm.h>
 
+namespace AZStd
+{
+    template class AZStd::basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+}
+
 namespace AZ
 {
     Uuid Uuid::Create()

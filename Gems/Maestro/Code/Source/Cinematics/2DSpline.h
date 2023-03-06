@@ -116,7 +116,7 @@ namespace spline
         : public spline::CBaseSplineInterpolator<Vec2, spline::BezierSpline<Vec2, spline::SplineKeyEx<Vec2> > >
     {
     public:
-        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TrackSplineInterpolator<Vec2>, AZ::SystemAllocator);
 
         virtual int GetNumDimensions()
         {

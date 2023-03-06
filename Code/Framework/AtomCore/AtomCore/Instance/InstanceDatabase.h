@@ -158,7 +158,7 @@ namespace AZ
         {
             static_assert(AZStd::is_base_of<InstanceData, Type>::value, "Type must inherit from Data::Instance to be used in Data::InstanceDatabase.");
         public:
-            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator);
 
             /**
              * Create the InstanceDatabase with a single handler.

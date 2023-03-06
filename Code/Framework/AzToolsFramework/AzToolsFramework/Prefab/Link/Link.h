@@ -32,7 +32,7 @@ namespace AzToolsFramework
         class Link
         {
         public:
-            AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Link, AZ::SystemAllocator);
             AZ_RTTI(Link, "{49230756-7BAA-4456-8DFE-0E18CB887DB5}");
 
             // The structure to store metadata information about individual patches on a link.

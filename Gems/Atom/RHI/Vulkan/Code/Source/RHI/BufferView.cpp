@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -56,6 +57,14 @@ namespace AZ
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
             if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
             {
+#if defined(AZ_RHI_ENABLE_VALIDATION)
+                AZ_Assert(
+                    RHI::IsAligned(
+                        viewDescriptor.m_elementOffset * viewDescriptor.m_elementSize,
+                        device.GetLimits().m_minTexelBufferOffsetAlignment),
+                    "Typed Buffer View has to be aligned to a multiple of %d bytes.",
+                    device.GetLimits().m_minTexelBufferOffsetAlignment);
+#endif
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
 
                 if (shaderRead)
@@ -137,7 +146,7 @@ namespace AZ
             createInfo.range = descriptor.m_elementCount * descriptor.m_elementSize;
 
             const VkResult result =
-                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeBufferView);
+                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeBufferView);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));

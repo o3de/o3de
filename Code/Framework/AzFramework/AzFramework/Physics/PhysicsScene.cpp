@@ -15,7 +15,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Scene, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(Scene, AZ::SystemAllocator);
 
     /*static*/ void Scene::Reflect(AZ::ReflectContext* context)
     {
@@ -51,7 +51,10 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method("GetOnGravityChangeEvent", getOnGravityChange)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, gravityChangedEventDescription)
-                ->Method("QueryScene", &Scene::QueryScene)
+                ->Method("QueryScene", [](Scene* self, const SceneQueryRequest* request)
+                {
+                    return self->QueryScene(request);
+                })
                 ;
         }
     }

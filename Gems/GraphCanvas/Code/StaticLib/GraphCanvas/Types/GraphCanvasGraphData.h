@@ -23,7 +23,7 @@ namespace GraphCanvas
     struct GraphData
     {
         AZ_TYPE_INFO(GraphData, "{B2E32DB8-B436-41D0-8DF4-98515D936653}");
-        AZ_CLASS_ALLOCATOR(GraphData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphData, AZ::SystemAllocator);
 
         void Clear();
         void CollectItemIds(AZStd::unordered_set<AZ::EntityId>& itemIds) const;

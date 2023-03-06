@@ -61,7 +61,7 @@ namespace GameStateSamples
     {
     public:
         AZ_RTTI(GameStateSamplesModule, "{FC206260-D188-45A5-8B23-1D7A1DA6E82F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GameStateSamplesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStateSamplesModule, AZ::SystemAllocator);
 
         GameStateSamplesModule()
             : CryHooksModule()

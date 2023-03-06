@@ -18,7 +18,7 @@ namespace AZ
         {
             using Base = FrameGraphExecuteGroupBase;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMerged, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMerged, AZ::PoolAllocator);
 
             FrameGraphExecuteGroupMerged() = default;
 

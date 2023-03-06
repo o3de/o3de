@@ -407,30 +407,23 @@ namespace AZ
         {
             if (srg)
             {
-                if (!m_shaderResourceGroupsToBind.full())
-                {
-                    m_shaderResourceGroupsToBind.push_back(srg);
-                }
-                else
-                {
-                    AZ_Error("Pass System", false, "Attempting to bind an srg to a RenderPass, but there is no more room.")
-                }
+                m_shaderResourceGroupsToBind[aznumeric_caster(srg->GetBindingSlot())] = srg;
             }
         }
 
         void RenderPass::SetSrgsForDraw(RHI::CommandList* commandList)
         {
-            for (const RHI::ShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
+            for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDraw(*shaderResourceGroup);
+                commandList->SetShaderResourceGroupForDraw(*(itr.second));
             }
         }
 
         void RenderPass::SetSrgsForDispatch(RHI::CommandList* commandList)
         {
-            for (const RHI::ShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
+            for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
+                commandList->SetShaderResourceGroupForDispatch(*(itr.second));
             }
         }
 
@@ -549,7 +542,7 @@ namespace AZ
                 query->EndQuery(context);
             };
 
-            // This scopy query implmentation should be replaced by
+            // This scope query implementation should be replaced by
             // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
             
             // For timestamp query, it's okay to execute across different command lists

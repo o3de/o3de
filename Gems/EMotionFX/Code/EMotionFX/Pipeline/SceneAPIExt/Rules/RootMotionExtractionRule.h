@@ -22,7 +22,7 @@ namespace EMotionFX::Pipeline::Rule
     {
     public:
         AZ_RTTI(EMotionFX::Pipeline::Rule::RootMotionExtractionRule, "{1A7E6215-49E3-4D80-8B5C-1DA8E09DA5FB}", AZ::SceneAPI::DataTypes::IRule);
-        AZ_CLASS_ALLOCATOR(RootMotionExtractionRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RootMotionExtractionRule, AZ::SystemAllocator)
 
         RootMotionExtractionRule();
         RootMotionExtractionRule(AZStd::shared_ptr<RootMotionExtractionData> data);

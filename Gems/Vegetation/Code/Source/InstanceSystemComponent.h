@@ -43,7 +43,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(InstanceSystemConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InstanceSystemConfig, AZ::SystemAllocator);
         AZ_RTTI(InstanceSystemConfig, "{63984856-F883-4F8C-9049-5A8F26477B76}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

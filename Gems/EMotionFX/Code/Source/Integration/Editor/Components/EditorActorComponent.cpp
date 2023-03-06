@@ -486,7 +486,7 @@ namespace EMotionFX
         {
             // call to open must be done before LoadCharacter
             const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+            AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::OpenViewPane, panelName);
 
             if (assetId.IsValid())
             {

@@ -50,7 +50,7 @@ namespace PhysX
             , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Collider, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Collider, AZ::SystemAllocator);
             AZ_RTTI(Collider, "{7DE9CA01-DF1E-4D72-BBF4-76C9136BE6A2}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -64,6 +64,7 @@ namespace PhysX
             void ClearCachedGeometry();
 
             void SetDisplayFlag(bool enable);
+            bool IsDisplayFlagEnabled() const;
 
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 

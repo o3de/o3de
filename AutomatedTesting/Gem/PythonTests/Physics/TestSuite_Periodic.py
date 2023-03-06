@@ -13,53 +13,24 @@ import os
 import sys
 
 from .utils.FileManagement import FileManagement as fm
-from ly_test_tools import LAUNCHERS
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorBatchedTest, EditorTestSuite
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
 from base import TestAutomationBase
 
-
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
-
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
 
-    # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(
-        reason="This test needs new physics asset with multiple materials to be more stable.")
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg', 'Material_PerFaceMaterialGetsCorrectMaterial.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_PerFaceMaterialGetsCorrectMaterial(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_PerFaceMaterialGetsCorrectMaterial as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_CharacterController.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_CharacterController(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_CharacterController as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14520")
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Collider_NoneCollisionGroupSameLayerNotCollide.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Collider_NoneCollisionGroupSameLayerNotCollide(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_NoneCollisionGroupSameLayerNotCollide as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skipif(sys.platform.startswith('linux'), reason="https://github.com/o3de/o3de/issues/14520")
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Collider_SameCollisionGroupSameCustomLayerCollide.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Collider_SameCollisionGroupSameCustomLayerCollide(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_SameCollisionGroupSameCustomLayerCollide as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config

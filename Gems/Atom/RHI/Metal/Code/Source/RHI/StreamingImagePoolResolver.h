@@ -21,7 +21,7 @@ namespace AZ
             using Base = RHI::ResourcePoolResolver;
             
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePoolResolver, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePoolResolver, "{85943BB1-AAE9-47C6-B05A-4B0BFBF1E0A8}", Base);
             
             StreamingImagePoolResolver(Device& device, StreamingImagePool* streamingImagePool)

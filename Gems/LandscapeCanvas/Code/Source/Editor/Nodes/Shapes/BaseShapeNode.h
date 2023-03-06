@@ -24,7 +24,7 @@ namespace LandscapeCanvas
     class BaseShapeNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseShapeNode, AZ::SystemAllocator);
         AZ_RTTI(BaseShapeNode, "{1A9B84EC-22FA-4139-9D86-B158688612E2}", BaseNode);
 
         // Category sub-title

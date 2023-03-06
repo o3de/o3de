@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphSetup, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphSetup, DeformerAllocator)
 
 
     // destructor

@@ -166,7 +166,7 @@ def update_manifest(scene):
         # Add a physics component referencing the triangle mesh we made for the first node
         if previous_entity_id is None:
             physx_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName",
-                                      entity_id, "{FD429282-A075-4966-857F-D0BBF186CFE6} EditorColliderComponent")
+                                      entity_id, "{20382794-0E74-4860-9C35-A19F22DC80D4} EditorMeshColliderComponent")
 
             json_update = json.dumps({
                 "ShapeConfiguration": {

@@ -21,7 +21,7 @@ class ComponentPaletteSettings
     : public AZ::UserSettings
 {
 public:
-    AZ_CLASS_ALLOCATOR(ComponentPaletteSettings, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ComponentPaletteSettings, AZ::SystemAllocator);
     AZ_RTTI(ComponentPaletteSettings, "{BAC3BABA-6DF1-4EEE-AFF1-6A84AD1820A1}", AZ::UserSettings);
 
     AZStd::vector<AZ::Uuid> m_favorites;

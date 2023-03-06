@@ -19,7 +19,7 @@ namespace ImageProcessingAtom
     struct MipmapSettings
     {
         AZ_TYPE_INFO(MipmapSettings, "{37C05CB4-365B-4F70-9620-B9017DB0A8C2}");
-        AZ_CLASS_ALLOCATOR(MipmapSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MipmapSettings, AZ::SystemAllocator);
         bool operator!=(const MipmapSettings& other) const;
         bool operator==(const MipmapSettings& other) const;
 
