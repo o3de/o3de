@@ -65,7 +65,10 @@ namespace AzToolsFramework
                             const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
                             if (abs(dim.GetX())<1.0f && abs(dim.GetY())<1.0f && abs(dim.GetZ())<1.0f)
                                 return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
-                            return QString{ "%1 x %2 x %3" }.arg(int(dim.GetX())).arg(int(dim.GetY())).arg(int(dim.GetZ()));
+                            return QString{ "%1 x %2 x %3" }
+                                .arg(static_cast<int>(dim.GetX()))
+                                .arg(static_cast<int>(dim.GetY()))
+                                .arg(static_cast<int>(dim.GetZ()));
                         }
                         return "";
                     default:
