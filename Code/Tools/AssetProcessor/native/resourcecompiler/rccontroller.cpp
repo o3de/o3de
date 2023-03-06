@@ -185,6 +185,8 @@ namespace AssetProcessor
                 // The job status has changed
                 if (existingJob->GetHasMissingSourceDependency() != details.m_hasMissingSourceDependency)
                 {
+                    AZ_Error("AssetProcessor", false, "Canceling %s for job dependency change",
+                        checkFile.GetSourceAssetReference().AbsolutePath().c_str());
                     AZ_TracePrintf(
                         AssetProcessor::DebugChannel,
                         "Cancelling Job [%s, %s, %s] missing source depedency status has changed.\n",
@@ -262,7 +264,14 @@ namespace AssetProcessor
 
         if (cancelJob && existingJob && existingJobIndex != -1)
         {
+            bool markCanceledJobAsFinished = existingJob->GetState() == RCJob::JobState::pending;
             existingJob->SetState(RCJob::JobState::cancelled);
+
+            // If the job was pending, mark it as finished, so asset processor can clean up the interface for this job and update tracking info.
+            if (markCanceledJobAsFinished)
+            {
+                FinishJob(existingJob);
+            }
             AssetBuilderSDK::JobCommandBus::Event(existingJob->GetJobEntry().m_jobRunKey, &AssetBuilderSDK::JobCommandBus::Events::Cancel);
             m_RCJobListModel.UpdateRow(existingJobIndex);
         }
@@ -336,7 +345,30 @@ namespace AssetProcessor
                         break;
                     }
                 }
-
+                if (AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
+                {
+                    AZ_Error(
+                        "AssetProcessor",
+                        false,
+                        "StartJob: %d - %s",
+                        rcJob->GetHasMissingSourceDependency(),
+                        rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
+                }
+                else if (
+                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
+                        .ends_with("basepbr_generated.materialtype") ||
+                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
+                        .ends_with("basepbr_generated.azmaterialtype") ||
+                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
+                        .ends_with("StandardPBR.materialtype"))
+                {
+                    AZ_Error(
+                        "AssetProcessor",
+                        false,
+                        "!!!!StartJob: %d - %s",
+                        rcJob->GetHasMissingSourceDependency(),
+                        rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
+                }
                 StartJob(rcJob);
                 rcJob = m_RCQueueSortModel.GetNextPendingJob();
             }
@@ -433,6 +465,18 @@ namespace AssetProcessor
         if (m_activeCompileGroups.empty())
         {
             return;
+        }
+        if (AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
+        {
+            AZ_Error("AssetProcessor", false, "JobComplete: %s", completeEntry.m_sourceAssetReference.AbsolutePath().c_str());
+        }
+        else if (
+            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("basepbr_generated.materialtype") ||
+            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str())
+                .ends_with("basepbr_generated.azmaterialtype") ||
+            AZStd::string(completeEntry.m_sourceAssetReference.AbsolutePath().c_str()).ends_with("StandardPBR.materialtype"))
+        {
+            AZ_Error("AssetProcessor", false, "!!!!JobComplete: %s", completeEntry.m_sourceAssetReference.AbsolutePath().c_str());
         }
 
         QueueElementID jobQueueId(completeEntry.m_sourceAssetReference, completeEntry.m_platformInfo.m_identifier.c_str(), completeEntry.m_jobKey);

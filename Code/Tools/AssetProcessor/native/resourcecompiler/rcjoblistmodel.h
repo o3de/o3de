@@ -74,6 +74,8 @@ namespace AssetProcessor
         void markAsCompleted(RCJob* rcJob);
         void markAsCataloged(const AssetProcessor::QueueElementID& check);
         unsigned int jobsInFlight() const;
+        unsigned int jobsInQueueWithoutMissingDependencies() const;
+        unsigned int jobsPendingCatalog() const;
 
         void UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobPrioririty);
         void UpdateRow(int jobIndex);

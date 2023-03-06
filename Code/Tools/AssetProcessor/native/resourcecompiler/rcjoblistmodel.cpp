@@ -77,6 +77,23 @@ namespace AssetProcessor
         return m_jobsInFlight.size();
     }
 
+    unsigned int RCJobListModel::jobsInQueueWithoutMissingDependencies() const
+    {
+        unsigned int jobsWithNoMissingDependencies = 0;
+        for (const auto& job : m_jobsInQueueLookup)
+        {
+            if (!job->GetHasMissingSourceDependency())
+            {
+                ++jobsWithNoMissingDependencies;
+            }
+        }
+        return jobsWithNoMissingDependencies;
+    }
+
+    unsigned int RCJobListModel::jobsPendingCatalog() const
+    {
+        return m_finishedJobsNotInCatalog.count();
+    }
 
     void RCJobListModel::UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobEscalation)
     {
@@ -229,6 +246,19 @@ namespace AssetProcessor
 #if defined(DEBUG_RCJOB_MODEL)
         AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace markAsCompleted(%i %s,%s,%s)\n", rcJob, rcJob->GetInputFileAbsolutePath().toUtf8().constData(), rcJob->GetPlatformInfo().m_identifier.c_str(), rcJob->GetJobKey().toUtf8().constData());
 #endif
+
+        if (AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
+        {
+            AZ_Error("AssetProcessor", false, "JobComplete: %s", rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
+        }
+        else if (
+            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("basepbr_generated.materialtype") ||
+            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
+                .ends_with("basepbr_generated.azmaterialtype") ||
+            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("StandardPBR.materialtype"))
+        {
+            AZ_Error("AssetProcessor", false, "!!!!JobComplete: %s", rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
+        }
 
         rcJob->SetTimeCompleted(QDateTime::currentDateTime());
 

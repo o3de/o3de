@@ -1829,6 +1829,15 @@ namespace AssetProcessor
                     continue;
                 }
 
+                if (absolutePath.endsWith("fbx") || absolutePath.endsWith(".material"))
+                {
+                    AZ_Error("AssetProcessor",
+                             false,
+                             "Dependency from %s to %s updated",
+                             absolutePath.toUtf8().constData(),
+                             normalizedFilePath.toUtf8().constData());
+                }
+
                 AssessFileInternal(absolutePath, false);
             }
         }
@@ -3961,6 +3970,18 @@ namespace AssetProcessor
                         jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
                         jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
+
+                    if (AZStd::string(job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData()).ends_with("fbx"))
+                    {
+                        AZ_Error(
+                            AssetProcessor::ConsoleChannel,
+                            false,
+                            "UpdateJobDependency: Failed to find builder dependency for %s job (%s, %s, %s)\n",
+                            job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
+                            jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
+                            jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
+                            jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
+                    }
                     job.m_hasMissingSourceDependency = true;
                 }
             }
