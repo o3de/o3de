@@ -180,7 +180,6 @@ namespace O3DE::ProjectManager
 
     bool Application::RegisterEngine(bool interactive)
     {
-        // get this engine's info
         auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
         if (!engineInfoOutcome)
         {
@@ -203,9 +202,9 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        // always force register in case there is an engine registered in o3de_manifest.json, but
-        // the engine.json is missing or corrupt in which case GetEngineInfo() fails
-        constexpr bool forceRegistration = true;
+        // We no longer force registration because we no longer require that only one engine can
+        // be registered with each engine name
+        constexpr bool forceRegistration = false;
         auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
         if (!registerOutcome)
         {
