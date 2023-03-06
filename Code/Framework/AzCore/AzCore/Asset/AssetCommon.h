@@ -129,7 +129,7 @@ namespace AZ
                 Error,              ///< Asset attempted to load, but it or a strict dependency failed.
             };
 
-            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator);
             AZ_RTTI(AssetData, "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}");
 
             AssetData(const AssetId& assetId = AssetId(), AssetStatus status = AssetStatus::NotLoaded)
@@ -636,7 +636,7 @@ namespace AZ
             : public AssetBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator);
 
             using AssetReadyCB = AZStd::function<void (Asset<AssetData> /*asset*/, AssetBusCallbacks& /*callbacks*/)>;
             using AssetMovedCB = AZStd::function<void (Asset<AssetData> /*asset*/, void* /*oldDataPointer*/, AssetBusCallbacks& /*callbacks*/)>;

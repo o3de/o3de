@@ -38,7 +38,7 @@ namespace AZ
             : public EMotionFX::Integration::RenderActor
         {
         public:
-            AZ_RTTI(EMotionFX::Integration::AtomActor, "{A24ED299-27D3-4227-9D97-D273E5D7BACC}", EMotionFX::Integration::RenderActor);
+            AZ_RTTI(AtomActor, "{A24ED299-27D3-4227-9D97-D273E5D7BACC}", EMotionFX::Integration::RenderActor);
             AZ_CLASS_ALLOCATOR_DECL;
 
             AtomActor(EMotionFX::Integration::ActorAsset* actorAsset);

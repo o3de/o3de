@@ -21,7 +21,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::NumericDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator);
 
         FloatDataInterface(GraphModel::SlotPtr slot);
         ~FloatDataInterface() = default;

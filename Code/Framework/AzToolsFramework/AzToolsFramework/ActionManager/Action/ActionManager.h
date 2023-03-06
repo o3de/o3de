@@ -85,6 +85,7 @@ namespace AzToolsFramework
         ActionManagerOperationResult SetActionCategory(const AZStd::string& actionIdentifier, const AZStd::string& category) override;
         ActionManagerGetterResult GetActionIconPath(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) override;
+        int GenerateActionAlphabeticalSortKey(const AZStd::string& actionIdentifier) override;
         ActionManagerBooleanResult IsActionEnabled(const AZStd::string& actionIdentifier) const override;
         ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
         ActionManagerOperationResult InstallEnabledStateCallback(const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback) override;
@@ -122,15 +123,15 @@ namespace AzToolsFramework
         ActionVisibility GetActionToolBarVisibility(const AZStd::string& actionIdentifier) const override;
         QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;
         void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) override;
+        void Reset();
 
-        void Clear();
+        ApplicationWatcher m_applicationWatcher;
 
         AZStd::unordered_map<AZStd::string, EditorActionContext*> m_actionContexts;
-        ApplicationWatcher m_applicationWatcher;
         AZStd::unordered_map<AZStd::string, ActionContextWidgetWatcher*> m_actionContextWidgetWatchers;
-        AZStd::unordered_map<AZStd::string, EditorAction> m_actions;
+        AZStd::unordered_map<AZStd::string, EditorAction*> m_actions;
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> m_actionUpdaters;
-        AZStd::unordered_map<AZStd::string, EditorWidgetAction> m_widgetActions;
+        AZStd::unordered_map<AZStd::string, EditorWidgetAction*> m_widgetActions;
     };
 
 } // namespace AzToolsFramework

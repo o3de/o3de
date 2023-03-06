@@ -32,9 +32,8 @@ namespace Metastream
         : public CryHooksModule
         , public MetastreamRequestBus::Handler
     {
-        AZ_RTTI(MetastreamGem, "{0BACF38B-9774-4771-89E2-B099EA9E3FE7}", CryHooksModule);
-        
     public:
+        AZ_RTTI(MetastreamGem, "{0BACF38B-9774-4771-89E2-B099EA9E3FE7}", CryHooksModule);
         AZ_CLASS_ALLOCATOR(MetastreamGem, AZ::SystemAllocator)
         MetastreamGem();
         ~MetastreamGem() override;

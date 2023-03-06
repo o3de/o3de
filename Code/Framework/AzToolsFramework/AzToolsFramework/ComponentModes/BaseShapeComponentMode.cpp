@@ -14,19 +14,18 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 
 namespace AzToolsFramework
 {
-    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-    static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
-
-    namespace
+    namespace BaseShapeComponentModeIdentifiers
     {
         //! Uri's for shortcut actions.
         const AZ::Crc32 SetDimensionsSubModeActionUri = AZ_CRC_CE("org.o3de.action.shape.setdimensionssubmode");
         const AZ::Crc32 SetTranslationOffsetSubModeActionUri = AZ_CRC_CE("org.o3de.action.shape.settranslationoffsetsubmode");
         const AZ::Crc32 ResetSubModeActionUri = AZ_CRC_CE("org.o3de.action.shape.resetsubmode");
-    } // namespace
+    } // namespace BaseShapeComponentModeIdentifiers
 
     void InstallBaseShapeViewportEditFunctions(
         BaseShapeViewportEdit* baseShapeViewportEdit, const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -88,7 +87,7 @@ namespace AzToolsFramework
         return buttonId;
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BaseShapeComponentMode, AZ::SystemAllocator)
 
     BaseShapeComponentMode::BaseShapeComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType, bool allowAsymmetricalEditing)
@@ -209,7 +208,7 @@ namespace AzToolsFramework
         }
 
         ActionOverride setDimensionsModeAction;
-        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
+        setDimensionsModeAction.SetUri(BaseShapeComponentModeIdentifiers::SetDimensionsSubModeActionUri);
         setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
         setDimensionsModeAction.SetTitle("Set Dimensions Mode");
         setDimensionsModeAction.SetTip("Set dimensions mode");
@@ -221,7 +220,7 @@ namespace AzToolsFramework
             });
 
         ActionOverride setTranslationOffsetModeAction;
-        setTranslationOffsetModeAction.SetUri(SetTranslationOffsetSubModeActionUri);
+        setTranslationOffsetModeAction.SetUri(BaseShapeComponentModeIdentifiers::SetTranslationOffsetSubModeActionUri);
         setTranslationOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
         setTranslationOffsetModeAction.SetTitle("Set Translation Offset Mode");
         setTranslationOffsetModeAction.SetTip("Set translation offset mode");
@@ -233,7 +232,7 @@ namespace AzToolsFramework
             });
 
         ActionOverride resetModeAction;
-        resetModeAction.SetUri(ResetSubModeActionUri);
+        resetModeAction.SetUri(BaseShapeComponentModeIdentifiers::ResetSubModeActionUri);
         resetModeAction.SetKeySequence(QKeySequence(Qt::Key_R));
         resetModeAction.SetTitle("Reset Current Mode");
         resetModeAction.SetTip("Reset current mode");
@@ -267,7 +266,7 @@ namespace AzToolsFramework
             actionProperties.m_category = category;
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -297,7 +296,7 @@ namespace AzToolsFramework
             actionProperties.m_category = category;
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -327,7 +326,7 @@ namespace AzToolsFramework
             actionProperties.m_category = category;
 
             actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -366,9 +365,9 @@ namespace AzToolsFramework
 
         const AZStd::string prefix = AZStd::string::format("o3de.action.%sComponentMode", shapeName);
 
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".setDimensionsSubMode", 6000);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".setTranslationOffsetSubMode", 6001);
-        menuManagerInterface->AddActionToMenu(EditMenuIdentifier, prefix + ".resetCurrentMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, prefix + ".setDimensionsSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, prefix + ".setTranslationOffsetSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, prefix + ".resetCurrentMode", 6002);
     }
 } // namespace AzToolsFramework
 

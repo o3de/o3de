@@ -21,7 +21,7 @@ namespace AZ
             : public EMotionFX::Integration::RenderBackend
         {
         public:
-            AZ_RTTI(EMotionFX::Integration::AtomBackend, "{05961B40-B0B3-459A-8FB1-742778CC7BF7}", EMotionFX::Integration::RenderBackend);
+            AZ_RTTI(AtomBackend, "{05961B40-B0B3-459A-8FB1-742778CC7BF7}", EMotionFX::Integration::RenderBackend);
             AZ_CLASS_ALLOCATOR_DECL;
 
             EMotionFX::Integration::RenderActor * CreateActor(EMotionFX::Integration::ActorAsset * asset) override;

@@ -19,11 +19,13 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <Material/MaterialBrowserInteractions.h>
 #include <QPixmap>
+
 
 namespace AZ
 {
@@ -37,11 +39,11 @@ namespace AZ
             , public EditorMaterialSystemComponentRequestBus::Handler
             , public MaterialComponentNotificationBus::Router
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-            , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
             , public AzToolsFramework::ToolsApplicationNotificationBus::Handler
             , public AZ::SystemTickBus::Handler
             , public AzFramework::AssetCatalogEventBus::Handler
+            , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -90,20 +92,18 @@ namespace AZ
             //! AssetBrowserInteractionNotificationBus::Handler overrides...
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
 
-            // EditorMenuNotificationBus::Handler overrides ...
-            void OnPopulateToolMenuItems() override;
-            void OnResetToolMenuItems() override;
-
             // AztoolsFramework::EditorEvents::Bus::Handler overrides...
             void NotifyRegisterViews() override;
 
             // AzToolsFramework::ToolsApplicationNotificationBus::Handler overrides...
             void AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&) override;
 
+            // AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler...
+            void OnActionRegistrationHook() override;
+            void OnMenuBindingHook() override;
+
             void PurgePreviews();
 
-            QAction* m_openMaterialEditorAction = nullptr;
-            QAction* m_openMaterialCanvasAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
             AZStd::unordered_set<AZStd::pair<AZ::EntityId, AZ::Render::MaterialAssignmentId>> m_materialPreviewRequests;
             AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;

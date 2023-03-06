@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameWidget, SystemAllocator);
 
             ManifestNameWidget::ManifestNameWidget(QWidget* parent)
                 : QLineEdit(parent)

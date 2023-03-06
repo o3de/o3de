@@ -36,7 +36,7 @@ namespace PhysX
         "True: Sync entity transform once per Simulate call. "
         "False: Sync entity transform for every simulation sub-step.");
 
-    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator);
 
 #ifdef ENABLE_PHYSX_TIMESTEP_WARNING
     namespace FrameTimeWarning

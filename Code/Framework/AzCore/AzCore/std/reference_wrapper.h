@@ -26,21 +26,34 @@ namespace AZStd
     template<class T>
     struct unwrap_reference
     {
-        typedef typename AZStd::decay<T>::type type;
+        using type = T;
     };
+
+    template<typename T>
+    struct unwrap_reference<AZStd::reference_wrapper<T>>
+    {
+        using type = T&;
+    };
+
+    template<typename T>
+    struct unwrap_ref_decay
+        : unwrap_reference<AZStd::decay_t<T>>
+    {
+    };
+
+    template<class T>
+    using unwrap_reference_t = typename unwrap_reference<T>::type;
+
+    template<class T>
+    using unwrap_ref_decay_t = typename unwrap_ref_decay<T>::type;
 
 #define AUX_REFERENCE_WRAPPER_METAFUNCTIONS_DEF(X) \
     template<typename T>                           \
     struct is_reference_wrapper< X >               \
         : public AZStd::true_type                  \
     {                                              \
-    };                                             \
-                                                   \
-    template<typename T>                           \
-    struct unwrap_reference< X >                   \
-    {                                              \
-        typedef T type;                            \
-    };                                             \
+    };
+
 
     AUX_REFERENCE_WRAPPER_METAFUNCTIONS_DEF(reference_wrapper<T>)
     AUX_REFERENCE_WRAPPER_METAFUNCTIONS_DEF(reference_wrapper<T> const)

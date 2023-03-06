@@ -14,6 +14,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/StringFunc/StringFunc.h>

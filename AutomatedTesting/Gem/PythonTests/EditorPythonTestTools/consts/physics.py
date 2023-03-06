@@ -10,7 +10,8 @@ Holds constants used across both hydra and non-hydra scripts.
 """
 PhysX Components
 """
-PHYSX_COLLIDER = "PhysX Collider"
+PHYSX_PRIMITIVE_COLLIDER = "PhysX Primitive Collider"
+PHYSX_MESH_COLLIDER = "PhysX Mesh Collider"
 PHYSX_SHAPE_COLLIDER = "PhysX Shape Collider"
 
 """

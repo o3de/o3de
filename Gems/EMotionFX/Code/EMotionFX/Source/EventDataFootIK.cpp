@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventDataFootIK, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventDataFootIK, MotionEventAllocator)
 
     bool EventDataFootIK::Equal(const EventData& rhs, bool ignoreEmptyFields) const
     {

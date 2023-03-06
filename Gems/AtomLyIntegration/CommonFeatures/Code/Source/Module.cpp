@@ -88,7 +88,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AtomLyIntegrationCommonFeaturesModule, "{E6FF4862-9355-4B23-AE00-B936F0C6E6C9}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AtomLyIntegrationCommonFeaturesModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AtomLyIntegrationCommonFeaturesModule, AZ::SystemAllocator);
 
             AtomLyIntegrationCommonFeaturesModule()
                 : AZ::Module()

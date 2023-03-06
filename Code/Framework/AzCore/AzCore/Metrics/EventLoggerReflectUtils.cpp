@@ -18,17 +18,6 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
 
-namespace AZ
-{
-    AZ_TYPE_INFO_SPECIALIZE(AZ::Metrics::EventLoggerId, "{C7D72622-922A-4A9E-8216-12B0B8149A64}");
-    // Add AzTypeInfo to the EventPhase enum to allow it to be reflected
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZ::Metrics::EventPhase, "{FBB53668-D422-4787-B8B3-527D8F4C649A}", "EventPhase");
-    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(AZ::Metrics::InstantEventScope, "{F396C6ED-225D-44C4-B2C3-AF5A0D06797F}", "InstantEventScope");
-
-    AZ_TYPE_INFO_SPECIALIZE(AZ::Metrics::EventValue, "{7651AE39-D9F3-4F4B-9907-CEA6AD1DE7EC}");
-    AZ_TYPE_INFO_SPECIALIZE(AZ::Metrics::EventField, "{195BA233-37A9-40E1-B9BA-0282F802E4A4}");
-}
-
 namespace AZ::Metrics
 {
     AZ_ENUM_DEFINE_REFLECT_UTILITIES(EventPhase);

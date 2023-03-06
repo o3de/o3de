@@ -15,6 +15,17 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 
+namespace AZ
+{
+    // Added definition of type info and rtti for the DataPatchTypeUpgrade class
+    // to this Unit Test file to allow rtti functions to be accessible from the SerializeContext::TypeChange
+    // call
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(SerializeContext::DataPatchTypeUpgrade, \
+        "DataPatchTypeUpgrade", "{E5A2F519-261C-4B81-925F-3730D363AB9C}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((SerializeContext::DataPatchTypeUpgrade, \
+        AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), DataPatchUpgrade);
+}
+
 namespace StartingPointInput
 {
     static AZ::s32 Uint32ToInt32(const AZ::u32& value)

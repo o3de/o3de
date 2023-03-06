@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <Process/JobRunner/TestImpactProcessJobMeta.h>
 
 namespace TestImpact

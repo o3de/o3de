@@ -39,7 +39,7 @@ namespace PhysX
         const AZ::Crc32 ResetSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.resetsubmode");
     } // namespace
 
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator);
 
     void ColliderComponentMode::Reflect(AZ::ReflectContext* context)
     {
@@ -437,11 +437,11 @@ namespace PhysX
         // create and register the buttons
         m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
         m_buttonIds[static_cast<size_t>(SubMode::Offset)] =
-            RegisterClusterButton(m_modeSelectionClusterId, "Move", "Switch to translation offset mode");
+            RegisterClusterButton(m_modeSelectionClusterId, "Move", "Switch to translation offset mode (1)");
         m_buttonIds[static_cast<size_t>(SubMode::Rotation)] =
-            RegisterClusterButton(m_modeSelectionClusterId, "Rotate", "Switch to rotation offset mode");
+            RegisterClusterButton(m_modeSelectionClusterId, "Rotate", "Switch to rotation offset mode (2)");
         m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] =
-            RegisterClusterButton(m_modeSelectionClusterId, "Scale", "Switch to dimensions mode");
+            RegisterClusterButton(m_modeSelectionClusterId, "Scale", "Switch to dimensions mode (3)");
 
         SetCurrentMode(SubMode::Offset);
 

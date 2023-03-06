@@ -21,7 +21,7 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceDataSystemConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceDataSystemConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceDataSystemConfig, "{2B93F5E5-5346-47A1-9C4D-EFBC6BDF468F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
     };

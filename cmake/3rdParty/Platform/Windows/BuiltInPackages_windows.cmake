@@ -9,7 +9,6 @@
 # this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Windows.
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                                 TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                    TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                      TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                    TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
@@ -48,7 +47,7 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows               
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-windows                         TARGETS astc-encoder                PACKAGE_HASH 17249bfa438afb34e21449865d9c9297471174ae0cea9b2f9def2ee206038295)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
-ly_associate_package(PACKAGE_NAME azslc-1.8.9-rev1-windows                              TARGETS azslc                       PACKAGE_HASH c97798f58a4b16888b8fd1148a4248584f49a2618f7a0ddc3f8d8718f5902deb )
+ly_associate_package(PACKAGE_NAME azslc-1.8.15-rev2-windows                             TARGETS azslc                       PACKAGE_HASH 9925acaf99d1eed65d99c13d5d31cae9f72b1d04a7bd21624a77bc0cfbb33f8b)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-windows          TARGETS vulkan-validationlayers     PACKAGE_HASH 4c617b83611f9f990b7e6ff21f2e2d22bda154591bff7e0e39610e319a3e5a53)

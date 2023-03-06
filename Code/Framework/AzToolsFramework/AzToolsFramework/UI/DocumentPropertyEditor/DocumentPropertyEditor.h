@@ -175,7 +175,7 @@ namespace AzToolsFramework
         friend class DPERowWidget;
 
     public:
-        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator);
 
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();

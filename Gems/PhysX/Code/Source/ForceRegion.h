@@ -33,7 +33,7 @@ namespace PhysX
         , private Physics::ColliderComponentEventBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ForceRegion, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ForceRegion, AZ::SystemAllocator);
         AZ_TYPE_INFO(ForceRegion, "{A04BF43D-242B-4B67-AEE9-201FBD36DFEB}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -98,9 +98,9 @@ namespace AZ
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(108)
+                ->MaxPayloadSize(112)
                 ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(16)
+                ->MaxRecursionDepth(MaxRecursionDepth)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
                     ->RayGenerationShaderName(AZ::Name("RayGen"))
                 ->ShaderLibrary(missShaderDescriptor)
@@ -310,6 +310,8 @@ namespace AZ
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                     diffuseProbeGrid->UpdateRayTraceSrg(m_rayTracingShader, m_globalSrgLayout);
+
+                    diffuseProbeGrid->GetRayTraceSrg()->SetConstant(m_maxRecursionDepthNameIndex, MaxRecursionDepth);
                     diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
             }

@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionWidget, SystemAllocator);
 
             NodeListSelectionWidget::NodeListSelectionWidget(QWidget* parent)
                 : QComboBox(parent)

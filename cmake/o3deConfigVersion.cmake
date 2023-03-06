@@ -63,6 +63,17 @@ set(PACKAGE_VERSION ${engine_version})
 # Get the project.json 'engine' field
 string(JSON project_engine ERROR_VARIABLE json_error GET ${o3de_project_json} engine)
 if(json_error OR NOT project_engine)
+    if(NOT project_engine)
+        # Check if the project folder is a subdirectory of this engine and would
+        # be found using scan up logic 
+        cmake_path(IS_PREFIX this_engine_path "${CMAKE_CURRENT_SOURCE_DIR}" NORMALIZE is_in_engine_tree)
+        if(is_in_engine_tree)
+            message(VERBOSE "The project folder is a subdirectory of this engine.")
+            set(PACKAGE_VERSION_COMPATIBLE TRUE)
+            return()
+        endif()
+    endif()
+
     message(WARNING "Unable to read 'engine' value from '${O3DE_PROJECT_JSON_PATH}'. Please verify this project is registered with an engine. \nError: ${json_error}")
     return()
 endif()

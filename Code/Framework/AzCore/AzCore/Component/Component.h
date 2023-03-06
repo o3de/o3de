@@ -44,9 +44,10 @@ namespace AZ
     public:
 
         /**
-         * Adds run-time type information to the component.
+         * Forward declare run-time type information to the component.
          */
-        AZ_RTTI(AZ::Component, "{EDFCB2CF-F75D-43BE-B26B-F35821B29247}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(Component);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         /**
          * Initializes a component's internals.
@@ -256,37 +257,31 @@ namespace AZ
      * create a component.
      */
     #define AZ_COMPONENT_BASE(_ComponentClass, ...)                                                                                     \
-    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator, 0)                                                                         \
+    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator)                                                                            \
     template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
     template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
     template<class Comp, class Void> friend class AZ::HasComponentRequiredServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
     static AZ::ComponentDescriptor* CreateDescriptor()                                                                                  \
-    {                                                                                                                                   \
-            AZ::ComponentDescriptor* descriptor = nullptr;                                                                              \
-            AZ::ComponentDescriptorBus::EventResult(descriptor, _ComponentClass::RTTI_Type(), &AZ::ComponentDescriptor::GetDescriptor); \
-            if (descriptor)                                                                                                             \
-            {                                                                                                                           \
-                /* Compare strings first, then pointers.  If we compare pointers first, different strings will give the wrong error message */ \
-                if (strcmp(descriptor->GetName(), _ComponentClass::RTTI_TypeName()) != 0)                                               \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n"            \
-                        "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s",                                            \
-                        _ComponentClass::RTTI_Type().ToString<AZStd::string>().c_str(), descriptor->GetName(), _ComponentClass::RTTI_TypeName());          \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                if (descriptor->GetName() != _ComponentClass::RTTI_TypeName())                                                     \
-                {                                                                                                                       \
-                    AZ_Error("Component", false, "The same component UUID (%s) / name (%s) was registered twice.  This isn't allowed, " \
-                             "it can cause lifetime management issues / crashes.\nThis situation can happen by declaring a component "  \
-                             "in a header and registering it from two different Gems.\n",                                               \
-                        _ComponentClass::RTTI_Type().ToString<AZStd::string>().c_str(), descriptor->GetName());                         \
-                    return nullptr;                                                                                                     \
-                }                                                                                                                       \
-                return descriptor;                                                                                                      \
-            }                                                                                                                           \
-            return aznew DescriptorType;                                                                                                \
+    { \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
     }
 
     /**
@@ -523,7 +518,7 @@ namespace AZ
          * Specifies that this class should use the AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator);
 
         /**
          * Calls the static function AZ::ComponentDescriptor::Reflect if the user provided it.

@@ -37,7 +37,12 @@ namespace AzQtComponents
         explicit InputDialog(QWidget* parent = nullptr);
 
         //! Sets a validator on the LineEdit.
-        void setValidator(QValidator* validator);
+        void SetValidator(QValidator* validator);
+        //! Helper for setting a regular expression validator with a specified pattern.
+        void SetRegularExpressionValidator(const QString& pattern);
+
+        //! Sets a maximum character input length on the LineEdit
+        void SetMaxLength(int length);
 
         void show();
         int exec();
@@ -49,8 +54,9 @@ namespace AzQtComponents
                                const QString& text = QString(),
                                const QString& validationRegExp = QString());
     private:
-        void AttemptAssignValidator();
+        void UpdateLineEdit();
 
         QValidator* m_validator = nullptr;
+        int m_maxLength = -1;
     };
 } // namespace AzQtComponents

@@ -15,7 +15,7 @@ namespace Audio
     class MicrophoneSystemComponentNone : public MicrophoneSystemComponent::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentNone, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentNone, AZ::SystemAllocator);
 
         bool InitializeDevice() override
         {

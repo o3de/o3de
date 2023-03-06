@@ -58,7 +58,7 @@ namespace AZ
     class BehaviorInterfaceProxy
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorInterfaceProxy, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorInterfaceProxy, AZ::SystemAllocator);
         AZ_RTTI(BehaviorInterfaceProxy<T>, "{E7CC8D27-4499-454E-A7DF-3F72FBECD30D}");
 
         BehaviorInterfaceProxy() = default;

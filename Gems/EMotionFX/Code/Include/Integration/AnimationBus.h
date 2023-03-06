@@ -175,7 +175,7 @@ namespace EMotionFX
         class IRaycastRequests
         {
         public:
-            AZ_TYPE_INFO(RaycastRequests, "{DDA90B91-6F1D-4C83-A0E1-9DE1540B0968}");
+            AZ_TYPE_INFO(IRaycastRequests, "{DDA90B91-6F1D-4C83-A0E1-9DE1540B0968}");
 
             enum class UsecaseHint : AZ::u32
             {

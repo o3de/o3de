@@ -34,7 +34,7 @@ namespace AzToolsFramework
             , private AzFramework::EntityDebugDisplayEventBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenericComponentWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericComponentWrapper, AZ::SystemAllocator);
             AZ_RTTI(GenericComponentWrapper, "{68D358CA-89B9-4730-8BA6-E181DEA28FDE}", EditorComponentBase);
 
             static AZ::ComponentDescriptor* CreateDescriptor();

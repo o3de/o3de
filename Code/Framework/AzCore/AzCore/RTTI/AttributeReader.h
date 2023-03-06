@@ -166,7 +166,7 @@ namespace AZ
     class AttributeInvoker
     {
     public:
-        AZ_CLASS_ALLOCATOR(AttributeInvoker, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeInvoker, AZ::SystemAllocator);
 
         // this is the only thing you should need to call!
         // returns false if it is an incompatible type or fails to read it.
@@ -234,7 +234,7 @@ namespace AZ
         : public AttributeInvoker<void*>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AttributeReader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AttributeReader, AZ::SystemAllocator);
 
         // Bring in AttributeInvoker<void*> constructors into scope
         using AttributeInvoker<void*>::AttributeInvoker;

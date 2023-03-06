@@ -32,7 +32,7 @@ namespace AZ
             using Base = RHI::SwapChain;
 
         public:
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
             AZ_RTTI(SwapChain, "4AE7AE82-BB25-4665-BF79-85F407255B26", Base);
 
             struct FrameContext

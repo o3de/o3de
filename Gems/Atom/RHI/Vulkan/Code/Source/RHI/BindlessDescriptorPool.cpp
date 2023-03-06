@@ -11,6 +11,7 @@
 #include "BufferView.h"
 #include "Device.h"
 #include "ImageView.h"
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 #include <vulkan/vulkan.h>
 
@@ -89,7 +90,8 @@ namespace AZ::Vulkan
             layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
             layoutInfo.pBindings = bindings;
 
-            m_device->GetContext().CreateDescriptorSetLayout(m_device->GetNativeDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout);
+            m_device->GetContext().CreateDescriptorSetLayout(
+                m_device->GetNativeDevice(), &layoutInfo, VkSystemAllocator::Get(), &m_descriptorSetLayout);
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -114,7 +116,7 @@ namespace AZ::Vulkan
     void BindlessDescriptorPool::Shutdown()
     {
         m_device->GetContext().FreeDescriptorSets(m_device->GetNativeDevice(), m_pool->GetNativeDescriptorPool(), 1, &m_set);
-        m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, nullptr);
+        m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, VkSystemAllocator::Get());
 
         m_pool.reset();
     }
