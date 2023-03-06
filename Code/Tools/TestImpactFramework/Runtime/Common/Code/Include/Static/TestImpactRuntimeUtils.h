@@ -62,55 +62,68 @@ namespace TestImpact
         , private TestEngineNotificationsBus<TestTarget>::Handler
     {
     public:
-        TestEngineNotificationHandler(size_t totalTests)
-            : m_totalTests(totalTests)
-        {
-            ProcessSchedulerNotificationsBus::Handler::BusConnect();
-            TestEngineNotificationsBus<TestTarget>::Handler::BusConnect();
-        }
-
-        ~TestEngineNotificationHandler()
-        {
-            TestEngineNotificationsBus<TestTarget>::Handler::BusDisconnect();
-            ProcessSchedulerNotificationsBus::Handler::BusDisconnect();
-        }
+        TestEngineNotificationHandler(size_t totalTests);
+        ~TestEngineNotificationHandler();
 
     private:
-        //!
-        void OnJobComplete(const TestEngineJob<TestTarget>& testJob) override
-        {
-            Client::TestRunBase testRun(
-                testJob.GetTestTarget()->GetNamespace(),
-                testJob.GetTestTarget()->GetName(),
-                testJob.GetCommandString(),
-                testJob.GetStdOutput(),
-                testJob.GetStdError(),
-                testJob.GetStartTime(),
-                testJob.GetDuration(),
-                testJob.GetTestResult());
-
-            TestSequenceNotificationsBaseBus::Broadcast(
-                &TestSequenceNotificationsBaseBus::Events::OnTestRunComplete,
-                testRun,
-                ++m_numTestsCompleted,
-                m_totalTests);
-        }
-
-        //!
+        // TestEngineNotificationsBus override ...
+        void OnJobComplete(const TestEngineJob<TestTarget>& testJob) override;
         void OnRealtimeStdContent(
             [[maybe_unused]] ProcessId processId,
             [[maybe_unused]] const AZStd::string& stdOutput,
             [[maybe_unused]] const AZStd::string& stdError,
             const AZStd::string& stdOutputDelta,
-            const AZStd::string& stdErrorDelta) override
-        {
-            TestSequenceNotificationsBaseBus::Broadcast(
-                &TestSequenceNotificationsBaseBus::Events::OnRealtimeStdContent, stdOutputDelta, stdErrorDelta);
-        }
+            const AZStd::string& stdErrorDelta) override;
 
         const size_t m_totalTests; //!< The total number of tests to run for the entire sequence.
         size_t m_numTestsCompleted = 0; //!< The running total of tests that have completed.
     };
+
+    template<typename TestTarget>
+    TestEngineNotificationHandler<TestTarget>::TestEngineNotificationHandler(size_t totalTests)
+        : m_totalTests(totalTests)
+    {
+        ProcessSchedulerNotificationsBus::Handler::BusConnect();
+        TestEngineNotificationsBus<TestTarget>::Handler::BusConnect();
+    }
+
+    template<typename TestTarget>
+    TestEngineNotificationHandler<TestTarget>::~TestEngineNotificationHandler()
+    {
+        TestEngineNotificationsBus<TestTarget>::Handler::BusDisconnect();
+        ProcessSchedulerNotificationsBus::Handler::BusDisconnect();
+    }
+
+    template<typename TestTarget>
+    void TestEngineNotificationHandler<TestTarget>::OnJobComplete(const TestEngineJob<TestTarget>& testJob)
+    {
+        Client::TestRunBase testRun(
+            testJob.GetTestTarget()->GetNamespace(),
+            testJob.GetTestTarget()->GetName(),
+            testJob.GetCommandString(),
+            testJob.GetStdOutput(),
+            testJob.GetStdError(),
+            testJob.GetStartTime(),
+            testJob.GetDuration(),
+            testJob.GetTestResult());
+
+        TestSequenceNotificationsBaseBus::Broadcast(
+            &TestSequenceNotificationsBaseBus::Events::OnTestRunComplete, testRun, ++m_numTestsCompleted, m_totalTests);
+    }
+
+    template<typename TestTarget>
+    void TestEngineNotificationHandler<TestTarget>::OnRealtimeStdContent(
+        [[maybe_unused]] ProcessId processId,
+        [[maybe_unused]] const AZStd::string& stdOutput,
+        [[maybe_unused]] const AZStd::string& stdError,
+        const AZStd::string& stdOutputDelta,
+        const AZStd::string& stdErrorDelta)
+    {
+        // Job info about in-flight processes isn't available until completion so realtime std content will be
+        // anomynous for the client
+        TestSequenceNotificationsBaseBus::Broadcast(
+            &TestSequenceNotificationsBaseBus::Events::OnRealtimeStdContent, stdOutputDelta, stdErrorDelta);
+    }
 
     //! Updates the dynamic dependency map and serializes the entire map to disk.
     template<typename ProductionTarget, typename TestTarget, typename TestCoverage>
