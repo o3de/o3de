@@ -948,6 +948,7 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/Layer/LayerUiHandler.h
     UI/Layer/LayerUiHandler.cpp
+    UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/PrefabIntegrationBus.h

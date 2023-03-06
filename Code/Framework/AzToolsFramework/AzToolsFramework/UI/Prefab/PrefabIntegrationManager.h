@@ -94,6 +94,7 @@ namespace AzToolsFramework
         private:
             // PrefabPublicNotificationBus overrides ...
             void OnRootPrefabInstanceLoaded() override;
+            void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
 
             // Handles the UI for prefab save operations.
             PrefabSaveHandler m_prefabSaveHandler;
@@ -114,6 +115,7 @@ namespace AzToolsFramework
             bool CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
             bool CanDetachPrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
             bool CanInstantiatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanSaveUnsavedPrefabChangedInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
 
             // Context menu item handlers
             void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);

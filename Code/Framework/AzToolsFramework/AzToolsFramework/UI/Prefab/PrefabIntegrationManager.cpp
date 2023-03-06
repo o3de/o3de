@@ -41,6 +41,7 @@
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
+#include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -51,8 +52,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
-
-static constexpr AZStd::string_view PrefabFocusChangedUpdaterIdentifier = "o3de.updater.onPrefabFocusChanged";
 
 namespace AzToolsFramework
 {
@@ -160,7 +159,11 @@ namespace AzToolsFramework
             EditorEntityContextNotificationBus::Handler::BusConnect();
             PrefabPublicNotificationBus::Handler::BusConnect();
 
-            InitializeShortcuts();
+            // New Action Manager uses the same actions for menus and shortcuts, no need to initialize them separately.
+            if (!IsNewActionManagerEnabled())
+            {
+                InitializeShortcuts();
+            }
         }
 
         PrefabIntegrationManager::~PrefabIntegrationManager()
@@ -264,7 +267,10 @@ namespace AzToolsFramework
             m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
-            m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
+
+            // Update actions whenever a Prefab's unsaved state changes.
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
         }
 
         void PrefabIntegrationManager::OnActionRegistrationHook()
@@ -424,7 +430,7 @@ namespace AzToolsFramework
                 m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "-");
             }
 
-            if (IsPrefabOverridesUxEnabled())
+            if (IsOutlinerOverrideManagementEnabled())
             {
                 // Open Prefab Instance
                 {
@@ -704,7 +710,49 @@ namespace AzToolsFramework
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
             }
 
-            // Save Prefab to Disk
+            // Save Prefab to file
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.save";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Save Prefab to file";
+                actionProperties.m_description = "Save the changes to the prefab to disk.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanSaveUnsavedPrefabChangedInCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_SavePrefab(selectedEntities.front());
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanSaveUnsavedPrefabChangedInCurrentSelection(selectedEntities);
+                    }
+                );
+
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
 
             // Focus on Level Prefab
             {
@@ -732,7 +780,7 @@ namespace AzToolsFramework
                     }
                 );
 
-                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
 
                 // This action is only accessible outside of Component Modes
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -769,7 +817,7 @@ namespace AzToolsFramework
                 );
 
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, actionIdentifier);
-                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
             }
         }
 
@@ -804,6 +852,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
 
             // Viewport Context Menu
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
@@ -814,7 +863,8 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
-            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 10400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
             
         }
 
@@ -1345,7 +1395,34 @@ namespace AzToolsFramework
 
             return true;
         }
-        
+
+        bool PrefabIntegrationManager::CanSaveUnsavedPrefabChangedInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
+        {
+            if (selectedEntities.size() != 1)
+            {
+                // This operation only supports one selection at a time.
+                return false;
+            }
+
+            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+            if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId))
+            {
+                // Entity needs to be a prefab instance container.
+                return false;
+            }
+
+            AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntityId);
+            auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
+
+            if (!dirtyOutcome.IsSuccess() || dirtyOutcome.GetValue() == false)
+            {
+                // No change to save.
+                return false;
+            }
+
+            return true;
+        }
 
         void PrefabIntegrationManager::ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities)
         {
@@ -1865,12 +1942,21 @@ namespace AzToolsFramework
             m_prefabSaveHandler.InitializePrefabToastNotificationsView();
         }
 
+        void PrefabIntegrationManager::OnPrefabTemplateDirtyFlagUpdated(
+            [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status)
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
+            }
+        }
+
         void PrefabIntegrationManager::OnPrefabFocusChanged(
             [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
             }
         }
 
@@ -1878,7 +1964,7 @@ namespace AzToolsFramework
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
             }
         }
 
