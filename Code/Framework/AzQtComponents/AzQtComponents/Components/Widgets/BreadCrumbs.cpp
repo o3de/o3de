@@ -99,7 +99,6 @@ namespace AzQtComponents
         m_lineEdit->installEventFilter(this);
         connect(m_lineEdit, &QLineEdit::returnPressed, this, &BreadCrumbs::confirmEdit);
         Style::flagToIgnore(m_lineEdit);
-        m_lineEdit->setStyleSheet("QLineEdit {color: black; background-color: white;}");
         m_labelEditStack->addWidget(m_lineEdit);
 
         // We need to explicitly set indent. Otherwise the calculations are not correct because the
