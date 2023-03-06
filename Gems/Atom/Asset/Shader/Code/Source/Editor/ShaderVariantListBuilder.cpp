@@ -26,7 +26,7 @@ namespace AZ
     namespace ShaderBuilder
     {
         AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantListSourceData, "HashedVariantListSourceData", "{D86DA375-DD77-45F9-81D5-2E50C24C8469}");
-        AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantListSourceData::HashedVariantInfo, "HashedVariantInfo", "{6B00EFB2-D02B-4EBD-BA8C-F4C432D234FA}");
+        AZ_TYPE_INFO_WITH_NAME_IMPL(HashedVariantInfoSourceData, "HashedVariantInfoSourceData", "{6B00EFB2-D02B-4EBD-BA8C-F4C432D234FA}");
         AZ_TYPE_INFO_WITH_NAME_IMPL(ShaderVariantListBuilder, "ShaderVariantListBuilder", "{D7FB0C17-131B-43E8-BCCC-408C1763E538}");
 
         void HashedVariantListSourceData::Reflect(ReflectContext* context)
@@ -34,23 +34,20 @@ namespace AZ
             // Serialization Context Reflection
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<HashedVariantInfo>()
-                    ->Version(1) // Added Radeon GPU Analyzer
-                    ->Field("VariantInfo", &HashedVariantInfo::m_variantInfo)
-                    ->Field("Hash", &HashedVariantInfo::m_hash)
-                    ->Field("IsNew", &HashedVariantInfo::m_isNew)
+                serializeContext->Class<HashedVariantInfoSourceData>()
+                    ->Version(1)
+                    ->Field("VariantInfo", &HashedVariantInfoSourceData::m_variantInfo)
+                    ->Field("Hash", &HashedVariantInfoSourceData::m_hash)
                     ;
 
                 serializeContext->Class<HashedVariantListSourceData>()
                     ->Version(1)
-                    ->Field("timeStamp", &HashedVariantListSourceData::m_timeStamp)
-                    ->Field("Shader", &HashedVariantListSourceData::m_shaderFilePath)
                     ->Field("HashedVariants", &HashedVariantListSourceData::m_hashedVariants)
                     ;
             }
         }
 
-        size_t HashedVariantListSourceData::HashedVariantInfo::HashCombineShaderOptionValues(size_t startingHash, const AZ::RPI::ShaderOptionValuesSourceData& optionValues)
+        size_t HashedVariantInfoSourceData::HashCombineShaderOptionValues(size_t startingHash, const AZ::RPI::ShaderOptionValuesSourceData& optionValues)
         {
             size_t hash = startingHash;
             AZStd::for_each(optionValues.begin(), optionValues.end(),
@@ -61,7 +58,7 @@ namespace AZ
             return hash;
         }
 
-        size_t HashedVariantListSourceData::HashedVariantInfo::CalculateHash(size_t optionValuesHash, const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo)
+        size_t HashedVariantInfoSourceData::CalculateHash(size_t optionValuesHash, const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo)
         {
             size_t hash = !optionValuesHash ? HashCombineShaderOptionValues(0, variantInfo.m_options) : optionValuesHash;
 
@@ -72,7 +69,7 @@ namespace AZ
             return hash;
         }
 
-        void HashedVariantListSourceData::HashedVariantInfo::CalculateHash(size_t optionValuesHash)
+        void HashedVariantInfoSourceData::CalculateHash(size_t optionValuesHash)
         {
             m_hash = CalculateHash(optionValuesHash, m_variantInfo);
         }
@@ -216,6 +213,13 @@ namespace AZ
             return shaderVariantListStem == shaderStem;
         }
 
+
+        void ShaderVariantListBuilder::ShutDown()
+        {
+            // Nothing to do here.
+        }
+
+
         void ShaderVariantListBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             AZStd::string variantListFullPath;
@@ -230,6 +234,10 @@ namespace AZ
                 return;
             }
 
+            // The idea is to have "layers" of shader variant lists that can be produced by different means.
+            // These layers will be merged by the ShaderVariantListBuilder to produce a single "hashedvariantlist" that prunes away
+            // all the redundant elements. The main "layer" would be named <ShaderName>.shadervariantlist,
+            //  the "sublayers" would be the files named <ShaderName>_<something>.shadervariantlist.
             // There can be several <ShaderName>[_<*>].shadervariantlist files, if they share the same <ShaderName> then
             // we will submit a job only on behalf of the file which is named as <ShaderName>.shadervariantlist, later
             // in ProcessJob we'll merge all <ShaderName>[_<*>].shadervariantlist and eventually
@@ -322,104 +330,15 @@ namespace AZ
         }  // End of CreateJobs
 
 
-        // This function is temporarily needed until the AssetSystem APIs provides
-        // an API to locate intermediate assets.
-        static AZStd::string GetAbsolutePathOfIntermediateAsset(const AZStd::string sourceShaderVariantListAbsolutePath)
-        {
-            AZ::Data::AssetInfo sourceInfo;
-            AZStd::string watchFolder;
-            bool found = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath
-                , sourceShaderVariantListAbsolutePath.c_str(), sourceInfo, watchFolder);
-            if (!found)
-            {
-                // It's ok, this could happen when this is the first time processing a shadervariantlist file.
-                return AZStd::string();
-            }
-
-            AZStd::string relativePath = sourceInfo.m_relativePath;
-            AZ::StringFunc::Path::ReplaceExtension(relativePath, HashedVariantListSourceData::Extension);
-
-            AZ::IO::Path gameProjectPath = AZ::Utils::GetProjectPath().c_str();
-            // Yes, the path "Cache/Intermediate Assets" is hard coded, but it should be a constant
-            // from the Asset System API.
-            AZ::IO::Path result = gameProjectPath / AZ::IO::Path("Cache/Intermediate Assets") / relativePath;
-            AZStd::string normalizedPath = result.String();
-            AZ::StringFunc::Path::Normalize(normalizedPath);
-            return normalizedPath;
-        }
-
-
-        // Returns the count of new or modified variants.
-        // If there are 3 new variants and 4 modified variants then it will return 7.
-        static uint32_t ResolveNewOrModifiedVariants(const HashedVariantListSourceData& prevHashedVariantList
-            , HashedVariantListSourceData& hashedVariantList/*in out*/
-            , AZStd::chrono::minutes suddenChangeWaitTime)
-        {
-            long long timeStampDelta = hashedVariantList.m_timeStamp - prevHashedVariantList.m_timeStamp;
-            auto deltaSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds> (AZStd::chrono::nanoseconds(timeStampDelta));
-            bool suddenChange = deltaSeconds < suddenChangeWaitTime;
-            if (suddenChange)
-            {
-                AZ_Trace(ShaderVariantListBuilderName, "A sudden change occured because it's been %llu seconds.\n", deltaSeconds.count());
-            }
-
-            // Let's create a dictionary of StableId (key) to HashedVariantInfo (value) from the prevHashedVariantList
-            AZStd::unordered_map<uint32_t, const HashedVariantListSourceData::HashedVariantInfo*> prevVariantInfos;
-            for (const auto& hashedVariantInfo : prevHashedVariantList.m_hashedVariants)
-            {
-                prevVariantInfos.emplace(hashedVariantInfo.m_variantInfo.m_stableId, &hashedVariantInfo);
-            }
-
-            uint32_t count = 0;
-            const auto prevEndItor = prevVariantInfos.end();
-            for (auto& hashedVariantInfo : hashedVariantList.m_hashedVariants)
-            {
-                const auto stableId = hashedVariantInfo.m_variantInfo.m_stableId;
-                const auto prevFoundItor = prevVariantInfos.find(stableId);
-                if (prevFoundItor == prevEndItor)
-                {
-                    // Will be generated for the first time.
-                    hashedVariantInfo.m_isNew = true;
-                    count++;
-                    continue;
-                }
-
-                const HashedVariantListSourceData::HashedVariantInfo* prevVariantInfo = prevFoundItor->second;
-                if (prevVariantInfo->m_hash != hashedVariantInfo.m_hash)
-                {
-                    // Will be recompiled (or generated for the first time).
-                    hashedVariantInfo.m_isNew = true;
-                    count++;
-                    continue;
-                }
-
-                if (suddenChange)
-                {
-                    // Preserve the previous state.
-                    hashedVariantInfo.m_isNew = prevVariantInfo->m_isNew;
-                    continue;
-                }
-
-                // This variant won't be recompiled.
-                hashedVariantInfo.m_isNew = false;
-
-            }
-            return count;
-        }
-
-
         // If successful returns the absolute path of the created HashedVariantList file in the "user/AssetProcessorTemp" folder.
         // If it fails, it returns an empty string
         static AZStd::string SaveHashedVariantListFile(const AssetBuilderSDK::ProcessJobRequest& request
-            , const RPI::ShaderVariantListSourceData& shaderVariantList
+            , const AZStd::string& shaderName
             , const HashedVariantListSourceData& hashedVariantList
             , bool saveAsBinary = true)
         {
-            AZ::IO::FixedMaxPath shaderPath(shaderVariantList.m_shaderFilePath);
-            AZ::IO::PathView shaderStem = shaderPath.Stem();
             AZ::IO::Path outputFilePath = request.m_tempDirPath;
-            outputFilePath /= AZStd::string::format("%.*s.%s", AZ_STRING_ARG(shaderStem.Native()), HashedVariantListSourceData::Extension);
+            outputFilePath /= AZStd::string::format("%s.%s", shaderName.c_str(), HashedVariantListSourceData::Extension);
             AZStd::string outputFilePathStr = outputFilePath.String();
 
             if (saveAsBinary)
@@ -442,24 +361,36 @@ namespace AZ
             return outputFilePathStr;
         }
 
-
-        static void GetBuilderSettingsFromRegistry(bool& enableHashCompare, AZStd::chrono::minutes& suddenChangeWaitTime)
+        // If successful returns the absolute path of the created HashedVariantInfo file in the "user/AssetProcessorTemp" folder.
+        // If it fails, it returns an empty string
+        static AZStd::string SaveHashedVariantInfoFile(const AssetBuilderSDK::ProcessJobRequest& request
+            , const AZStd::string& shaderName
+            , const HashedVariantInfoSourceData& hashedVariantInfo
+            , bool saveAsBinary = true)
         {
-            // The default values.
-            bool enableHashCompareInternal = ShaderVariantListBuilder::EnableHashCompareRegistryDefaultValue;
-            u64 suddenChangeWaitTimeInternal = ShaderVariantListBuilder::SuddenChangeInMinutesRegistryDefaultValue;
+            AZ::IO::Path outputFilePath = request.m_tempDirPath;
+            outputFilePath /= AZStd::string::format("%s_%u.%s", shaderName.c_str(), hashedVariantInfo.m_variantInfo.m_stableId, HashedVariantInfoSourceData::Extension);
+            AZStd::string outputFilePathStr = outputFilePath.String();
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
+            if (saveAsBinary)
             {
-                settingsRegistry->Get(enableHashCompareInternal, ShaderVariantListBuilder::EnableHashCompareRegistryKey);
-                settingsRegistry->Get(suddenChangeWaitTimeInternal, ShaderVariantListBuilder::SuddenChangeInMinutesRegistryKey);
+                if (!AZ::Utils::SaveObjectToFile(outputFilePathStr, AZ::DataStream::ST_BINARY
+                    , &hashedVariantInfo, HashedVariantInfoSourceData::TYPEINFO_Uuid(), nullptr))
+                {
+                    AZ_Error(ShaderVariantListBuilderName, false, "Failed to create %s.\n", outputFilePathStr.c_str());
+                    return "";
+                }
+                return outputFilePathStr;
             }
 
-            enableHashCompare = enableHashCompareInternal;
-            suddenChangeWaitTime = AZStd::chrono::minutes(suddenChangeWaitTimeInternal);
-        }
+            if (!AZ::RPI::JsonUtils::SaveObjectToFile(outputFilePathStr, hashedVariantInfo))
+            {
+                AZ_Error(ShaderVariantListBuilderName, false, "Failed to create %s.\n", outputFilePathStr.c_str());
+                return "";
+            }
 
+            return outputFilePathStr;
+        }
 
         void ShaderVariantListBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
@@ -511,21 +442,14 @@ namespace AZ
                 return;
             }
 
-            bool enableHashCompare = ShaderVariantListBuilder::EnableHashCompareRegistryDefaultValue;
-            AZStd::chrono::minutes suddenChangeWaitTime(ShaderVariantListBuilder::SuddenChangeInMinutesRegistryDefaultValue);
-            GetBuilderSettingsFromRegistry(enableHashCompare, suddenChangeWaitTime);
-            AZ_Warning(ShaderVariantListBuilderName, enableHashCompare, "Hash Compare has been disabled by user from registry key: %s."
-                "All variants will be considered new to build.", EnableHashCompareRegistryKey);
-
             // As we calculate hashes for each variant, we are going to calculate the hash
             // of only the optionValues part and this will help us find variants that share the same
             // content but have different StableIds. If two variants with different StableId has the same content this will be an error.
             AZStd::unordered_map<size_t, uint32_t> hashToStableIdMap;
             HashedVariantListSourceData hashedVariantList;
-            hashedVariantList.m_shaderFilePath = shaderVariantList.m_shaderFilePath;
             for (const auto& variantInfo : shaderVariantList.m_shaderVariants)
             {
-                size_t optionValuesHash = HashedVariantListSourceData::HashedVariantInfo::HashCombineShaderOptionValues(0, variantInfo.m_options);
+                size_t optionValuesHash = HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, variantInfo.m_options);
                 const auto itor = hashToStableIdMap.find(optionValuesHash);
                 if (itor != hashToStableIdMap.end())
                 {
@@ -535,50 +459,54 @@ namespace AZ
                 }
                 hashToStableIdMap.emplace(optionValuesHash, variantInfo.m_stableId);
             
-                HashedVariantListSourceData::HashedVariantInfo hashedVariantInfo;
-                hashedVariantInfo.m_isNew = true;
+                HashedVariantInfoSourceData hashedVariantInfo;
                 hashedVariantInfo.m_variantInfo = variantInfo;
                 hashedVariantInfo.CalculateHash(optionValuesHash);
                 hashedVariantList.m_hashedVariants.emplace_back(AZStd::move(hashedVariantInfo));
             }
 
-            AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
-            hashedVariantList.m_timeStamp = now.time_since_epoch().count();
+            AZ::IO::FixedMaxPath shaderPath(shaderVariantList.m_shaderFilePath);
+            AZ::IO::PathView shaderStem = shaderPath.Stem();
+            AZStd::string shaderName(shaderStem.Native());
 
-            if (enableHashCompare)
+            // Time to generate all Intermediate Assets:
             {
-                // Time to load the previously generated *.hashedvariantlist file and compare hashes for each variantInfo.
-                // hashes that match, we'll flag as `hashedVariantInfo.m_isNew = false;` so the ShaderVariantAsset does not rebuild those.
-                AZStd::string previousHashedVariantListPath = GetAbsolutePathOfIntermediateAsset(variantListFullPath);
-                AZ_Trace(ShaderVariantListBuilderName, "Previous path found at %s\n", previousHashedVariantListPath.c_str());
-                HashedVariantListSourceData prevHashedVariantList;
-                if (AZ::RPI::JsonUtils::LoadObjectFromFile(previousHashedVariantListPath, prevHashedVariantList, 10 * 1024 * 1024))
+                auto outputFilePath = SaveHashedVariantListFile(request, shaderName, hashedVariantList, false /* as binary */);
+                if (outputFilePath.empty())
                 {
-                    const auto newVariantCount = ResolveNewOrModifiedVariants(prevHashedVariantList, hashedVariantList, suddenChangeWaitTime);
-                    AZ_Info(ShaderVariantListBuilderName, "%u of %zu variants were found to be new.\n", newVariantCount, hashedVariantList.m_hashedVariants.size());
+                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                    return;
                 }
-                else
-                {
-                    AZ_Warning(ShaderVariantListBuilderName, false, "Failed to load previous hashedvariantlist at path: %s. All shader variants will be regenerated", previousHashedVariantListPath.c_str());
-                }
+
+                // Create the intermediate source asset.
+                AssetBuilderSDK::JobProduct product;
+                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                product.m_productFileName = outputFilePath;
+                product.m_productAssetType = azrtti_typeid<>(hashedVariantList);
+                product.m_productSubID = HashedVariantListSourceData::SubId;
+                response.m_outputProducts.emplace_back(AZStd::move(product));
             }
 
-
-            auto outputFilePath = SaveHashedVariantListFile(request, shaderVariantList, hashedVariantList, false /* as binary */);
-            if (outputFilePath.empty())
+            for (const auto& hashedVariantInfo : hashedVariantList.m_hashedVariants)
             {
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                return;
+                auto outputFilePath = SaveHashedVariantInfoFile(request, shaderName, hashedVariantInfo, false /* as binary */);
+                if (outputFilePath.empty())
+                {
+                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                    return;
+                }
+
+                // Create the intermediate source asset.
+                AssetBuilderSDK::JobProduct product;
+                product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                product.m_productFileName = outputFilePath;
+                product.m_productAssetType = azrtti_typeid<>(hashedVariantInfo);
+                product.m_productSubID = hashedVariantInfo.m_variantInfo.m_stableId;
+                response.m_outputProducts.emplace_back(AZStd::move(product));
             }
 
-            // Create the intermediate source asset.
-            AssetBuilderSDK::JobProduct product;
-            product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
-            product.m_dependenciesHandled = true;
-            product.m_productFileName = outputFilePath;
-            product.m_productAssetType = azrtti_typeid<>(hashedVariantList);
-            product.m_productSubID = HashedVariantListSourceData::SubId;
-            response.m_outputProducts.push_back(AZStd::move(product));
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 

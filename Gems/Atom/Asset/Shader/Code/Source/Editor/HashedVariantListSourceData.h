@@ -18,10 +18,52 @@ namespace AZ
 
     namespace ShaderBuilder
     {
+        //! This structure represents the content of an intermediate asset
+        //! with file extension "hashedvariantinfo".
+        //! The ShaderVariantAssetBuilder will react to this file pattern and create
+        //! a single product with extension "azshadervariant" (ShaderVariantAsset) per "hashedvariantinfo".
+        //!
+        //! This struct is also leveraged by HashedVariantListSourceData (see below)
+        //! to create a single list of all variants, which will be used to create
+        //! another intermediate asset called the "hashedvariantlist" which will be used
+        //! by the ShaderVariantAssetBuilder to build the "azshadervarianttree" output asset
+        //! that the runtime will load a ShaderVariantTreeAsset.
+        //!
+        //! REMARK1: Users are not expected to create .hashedvariantinfo files. These files are produced by the ShaderVariantListBuilder
+        //! as intermediate assets.
+        //!
+        //! REMARK2: These files will be named <Shader Name>_<StableId>.hashedvariantinfo, Where the StableId is a 1-based index.
+        //!
+        //! REMARK3: As an Intermediate Asset the Product SubID will be the StableId, because SubId 0 is reserved for the
+        //! ".hashedvariantlist".
+        struct HashedVariantInfoSourceData
+        {
+            AZ_TYPE_INFO_WITH_NAME_DECL(HashedVariantInfoSourceData);
+
+            static constexpr const char* Extension = "hashedvariantinfo";
+
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo m_variantInfo;
+            size_t m_hash = 0; // Hash of all the data in @m_variantInfo
+
+            //! Hash combines all the data in @optionValues.
+            static size_t HashCombineShaderOptionValues(size_t startingHash, const AZ::RPI::ShaderOptionValuesSourceData& optionValues);
+
+            //! Hash combines the result of a previous call to HashCombineShaderOptionValues, which is passed to this function
+            //! in @optionValuesHash argument, with the rest of the data in @variantInfo.
+            static size_t CalculateHash(size_t optionValuesHash, const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo);
+
+            //! Same as above, but uses this.m_variantInfo and stores the result in this.m_hash.
+            void CalculateHash(size_t optionValuesHash);
+        };
+
         //! This is a simple data structure that represents a .hashedvariantlist file.
         //! Users are not expected to create .hashedvariantlist files. These files are produced by the ShaderVariantListBuilder
         //! as intermediate assets.
-        //! Provides configuration data about which shader variants should be generated for a given shader.
+        //! Provides configuration data about which shader variants should be used to create a ShaderVariantTreeAsset.
+        //!
+        //! REMARK:  These files will be named <Shader Name>.hashedvariantlist.
+        //! Using the name and the subpath of this file We can figure out the name of the
+        //! *.shader file.
         struct HashedVariantListSourceData
         {
             AZ_TYPE_INFO_WITH_NAME_DECL(HashedVariantListSourceData);
@@ -32,39 +74,7 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            //! A struct that describes each hashed shader variant data.
-            struct HashedVariantInfo
-            {
-                AZ_TYPE_INFO_WITH_NAME_DECL(HashedVariantInfo);
-
-                AZ::RPI::ShaderVariantListSourceData::VariantInfo m_variantInfo;
-                size_t m_hash = 0; // Hash of all the data in @m_variantInfo
-                bool m_isNew = false; // If true, the corresponding ShaderVariantAsset should be built/rebuilt.
-
-                //! Hash combines all the data in @optionValues.
-                static size_t HashCombineShaderOptionValues(size_t startingHash, const AZ::RPI::ShaderOptionValuesSourceData& optionValues);
-
-                //! Hash combines the result of a previous call to HashCombineShaderOptionValues, which is passed to this function
-                //! in @optionValuesHash argument, with the rest of the data in @variantInfo.
-                static size_t CalculateHash(size_t optionValuesHash, const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo);
-
-                //! Same as above, but uses this.m_variantInfo and stores the result in this.m_hash.
-                void CalculateHash(size_t optionValuesHash);
-            };
-
-            // A time stamp is necessary, because building shader variants takes time.
-            // We calculate hashes to figure out the variants that changed and based on the match
-            // we set HashedVariantInfo::m_isNew to false or true.
-            // Imagine a user makes changes to a .shadervariantlist, and some HashedVariantInfos are marked as new.
-            // then within a few seconds later they make another change to the .shadervariantlist file. Because
-            // it happened so quickly those HashedVariantInfos that were set as new would become "old" and those
-            // shader variants won't be compiled.
-            // This timestamp comes to the rescue and we can measure if the change happened too quick
-            // and it such case we preserve the state of each HashedVariantInfo::m_isNew.
-            long long m_timeStamp;
-
-            AZStd::string m_shaderFilePath; // .shader file.
-            AZStd::vector<HashedVariantInfo> m_hashedVariants;
+            AZStd::vector<HashedVariantInfoSourceData> m_hashedVariants;
         };
 
     } // namespace ShaderBuilder

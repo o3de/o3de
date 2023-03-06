@@ -13,16 +13,25 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
-
-#include "ShaderBuilderUtility.h"
 
 namespace AZ
 {
     namespace ShaderBuilder
     {
-        struct AzslData; 
-
+        // The ShaderVariantListBuilder produces two kinds of Intermediate Assets from a single
+        // .shadervariantlist file.
+        // The first intermediate asset is the ".hashedvariantlist" file:
+        //     Will contain a consolidated list of all variants that will be necessary to create a ShaderVariantTreeAsset.
+        //     The ShaderVariantAssetBuilder will construct a single product ShaderVariantTreeAsset for each ".hashedvariantlist" file.
+        // The second intermediate asset is the ".hashedvariantinfo" files:
+        //     There will be one of these for each variant specified in the .shadervariantlist file.
+        //     These files will be named as <Shader Name>_<StableId>.hashedvariantinfo.
+        //     The ShaderVariantAssetBuilder will construct a single product (.azshadervariant) ShaderVariantAsset for each
+        //     ".hashedvariantinfo" file ( and for each RHI). For example, the Windows platform supports both DX12 and Vulkan,
+        //     For for each <Shader Name>_<StableId>.hashedvariantinfo file, there will be the following products (for each Supervariant
+        //     specified in the corresponding .shader file)
+        //         - <Shader Name><Supervariant Name>_dx12_<StableId>.azshadervariant
+        //         - <Shader Name><Supervariant Name>_vulkan_<StableId>.azshadervariant
         class ShaderVariantListBuilder
             : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
         {
@@ -36,16 +45,6 @@ namespace AZ
 
             static constexpr char JobKey[] = "HashedShaderVariantList";
 
-            // Setting this to false will always rebuild all variants when a .shadervariantlist changes.
-            // Enabled by default.
-            static constexpr char EnableHashCompareRegistryKey[] = "/O3DE/Atom/Shaders/ShaderVariantListBuilder/EnableHashCompare";
-            static constexpr bool EnableHashCompareRegistryDefaultValue = true;
-
-            // If a .shadervariantlist changes several times within this time period,
-            // the IsNew status of each previous variant in .shadervariantlist will be preserved.
-            static constexpr char SuddenChangeInMinutesRegistryKey[] = "/O3DE/Atom/Shaders/ShaderVariantListBuilder/SuddenChangeInMinutes";
-            static constexpr unsigned SuddenChangeInMinutesRegistryDefaultValue = 5;
-
             ShaderVariantListBuilder() = default;
             ~ShaderVariantListBuilder() = default;
 
@@ -54,7 +53,7 @@ namespace AZ
             void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
 
             // AssetBuilderSDK::AssetBuilderCommandBus interface overrides ...
-            void ShutDown() override { };
+            void ShutDown() override;
 
         private:
             AZ_DISABLE_COPY_MOVE(ShaderVariantListBuilder);
