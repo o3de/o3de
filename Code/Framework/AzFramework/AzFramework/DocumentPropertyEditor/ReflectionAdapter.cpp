@@ -165,21 +165,17 @@ namespace AZ::DocumentPropertyEditor
 
         void ExtractLabel(const Reflection::IAttributes& attributes)
         {
-            using AZ::Reflection::AttributeDataType;
-
-            AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
-            AttributeDataType serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
-
-            if (!labelAttribute.IsNull())
+            AZStd::string_view serializedPath = "";
+            if (auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
+                serializedPathAttribute.IsString())
             {
-                if (!labelAttribute.IsString())
-                {
-                    AZ_Warning("DPE", false, "Unable to read Label from property, Label was not a string");
-                }
-                else
-                {
-                    m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPathAttribute.GetString());
-                }
+                serializedPath = serializedPathAttribute.GetString();
+            }
+
+            AZ::Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+            if (!labelAttribute.IsNull() && labelAttribute.IsString())
+            {
+                m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPath);
             }
         }
 
@@ -450,9 +446,24 @@ namespace AZ::DocumentPropertyEditor
                 }
             }
 
+            // Retrieve serialized path and label attributes.
+            AZStd::string_view serializedPath = "";
+            if (auto serializedPathAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
+                serializedPathAttribute.IsString())
+            {
+                serializedPath = serializedPathAttribute.GetString();
+            }
+
+            AZ::Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+            bool isLabelAvailable = !labelAttribute.IsNull() && labelAttribute.IsString();
+
             if (access.GetType() == azrtti_typeid<AZStd::string>())
             {
-                ExtractLabel(attributes);
+                if (isLabelAvailable)
+                {
+                    m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPath);
+                }
+
                 AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
                 VisitValue(
                     Dom::Utils::ValueFromType(value),
@@ -469,43 +480,19 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZStd::string_view labelAttribute = "MISSING_LABEL";
-                Dom::Value label = attributes.Find(Reflection::DescriptorAttributes::Label);
-                if (!label.IsNull())
-                {
-                    if (!label.IsString())
-                    {
-                        AZ_Warning("DPE", false, "Unable to read Label from property, Label was not a string");
-                    }
-                    else
-                    {
-                        labelAttribute = label.GetString();
-                    }
-                }
-
-                AZ::Reflection::AttributeDataType serializedPathAttribute =
-                    attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
-
                 auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
                 if (!containerAttribute.IsNull())
                 {
                     auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(containerAttribute);
                     m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ container, access.Get() });
-                    size_t containerSize = container->Size(access.Get());
 
-                    if (containerSize == 1)
+                    if (isLabelAvailable)
                     {
                         m_adapter->CreateLabel(
                             &m_builder,
-                            AZStd::string::format("%s (1 element)", labelAttribute.data()),
-                            serializedPathAttribute.GetString());
-                    }
-                    else
-                    {
-                        m_adapter->CreateLabel(
-                            &m_builder,
-                            AZStd::string::format("%s (%zu elements)", labelAttribute.data(), container->Size(access.Get())),
-                            serializedPathAttribute.GetString());     
+                            AZStd::string::format(
+                                "%s (%zu element(s))", labelAttribute.GetString().data(), container->Size(access.Get())),
+                            serializedPath);
                     }
 
                     if (!container->IsFixedSize())
@@ -538,7 +525,10 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    m_adapter->CreateLabel(&m_builder, labelAttribute.data(), serializedPathAttribute.GetString());
+                    if (isLabelAvailable)
+                    {
+                        m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPath);
+                    }
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
@@ -553,7 +543,7 @@ namespace AZ::DocumentPropertyEditor
                 // is fully developed. Since the original utils funtion is in AzToolsFramework and we can't access it from here, we are
                 // duplicating it in this class temporarily till we can do more testing and gain confidence about this new way of storing
                 // serialized values of opaque types directly in the DPE DOM.
-                if (IsInspectorOverrideManagementEnabled() && !serializedPathAttribute.GetString().empty())
+                if (IsInspectorOverrideManagementEnabled() && !serializedPath.empty())
                 {
                     VisitValueWithSerializedPath(access, attributes);
                 }
