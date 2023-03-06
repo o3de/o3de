@@ -114,7 +114,7 @@ namespace AZ::DocumentPropertyEditor
         void ResortRow(Dom::Path sourcePath, Dom::Patch& outgoingPatch);
 
         void GenerateMovePatches(
-            const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch);
+            const SortInfoNode* sortNode, Dom::Path parentPath, bool mapToSource, Dom::Patch& outgoingPatch);
 
         bool m_sortActive = true;
         bool m_reverseSort = false;

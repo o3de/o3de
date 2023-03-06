@@ -40,15 +40,14 @@ namespace AZ::DocumentPropertyEditor
                 {
                     GenerateFullTree();
                 }
-                GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), false, outgoingPatch);
             }
-            else
+            else if (!m_rootNode)
             {
-                if (m_rootNode)
-                {
-                    GenerateMovePatches(m_rootNode.get(), Dom::Path(), Dom::Path(), true, outgoingPatch);
-                }
+                // tree wasn't generated yet and sort is being disabled, nothing to do.
+                // Wait for the normal GenerateContents to be called to generate the initial tree
+                return;
             }
+            GenerateMovePatches(m_rootNode.get(), Dom::Path(), !active, outgoingPatch);
             if (outgoingPatch.size())
             {
                 NotifyContentsChanged(outgoingPatch);
@@ -329,7 +328,7 @@ namespace AZ::DocumentPropertyEditor
     }
 
     void RowSortAdapter::GenerateMovePatches(
-        const SortInfoNode* sortNode, Dom::Path indexPath, Dom::Path sortedPath, bool mapToSource, Dom::Patch& outgoingPatch)
+        const SortInfoNode* sortNode, Dom::Path parentPath, bool mapToSource, Dom::Patch& outgoingPatch)
     {
         if (sortNode->m_indexSortedChildren.empty())
         {
@@ -391,8 +390,8 @@ namespace AZ::DocumentPropertyEditor
             if (sourceIndex != destinationIndex)
             {
                 // it's an actual different index, generate the move patch
-                auto destPath = (mapToSource ? sortedPath : indexPath) / destinationIndex;
-                auto sourcePath = (mapToSource ? indexPath : sortedPath) / sourceIndex;
+                auto destPath = parentPath / destinationIndex;
+                auto sourcePath = parentPath / sourceIndex;
                 outgoingPatch.PushBack(Dom::PatchOperation::MoveOperation(destPath, sourcePath));
             }
 
@@ -425,12 +424,10 @@ namespace AZ::DocumentPropertyEditor
         // until all moves for this level are done, because the move operations for this level should be adjacent in the patch for searching
         for (auto [indexSortedNode, adapterSortedNode] : zippedView)
         {
-            GenerateMovePatches(
-                static_cast<SortInfoNode*>(indexSortedNode.get()),
-                indexPath / indexSortedNode->m_domIndex,
-                sortedPath / adapterSortedNode->m_domIndex,
-                mapToSource,
-                outgoingPatch);
+            // now recurse to children, note that we're always mapping to the indexSortedNode dom index,
+            // whether it's mapping the sorted node to its new place or mapping the index node back to its home
+            SortInfoNode* sourceNode = (mapToSource ? static_cast<SortInfoNode*>(indexSortedNode.get()) : adapterSortedNode);
+            GenerateMovePatches(sourceNode, parentPath / indexSortedNode->m_domIndex, mapToSource, outgoingPatch);
         }
     }
 } // namespace AZ::DocumentPropertyEditor

@@ -914,6 +914,7 @@ namespace AzToolsFramework
                 }
                 // NB: no else case here. If neither source nor destination exist, the widgets aren't instantiated and nothing is moved
             }
+            return;
         }
 
         const auto& fullPath = domOperation.GetDestinationPath();
@@ -1107,16 +1108,35 @@ namespace AzToolsFramework
 
     void DPERowWidget::AddRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
-        if (rowWidget)
-        {
-            auto dpe = GetDPE();
-            rowWidget->setParent(dpe);
-            // determine where to put this new row in the main DPE layout
-            DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
-            dpe->AddAfterWidget(priorRowInLayout, rowWidget);
-        }
         m_columnLayout->SetExpanderShown(true);
         AddDomChildWidget(domIndex, rowWidget);
+
+        if (rowWidget)
+        {
+            PlaceRowChild(rowWidget, domIndex);
+        }
+    }
+
+    void DPERowWidget::PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex)
+    {
+        auto dpe = GetDPE();
+        rowWidget->setParent(dpe);
+
+        // determine where to put this new row in the main DPE layout
+        DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
+        dpe->AddAfterWidget(priorRowInLayout, rowWidget);
+
+        if (rowWidget->IsExpanded())
+        {
+            for (int childIndex = 0, numChildren = rowWidget->m_domOrderedChildren.size(); childIndex < numChildren; ++childIndex)
+            {
+                DPERowWidget* childRow = qobject_cast<DPERowWidget*>(rowWidget->m_domOrderedChildren[childIndex]);
+                if (childRow)
+                {
+                    rowWidget->PlaceRowChild(childRow, childIndex);
+                }
+            }
+        }
     }
 
     DPERowWidget* DPERowWidget::GetLastDescendantInLayout()
