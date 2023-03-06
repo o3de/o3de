@@ -246,20 +246,6 @@ namespace AssetProcessor
 #if defined(DEBUG_RCJOB_MODEL)
         AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace markAsCompleted(%i %s,%s,%s)\n", rcJob, rcJob->GetInputFileAbsolutePath().toUtf8().constData(), rcJob->GetPlatformInfo().m_identifier.c_str(), rcJob->GetJobKey().toUtf8().constData());
 #endif
-
-        if (AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
-        {
-            AZ_Error("AssetProcessor", false, "JobComplete: %s", rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
-        }
-        else if (
-            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("basepbr_generated.materialtype") ||
-            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
-                .ends_with("basepbr_generated.azmaterialtype") ||
-            AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("StandardPBR.materialtype"))
-        {
-            AZ_Error("AssetProcessor", false, "!!!!JobComplete: %s", rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
-        }
-
         rcJob->SetTimeCompleted(QDateTime::currentDateTime());
 
         auto foundInQueue = m_jobsInQueueLookup.find(rcJob->GetElementID());
