@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
 
 namespace TestImpact
