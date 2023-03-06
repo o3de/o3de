@@ -9,8 +9,8 @@
 #include <TestImpactFramework/TestImpactTestSequenceBus.h>
 
 #include <AzCore/std/chrono/chrono.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
 
 #pragma once
 
@@ -51,7 +51,7 @@ namespace TestImpact
             ~NonImpactAnalysisTestSequenceNotificationHandlerBase();
 
         private:
-            // NonImpactAnalysisTestSequenceNotificationsBaseBus ...
+            // NonImpactAnalysisTestSequenceNotificationsBaseBus overrides ...
             void OnTestSequenceStart(
                 const SuiteSet& suiteSet,
                 const SuiteLabelExcludeSet& suiteLabelExcludeSet,
@@ -68,7 +68,7 @@ namespace TestImpact
             ~RegularTestSequenceNotificationHandler();
 
         private:
-            // RegularTestSequenceNotificationsBus ...
+            // RegularTestSequenceNotificationsBus overrides ...
             void OnTestSequenceComplete(const Client::RegularSequenceReport& sequenceReport) override;
         };
 
@@ -82,7 +82,7 @@ namespace TestImpact
             ~SeedTestSequenceNotificationHandler();
 
         private:
-            // SeedTestSequenceNotificationsBus ...
+            // SeedTestSequenceNotificationsBus overrides ...
             void OnTestSequenceComplete(const Client::SeedSequenceReport& sequenceReport) override;
         };
 
@@ -96,7 +96,7 @@ namespace TestImpact
             ~ImpactAnalysisTestSequenceNotificationHandler();
 
         private:
-            // ImpactAnalysisTestSequenceNotificationsBus ...
+            // ImpactAnalysisTestSequenceNotificationsBus overrides ...
             void OnTestSequenceStart(
                 const SuiteSet& suiteSet,
                 const SuiteLabelExcludeSet& suiteLabelExcludeSet,
@@ -116,7 +116,7 @@ namespace TestImpact
             ~SafeImpactAnalysisTestSequenceNotificationHandler();
 
         private:
-            // SafeImpactAnalysisTestSequenceNotificationsBus ...
+            // SafeImpactAnalysisTestSequenceNotificationsBus overrides ...
             void OnTestSequenceStart(
                 const SuiteSet& suiteSet,
                 const SuiteLabelExcludeSet& suiteLabelExcludeSet,

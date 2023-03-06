@@ -115,7 +115,7 @@ namespace TestImpact
             }
         } // namespace Output
 
-        TestSequenceNotificationHandlerBase::TestSequenceNotificationHandlerBase(ConsoleOutputMode consoleOutputMode)
+        TestSequenceNotificationHandlerBase::TestSequenceNotificationHandlerBase(const ConsoleOutputMode consoleOutputMode)
             : m_consoleOutputMode(consoleOutputMode)
         {
             TestSequenceNotificationsBaseBus::Handler::BusConnect();
@@ -128,7 +128,9 @@ namespace TestImpact
         }
 
         void TestSequenceNotificationHandlerBase::OnTestRunComplete(
-            Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)
+            const Client::TestRunBase& testRun,
+            const size_t numTestRunsCompleted,
+            const size_t totalNumTestRuns)
         {
             if (m_consoleOutputMode == ConsoleOutputMode::Buffered)
             {
@@ -189,7 +191,9 @@ namespace TestImpact
             PrintDivider();
         }
 
-        void TestSequenceNotificationHandlerBase::OnRealtimeStdContent(const AZStd::string& stdOutDelta, const AZStd::string& stdErrDelta)
+        void TestSequenceNotificationHandlerBase::OnRealtimeStdContent(
+            const AZStd::string& stdOutDelta,
+            const AZStd::string& stdErrDelta)
         {
             if (m_consoleOutputMode == ConsoleOutputMode::Realtime)
             {
@@ -206,7 +210,7 @@ namespace TestImpact
         }
 
         NonImpactAnalysisTestSequenceNotificationHandlerBase::NonImpactAnalysisTestSequenceNotificationHandlerBase(
-            ConsoleOutputMode consoleOutputMode)
+            const ConsoleOutputMode consoleOutputMode)
             : TestSequenceNotificationHandlerBase(consoleOutputMode)
         {
             NonImpactAnalysisTestSequenceNotificationsBaseBus::Handler::BusConnect();
@@ -227,7 +231,7 @@ namespace TestImpact
             PrintDivider();
         }
 
-        RegularTestSequenceNotificationHandler::RegularTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode)
+        RegularTestSequenceNotificationHandler::RegularTestSequenceNotificationHandler(const ConsoleOutputMode consoleOutputMode)
             : NonImpactAnalysisTestSequenceNotificationHandlerBase(consoleOutputMode)
         {
             RegularTestSequenceNotificationsBus::Handler::BusConnect();
@@ -244,7 +248,7 @@ namespace TestImpact
             std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
         }
 
-        SeedTestSequenceNotificationHandler::SeedTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode)
+        SeedTestSequenceNotificationHandler::SeedTestSequenceNotificationHandler(const ConsoleOutputMode consoleOutputMode)
             : NonImpactAnalysisTestSequenceNotificationHandlerBase(consoleOutputMode)
         {
             SeedTestSequenceNotificationsBus::Handler::BusConnect();
@@ -260,7 +264,8 @@ namespace TestImpact
             Output::FailureReport(sequenceReport.GetSelectedTestRunReport());
         }
 
-        ImpactAnalysisTestSequenceNotificationHandler::ImpactAnalysisTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode)
+        ImpactAnalysisTestSequenceNotificationHandler::ImpactAnalysisTestSequenceNotificationHandler(
+            const ConsoleOutputMode consoleOutputMode)
             : TestSequenceNotificationHandlerBase(consoleOutputMode)
         {
             ImpactAnalysisTestSequenceNotificationsBus::Handler::BusConnect();
