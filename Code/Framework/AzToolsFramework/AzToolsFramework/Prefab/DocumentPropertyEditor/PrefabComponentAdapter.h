@@ -22,6 +22,8 @@ namespace AzToolsFramework::Prefab
         PrefabComponentAdapter();
         ~PrefabComponentAdapter();
 
+        void SetComponent(AZ::Component* componentInstance) override;
+
         void CreateLabel(
             AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
             AZStd::string_view labelText,
@@ -30,6 +32,8 @@ namespace AzToolsFramework::Prefab
         AZ::Dom::Value HandleMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message) override;
 
     private:
+        AZStd::string m_componentAlias;
+
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
     };

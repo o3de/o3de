@@ -30,6 +30,15 @@ namespace AzToolsFramework::Prefab
     {
     }
 
+    void PrefabComponentAdapter::SetComponent(AZ::Component* componentInstance)
+    {
+        // Set the component alias before calling SetValue() in base SetComponent().
+        // Otherwise, an empty component alias will be used in DOM data.
+        m_componentAlias = componentInstance->GetSerializedIdentifier();
+
+        ComponentAdapter::SetComponent(componentInstance);
+    }
+
     void PrefabComponentAdapter::CreateLabel(
         AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
