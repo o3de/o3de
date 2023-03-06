@@ -326,9 +326,9 @@ namespace PhysX
             debugDisplay.DrawCircle(AZ::Vector3::CreateZero(), 1.0f * circleRadius, 0);
             // show tick-marks on the revolve axis that indicate the positive direction of revolution
             AZ::Vector3 pointOnCircle = circleRadius * AZ::Vector3::CreateAxisY();
-            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisZ(), coneRadius, coneHeight);
+            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisZ(), coneRadius, coneHeight);
             pointOnCircle = -circleRadius * AZ::Vector3::CreateAxisY();
-            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisZ(), coneRadius,coneHeight);
+            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisZ(), coneRadius,coneHeight);
 
             pointOnCircle = circleRadius * AZ::Vector3::CreateAxisZ();
             debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
