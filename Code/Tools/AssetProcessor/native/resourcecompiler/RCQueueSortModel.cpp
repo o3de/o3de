@@ -61,7 +61,7 @@ namespace AssetProcessor
                 // This does mean that if there are multiple queued jobs with missing dependencies,
                 // they'll run one at a time instead of in parallel, while waiting for the missing dependency
                 // to be potentially resolved.
-                if (actualJob->GetHasMissingSourceDependency() &&
+                if (actualJob->HasMissingSourceDependency() &&
                     (m_sourceModel->jobsInFlight() > 0 || m_sourceModel->jobsInQueueWithoutMissingDependencies() > 0 ||
                      m_sourceModel->jobsPendingCatalog() > 0))
                 {
@@ -80,16 +80,30 @@ namespace AssetProcessor
                     continue;
                 }
 
-                if (actualJob->GetHasMissingSourceDependency())
+                if (actualJob->HasMissingSourceDependency())
                 {
-                    AZ_Error(
-                        "AssetProcessor",
+                    AZ_Warning(
+                        AssetProcessor::ConsoleChannel,
                         false,
-                        "Job with missing dependency is running. %s. %d, %d, %d",
-                        actualJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(),
-                        m_sourceModel->jobsInFlight(),
-                        m_sourceModel->jobsInQueueWithoutMissingDependencies(),
-                        m_sourceModel->jobsPendingCatalog());
+                        "No job was found to match the job dependency criteria declared by file %s.\n"
+                        "This may be due to a mismatched job key.\n"
+                        "Job ordering will not be guaranteed and could result in errors or unexpected output.",
+                        actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
+
+                    // Print out all dependencies, to help track down the dependency gap.
+                    AZ_Printf(
+                        AssetProcessor::ConsoleChannel,
+                        "All dependencies for file %s\n",
+                        actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
+                    for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
+                    {
+                        // Include the source name so if only this log line is seen, it's still useful.
+                        AZ_Printf(AssetProcessor::ConsoleChannel, "\tSource %s has dependency - File: %s, JobKey: %s, Platform: %s",
+                            actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData(),
+                            jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
+                            jobDependencyInternal.m_jobDependency.m_jobKey.c_str(),
+                            jobDependencyInternal.m_jobDependency.m_platformIdentifier.c_str());
+                    }
                 }
                 bool canProcessJob = true;
                 for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
@@ -109,7 +123,7 @@ namespace AssetProcessor
                         if (m_sourceModel->isInFlight(elementId) || m_sourceModel->isInQueue(elementId))
                         {
                             canProcessJob = false;
-                            if (!anyPendingJob || (anyPendingJob->GetHasMissingSourceDependency() && !actualJob->GetHasMissingSourceDependency()))
+                            if (!anyPendingJob || (anyPendingJob->HasMissingSourceDependency() && !actualJob->HasMissingSourceDependency()))
                             {
                                 anyPendingJob = actualJob;
                             }
@@ -119,9 +133,6 @@ namespace AssetProcessor
                             canProcessJob = false;
                             waitingOnCatalog = true;
                         }
-
-                        // TODO: Tomorrow, pause FBX jobs here if there's still a dependency gap.
-                        //
                     }
                 }
 
@@ -187,39 +198,11 @@ namespace AssetProcessor
         // This means that the job is looking for another source asset and job to exist before it runs, but
         // that source doesn't exist yet. Those jobs are deferred to run later, in case the dependency eventually shows up.
         // The dependency may be on an intermediate asset that will be generated later in asset processing.
-        if (leftJob->GetHasMissingSourceDependency() != rightJob->GetHasMissingSourceDependency())
+        if (leftJob->HasMissingSourceDependency() != rightJob->HasMissingSourceDependency())
         {
-            bool printOut = false;
-            if (AZStd::string(leftJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx") ||
-                AZStd::string(rightJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
+            if (rightJob->HasMissingSourceDependency())
             {
-                //printOut = true;
-                /* AZ_Error(
-                    "AssetProcessor",
-                    false,
-                    "Something has a missing source dependency: %d %s: %d %s",
-                    leftJob->GetHasMissingSourceDependency(),
-                    leftJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(),
-                    rightJob->GetHasMissingSourceDependency(),
-                    rightJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());*/
-            }
-            if (rightJob->GetHasMissingSourceDependency())
-            {
-                if (printOut)
-                {
-                    for (auto& dep : rightJob->GetJobDependencies())
-                    {
-                        AZ_Error("AssetProcessor", false, "\t%s", dep.ToString().c_str());
-                    }
-                }
                 return true; // left does not have a missing source dependency, but right does, so left wins.
-            }
-            if (printOut)
-            {
-                for (auto& dep : leftJob->GetJobDependencies())
-                {
-                    AZ_Error("AssetProcessor", false, "\t%s", dep.ToString().c_str());
-                }
             }
             return false; // Right does not have a missing source dependency, but left does, so right wins.
         }

@@ -183,13 +183,11 @@ namespace AssetProcessor
                 existingJob = m_RCJobListModel.getItem(existingJobIndex);
 
                 // The job status has changed
-                if (existingJob->GetHasMissingSourceDependency() != details.m_hasMissingSourceDependency)
+                if (existingJob->HasMissingSourceDependency() != details.m_hasMissingSourceDependency)
                 {
-                    AZ_Error("AssetProcessor", false, "Canceling %s for job dependency change",
-                        checkFile.GetSourceAssetReference().AbsolutePath().c_str());
                     AZ_TracePrintf(
                         AssetProcessor::DebugChannel,
-                        "Cancelling Job [%s, %s, %s] missing source depedency status has changed.\n",
+                        "Cancelling Job [%s, %s, %s] missing source dependency status has changed.\n",
                         checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                         checkFile.GetPlatform().toUtf8().data(),
                         checkFile.GetJobDescriptor().toUtf8().data());
@@ -344,30 +342,6 @@ namespace AssetProcessor
                     {
                         break;
                     }
-                }
-                if (AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str()).ends_with("fbx"))
-                {
-                    AZ_Error(
-                        "AssetProcessor",
-                        false,
-                        "StartJob: %d - %s",
-                        rcJob->GetHasMissingSourceDependency(),
-                        rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
-                }
-                else if (
-                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
-                        .ends_with("basepbr_generated.materialtype") ||
-                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
-                        .ends_with("basepbr_generated.azmaterialtype") ||
-                    AZStd::string(rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str())
-                        .ends_with("StandardPBR.materialtype"))
-                {
-                    AZ_Error(
-                        "AssetProcessor",
-                        false,
-                        "!!!!StartJob: %d - %s",
-                        rcJob->GetHasMissingSourceDependency(),
-                        rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str());
                 }
                 StartJob(rcJob);
                 rcJob = m_RCQueueSortModel.GetNextPendingJob();

@@ -82,7 +82,7 @@ namespace AssetProcessor
         unsigned int jobsWithNoMissingDependencies = 0;
         for (const auto& job : m_jobsInQueueLookup)
         {
-            if (!job->GetHasMissingSourceDependency())
+            if (!job->HasMissingSourceDependency())
             {
                 ++jobsWithNoMissingDependencies;
             }

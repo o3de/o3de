@@ -105,7 +105,7 @@ namespace AssetProcessor
         return m_jobDetails.m_jobEntry;
     }
 
-    bool RCJob::GetHasMissingSourceDependency() const
+    bool RCJob::HasMissingSourceDependency() const
     {
         return m_jobDetails.m_hasMissingSourceDependency;
     }
