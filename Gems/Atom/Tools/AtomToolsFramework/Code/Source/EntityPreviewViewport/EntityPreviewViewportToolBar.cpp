@@ -58,28 +58,20 @@ namespace AtomToolsFramework
 
         // Add mapping selection button
         auto displayMapperAction = addAction(QIcon(":/Icons/toneMapping.svg"), "Tone Mapping", this, [this]() {
-            AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> operationNameMap = {
-                { AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard" },
-                { AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB" },
-                { AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough" },
-                { AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut" },
-                { AZ::Render::DisplayMapperOperationType::Aces, "Aces" }
-            };
-
             AZ::Render::DisplayMapperOperationType currentOperationType = {};
             EntityPreviewViewportSettingsRequestBus::EventResult(
                 currentOperationType, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetDisplayMapperOperationType);
 
             QMenu menu;
-            for (auto operationNamePair : operationNameMap)
+            for (const auto& operationEnumPair : AZ::AzEnumTraits<AZ::Render::DisplayMapperOperationType>::Members)
             {
-                auto operationAction = menu.addAction(operationNamePair.second, [this, operationNamePair]() {
+                auto operationAction = menu.addAction(operationEnumPair.m_string.data(), [this, operationEnumPair]() {
                     EntityPreviewViewportSettingsRequestBus::Event(
                         m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetDisplayMapperOperationType,
-                        operationNamePair.first);
+                        operationEnumPair.m_value);
                 });
                 operationAction->setCheckable(true);
-                operationAction->setChecked(currentOperationType==operationNamePair.first);
+                operationAction->setChecked(currentOperationType == operationEnumPair.m_value);
             }
             menu.exec(QCursor::pos());
         });
