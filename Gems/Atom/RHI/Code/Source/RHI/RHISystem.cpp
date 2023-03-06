@@ -243,7 +243,12 @@ namespace AZ
 
         RHI::Device* RHISystem::GetDevice(int deviceIndex)
         {
-            return m_devices[deviceIndex].get();
+            if (deviceIndex < m_devices.size())
+            {
+                return m_devices.at(deviceIndex).get();
+            }
+
+            return nullptr;
         }
 
         int RHISystem::GetDeviceCount()

@@ -106,6 +106,8 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -117,6 +119,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
@@ -153,6 +156,8 @@ namespace AZ
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -164,6 +169,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
