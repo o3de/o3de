@@ -17,7 +17,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayout
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QResizeEvent>
 #include <QSettings>
 #include <QStackedWidget>
@@ -85,6 +84,7 @@ namespace AzQtComponents
         // This needs to be done because QStackWidget by default expands, regardless
         // of what is inside it.
         m_labelEditStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        m_labelEditStack->installEventFilter(this);
 
         // create the label
         m_label = new QLabel();
@@ -98,6 +98,8 @@ namespace AzQtComponents
         m_lineEdit->installEventFilter(this);
         connect(m_lineEdit, &QLineEdit::returnPressed, this, &BreadCrumbs::confirmEdit);
         Style::flagToIgnore(m_lineEdit);
+
+        m_lineEdit->setStyleSheet("QLineEdit {color: black; background-color: white;}");
         m_labelEditStack->addWidget(m_lineEdit);
 
         // We need to explicitly set indent. Otherwise the calculations are not correct because the
@@ -401,6 +403,14 @@ namespace AzQtComponents
 
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
     {
+        if (obj == m_labelEditStack)
+        {
+            if (ev->type() == QEvent::ToolTip && isEditable())
+            {
+                m_labelEditStack->setCursor(Qt::IBeamCursor);
+                return true;
+            }
+        }
         if (obj == m_label)
         {
             // HACK: QLabel doesn't have any API that would answer the question "are we currently hovering a link?" so we query the
@@ -430,8 +440,21 @@ namespace AzQtComponents
                     return true;
                 }
                 break;
+            case QEvent::ContextMenu:
+                if (QMenu* menu = m_lineEdit->createStandardContextMenu())
+                {
+                    m_contextMenu = menu;
+                    m_contextMenu->exec(m_lineEdit->cursor().pos());
+                    delete m_contextMenu;
+                    m_contextMenu = nullptr;
+                    return true;
+                }
+                break;
             case QEvent::FocusOut:
-                cancelEdit();
+                if (!m_contextMenu)
+                {
+                    cancelEdit();
+                }
                 return true;
             case QEvent::KeyPress:
                 if (const auto* keyEvent = static_cast<QKeyEvent*>(ev); keyEvent->key() == Qt::Key_Escape)
