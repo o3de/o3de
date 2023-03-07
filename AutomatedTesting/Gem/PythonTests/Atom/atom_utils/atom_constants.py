@@ -300,12 +300,12 @@ class AtomComponentProperties:
     def chromatic_aberration(property: str = 'name') -> str:
         """
         Chromatic Aberration component properties
-          - 'Enable Chromatic Aberration' Toggle active state of the component (bool)
-          - 'Strength' Strength of effect. 0.0 to 1.0 (float)
-          - 'Blend' Factor for additive blending with original image. 0.0 to 1.0 (float)
-          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool)
-          - 'Strength Override' Override for Strength factor. 0.0 to 1.0 (float)
-          - 'Blend Override' Override for Blend factor. 0.0 to 1.0 (float)
+          - 'Enable Chromatic Aberration' Toggle active state of the component (bool) default False
+          - 'Strength' Strength of effect. 0.0 (default) to 1.0 (float)
+          - 'Blend' Factor for additive blending with original image. 0.0 (default) to 1.0 (float)
+          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool) default False
+          - 'Strength Override' Override for Strength factor. 0.0 (default) to 1.0 (float)
+          - 'Blend Override' Override for Blend factor. 0.0 (default) to 1.0 (float)
         parameter property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
