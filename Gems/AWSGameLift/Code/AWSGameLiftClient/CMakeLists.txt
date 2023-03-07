@@ -72,7 +72,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::AWSCore
-                Gem::AWSGameLift.Client.Static
                 Gem::Multiplayer.Unified.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
         RUNTIME_DEPENDENCIES
