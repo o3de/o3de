@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/std/string/string_view.h>
+
 namespace AzFramework::ProcessUtils
 {
     // Finds any existing processes matching a particular name.
