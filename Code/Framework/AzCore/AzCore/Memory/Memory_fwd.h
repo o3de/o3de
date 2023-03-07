@@ -16,39 +16,22 @@
  * use whatever you need, each way has it's benefits and drawback. Each of those will be described as we go along.
  * In every macro that doesn't require to specify an allocator AZ::SystemAllocator is implied.
  */
-#if !defined(_RELEASE)
-    #define aznew                                                   new
-    #define aznewex(_Name)                                          new
+#define aznew                                                   new
+#define aznewex(_Name)                                          new
 
 /// azmalloc(size)
-    #define azmalloc_1(_1)                                          AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1)
+#define azmalloc_1(_1)                                          AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1)
 /// azmalloc(size,alignment)
-    #define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
+#define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
 /// azmalloc(size,alignment,Allocator)
-    #define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
-
-/// azcreate(class,params)
-    #define azcreate_2(_1, _2)                                      new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1 _2
-/// azcreate(class,params,Allocator)
-    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, _3)) _1 _2
-#else
-    #define aznew           new
-    #define aznewex(_Name)  new
-
-/// azmalloc(size)
-    #define azmalloc_1(_1)                                          AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1)
-/// azmalloc(size,alignment)
-    #define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
-/// azmalloc(size,alignment,Allocator)
-    #define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
+#define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
 
 /// azcreate(class)
-    #define azcreate_1(_1)                                          new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1()
+#define azcreate_1(_1)                                          new(azmalloc_3(sizeof(_1), alignof( _1 ), AZ::SystemAllocator)) _1()
 /// azcreate(class,params)
-    #define azcreate_2(_1, _2)                                      new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, AZ::SystemAllocator)) _1 _2
+#define azcreate_2(_1, _2)                                      new(azmalloc_3(sizeof(_1), alignof( _1 ), AZ::SystemAllocator)) _1 _2
 /// azcreate(class,params,Allocator)
-    #define azcreate_3(_1, _2, _3)                                  new(azmalloc_3(sizeof(_1), AZStd::alignment_of< _1 >::value, _3)) _1 _2
-#endif
+#define azcreate_3(_1, _2, _3)                                  new(azmalloc_3(sizeof(_1), alignof( _1 ), _3)) _1 _2
 
 /**
 * azmalloc is equivalent to ::malloc(...). It should be used with corresponding azfree call.
@@ -184,10 +167,10 @@
     AZ_FORCE_INLINE void* operator new(std::size_t size) {                      /* default operator new (called with "new _Class()") */                                             \
         AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(%s): %d", size, #_Class, sizeof(_Class));           \
         AZ_Warning(0, true/*false*/, "Make sure you use aznew, offers better tracking! (%s)", #_Class /*Warning temporarily disabled until engine is using AZ allocators.*/);       \
-        return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, AZStd::alignment_of< _Class >::value);                                                                     \
+        return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, alignof( _Class ));                                                                                        \
     }                                                                                                                                                                               \
     AZ_FORCE_INLINE void  operator delete(void* p, std::size_t size) {    /* default operator delete */                                                                             \
-        if (p) { AZ::AllocatorInstance< _Allocator >::Get().deallocate(p, size, AZStd::alignment_of< _Class >::value); }                                                            \
+        if (p) { AZ::AllocatorInstance< _Allocator >::Get().deallocate(p, size, alignof( _Class )); }                                                                               \
     }                                                                                                                                                                               \
     /* ========== Unsupported operators ========== */                                                                                                                               \
     AZ_FORCE_INLINE void* operator new[](std::size_t) {                                         /* default array operator new (called with "new _Class[x]") */                      \
@@ -203,10 +186,10 @@
     }                                                                                                                                                                               \
     /* ========== AZ_CLASS_ALLOCATOR API ========== */                                                                                                                              \
     AZ_FORCE_INLINE static void* AZ_CLASS_ALLOCATOR_Allocate() {                                                                                                                    \
-        return AZ::AllocatorInstance< _Allocator >::Get().allocate(sizeof(_Class), AZStd::alignment_of< _Class >::value);                                                           \
+        return AZ::AllocatorInstance< _Allocator >::Get().allocate(sizeof(_Class), alignof( _Class ));                                                                              \
     }                                                                                                                                                                               \
     AZ_FORCE_INLINE static void AZ_CLASS_ALLOCATOR_DeAllocate(void* object) {                                                                                                       \
-        AZ::AllocatorInstance< _Allocator >::Get().deallocate(object, sizeof(_Class), AZStd::alignment_of< _Class >::value);                                                        \
+        AZ::AllocatorInstance< _Allocator >::Get().deallocate(object, sizeof(_Class), alignof( _Class ));                                                                           \
     }                                                                                                                                                                               \
     _AZ_CLASS_ALLOCATOR_ALIGNED_NEW(_Class, _Allocator)
 
@@ -287,20 +270,20 @@
     [[nodiscard]] void* _Class::operator new(std::size_t size)                                                                                                                                                                                      \
     {                                                                                                                                                                                                                                               \
         AZ_Assert(size == sizeof(_Class), "Size mismatch! Did you forget to declare the macro in derived class? Size: %d sizeof(_Class): %d", size, sizeof(_Class));                                                                                \
-        return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, AZStd::alignment_of< _Class >::value);                                                                                                                     \
+        return AZ::AllocatorInstance< _Allocator >::Get().allocate(size, alignof( _Class ));                                                                                                                                                        \
     }                                                                                                                                                                                                                                               \
     _Template                                                                                                                                                                                                                                       \
     void _Class::operator delete(void* p, std::size_t size)  {                                                                                                                                                                                      \
-        if (p) { AZ::AllocatorInstance< _Allocator >::Get().deallocate(p, size, AZStd::alignment_of< _Class >::value); }                                                                                                                            \
+        if (p) { AZ::AllocatorInstance< _Allocator >::Get().deallocate(p, size, alignof( _Class )); }                                                                                                                                               \
     }                                                                                                                                                                                                                                               \
     /* ========== AZ_CLASS_ALLOCATOR API ========== */                                                                                                                                                                                              \
     _Template                                                                                                                                                                                                                                       \
     [[nodiscard]] void* _Class::AZ_CLASS_ALLOCATOR_Allocate() {                                                                                                                                                                                     \
-        return AZ::AllocatorInstance< _Allocator >::Get().allocate(sizeof(_Class), AZStd::alignment_of< _Class >::value);                                                                                                          \
+        return AZ::AllocatorInstance< _Allocator >::Get().allocate(sizeof(_Class), alignof( _Class ));                                                                                                                                              \
     }                                                                                                                                                                                                                                               \
     _Template                                                                                                                                                                                                                                       \
     void _Class::AZ_CLASS_ALLOCATOR_DeAllocate(void* object) {                                                                                                                                                                                      \
-        AZ::AllocatorInstance< _Allocator >::Get().deallocate(object, sizeof(_Class), AZStd::alignment_of< _Class >::value);                                                                                                                        \
+        AZ::AllocatorInstance< _Allocator >::Get().deallocate(object, sizeof(_Class), alignof( _Class ));                                                                                                                                           \
     }                                                                                                                                                                                                                                               \
     _AZ_CLASS_ALLOCATOR_IMPL_ALIGNED_NEW(_Class, _Allocator, _Template)
 
