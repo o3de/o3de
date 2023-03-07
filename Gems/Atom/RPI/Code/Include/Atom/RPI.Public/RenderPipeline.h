@@ -98,7 +98,10 @@ namespace AZ
                                                                    const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
-            // Create a render pipeline which renders to the specified attachment image
+            //! Create a render pipeline which renders to the specified attachment image
+            //! The render pipeline's root pass is created from the pass template specified from RenderPipelineDescriptor::m_rootPassTemplate
+            //! The input AttachmentImageAsset is used to connect to first output attachment of the root pass template
+            //! Note: the AttachmentImageAsset doesn't need to be loaded
             static RenderPipelinePtr CreateRenderPipelineForImage(const RenderPipelineDescriptor& desc, Data::Asset<AttachmentImageAsset> imageAsset);
 
             // Data type for render pipeline's views' information

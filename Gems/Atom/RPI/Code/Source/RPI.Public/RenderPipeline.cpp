@@ -147,6 +147,11 @@ namespace AZ
             passRequest.m_connections.push_back(passConnection);
                         
             auto rootPass = passSystem->CreatePassFromRequest(&passRequest);
+            if (!rootPass)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: failed to create root pass for the render pipeline");
+                return nullptr;
+            }
             pipeline->m_passTree.m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
 
             InitializeRenderPipeline(pipeline.get(), desc);

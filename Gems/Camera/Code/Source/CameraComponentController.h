@@ -59,7 +59,7 @@ namespace Camera
         bool m_orthographic = false;
         float m_orthographicHalfWidth = 5.f;
 
-        // members for render to texture
+        // Members for render to texture
         // The texture assets which is used for render to texture feature. It defines the resolution, format etc.
         AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_renderTextureAsset;
         // The pass template name used for render pipeline's root template

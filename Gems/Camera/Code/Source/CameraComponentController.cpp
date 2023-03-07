@@ -305,10 +305,6 @@ namespace Camera
 
         const AZStd::string pipelineName = "Camera_" + m_entityId.ToString() + "_Pipeline";
 
-        auto defaultPipelineDesc = scene->GetDefaultRenderPipeline()->GetDescriptor();
-
-        // Use default render pipeline for the camera render pipeline
-        // We can add function to use customized render pipeline for camera in the future
         AZ::RPI::RenderPipelineDescriptor pipelineDesc;
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
@@ -317,6 +313,13 @@ namespace Camera
         pipelineDesc.m_allowModification = false;
         m_renderToTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForImage(pipelineDesc, m_config.m_renderTextureAsset);
 
+        if (!m_renderToTexturePipeline)
+        {
+            AZStd::string entityName;
+            AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, m_entityId);
+            AZ_Error("Camera", false, "Failed to create render to texture pipeline for camera component in entity %s", entityName.c_str());
+            return;
+        }
         scene->AddRenderPipeline(m_renderToTexturePipeline);
         m_renderToTexturePipeline->SetDefaultView(GetView());
     }
