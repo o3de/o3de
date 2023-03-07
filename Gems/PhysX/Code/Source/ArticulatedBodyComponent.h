@@ -85,6 +85,7 @@ namespace PhysX
         void Activate() override;
 
         void CreateArticulation();
+        void CreateChildArticulationLinks(physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData);
 
         void Deactivate() override;
 
@@ -99,5 +100,6 @@ namespace PhysX
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
 
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_articulationShapes;
     };
 } // namespace PhysX

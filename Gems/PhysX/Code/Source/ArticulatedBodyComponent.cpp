@@ -7,21 +7,24 @@
  */
 
 #include <Source/ArticulatedBodyComponent.h>
-#include <Source/RigidBodyStatic.h>
-#include <Source/Utils.h>
 
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/PhysicsScene.h>
-#include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzCore/Component/Entity.h>
-
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Utils.h>
 #include <PhysX/ColliderComponentBus.h>
-#include "AzFramework/Physics/Material/PhysicsMaterialManager.h"
-#include "PhysX/Material/PhysXMaterial.h"
-#include "System/PhysXSystem.h"
+#include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/MathConversion.h>
+#include <PhysX/PhysXLocks.h>
+#include <Shape.h>
+#include <Source/RigidBodyStatic.h>
+#include <Source/Utils.h>
+#include <System/PhysXSystem.h>
 
 namespace PhysX
 {
@@ -170,13 +173,72 @@ namespace PhysX
         using namespace physx;
 
         PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
+        m_articulation = pxPhysics->createArticulationReducedCoordinate();
+
+        CreateChildArticulationLinks(nullptr, m_articulationLinkData);
+
+        // Add articulation to the scene
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
         PxScene* pxScene = static_cast<PxScene*>(scene->GetNativePointer());
-        pxScene;
-        m_articulation = pxPhysics->createArticulationReducedCoordinate();
+
+        PHYSX_SCENE_WRITE_LOCK(pxScene);
+
+        pxScene->addArticulation(*m_articulation);
     }
 
-    
+    void ArticulatedBodyComponent::CreateChildArticulationLinks(
+        physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData)
+    {
+        using namespace physx;
+
+        const Physics::ColliderConfiguration& colliderConfiguration = thisLinkData.m_colliderConfiguration;
+        const Physics::ShapeConfiguration* shapeConfiguration = thisLinkData.m_shapeConfiguration.get();
+
+        AZStd::shared_ptr<Physics::Shape> physicsShape;
+
+        if (shapeConfiguration)
+        {
+            if (shapeConfiguration->GetShapeType() == Physics::ShapeType::PhysicsAsset)
+            {
+                const auto* physicsAssetShapeConfiguration =
+                    static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfiguration);
+                if (!physicsAssetShapeConfiguration->m_asset.IsReady())
+                {
+                    const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)->m_asset.BlockUntilLoadComplete();
+                }
+
+                const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> assetShapes;
+                Utils::CreateShapesFromAsset(
+                    *physicsAssetShapeConfiguration,
+                    colliderConfiguration,
+                    hasNonUniformScale,
+                    physicsAssetShapeConfiguration->m_subdivisionLevel,
+                    assetShapes);
+
+                physicsShape = assetShapes[0];
+            }
+            else
+            {
+                Physics::SystemRequestBus::BroadcastResult(
+                    physicsShape, &Physics::SystemRequests::CreateShape, colliderConfiguration, *shapeConfiguration);
+            }
+
+            m_articulationShapes.emplace_back(physicsShape);
+        }
+        PxArticulationLink* thisLink = m_articulation->createLink(parentLink, PxMathConvert(GetEntity()->GetTransform()->GetWorldTM()));
+
+        if (physicsShape)
+        {
+            thisLink->attachShape(*(PxShape*)physicsShape->GetNativePointer());
+        }
+
+        for (const auto& childLink : thisLinkData.m_childLinks)
+        {
+            CreateChildArticulationLinks(thisLink, *childLink);
+        }
+    }
+
     void ArticulatedBodyComponent::UpdateArticulationHierarchy()
     {
         AZStd::vector<AZ::EntityId> children = GetEntity()->GetTransform()->GetChildren();
