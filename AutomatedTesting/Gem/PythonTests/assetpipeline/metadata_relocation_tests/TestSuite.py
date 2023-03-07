@@ -14,32 +14,31 @@ from ly_test_tools.environment import file_system
 from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
 
-def cleanup_test_files(workspace, test_file_names):
+def cleanup_test_files(workspace, test_file_names: list[str]):
     for test_file_name in test_file_names:
-        file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", test_file_name)],
-                           True, True)
+        file_system.delete(test_file_name, True, True)
 
 
-def to_meta_file(file):
+def to_meta_file(file: str):
     return file + ".meta"
 
 
-def to_material_file(file):
+def to_material_file(file: str):
     return file + ".material"
 
 
-def original_file_set(file):
-    set = [to_material_file(file), to_meta_file(to_material_file(file))]
-    return set
+def original_file_set(folder: str, file: str):
+    files = [os.path.join(folder, to_material_file(file)), os.path.join(folder, to_meta_file(to_material_file(file)))]
+    return files
 
 
-def renamed_file_set(file):
+def renamed_file_set(folder: str, file: str):
     file = file + "_renamed"
-    set = original_file_set(file)
-    return set
+    files = original_file_set(folder, file)
+    return files
 
 
-@pytest.mark.SUITE_main  # Marks the test suite to be run as MAIN
+@pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])  # This test works on Windows editor
 @pytest.mark.parametrize("project", ["AutomatedTesting"])  # Use AutomatedTesting project
 class TestAutomation(EditorTestSuite):
@@ -49,9 +48,9 @@ class TestAutomation(EditorTestSuite):
         @classmethod
         def setup(self, instance, request, workspace):
             test_file_name = "bunny_material"
-            original_files = original_file_set(test_file_name)
-            renamed_files = renamed_file_set(test_file_name)
-            self.test_files = original_files + renamed_files
+            original_files = original_file_set("assets", test_file_name)
+            renamed_files = renamed_file_set("", test_file_name)
+            self.test_files = renamed_files
 
             cleanup_test_files(workspace, self.test_files)
 
@@ -59,9 +58,7 @@ class TestAutomation(EditorTestSuite):
 
             # Move/rename both files.  The point of the test is to verify references are still valid after this rename
             for i, val in enumerate(original_files):
-                source_file = os.path.join("assets", val)
-                destination_file = os.path.join(destination_folder, renamed_files[i])
-                shutil.copyfile(source_file, destination_file)
+                shutil.copyfile(val, renamed_files[i])
 
         @classmethod
         def teardown(self, instance, request, workspace, editor_test_results):
