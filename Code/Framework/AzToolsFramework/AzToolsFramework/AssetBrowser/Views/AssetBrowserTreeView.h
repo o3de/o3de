@@ -66,7 +66,7 @@ namespace AzToolsFramework
             //! Gets the selected entries.  if includeProducts is false, it will only
             //! count sources and folders - many common operations such as deleting, renaming, etc,
             //! can only work on sources and folders.
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
 
@@ -108,6 +108,7 @@ namespace AzToolsFramework
 
         public Q_SLOTS:
             void OpenItemForEditing(const QModelIndex& index);
+            void OnContextMenu(const QPoint& point);
 
         protected:
             QModelIndexList selectedIndexes() const override;
@@ -138,8 +139,6 @@ namespace AzToolsFramework
             void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
-            void OnContextMenu(const QPoint& point);
-
             //! Get all visible source entries and place them in a queue to update their source control status
             void OnUpdateSCThumbnailsList();
         };

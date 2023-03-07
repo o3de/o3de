@@ -141,16 +141,26 @@ namespace AzToolsFramework
         return allIncompatibleComponents;
     }
 
-    ComponentEditor::ComponentEditor(AZ::SerializeContext* context, IPropertyEditorNotify* notifyTarget /* = nullptr */, QWidget* parent /* = nullptr */)
+    ComponentEditor::ComponentEditor(
+        AZ::SerializeContext* context,
+        IPropertyEditorNotify* notifyTarget /* = nullptr */,
+        QWidget* parent /* = nullptr */,
+        bool replaceRPE /* = false */,
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter /* = nullptr */)
         : AzQtComponents::Card(new ComponentEditorHeader(), parent)
         , m_serializeContext(context)
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        if (replaceRPE)
         {
             // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            m_adapter = customDpeComponentAdapter;
+            if (!m_adapter)
+            {
+                // Create a default component adapter.
+                m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            }
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);
@@ -199,7 +209,7 @@ namespace AzToolsFramework
 
         m_components.push_back(componentInstance);
 
-        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        if (m_adapter)
         {
             if (!aggregateInstance)
             {
