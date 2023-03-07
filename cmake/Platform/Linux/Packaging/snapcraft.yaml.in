@@ -18,49 +18,27 @@ parts:
      - cmake
      - clang-14
      - ninja-build
-     #- libatomic1
-     #- libfreetype6
-     - libpng16-16
-     - libgl1
      - libglu1-mesa-dev
-     - libxcb-icccm4
-     - libxcb-image0
-     - libxcb-keysyms1
-     - libxcb-randr0
-     - libxcb-render-util0
-     - libxcb-render0
-     - libxcb-shape0
      - libxcb-xinerama0
      - libxcb-xinput0
-     - libxcb-xkb1
      - libxcb-xinput-dev
      - libxcb-xfixes0-dev
      - libxcb-xkb-dev
-     - libfontconfig1-dev
-     - libsdl2-dev
-     - libcurl4-openssl-dev
-     - mesa-common-dev
-     - libxkbcommon-x11-dev
      - libxkbcommon-dev
-     - libxkbcommon-x11-0
-     - libxkbcommon0
-     - libpcre2-16-0
-     - libopengl0
-     - libice6
-     - libsm6
-     - libcurl4
-     - libfontconfig1
-     - libunwind-dev
-     - libssl3
-     - libffi7
-     - libffi8
-     - libnettle8
-     - libhogweed6
-     - libunwind-dev
+     - libxkbcommon-x11-dev
+     - libfontconfig1-dev
+     - libcurl4-openssl-dev
+     - libsdl2-dev
      - zlib1g-dev
+     - mesa-common-dev
      - libssl-dev
-     - pkg-config
-     - libc6-dev
+     #- libnettle8
+     #- libhogweed6
+     #- libunwind-dev
+     #- libssl3
+     #- libffi7
+     #- libffi8
+     #- pkg-config
 
 layout:
   /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
