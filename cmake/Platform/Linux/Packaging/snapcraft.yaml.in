@@ -48,6 +48,7 @@ parts:
   patch-o3de:
     plugin: nil
     after: [o3de]
+    build-packages: [patchelf]
     override-stage: |
       snapcraftctl stage
       find $SNAPCRAFT_STAGE/usr/bin/ -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} \;
