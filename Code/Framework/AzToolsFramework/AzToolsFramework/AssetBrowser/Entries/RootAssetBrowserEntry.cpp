@@ -140,7 +140,6 @@ namespace AzToolsFramework
                     azfopen(&f1, assetPath.c_str(), "r");
                     if (f1)
                     {
-                        AZ_TracePrintf("Editor", "Found metatdata file %s\n", assetPath.c_str());
                         char readBuffer[65536];
                         rapidjson::FileReadStream is(f1, readBuffer, sizeof(readBuffer));
 
