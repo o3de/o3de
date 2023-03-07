@@ -23,7 +23,6 @@
 
 CAnimComponentNode::CAnimComponentNode(int id)
     : CAnimNode(id, AnimNodeType::Component)
-    , m_refCount(0)
     , m_componentTypeId(AZ::Uuid::CreateNull())
     , m_componentId(AZ::InvalidComponentId)
     , m_skipComponentAnimationUpdates(false)

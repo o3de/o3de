@@ -42,8 +42,6 @@ namespace AZ::Render
 #include <Atom/Feature/Debug/RenderDebugParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-        RenderDebugFeatureProcessor* m_featureProcessor = nullptr;
-
         void Simulate();
         void UpdateOptionsMask();
 
