@@ -44,6 +44,8 @@ def renamed_file_set(file):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])  # Use AutomatedTesting project
 class TestAutomation(EditorTestSuite):
     class Check_MetadataRename_test(EditorSingleTest):
+        test_files: list[str] = None
+
         @classmethod
         def setup(self, instance, request, workspace):
             test_file_name = "bunny_material"
@@ -53,14 +55,13 @@ class TestAutomation(EditorTestSuite):
 
             cleanup_test_files(workspace, self.test_files)
 
-            # Extract the original test files (material + its meta file)
-            dst = os.path.join(workspace.paths.engine_root(), "AutomatedTesting")
-            with zipfile.ZipFile("bunny_material.zip") as bundle_zip:
-                bundle_zip.extractall(dst)
+            destination_folder = os.path.join(workspace.paths.engine_root(), "AutomatedTesting")
 
-            # Now rename both files.  The point of the test is to verify references are still valid after this rename
-            os.rename(os.path.join(dst, original_files[0]), os.path.join(dst, renamed_files[0]))
-            os.rename(os.path.join(dst, original_files[1]), os.path.join(dst, renamed_files[1]))
+            # Move/rename both files.  The point of the test is to verify references are still valid after this rename
+            for i, val in enumerate(original_files):
+                source_file = os.path.join("assets", val)
+                destination_file = os.path.join(destination_folder, renamed_files[i])
+                shutil.copyfile(source_file, destination_file)
 
         @classmethod
         def teardown(self, instance, request, workspace, editor_test_results):
