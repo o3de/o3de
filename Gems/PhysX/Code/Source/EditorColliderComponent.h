@@ -12,24 +12,19 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/Quaternion.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
-#include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
 #include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
-#include <System/PhysXSystem.h>
 
 #include <Editor/DebugDraw.h>
 
@@ -66,9 +61,9 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         //! Cylinder specific parameters.
-        AZ::u8 m_subdivisionCount = 16;
-        float m_height = 1.0f;
-        float m_radius = 1.0f;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
+        float m_height = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_radius = Physics::ShapeConstants::DefaultCylinderRadius;
 
         //! Configuration stores the convex geometry for the cylinder and shape scale.
         Physics::CookedMeshShapeConfiguration m_configuration;

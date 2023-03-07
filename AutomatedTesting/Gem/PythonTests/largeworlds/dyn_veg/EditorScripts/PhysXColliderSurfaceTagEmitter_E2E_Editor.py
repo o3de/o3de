@@ -27,6 +27,8 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     def validate_behavior_context():
         # Verify that we can create the component through the BehaviorContext
@@ -115,7 +117,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     collider_entity = hydra.Entity("Collider Surface")
     collider_entity.create_entity(
         entity_center_point,
-        ["PhysX Primitive Collider", "PhysX Collider Surface Tag Emitter", "PhysX Static Rigid Body"]
+        [PHYSX_PRIMITIVE_COLLIDER, "PhysX Collider Surface Tag Emitter", "PhysX Static Rigid Body"]
         )
     Report.result(collider_entity_created, collider_entity.id.IsValid())
 
@@ -172,8 +174,8 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
         bus.Broadcast, "GetAssetIdByPath", os.path.join("levels", "physics",
                                                         "Material_PerFaceMaterialGetsCorrectMaterial",
                                                         "test.pxmesh"), math.Uuid(), False)
-    collider_entity.remove_component("PhysX Primitive Collider")
-    collider_entity.add_component("PhysX Mesh Collider")
+    collider_entity.remove_component(PHYSX_PRIMITIVE_COLLIDER)
+    collider_entity.add_component(PHYSX_MESH_COLLIDER)
     helper.wait_for_condition(lambda: editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',
                                                                    collider_entity.components[1]), 5.0)
     hydra.get_set_test(collider_entity, component_index=2, path="Shape Configuration|Asset|PhysX Mesh", value=test_physx_mesh_asset_id)

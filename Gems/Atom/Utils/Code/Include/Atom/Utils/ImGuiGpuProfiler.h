@@ -284,8 +284,9 @@ namespace AZ
             void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
             void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            // Save and load data to and from CSV files
-            void SaveToCSV();
+            // Save and load data to and from CSV/JSON files
+            void SaveToJSON();
+            void LoadFromJSON(const AZStd::string& fileName);
             void LoadFromCSV(const AZStd::string& fileName);
 
             struct PoolTableRow
