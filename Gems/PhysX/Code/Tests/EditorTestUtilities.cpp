@@ -198,7 +198,8 @@ namespace PhysXEditorTests
             idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, Physics::ShapeType::Box);
 
         AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
-        AzToolsFramework::BoxManipulatorRequestBus::Event(idPair, &AzToolsFramework::BoxManipulatorRequests::SetDimensions, boxDimensions);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetBoxDimensions, boxDimensions);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
         PhysX::EditorColliderComponentRequestBus::Event(

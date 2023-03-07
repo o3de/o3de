@@ -703,13 +703,12 @@ namespace PhysX
 
     AZ::Vector3 EditorColliderComponent::GetDimensions() const
     {
-        return m_proxyShapeConfiguration.m_box.m_dimensions;
+        return GetBoxDimensions();
     }
 
     void EditorColliderComponent::SetDimensions(const AZ::Vector3& dimensions)
     {
-        m_proxyShapeConfiguration.m_box.m_dimensions = dimensions;
-        UpdateCollider();
+        SetBoxDimensions(dimensions);
     }
 
     AZ::Vector3 EditorColliderComponent::GetTranslationOffset() const
@@ -894,6 +893,17 @@ namespace PhysX
     Physics::ShapeType EditorColliderComponent::GetShapeType() const
     {
         return m_proxyShapeConfiguration.m_shapeType;
+    }
+
+    void EditorColliderComponent::SetBoxDimensions(const AZ::Vector3& dimensions)
+    {
+        m_proxyShapeConfiguration.m_box.m_dimensions = dimensions;
+        UpdateCollider();
+    }
+
+    AZ::Vector3 EditorColliderComponent::GetBoxDimensions() const
+    {
+        return m_proxyShapeConfiguration.m_box.m_dimensions;
     }
 
     void EditorColliderComponent::SetSphereRadius(float radius)

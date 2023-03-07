@@ -531,8 +531,8 @@ namespace PhysXEditorTests
             idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, Physics::ShapeType::Box);
 
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateOne();
-        AzToolsFramework::BoxManipulatorRequestBus::EventResult(
-            boxDimensions, idPair, &AzToolsFramework::BoxManipulatorRequests::GetDimensions);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::EventResult(
+            boxDimensions, idPair, &PhysX::EditorPrimitiveColliderComponentRequests::GetBoxDimensions);
 
         AZ::EntityId editorEntityId = editorEntity->GetId();
 
@@ -573,7 +573,8 @@ namespace PhysXEditorTests
 
         // set some dimensions to child entity box component
         const AZ::Vector3 boxDimensions(2.0f, 3.0f, 4.0f);
-        AzToolsFramework::BoxManipulatorRequestBus::Event(idPair, &AzToolsFramework::BoxManipulatorRequests::SetDimensions, boxDimensions);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetBoxDimensions, boxDimensions);
 
         // set one entity as parent of another
         AZ::TransformBus::Event(editorChildEntity->GetId(),

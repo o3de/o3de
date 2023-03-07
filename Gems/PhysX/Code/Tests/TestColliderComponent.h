@@ -62,6 +62,8 @@ namespace UnitTest
         
         // EditorPrimitiveColliderComponentRequests overrides ...
         void SetShapeType(Physics::ShapeType shapeType) override { m_shapeType = shapeType; }
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override { m_boxDimensions = dimensions; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxDimensions; }
         void SetSphereRadius(float radius) override { m_sphereRadius = radius; }
         float GetSphereRadius() const override { return m_sphereRadius; }
         void SetCapsuleRadius(float radius) override { m_capsuleRadius = radius; }
@@ -81,6 +83,7 @@ namespace UnitTest
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         Physics::ShapeType m_shapeType = Physics::ShapeType::Box;
+        AZ::Vector3 m_boxDimensions = Physics::ShapeConstants::DefaultBoxDimensions;
         float m_sphereRadius = Physics::ShapeConstants::DefaultSphereRadius;
         float m_capsuleHeight = Physics::ShapeConstants::DefaultCapsuleHeight;
         float m_capsuleRadius = Physics::ShapeConstants::DefaultCapsuleRadius;
