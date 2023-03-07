@@ -213,14 +213,12 @@ function(resolve_gem_dependencies object_type object_path)
     endif()
 
     set(ENV{PYTHONNOUSERSITE} 1)
-    cmake_path(SET output_path "${CMAKE_BINARY_DIR}/${object_type}_external_subdirectories.out")
-    message(VERBOSE "Writing resolved gem dependencies for ${object_path} to '${output_path}'")
     string(TOLOWER ${object_type} object_type_lower)
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" -gpof "${output_path}"
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}"
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
-        OUTPUT_VARIABLE O3DE_CLI_OUT 
+        OUTPUT_VARIABLE resolved_gem_dependency_output 
         ERROR_VARIABLE O3DE_CLI_OUT
         )
 
@@ -228,8 +226,6 @@ function(resolve_gem_dependencies object_type object_path)
         message(WARNING "Dependecy resolution failed\n  Error: ${O3DE_CLI_OUT}")
         return()
     endif()
-
-    file(READ "${output_path}" resolved_gem_dependency_output)
 
     # Set each gem's global path property "@GEMROOT:${gem_name}@" to the resolved gem path
     unset(gem_name)

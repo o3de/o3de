@@ -247,7 +247,7 @@ def get_enabled_gem_cmake_file(project_name: str = None,
 def resolve_gem_dependency_paths(
         engine_path:pathlib.Path,
         project_path:pathlib.Path,
-        resolved_gem_dependencies_output_path:pathlib.Path):
+        resolved_gem_dependencies_output_path:pathlib.Path or None):
     """
     Resolves gem dependencies for the given engine and project and
     writes the output to the path provided.  This is used during CMake
@@ -255,7 +255,8 @@ def resolve_gem_dependency_paths(
     difficult and Python already has a solver with unit tests.
     :param engine_path: optional path to the engine, if not provided, the project's engine will be determined 
     :param project_path: optional path to the project, if not provided the engine path must be provided
-    :param resolved_gem_dependencies_output_path: path to a file that will be written containing a CMake list of gem names and paths.
+    :param resolved_gem_dependencies_output_path: optional path to a file that will be written 
+        containing a CMake list of gem names and paths.  If not provided, the list is written to STDOUT.
     :return: 0 for success or non 0 failure code
     """
 
@@ -293,8 +294,9 @@ def resolve_gem_dependency_paths(
     gem_names_with_optional_gems = utils.get_gem_names_set(active_gem_names, include_optional=True)
     if not gem_names_with_optional_gems:
         logger.info(f'No gem names were found to use as input to resolve gem dependencies.')
-        with resolved_gem_dependencies_output_path.open('w') as output:
-            output.write('')
+        if resolved_gem_dependencies_output_path:
+            with resolved_gem_dependencies_output_path.open('w') as output:
+                output.write('')
         return 0
 
     all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, 
@@ -322,14 +324,19 @@ def resolve_gem_dependency_paths(
                     "\n  ".join(errors))
         return 1
 
-    with resolved_gem_dependencies_output_path.open('w') as output:
-        # make a list of <gem_name>;<gem_path> for cmake
-        gem_paths = sorted(f"{gem.gem_json_data['gem_name'].strip()};{gem.gem_json_data['path'].resolve().as_posix()}" for _, gem in results.items())
-        # use dict to remove duplicates and preserve order so it's easier to read/debug
-        gem_paths = list(dict.fromkeys(gem_paths))
-        # join everything with a ';' character which is a list entry delimiter in CMake
-        # so the keys and values are all list entries
-        output.write(';'.join(gem_paths))
+    # make a list of <gem_name>;<gem_path> for cmake
+    gem_paths = sorted(f"{gem.gem_json_data['gem_name'].strip()};{gem.gem_json_data['path'].resolve().as_posix()}" for _, gem in results.items())
+    # use dict to remove duplicates and preserve order so it's easier to read/debug
+    gem_paths = list(dict.fromkeys(gem_paths))
+    # join everything with a ';' character which is a list entry delimiter in CMake
+    # so the keys and values are all list entries
+    gem_paths_list = ';'.join(gem_paths)
+
+    if resolved_gem_dependencies_output_path:
+        with resolved_gem_dependencies_output_path.open('w') as output:
+            output.write(gem_paths_list)
+    else:
+        print(f'${gem_paths_list}')
 
     return 0
 
@@ -346,8 +353,8 @@ def add_parser_args(parser):
                        help='The path to the project.')
     group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
                        help='The path to the engine.')
-    group.add_argument('-gpof', '--gem-paths-output-file', type=pathlib.Path, required=True,
-                       help='The path to the resolved gem paths output file.')
+    group.add_argument('-gpof', '--gem-paths-output-file', type=pathlib.Path, required=False,
+                       help='The path to the resolved gem paths output file. If not provided, the list will be output to STDOUT.')
     parser.set_defaults(func=_resolve_gem_dependency_paths)
 
 def main():
