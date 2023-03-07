@@ -72,7 +72,7 @@ namespace AZ::Debug
     AZ_CVAR(
         bool,
         bg_assertsAutoBreak,
-        false,
+        true,
         nullptr,
         ConsoleFunctorFlags::Null,
         "Automatically break on assert when the debugger is attached. 0=disabled, 1=enabled.");

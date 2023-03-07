@@ -79,7 +79,7 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
-    Surface EvaluateSurface(PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         Surface surface;
         surface.position = geoData.positionWS.xyz;

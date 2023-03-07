@@ -52,6 +52,7 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -74,8 +75,8 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
     mesh_component = test_entity.add_component("Mesh")
     Report.result(Tests.mesh_added, test_entity.has_component("Mesh"))
 
-    test_component = test_entity.add_component("PhysX Mesh Collider")
-    Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
+    test_component = test_entity.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, test_entity.has_component(PHYSX_MESH_COLLIDER))
 
     # 4) Verify no physics asset is auto-assigned
     value_to_test = test_component.get_component_property_value(TESTED_PROPERTY_PATH)
