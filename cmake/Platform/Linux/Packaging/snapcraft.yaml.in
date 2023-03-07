@@ -32,19 +32,18 @@ parts:
      - zlib1g-dev
      - mesa-common-dev
      - libssl-dev
-     #- libnettle8
+     - libnettle8
+     - libxcb-icccm4
+     - libxcb-image0
+     - libxcb-keysyms1
+     - libxcb-randr0
+     - libxcb-render-util0
      #- libhogweed6
      #- libunwind-dev
      #- libssl3
      #- libffi7
      #- libffi8
      #- pkg-config
-
-layout:
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/downloaded_packages
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/runtime:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/runtime
 
 apps:
   o3de:
