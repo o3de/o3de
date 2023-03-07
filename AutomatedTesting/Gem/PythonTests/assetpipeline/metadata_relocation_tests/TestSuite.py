@@ -48,8 +48,8 @@ class TestAutomation(EditorTestSuite):
         @classmethod
         def setup(self, instance, request, workspace):
             test_file_name = "bunny_material"
-            original_files = original_file_set("assets", test_file_name)
-            renamed_files = renamed_file_set("", test_file_name)
+            original_files = original_file_set(os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets"), test_file_name)
+            renamed_files = renamed_file_set(os.path.dirname(os.path.realpath(__file__)), test_file_name)
             self.test_files = renamed_files
 
             cleanup_test_files(workspace, self.test_files)
