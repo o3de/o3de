@@ -488,11 +488,22 @@ namespace AZ::DocumentPropertyEditor
 
                     if (isLabelAvailable)
                     {
-                        m_adapter->CreateLabel(
-                            &m_builder,
-                            AZStd::string::format(
-                                "%s (%zu element(s))", labelAttribute.GetString().data(), container->Size(access.Get())),
-                            serializedPath);
+                        size_t containerSize = container->Size(access.Get());
+                        if (containerSize == 1)
+                        {
+                            m_adapter->CreateLabel(
+                                &m_builder,
+                                AZStd::string::format("%s (1 element)", labelAttribute.GetString().data()),
+                                serializedPath);
+                        }
+                        else
+                        {
+                            m_adapter->CreateLabel(
+                                &m_builder,
+                                AZStd::string::format(
+                                    "%s (%zu elements)", labelAttribute.GetString().data(), container->Size(access.Get())),
+                                serializedPath);
+                        }
                     }
 
                     if (!container->IsFixedSize())
