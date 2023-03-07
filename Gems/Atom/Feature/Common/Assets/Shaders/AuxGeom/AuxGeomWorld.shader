@@ -21,4 +21,6 @@
     },
     
     "DrawList" : "auxgeom"
+
+    , "ForceBuildError" : false
 }

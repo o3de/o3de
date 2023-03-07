@@ -6,7 +6,11 @@
                 "Build": {
                     "ConfigPath": "@gemroot:AtomShader@/Config"
                 }
-            }
+            },
+            "RHI": {
+                "GraphicsDevMode": true
+            },
+            "AzslCompilerOverridePath": "D:/GIT/o3de-azslc/bin/win_x64/Release/azslc.exe"
         }
     }
 }

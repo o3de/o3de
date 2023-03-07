@@ -21,6 +21,7 @@ VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
     output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    output.m_position += float4(0.0,0.0,0.0,0);
     
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
     output.m_worldPos = worldPosition;

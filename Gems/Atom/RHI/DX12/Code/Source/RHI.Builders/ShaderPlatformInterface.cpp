@@ -18,6 +18,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+
 namespace AZ
 {
     namespace DX12
@@ -246,7 +247,7 @@ namespace AZ
             auto dxcArguments = shaderBuildArguments.m_dxcArguments;
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
-                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-Zi", "-Zss" });
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-Zi", "-Zss", "-Od" });
             }
 
             unsigned char sha1[RHI::Sha1NumBytes];

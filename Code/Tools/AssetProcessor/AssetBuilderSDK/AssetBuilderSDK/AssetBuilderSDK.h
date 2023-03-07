@@ -765,6 +765,8 @@ namespace AssetBuilderSDK
         ProcessJobResultCode m_resultCode = ProcessJobResult_Failed;
         AZStd::vector<JobProduct> m_outputProducts;
         bool m_requiresSubIdGeneration = true; //!< Used to determine if legacy RC products need sub ids generated for them.
+        bool m_keepTempFolder = false; //!< Typically the AP deletes the Temp folder when a job completes successfully. By setting this flag to true
+                                       //!< the AssetBuilder will have the chance to preserve the temp folder and its content after a successful run. 
         //! Populate m_sourcesToReprocess with sources by absolute path which you want to trigger a rebuild for
         //! To reprocess these sources, make sure to update fingerprints in CreateJobs of those builders which process them, like changing source dependencies.
         AZStd::vector<AZStd::string> m_sourcesToReprocess;
