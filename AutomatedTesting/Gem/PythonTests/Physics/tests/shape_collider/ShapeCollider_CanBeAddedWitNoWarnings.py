@@ -51,6 +51,9 @@ def ShapeCollider_CanBeAddedWitNoWarnings():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
+    from consts.physics import PHYSX_SHAPE_COLLIDER
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -66,8 +69,8 @@ def ShapeCollider_CanBeAddedWitNoWarnings():
     Report.result(Tests.create_collider_entity, collider_entity.id.IsValid())
 
     # 3) Add the PhysX Shape Collider and a Box Shape components
-    collider_entity.add_component("PhysX Shape Collider")
-    Report.result(Tests.add_physx_shape_collider, collider_entity.has_component("PhysX Shape Collider"))
+    collider_entity.add_component(PHYSX_SHAPE_COLLIDER)
+    Report.result(Tests.add_physx_shape_collider, collider_entity.has_component(PHYSX_SHAPE_COLLIDER))
 
     collider_entity.add_component("Box Shape")
     Report.result(Tests.add_box_shape, collider_entity.has_component("Box Shape"))
@@ -75,12 +78,12 @@ def ShapeCollider_CanBeAddedWitNoWarnings():
     # 4) Start the Tracer to catch any warnings while adding the PhysX Collider
     with Tracer() as section_tracer:
         # 5) Add the PhysX Primitive Collider component
-        collider_entity.add_component("PhysX Primitive Collider")
-        Report.result(Tests.add_physx_primitive_collider, collider_entity.has_component("PhysX Primitive Collider"))
+        collider_entity.add_component(PHYSX_PRIMITIVE_COLLIDER)
+        Report.result(Tests.add_physx_primitive_collider, collider_entity.has_component(PHYSX_PRIMITIVE_COLLIDER))
         
         # 6) Add the PhysX Mesh Collider component
-        collider_entity.add_component("PhysX Mesh Collider")
-        Report.result(Tests.add_physx_mesh_collider, collider_entity.has_component("PhysX Mesh Collider"))
+        collider_entity.add_component(PHYSX_MESH_COLLIDER)
+        Report.result(Tests.add_physx_mesh_collider, collider_entity.has_component(PHYSX_MESH_COLLIDER))
 
     # 7) Verify there are no warnings in the entity outliner
     success_condition = not section_tracer.has_warnings and not section_tracer.has_errors
