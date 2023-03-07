@@ -398,9 +398,7 @@ class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):  # 
 
 class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", "engine_json_data"])):  # noqa
     def __repr__(self):
-        return "<Engine {name}=={version}>".format(
-            name=self.name, version=self.version
-        )
+        return f"<Engine {self.name}=={self.version}>"
 
     def identify(self):
         return repr(self)
@@ -410,9 +408,7 @@ class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", 
 
 class GemCandidate(namedtuple("Candidate",["name", "version","requirements","gem_json_data"])):  # noqa
     def __repr__(self):
-        return "<Gem {name}=={version}>".format(
-            name=self.name, version=self.version
-        )
+        return f"<Gem {self.name}=={self.version}>"
 
     def identify(self):
         # IMPORTANT identify with just the name and don't include a specifier
@@ -437,9 +433,9 @@ class GemDependencyProvider(AbstractProvider):
         return 0
 
     def find_matches(self, identifier, requirements, incompatibilities):
-        name = identifier
         # Returns a list of candidates that satisfy the requirements
         # sorted by version so we prefer higher version numbers
+        name = identifier
         return sorted(
             (c
             for c in self.candidates
@@ -452,6 +448,10 @@ class GemDependencyProvider(AbstractProvider):
     def is_satisfied_by(self, requirement, candidate):
         if isinstance(candidate, EngineCandidate) and isinstance(requirement, EngineRequirement):
             incompatible_engine_objects = get_incompatible_objects_for_engine(requirement.gem_json_data, candidate.engine_json_data)
+            # If the gem has engine dependencies and we fail to satisfy them
+            # incompatible_engine_objects will contain the set of every failed
+            # dependency.  We could store these on the EngineRequirement, but 
+            # won't need it if a valid candidate is found.
             return not incompatible_engine_objects
         elif isinstance(candidate, GemCandidate) and isinstance(requirement,GemRequirement):
             return (
@@ -459,26 +459,31 @@ class GemDependencyProvider(AbstractProvider):
                 and candidate.version in requirement.specifier
             )
         else:
+            # GemCandidates do no satisfy EngineRequirements
+            # EngineCandidates do not satisfy GemRequirements
             return False
 
     def get_dependencies(self, candidate):
         return candidate.requirements
 
 def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> bool:
-    # start with the engine candidate
+    # Start with the engine candidate using a version of 0.0.0 for any
+    # engine that has no version field (older engine)
     candidates = [
         EngineCandidate(engine_json_data.get('engine_name'), engine_json_data.get('version','0.0.0'), [], engine_json_data)
     ] 
 
-    # add all gem candidates and their requirements
+    # Add all gem candidates and their requirements
     for gem_name, gem_versions_json_data in all_gem_json_data.items():
         for gem_json_data in gem_versions_json_data:
             requirements = [] 
 
+            # If the version field exists but is empty use '0.0.0'
+            # This gives us a preference for gems with version fields
             gem_version = gem_json_data.get('version','0.0.0') or '0.0.0'
             gem_dependencies = gem_json_data.get('dependencies',[])
 
-            # add gem requirements without optional gems
+            # Add gem requirements
             gem_dependency_names = utils.get_gem_names_set(gem_dependencies, include_optional=include_optional)
             for gem_dependency in gem_dependency_names:
                 dep_name, dep_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_dependency)
@@ -487,7 +492,8 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
 
                 requirements.append(GemRequirement(dep_name, SpecifierSet(dep_version_specifier)))
             
-            # add engine requirements
+            # Add engine requirements. Technically "compatible_engines" should not
+            # be used for incompatibility, and this should be addressed in the future.
             compatible_engines = gem_json_data.get('compatible_engines',[])
             engine_api_dependencies = gem_json_data.get('engine_api_dependencies',[])
             if compatible_engines or engine_api_dependencies:
@@ -500,7 +506,7 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
     reporter = BaseReporter()
     resolver = Resolver(provider=provider, reporter=reporter)
 
-    # add all project requirements
+    # Add all project gem dependency requirements
     project_gem_requirements = set()
     for gem_name in gem_names:
         dep_name, dep_version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
@@ -527,7 +533,7 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             if isinstance(cause.requirement, EngineRequirement):
                 reason += cause.requirement.failure_reason(engine_json_data)
             else:
-                # If cause.parent isn't set it's a project dependency
+                # If cause.parent isn't set it's a project gem dependency
                 reason += cause.requirement.failure_reason(cause.parent if cause.parent else 'The project')
 
         errors.add(reason) 

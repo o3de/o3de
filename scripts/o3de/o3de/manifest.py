@@ -804,7 +804,7 @@ def get_most_compatible_object(object_name: str,
         best_candidate_path = matching_paths[0]
         if len(matching_paths) > 1:
             matches = "\n".join(map(str,matching_paths))
-            logger.warning(f"Multiple matches found for: '{object_name}'\n{matches}\nSelecting most compatible match: '{best_candidate_path}'")
+            logger.warning(f"Multiple matches found for: '{object_name}'\n{matches}\nMost compatible match: '{best_candidate_path}'")
         return best_candidate_path
 
     return None
