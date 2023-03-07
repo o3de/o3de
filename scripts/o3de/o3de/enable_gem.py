@@ -129,7 +129,7 @@ def enable_gem_in_project(gem_name: str = None,
     ret_val = 0
 
     # include the version specifier if provided e.g. gem==1.2.3
-    gem_name = gem_name if gem_name else gem_json_data['gem_name']
+    gem_name = gem_name or gem_json_data['gem_name']
 
     # If the gem is not part of buildable set, it's gem_name should be registered to the "gem_names" field
     if gem_path not in buildable_gems:

@@ -88,7 +88,7 @@ def disable_gem_in_project(gem_name: str = None,
         return 1
 
     # remove the gem
-    gem_name = gem_name if gem_name else gem_json_data.get('gem_name','')
+    gem_name = gem_name or gem_json_data.get('gem_name','')
     error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
 
     # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
