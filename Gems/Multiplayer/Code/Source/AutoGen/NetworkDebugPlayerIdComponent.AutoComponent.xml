@@ -8,7 +8,7 @@
     OverrideInclude="Multiplayer/Components/NetworkDebugPlayerIdComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <NetworkProperty Type="AzNetworking::ConnectionId" Name="playerId" Init="AzNetworking::InvalidConnectionId" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="true" GenerateEventBindings="true" />
+    <NetworkProperty Type="AzNetworking::ConnectionId" Name="playerId" Init="AzNetworking::InvalidConnectionId" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="true" GenerateEventBindings="true" />
     <NetworkProperty Type="uint32_t" Name="connectionCount" Init="0" ReplicateFrom="Authority" ReplicateTo="Autonomous" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="true" GenerateEventBindings="true" />
 
 </Component>
