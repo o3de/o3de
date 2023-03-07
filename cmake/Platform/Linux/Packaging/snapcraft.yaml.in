@@ -32,18 +32,29 @@ parts:
      - zlib1g-dev
      - mesa-common-dev
      - libssl-dev
-     - libnettle8
+     - libffi8
      - libxcb-icccm4
      - libxcb-image0
      - libxcb-keysyms1
      - libxcb-randr0
      - libxcb-render-util0
+     - libunwind-dev
+     - pkg-config
      #- libhogweed6
-     #- libunwind-dev
      #- libssl3
      #- libffi7
-     #- libffi8
-     #- pkg-config
+     #- libnettle8
+
+  patch-o3de:
+    after: o3de
+    override-stage: |
+      snapcraftctl stage
+      find $SNAPCRAFT_STAGE/usr/bin/ -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} \;
+      find $SNAPCRAFT_STAGE/usr/lib/ -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} \;
+      find $SNAPCRAFT_STAGE/usr/bin/ -type f -executable -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {})':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/usr/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {})':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/lib32/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
 
 apps:
   o3de:
