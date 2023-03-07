@@ -18,7 +18,7 @@ namespace AzToolsFramework::Prefab
     class PrefabOverridePublicInterface;
     class PrefabSystemComponentInterface;
 
-    //! Undo class for handling updating entities to an instance as override of focused instance.
+    //! Undo class for handling updating component properties of a prefab as overrides from focused prefab.
     class PrefabUndoComponentPropertyOverride : public UndoSystem::URSequencePoint
     {
     public:
@@ -31,7 +31,7 @@ namespace AzToolsFramework::Prefab
         void Undo() override;
         void Redo() override;
 
-        // The function to generate override subtrees for updating the provided entity list as overrides.
+        // The function to generate override subtrees for updating the provided entity as overrides.
         // Redo should not be called after. It does redo in capture because adding override patches here allows us
         // to generate patches with correct indices and add them to tree in one place. Two operations won't be disconnected.
         void CaptureAndRedo(Instance& owningInstance, AZ::Dom::Path relativePathFromOwningPrefab, const PrefabDomValue& afterStateOfComponentProperty);

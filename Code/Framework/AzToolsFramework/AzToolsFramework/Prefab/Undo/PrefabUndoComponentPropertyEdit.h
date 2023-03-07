@@ -14,7 +14,7 @@ namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
 
-    //! Undo class for handling updating a component within an entity within a prefab template.
+    //! Undo class for handling updating component properties of the focused prefab.
     class PrefabUndoComponentPropertyEdit : public PrefabUndoBase
     {
     public:
