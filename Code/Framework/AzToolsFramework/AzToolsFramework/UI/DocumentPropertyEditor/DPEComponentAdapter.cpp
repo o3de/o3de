@@ -97,54 +97,6 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value ComponentAdapter::HandleMessage(const AdapterMessage& message)
-    {
-        auto handlePropertyEditorChanged = [&]([[maybe_unused]] const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
-        {
-            switch (changeType)
-            {
-            case Nodes::ValueChangeType::InProgressEdit:
-                if (m_componentInstance)
-                {
-                    const AZ::EntityId& entityId = m_componentInstance->GetEntityId();
-                    if (entityId.IsValid())
-                    {
-                        if (m_currentUndoNode)
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode,
-                                &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                                m_currentUndoNode,
-                                "Modify Entity Property");
-                        }
-                        else
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
-                        }
-
-                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                            &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, entityId);
-                    }
-                }
-                break;
-            case Nodes::ValueChangeType::FinishedEdit:
-                if (m_currentUndoNode)
-                {
-                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
-                    m_currentUndoNode = nullptr;
-                }
-                break;
-            }
-        };
-
-        Dom::Value returnValue = message.Match(Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged);
-
-        ReflectionAdapter::HandleMessage(message);
-
-        return returnValue;
-    }
-
     void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
         ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);

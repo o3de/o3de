@@ -620,9 +620,8 @@ namespace AzToolsFramework
 
             // Now that the Instance has been created, convert it back into a Prefab DOM.  Because we
             // don't specify to skip default fields in the call to StoreInstanceInPrefabDom,
-            // this new DOM will have all fields from all classes except link ids.
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(
-                    loadedPrefabInstance, loadedTemplateDomRef, PrefabDomUtils::StoreFlags::StripLinkIds))
+            // this new DOM will have all fields from all classes.
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, loadedTemplateDomRef))
             {
                 return false;
             }

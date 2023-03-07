@@ -46,8 +46,6 @@ namespace AZ::DocumentPropertyEditor
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
 
-        Dom::Value HandleMessage(const AdapterMessage& message) override;
-
         //! Creates a node for displaying label information.
         //! Requests the PrefabAdapterInterface to add a property node and configures its style if an override exist.
         //! @param adapterBuilder The adapter builder to use for adding property node.
