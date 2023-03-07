@@ -145,6 +145,8 @@ endfunction()
 #  extra reads.
 function(ly_file_read_cache path content)
     unset(file_content)
+    cmake_path(SET path "${path}")
+    cmake_path(NORMAL_PATH path)
     set(file_cache_var_name "O3DE_FILE_CACHE_${path}")
     get_property(file_content GLOBAL PROPERTY ${file_cache_var_name})
     if(NOT file_content)
