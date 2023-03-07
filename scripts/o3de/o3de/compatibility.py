@@ -370,7 +370,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 
     return False 
 
-class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):  # noqa
+class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):
     def __repr__(self):
         return f"<GemRequirement({self.name}{self.specifier})>"
 
@@ -382,7 +382,7 @@ class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):  # no
     def failure_reason(self, object_name):
         return f'{object_name} requires {self.name}{self.specifier}'
 
-class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):  # noqa
+class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):
     def __repr__(self):
         return f"<EngineRequirement({self.gem_json_data.get('compatible_engines','')}{self.gem_json_data.get('engine_api_dependencies','')})>"
 
@@ -396,7 +396,7 @@ class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):  # 
         incompatible_engine_objects = [f'{gem_name} is incompatible because: {error}' for error in incompatible_engine_objects]
         return f'\n'.join(incompatible_engine_objects)
 
-class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", "engine_json_data"])):  # noqa
+class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", "engine_json_data"])):
     def __repr__(self):
         return f"<Engine {self.name}=={self.version}>"
 
@@ -406,7 +406,7 @@ class EngineCandidate(namedtuple("Candidate",["name", "version","requirements", 
     def __hash__(self) -> int:
         return hash(('engine', self.name, self.version))
 
-class GemCandidate(namedtuple("Candidate",["name", "version","requirements","gem_json_data"])):  # noqa
+class GemCandidate(namedtuple("Candidate",["name", "version","requirements","gem_json_data"])):
     def __repr__(self):
         return f"<Gem {self.name}=={self.version}>"
 
