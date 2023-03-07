@@ -1883,7 +1883,15 @@ namespace AzToolsFramework
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
             //create a new component editor since cache has been exceeded
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this);
+            bool replaceRPE = DocumentPropertyEditor::ShouldReplaceRPE();
+            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> dpeComponentAdapter;
+            if (replaceRPE)
+            {
+                // Create a prefab specific component adapter
+                // Note: this is where a custom prefab adapter (PrefabComponentAdapter) can be created instead of the default
+                dpeComponentAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
+            }
+            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, replaceRPE, dpeComponentAdapter);
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()

@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
@@ -23,13 +23,13 @@
 PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     inout float4 positionSV,
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    float3 normalWS,
+    float3 tangentWS,
+    float3 bitangentWS,
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // ------- Parallax -------
 
@@ -49,15 +49,15 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFr
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_StandardPBR(
         IN.position,
         IN.worldPosition,
-        vertexNormal,
-        vertexTangent,
-        vertexBitangent,
+        normalWS,
+        tangentWS,
+        bitangentWS,
         IN.uvs,
         isFrontFace);
 }

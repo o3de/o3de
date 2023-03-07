@@ -131,8 +131,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     float3x3 identityUvMatrix = 
         { 1,0,0,
@@ -145,9 +145,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       depthOffset,
                                                       IN.m_uv,
                                                       ViewSrg::m_worldPosition.xyz - IN.m_worldPosition, 
-                                                      vertexTangent,
-                                                      vertexBitangent,
-                                                      vertexNormal,
+                                                      tangentWS,
+                                                      bitangentWS,
+                                                      normalWS,
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
@@ -168,7 +168,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     float surfaceDepth;
     float3 surfaceNormal;
     GetSurfaceShape(IN.m_uv, surfaceDepth, surfaceNormal);
-    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, vertexNormal, vertexTangent, vertexBitangent);
+    const float3 surfaceNormalWorld = TangentSpaceToWorld(surfaceNormal, normalWS, tangentWS, bitangentWS);
     
     // ------- Surface -------
 
