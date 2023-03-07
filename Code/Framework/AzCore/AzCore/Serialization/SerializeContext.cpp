@@ -1123,11 +1123,10 @@ namespace AZ
     //=========================================================================
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::SerializeWithNoData()
     {
-        if (m_context->IsRemovingReflection())
+        if (!m_context->IsRemovingReflection())
         {
-            return this; // we have already removed the class data.
+            m_classData->second.m_serializer = Serialize::IDataSerializerPtr(&Serialize::StaticInstance<EmptySerializer>::s_instance, IDataSerializer::CreateNoDeleteDeleter());
         }
-        m_classData->second.m_serializer = Serialize::IDataSerializerPtr(&Serialize::StaticInstance<EmptySerializer>::s_instance, IDataSerializer::CreateNoDeleteDeleter());
         return this;
     }
 
@@ -1137,11 +1136,10 @@ namespace AZ
     //=========================================================================
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::EventHandler(IEventHandler* eventHandler)
     {
-        if (m_context->IsRemovingReflection())
+        if (!m_context->IsRemovingReflection())
         {
-            return this; // we have already removed the class data.
+            m_classData->second.m_eventHandler = eventHandler;
         }
-        m_classData->second.m_eventHandler = eventHandler;
         return this;
     }
 
@@ -1150,11 +1148,10 @@ namespace AZ
     //=========================================================================
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::DataContainer(IDataContainer* dataContainer)
     {
-        if (m_context->IsRemovingReflection())
+        if (!m_context->IsRemovingReflection())
         {
-            return this;
+            m_classData->second.m_container = dataContainer;
         }
-        m_classData->second.m_container = dataContainer;
         return this;
     }
 
@@ -1163,11 +1160,10 @@ namespace AZ
     //=========================================================================
     SerializeContext::ClassBuilder* SerializeContext::ClassBuilder::PersistentId(ClassPersistentId persistentId)
     {
-        if (m_context->IsRemovingReflection())
+        if (!m_context->IsRemovingReflection())
         {
-            return this; // we have already removed the class data.
+            m_classData->second.m_persistentId = persistentId;
         }
-        m_classData->second.m_persistentId = persistentId;
         return this;
     }
 
@@ -1235,7 +1231,7 @@ namespace AZ
                                 // Additional error information: Provide Type IDs and the serialization stack from our enumeration
                                 AZStd::string sourceTypeID = dataClassInfo->m_typeId.ToString<AZStd::string>();
                                 AZStd::string targetTypeID = classElement->m_typeId.ToString<AZStd::string>();
-                                AZStd::string error = AZStd::string::format("EnumarateElements RTTI Cast Error: %s -> %s", sourceTypeID.c_str(), targetTypeID.c_str());
+                                AZStd::string error = AZStd::string::format("EnumerateElements RTTI Cast Error: %s -> %s", sourceTypeID.c_str(), targetTypeID.c_str());
                                 callContext->m_errorHandler->ReportError(error.c_str());
                                 #endif
                                 return true;    // RTTI Error. Continue serialization
@@ -1351,8 +1347,8 @@ namespace AZ
                         }
                         else
                         {
-                            AZ_Error("Serialization", false, "Failed to find class data for 'Dynamic Serializable Field' with type=%s address=%p. Make sure this type is reflected, \
-                                otherwise you will lose data during serialization!\n", dynamicFieldDesc->m_typeId.ToString<AZStd::string>().c_str(), dynamicFieldDesc->m_data);
+                            AZ_Error("Serialization", false, "Failed to find class data for 'Dynamic Serializable Field' with type=%s address=%p. Make sure this type is reflected,"
+                                " otherwise you will lose data during serialization!\n", dynamicFieldDesc->m_typeId.ToString<AZStd::string>().c_str(), dynamicFieldDesc->m_data);
                         }
                     }
                 }
