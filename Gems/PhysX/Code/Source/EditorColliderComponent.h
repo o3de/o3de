@@ -217,6 +217,8 @@ namespace PhysX
         
         // PhysX::EditorPrimitiveColliderComponentRequestBus overrides ...
         void SetShapeType(Physics::ShapeType shapeType) override;
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        AZ::Vector3 GetBoxDimensions() const override;
         void SetSphereRadius(float radius) override;
         float GetSphereRadius() const override;
         void SetCapsuleRadius(float radius) override;
