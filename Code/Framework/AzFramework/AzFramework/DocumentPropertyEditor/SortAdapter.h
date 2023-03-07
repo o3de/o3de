@@ -96,7 +96,10 @@ namespace AZ::DocumentPropertyEditor
         virtual SortInfoNode* NewSortInfoNode() const = 0;
         virtual void CacheDomInfoForNode(const Dom::Value& domValue, SortInfoNode* sortNode) const = 0;
 
-        // child classes should override this, but typically call this base implementation for otherwise equal values
+        /*! virtual method that determines the ordering of the nodes within the adapter
+            NB! The implementation relies on there never being a tie, i.e. don't allow this: !(a < b) && !(b < a)
+            The best way to avoid this is to call this base implementation (which maintains the original
+            sorting of the source adapter) for otherwise equal values */
         virtual bool LessThan(SortInfoNode* lhs, SortInfoNode* rhs) const;
 
         // handlers for source adapter's messages
@@ -117,7 +120,6 @@ namespace AZ::DocumentPropertyEditor
             const SortInfoNode* sortNode, Dom::Path parentPath, bool mapToSource, Dom::Patch& outgoingPatch);
 
         bool m_sortActive = true;
-        bool m_reverseSort = false;
     };
 
 } // namespace AZ::DocumentPropertyEditor

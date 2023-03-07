@@ -825,26 +825,12 @@ namespace AzToolsFramework
 
     void DPERowWidget::HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex)
     {
-        /* <apm> implement copy and move. You'll need domOperation.GetSourcePath().
-        Note that source and/or destination widgets might not exist due to collapsed nodes.
-        For a move:
-        * if both exists, its physically moving the widget around
-        * if source exists but not destination, it's a remove
-        * if destination exists but not source, we need to look up the value and instantiate it.
-        * this means that we're going to need to be able to look up the value anyway, so the whole adapter chain needs to be immediately
-        queryable For a copy:
-        * if both exists, its a value lookup, then an add to that location
-        * if source exists but not destination, it's a no-op
-        * if destination exists but not source, it's a value look-up and add
-        Don't forget to implement these operations on metaAdapters, too. Sort and Filter must be able to handle move and copy
-
-        Complications:
-        technically, this could be a move or copy of attributes. Handle that... I guess... or at least comment it
-
-        move this copy/move logic to DocumentPropertyEditor::HandleDomChange
-        */
         if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Move)
         {
+            /* For a move operation, note that source and/or destination widgets might not exist due to collapsed nodes.
+             * if both source and destination location exist, move the existing widget
+             * if source exists but not destination, it's a remove
+             * if destination exists but not source, we need to look up the value and instantiate it. */
             auto* theDPE = GetDPE();
             auto sourceParentPath = domOperation.GetSourcePath();
             auto sourceIndex = sourceParentPath.Back().GetIndex();
@@ -878,8 +864,10 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            // this is a column widget move, just add it to the correct place in the (possibly) new layout
-                            AZ_Assert(0, "dammit."); // <apm>
+                            // this is a column widget move, consume its layout attributes and add 
+                            // it to the correct place in the (possibly) new layout
+                            const auto valueForAttributes = theDPE->GetAdapter()->GetContents()[domOperation.GetDestinationPath()];
+                            destinationParentRow->AddColumnWidget(newOwner, destinationIndex, valueForAttributes);
                         }
                     }
                     else if (destinationParentRow)
@@ -914,146 +902,148 @@ namespace AzToolsFramework
                 }
                 // NB: no else case here. If neither source nor destination exist, the widgets aren't instantiated and nothing is moved
             }
-            return;
         }
-
-        const auto& fullPath = domOperation.GetDestinationPath();
-        auto pathEntry = fullPath[pathIndex];
-
-        const bool entryIsIndex = pathEntry.IsIndex();
-        const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
-
-        if (!entryIsIndex && entryAtEnd)
+        else
         {
-            // patch isn't addressing a child index like a child row or widget, it's an attribute,
-            // refresh this row from its corresponding DOM node
-            auto subPath = fullPath;
-            subPath.Pop();
-            const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-            SetAttributesFromDom(valueAtSubPath);
-        }
-        else if (entryAtEnd)
-        {
-            // if we're on the last entry in the path, this row widget is the direct owner
-            const auto childCount = m_domOrderedChildren.size();
-            size_t childIndex = 0;
-            if (pathEntry.IsIndex())
+            const auto& fullPath = domOperation.GetDestinationPath();
+            auto pathEntry = fullPath[pathIndex];
+
+            const bool entryIsIndex = pathEntry.IsIndex();
+            const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
+
+            if (!entryIsIndex && entryAtEnd)
             {
-                // remove and replace operations must match an existing index. Add operations can be one past the current end.
-                childIndex = pathEntry.GetIndex();
-                const bool indexValid =
-                    (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
-                AZ_Assert(indexValid, "patch index is beyond the array bounds!");
-                if (!indexValid)
+                // patch isn't addressing a child index like a child row or widget, it's an attribute,
+                // refresh this row from its corresponding DOM node
+                auto subPath = fullPath;
+                subPath.Pop();
+                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+                SetAttributesFromDom(valueAtSubPath);
+            }
+            else if (entryAtEnd)
+            {
+                // if we're on the last entry in the path, this row widget is the direct owner
+                const auto childCount = m_domOrderedChildren.size();
+                size_t childIndex = 0;
+                if (pathEntry.IsIndex())
+                {
+                    // remove and replace operations must match an existing index. Add operations can be one past the current end.
+                    childIndex = pathEntry.GetIndex();
+                    const bool indexValid =
+                        (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
+                    AZ_Assert(indexValid, "patch index is beyond the array bounds!");
+                    if (!indexValid)
+                    {
+                        return;
+                    }
+                }
+
+                // if this is a remove or replace, remove the existing entry first,
+                // then, if this is a replace or add, add the new entry
+                if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
+                    domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
+                {
+                    RemoveChildAt(childIndex);
+                }
+
+                if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
+                    domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
+                {
+                    AddChildFromDomValue(domOperation.GetValue(), childIndex);
+                }
+            }
+            else // not the direct owner of the entry to patch
+            {
+                auto theDPE = GetDPE();
+                const auto childCount = m_domOrderedChildren.size();
+                // find the next widget in the path and delegate the operation to them
+                auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
+                AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
+                if (childIndex >= childCount)
                 {
                     return;
                 }
-            }
 
-            // if this is a remove or replace, remove the existing entry first,
-            // then, if this is a replace or add, add the new entry
-            if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
-                domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
-            {
-                RemoveChildAt(childIndex);
-            }
-
-            if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
-                domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                AddChildFromDomValue(domOperation.GetValue(), childIndex);
-            }
-        }
-        else // not the direct owner of the entry to patch
-        {
-            auto theDPE = GetDPE();
-            const auto childCount = m_domOrderedChildren.size();
-            // find the next widget in the path and delegate the operation to them
-            auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
-            AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
-            if (childIndex >= childCount)
-            {
-                return;
-            }
-
-            QWidget* childWidget = m_domOrderedChildren[childIndex];
-            DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
-            if (widgetAsDpeRow)
-            {
-                // child is a DPERowWidget, pass patch processing to it
-                widgetAsDpeRow->HandleOperationAtPath(domOperation, pathIndex + 1);
-            }
-            else // child must be a label or a PropertyEditor
-            {
-                // pare down the path to this node, then look up and set the value from the DOM
-                auto subPath = fullPath;
-                for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
+                QWidget* childWidget = m_domOrderedChildren[childIndex];
+                DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
+                if (widgetAsDpeRow)
                 {
-                    subPath.Pop();
+                    // child is a DPERowWidget, pass patch processing to it
+                    widgetAsDpeRow->HandleOperationAtPath(domOperation, pathIndex + 1);
                 }
-                const auto valueAtSubPath = theDPE->GetAdapter()->GetContents()[subPath];
-
-                if (!childWidget)
+                else // child must be a label or a PropertyEditor
                 {
-                    // if there's a null entry in the current place for m_domOrderedChildren,
-                    // that's ok if this entry isn't expanded to that depth and need not follow the change any further
-                    // if we are expanded, then this patch references an unsupported handler, which might a problem
-                    if (IsExpanded())
+                    // pare down the path to this node, then look up and set the value from the DOM
+                    auto subPath = fullPath;
+                    for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
                     {
-                        // widget doesn't exist, but maybe we can make one now with the known contents
+                        subPath.Pop();
+                    }
+                    const auto valueAtSubPath = theDPE->GetAdapter()->GetContents()[subPath];
+
+                    if (!childWidget)
+                    {
+                        // if there's a null entry in the current place for m_domOrderedChildren,
+                        // that's ok if this entry isn't expanded to that depth and need not follow the change any further
+                        // if we are expanded, then this patch references an unsupported handler, which might a problem
+                        if (IsExpanded())
+                        {
+                            // widget doesn't exist, but maybe we can make one now with the known contents
+                            auto handlerId =
+                                AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
+
+                            if (handlerId)
+                            {
+                                // have a proper handlerID now, see if we can make a widget from this value now
+                                auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
+                                if (replacementWidget)
+                                {
+                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                                    m_domOrderedChildren[childIndex] = replacementWidget;
+                                }
+                            }
+                            else
+                            {
+                                AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                            }
+                        }
+                        // new handler was created with the current value from the DOM, or not. Either way, we're done
+                        return;
+                    }
+
+                    // check if it's a PropertyHandler; if it is, just set it from the DOM directly
+                    if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
+                    {
                         auto handlerId =
                             AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
 
-                        if (handlerId)
+                        // check if this patch has morphed the PropertyHandler into a different type
+                        if (handlerId != handlerInfo.handlerId)
                         {
-                            // have a proper handlerID now, see if we can make a widget from this value now
+                            DocumentPropertyEditor::ReleaseHandler(handlerInfo);
+                            m_columnLayout->RemoveSharePriorColumn(childIndex);
+
+                            // Replace the existing handler widget with one appropriate for the new type
                             auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
-                            if (replacementWidget)
-                            {
-                                AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                                m_domOrderedChildren[childIndex] = replacementWidget;
-                            }
+                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                            m_domOrderedChildren[childIndex] = replacementWidget;
                         }
                         else
                         {
-                            AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                            // handler is the same, set the existing handler with the new value
+                            SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
+                            handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
                         }
-                    }
-                    // new handler was created with the current value from the DOM, or not. Either way, we're done
-                    return;
-                }
-
-                // check if it's a PropertyHandler; if it is, just set it from the DOM directly
-                if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
-                {
-                    auto handlerId = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
-
-                    // check if this patch has morphed the PropertyHandler into a different type
-                    if (handlerId != handlerInfo.handlerId)
-                    {
-                        DocumentPropertyEditor::ReleaseHandler(handlerInfo);
-                        m_columnLayout->RemoveSharePriorColumn(childIndex);
-
-                        // Replace the existing handler widget with one appropriate for the new type
-                        auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
-                        AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                        m_domOrderedChildren[childIndex] = replacementWidget;
                     }
                     else
                     {
-                        // handler is the same, set the existing handler with the new value
-                        SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
-                        handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
-                    }
-                }
-                else
-                {
-                    auto changedLabel = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                    AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
-                    if (changedLabel)
-                    {
-                        auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        auto changedLabel = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                        AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
+                        if (changedLabel)
+                        {
+                            auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
+                            changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        }
                     }
                 }
             }
@@ -1168,7 +1158,7 @@ namespace AzToolsFramework
         auto pathToRoot = GetDPE()->GetPathToRoot(this);
         AZ::Dom::Path rowPath = AZ::Dom::Path();
 
-        for (auto pathIter =  pathToRoot.rbegin(); pathIter != pathToRoot.rend(); ++pathIter)
+        for (auto pathIter = pathToRoot.rbegin(); pathIter != pathToRoot.rend(); ++pathIter)
         {
             auto&& reversePathEntry = *pathIter;
             rowPath.Push(reversePathEntry);

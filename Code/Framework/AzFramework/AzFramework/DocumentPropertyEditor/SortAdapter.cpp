@@ -12,16 +12,6 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-    // necessary little helper to walk non-sequential containers (like sorted sets) by a given distance
-    template<typename IteratorType>
-    void IncrementIterator(IteratorType iter, size_t distance)
-    {
-        for (size_t index = 0; index < distance; ++index)
-        {
-            ++iter;
-        }
-    }
-
     RowSortAdapter::~RowSortAdapter()
     {
     }
@@ -191,8 +181,7 @@ namespace AZ::DocumentPropertyEditor
 
             if (needsReset)
             {
-                // TODO: handle other patch types here. Some of this is not currently possible,
-                // because a sort change is mostly move operations, and the DPE doesn't handle moves yet.
+                // TODO: handle other patch types here
                 HandleReset();
             }
             else if (outgoingPatch.Size())
