@@ -261,7 +261,7 @@ namespace AZ
             Base::BuildInternal();
         }
 
-        void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
+        void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::PipelineViewTags& outTags) const
         {
             const size_t childrenCount = GetChildren().size();
             AZ_Assert(m_childrenPipelineViewTags.size() >= childrenCount, "There are not enough pipeline view tags.");
