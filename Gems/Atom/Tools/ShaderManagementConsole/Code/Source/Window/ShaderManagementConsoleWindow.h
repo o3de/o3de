@@ -32,6 +32,11 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const override;
 
+        // AtomToolsMainWindowRequestBus::Handler overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+
+        void GenerateStatisticView();
+
     private:
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
     };

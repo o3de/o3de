@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
-#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 #include <QStandardItemModel>
 #include <QTableWidget>
@@ -35,7 +34,6 @@ namespace ShaderManagementConsole
         void RebuildTable();
         void OnCellSelected(int row, int column, int previousRow, int previousColumn);
         void OnCellChanged(int row, int column);
-        void OnOptionClicked(int column);
 
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = AZ::Uuid::CreateNull();

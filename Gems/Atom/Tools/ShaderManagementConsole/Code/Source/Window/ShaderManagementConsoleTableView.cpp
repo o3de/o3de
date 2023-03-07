@@ -10,12 +10,9 @@
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/StyledSpinBox.h>
 #include <Window/ShaderManagementConsoleTableView.h>
-#include <ShaderManagementConsoleRequestBus.h>
 
 #include <QComboBox>
 #include <QHeaderView>
-#include <QMessageBox>
-#include <QProgressDialog>
 
 namespace ShaderManagementConsole
 {
@@ -29,7 +26,6 @@ namespace ShaderManagementConsole
         setSelectionBehavior(QAbstractItemView::SelectItems);
         setSelectionMode(QAbstractItemView::SingleSelection);
         horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-        connect(horizontalHeader(), &QHeaderView::sectionDoubleClicked, this, &ShaderManagementConsoleTableView::OnOptionClicked);
 
         RebuildTable();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
@@ -37,7 +33,6 @@ namespace ShaderManagementConsole
 
     ShaderManagementConsoleTableView::~ShaderManagementConsoleTableView()
     {
-        disconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -208,7 +203,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        // Update the cedar reenlist from the table data
+        // Update the shader variant list from the table data
         auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
 
         const auto optionItem = horizontalHeaderItem(column);
@@ -245,79 +240,6 @@ namespace ShaderManagementConsole
 
         // Reconnect to the notification bus now that all changes have been applied
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-    }
-
-    void ShaderManagementConsoleTableView::OnOptionClicked(int column)
-    {
-        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
-
-        AZStd::vector<AZ::Data::AssetId> materialAssetIdList;
-        ShaderManagementConsoleRequestBus::BroadcastResult(
-            materialAssetIdList,
-            &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds);
-
-        QString materialList = "";
-
-        QProgressDialog progressDialog("Gather shader variant information...", "Cancel", 0, materialAssetIdList.size());
-        progressDialog.setWindowModality(Qt::WindowModal);
-        progressDialog.setMaximumWidth(400);
-        progressDialog.setMaximumHeight(100);
-        progressDialog.setWindowTitle("Gather information from material assets");
-
-        for (int i = 0; i < materialAssetIdList.size(); ++i)
-        {
-            AZStd::vector<AZ::RPI::ShaderCollection::Item> shaderItemList;
-            ShaderManagementConsoleRequestBus::BroadcastResult(
-                shaderItemList,
-                &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems,
-                materialAssetIdList[i]);
-
-            for (auto& shaderItem : shaderItemList)
-            {
-                bool found = false;
-                for (auto& descriptor : shaderItem.GetShaderOptionGroup().GetShaderOptionDescriptors())
-                {
-                    if (descriptor.GetName() == shaderOptionDescriptor.GetName())
-                    {
-                        // the material is using this option
-                        AZ::IO::Path assetPath = AZ::IO::Path(AZ::RPI::AssetUtils::GetSourcePathByAssetId(materialAssetIdList[i]));
-                        materialList += QString(assetPath.Stem().Native().data());
-                        materialList += "\n";
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                {
-                    break;
-                }
-            }
-
-            progressDialog.setValue(i);
-
-            if (progressDialog.wasCanceled())
-            {
-                return;
-            }
-        }
-
-        progressDialog.close();
-
-        if (materialList != "")
-        {
-            QMessageBox msgBox;
-            QString message = QString("The materials which used %1 are listed here.").arg(shaderOptionDescriptor.GetName().GetCStr());
-            msgBox.setText(message);
-            msgBox.setDetailedText(materialList);
-            msgBox.exec();
-        }
-        else
-        {
-            QMessageBox msgBox;
-            msgBox.setText("There are no material using this option now.");
-            msgBox.exec();
-        }
     }
 } // namespace ShaderManagementConsole
 

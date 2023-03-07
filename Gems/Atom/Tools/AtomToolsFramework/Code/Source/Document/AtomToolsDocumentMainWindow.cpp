@@ -277,7 +277,9 @@ namespace AtomToolsFramework
 
             if (!result)
             {
-                return false;
+                // Currently, result will only be false when a view doesn't have document, e.g. ShaderManagementConsoleStatisticView
+                // We can just close the tab here
+                RemoveDocumentTab(documentId);
             }
         }
         return true;
