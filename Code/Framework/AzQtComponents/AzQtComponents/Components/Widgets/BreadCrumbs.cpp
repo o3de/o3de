@@ -84,8 +84,7 @@ namespace AzQtComponents
         // This needs to be done because QStackWidget by default expands, regardless
         // of what is inside it.
         m_labelEditStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
-        m_labelEditStack->setAttribute(Qt::WA_Hover, true);
-        m_labelEditStack->installEventFilter(this);
+        m_labelEditStack->setCursor(Qt::IBeamCursor);
 
         // create the label
         m_label = new QLabel();
@@ -402,19 +401,6 @@ namespace AzQtComponents
 
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
     {
-        if (obj == m_labelEditStack && isEditable())
-        {
-            switch (ev->type())
-            {
-            case QEvent::HoverEnter:
-                m_labelEditStack->setCursor(Qt::IBeamCursor);
-                return true;
-            case QEvent::HoverLeave:
-                m_labelEditStack->setCursor(Qt::ArrowCursor);
-                return true;
-            default:;
-            }
-        }
         if (obj == m_label)
         {
             // HACK: QLabel doesn't have any API that would answer the question "are we currently hovering a link?" so we query the
@@ -449,7 +435,6 @@ namespace AzQtComponents
                 {
                     m_contextMenu = menu;
                     m_contextMenu->exec(m_lineEdit->cursor().pos());
-                    delete m_contextMenu;
                     m_contextMenu = nullptr;
                     return true;
                 }
