@@ -25,7 +25,7 @@ def Entity_HappyPath_AddScriptCanvasComponent():
      Script Canvas Component is added to the entity successfully without issue
 
     Test Steps:
-     1) Create temp level
+     1) Open the base level
      2) Create test entity
      3) Start Tracer
      4) Add Script Canvas component to test entity and check for errors
@@ -49,7 +49,7 @@ def Entity_HappyPath_AddScriptCanvasComponent():
 
     general.idle_enable(True)
 
-    # 1) Create temp level
+    # 1) Open the base level
     helper.open_level("", "Base")
     general.close_pane("Error Report")
 

@@ -143,8 +143,7 @@ class QtPyAssetEditor(QtPyCommon):
 
     def delete_parameter_from_method(self, parameter_index: int) -> None:
         """
-        function for deleting a parameter from a script event. This will delete the parameter at index 0.
-        This function will need to be updated to support
+        function for deleting a parameter from a script event at an index.
 
         param parameter_index: the index of the parameter to delete
         """
