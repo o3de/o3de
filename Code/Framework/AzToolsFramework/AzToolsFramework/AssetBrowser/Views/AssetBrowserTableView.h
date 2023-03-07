@@ -49,7 +49,7 @@ namespace AzToolsFramework
             void DeleteEntries();
             void RenameEntry();
             void AfterRename(QString newVal);
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
