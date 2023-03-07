@@ -46,6 +46,7 @@ parts:
      #- libnettle8
 
   patch-o3de:
+    plugin: dump
     after: o3de
     override-stage: |
       snapcraftctl stage
