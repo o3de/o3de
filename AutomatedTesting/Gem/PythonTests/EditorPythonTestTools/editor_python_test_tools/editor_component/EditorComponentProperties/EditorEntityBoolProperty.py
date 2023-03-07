@@ -22,4 +22,4 @@ class EditorEntityBoolProperty(EditorEntityComponentProperty):
 
     def set(self, value: bool):
         self.editor_component.set_component_property_value(self.property_path, value)
- 
+
