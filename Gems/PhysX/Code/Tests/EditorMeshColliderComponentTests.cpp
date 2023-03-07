@@ -140,11 +140,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SpherePrimitive.data(), PhysXMeshTestData::SpherePrimitive.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(meshAssetData->CreateMeshAsset());
@@ -186,18 +182,14 @@ namespace PhysXEditorTests
         delete meshAssetData;
     }
 
-    // [GHI-14907]
+    // [o3de/o3de#14907]
     // Asset Scale (with non-uniform value) does not work when the asset contains primitives and there
     // is no non-uniform scale component present.
     TEST_F(PhysXEditorFixture, DISABLED_EditorMeshColliderComponent_AssetWithPrimitive_AssetScale_CorrectShapeTypeGeometryTypeAndAabb)
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SpherePrimitive.data(), PhysXMeshTestData::SpherePrimitive.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
 
@@ -253,11 +245,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SpherePrimitive.data(), PhysXMeshTestData::SpherePrimitive.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
@@ -319,11 +307,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereConvex.data(), PhysXMeshTestData::SphereConvex.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(meshAssetData->CreateMeshAsset());
@@ -371,11 +355,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereConvex.data(), PhysXMeshTestData::SphereConvex.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
 
@@ -429,11 +409,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereConvex.data(), PhysXMeshTestData::SphereConvex.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
@@ -493,11 +469,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereTriangleMesh.data(), PhysXMeshTestData::SphereTriangleMesh.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         // create an editor entity with a collider component
         EntityPtr editorEntity = CreateMeshColliderEditorEntity(meshAssetData->CreateMeshAsset());
@@ -543,11 +515,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereTriangleMesh.data(), PhysXMeshTestData::SphereTriangleMesh.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
 
@@ -599,11 +567,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereTriangleMesh.data(), PhysXMeshTestData::SphereTriangleMesh.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
         const AZ::Vector3 meshAssetScale(2.0f, 1.1f, 3.5f);
@@ -661,11 +625,7 @@ namespace PhysXEditorTests
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SphereTriangleMesh.data(), PhysXMeshTestData::SphereTriangleMesh.size());
-        EXPECT_TRUE(meshAssetData != nullptr);
-        if (!meshAssetData)
-        {
-            return;
-        }
+        ASSERT_TRUE(meshAssetData != nullptr);
 
         UnitTest::ErrorHandler errorHandler("Cannot use triangle mesh geometry on a dynamic object");
 
