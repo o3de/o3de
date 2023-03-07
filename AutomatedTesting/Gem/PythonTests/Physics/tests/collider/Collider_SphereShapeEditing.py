@@ -47,6 +47,7 @@ def Collider_SphereShapeEditing():
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
 
     # Open 3D Engine Imports
     import azlmbr.math as math
@@ -65,8 +66,8 @@ def Collider_SphereShapeEditing():
     Report.result(Tests.entity_created, test_entity.id.IsValid())
 
     # 3) Add PhysX Primitive Collider component to test entity
-    test_component = test_entity.add_component("PhysX Primitive Collider")
-    Report.result(Tests.collider_added, test_entity.has_component("PhysX Primitive Collider"))
+    test_component = test_entity.add_component(PHYSX_PRIMITIVE_COLLIDER)
+    Report.result(Tests.collider_added, test_entity.has_component(PHYSX_PRIMITIVE_COLLIDER))
 
     # 4) Change the PhysX Primitive Collider shape and store the original dimensions
     test_component.set_component_property_value("Shape Configuration|Shape", SPHERE_SHAPETYPE_ENUM)
