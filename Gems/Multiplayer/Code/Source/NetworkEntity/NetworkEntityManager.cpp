@@ -117,6 +117,11 @@ namespace Multiplayer
         return NetworkEntityHandle(entity, &m_networkEntityTracker);
     }
 
+    void NetworkEntityManager::RemoveEntityFromEntityMap(NetEntityId netEntityId)
+    {
+        m_networkEntityTracker.erase(netEntityId);
+    }
+
     void NetworkEntityManager::MarkForRemoval(const ConstNetworkEntityHandle& entityHandle)
     {
         if (entityHandle.Exists())
