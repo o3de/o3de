@@ -320,8 +320,7 @@ def resolve_gem_dependency_paths(
                                                                  include_optional=False)
 
     if errors:
-        logger.error(f'Failed to resolve dependencies:\n '+ 
-                    "\n  ".join(errors))
+        logger.error(f'Failed to resolve dependencies:\n  ' + '\n  '.join(errors))
         return 1
 
     # make a list of <gem_name>;<gem_path> for cmake

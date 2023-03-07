@@ -66,15 +66,15 @@ function(o3de_get_version_compatible version op specifier_version is_compatible)
         # compatible versions have an equivalent combination of >= and == 
         # e.g. ~=2.2 is equivalent to >=2.2,==2.*
         if(version VERSION_GREATER_EQUAL specifier_version)
-            string(REPLACE "." ";" specifer_version_part_list ${specifier_version})
-            list(LENGTH specifer_version_part_list list_length)
+            string(REPLACE "." ";" specifier_version_part_list ${specifier_version})
+            list(LENGTH specifier_version_part_list list_length)
             if(list_length LESS 2)
                 # truncating would leave nothing to compare 
                 set(contains_version TRUE)
             else()
                 # trim the last version part because CMake doesn't support '*'
                 math(EXPR truncated_length "${list_length} - 1")
-                list(SUBLIST specifer_version_part_list 0 ${truncated_length} specifier_version)
+                list(SUBLIST specifier_version_part_list 0 ${truncated_length} specifier_version)
                 string(REPLACE ";" "." specifier_version "${specifier_version}")
                 string(REPLACE "." ";" version_part_list ${version})
                 list(SUBLIST version_part_list 0 ${truncated_length} version)
