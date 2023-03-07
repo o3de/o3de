@@ -205,7 +205,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Test
                     3rdParty::Qt::Concurrent
                     Gem::EMotionFX.Editor.Static
-                    Gem::EMotionFX.Tests.Static
         )
         ly_add_googletest(
             NAME Gem::EMotionFX.Editor.Tests

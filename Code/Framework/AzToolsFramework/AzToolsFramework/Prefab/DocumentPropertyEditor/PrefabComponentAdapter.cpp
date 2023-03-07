@@ -243,5 +243,4 @@ namespace AzToolsFramework::Prefab
             return false;
         }
     }
-
 } // namespace AzToolsFramework::Prefab
