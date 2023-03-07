@@ -106,7 +106,6 @@ def test_get_incompatible_gem_version_specifiers(gem_json_data, all_gem_json_dat
     assert len(result) == expected_number_incompatible
 
 
-
 @pytest.mark.parametrize(
     "gem_names, all_gem_json_data, expected_result", [
         # when the gem exists and no version specifiers are provided expect found
