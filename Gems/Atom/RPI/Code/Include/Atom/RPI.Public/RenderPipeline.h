@@ -99,7 +99,7 @@ namespace AZ
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
             // Data type for render pipeline's views' information
-            using PipelineViewMap = AZStd::map<PipelineViewTag, PipelineViews, AZNameSortAscending>;
+            using PipelineViewMap = AZStd::unordered_map<PipelineViewTag, PipelineViews>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
             //! Assign a view for a PipelineViewTag used in this pipeline. 
@@ -178,9 +178,9 @@ namespace AZ
             void RevertRenderSettings();
 
             //! Add this RenderPipeline to the next RPI system's RenderTick and it will be rendered once.
-            //! This function can be used for render a renderpipeline with desired frequence as its associated window/view
+            //! This function can be used for render a render pipeline with desired frequency as its associated window/view
             //! is expecting.
-            //! Note: the RenderPipeline will be only renderred once if this function is called multiple
+            //! Note: the RenderPipeline will be only rendered once if this function is called multiple
             //! time between two system ticks.
             void AddToRenderTickOnce();
 
