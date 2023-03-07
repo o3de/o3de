@@ -112,7 +112,7 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::OpenSelectedEntries()
     {
-        const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
+        const AZStd::vector<const AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
         const bool promptToOpenMultipleFiles =
             GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);

@@ -81,11 +81,11 @@ namespace UnitTest
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         Physics::ShapeType m_shapeType = Physics::ShapeType::Box;
-        float m_sphereRadius = 0.5f;
-        float m_capsuleHeight = 1.0f;
-        float m_capsuleRadius = 0.25f;
-        float m_cylinderHeight = 1.0f;
-        float m_cylinderRadius = 0.25f;
-        AZ::u8 m_subdivisionCount = 16;
+        float m_sphereRadius = Physics::ShapeConstants::DefaultSphereRadius;
+        float m_capsuleHeight = Physics::ShapeConstants::DefaultCapsuleHeight;
+        float m_capsuleRadius = Physics::ShapeConstants::DefaultCapsuleRadius;
+        float m_cylinderHeight = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_cylinderRadius = Physics::ShapeConstants::DefaultCylinderRadius;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
     };
 } // namespace UnitTest

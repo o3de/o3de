@@ -306,9 +306,9 @@ namespace AZ::DocumentPropertyEditor
 
             const AZStd::any* opaqueValue = &value[EntryValueKey].GetOpaqueValue();
             auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
-            if (opaqueValue->is<GenericValueType>() && genericValue)
+            if (genericValue != nullptr)
             {
-                return AZStd::make_pair(*genericValue, value[EntryDescriptionKey].GetString());
+                return GenericValuePair{ *genericValue, AZStd::string(value[EntryDescriptionKey].GetString()) };
             }
 
             return {};
@@ -511,15 +511,15 @@ namespace AZ::DocumentPropertyEditor
         {
             if (value.IsObject())
             {
-                auto typeField = value.FindMember(AZ::Attribute::s_typeField);
+                auto typeField = value.FindMember(AZ::Attribute::GetTypeField());
                 if (typeField != value.MemberEnd() && typeField->second.IsString())
                 {
                     // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
-                    if (typeField->second.GetString() == Attribute::s_typeName)
+                    if (typeField->second.GetString() == Attribute::GetTypeName())
                     {
-                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
+                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::GetInstanceField()]);
                         AZ::Attribute* attribute =
-                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
+                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::GetAttributeField()]);
 
                         if (!attribute->IsInvokable())
                         {

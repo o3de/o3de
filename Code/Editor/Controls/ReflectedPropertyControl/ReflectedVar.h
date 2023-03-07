@@ -79,7 +79,7 @@ class CReflectedVarAny
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarAny<T>, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarAny, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar);
 
     CReflectedVarAny(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -102,7 +102,7 @@ class CReflectedVarRanged
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar)
+    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar);
 
     CReflectedVarRanged(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -169,7 +169,7 @@ class CReflectedVarEnum
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarEnum<T>, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarEnum, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar);
 
     CReflectedVarEnum(const AZStd::string& name)
         : CReflectedVar(name) {}

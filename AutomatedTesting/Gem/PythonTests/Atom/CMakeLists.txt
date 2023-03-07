@@ -171,4 +171,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         COMPONENT
             Atom
     )
+    ly_add_pytest(
+        NAME AutomatedTesting::RGATest 
+        TEST_SUITE sandbox
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Manual.py
+        TEST_SERIAL 
+        RUNTIME_DEPENDENCIES 
+            AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Atom
+    )
 endif()

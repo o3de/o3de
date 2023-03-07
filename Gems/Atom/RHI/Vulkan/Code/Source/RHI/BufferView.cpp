@@ -57,6 +57,14 @@ namespace AZ
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
             if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
             {
+#if defined(AZ_RHI_ENABLE_VALIDATION)
+                AZ_Assert(
+                    RHI::IsAligned(
+                        viewDescriptor.m_elementOffset * viewDescriptor.m_elementSize,
+                        device.GetLimits().m_minTexelBufferOffsetAlignment),
+                    "Typed Buffer View has to be aligned to a multiple of %d bytes.",
+                    device.GetLimits().m_minTexelBufferOffsetAlignment);
+#endif
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
 
                 if (shaderRead)

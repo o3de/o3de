@@ -62,9 +62,9 @@
             return false;
         }
 
-        AZStd::optional<OverrideType> PrefabOverrideHandler::GetOverrideType(AZ::Dom::Path path, LinkId linkId) const
+        AZStd::optional<PatchType> PrefabOverrideHandler::GetPatchType(AZ::Dom::Path path, LinkId linkId) const
         {
-            AZStd::optional<OverrideType> overrideType = {};
+            AZStd::optional<PatchType> patchType = {};
 
             LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
             if (link.has_value())
@@ -78,22 +78,26 @@
                         AZStd::string opPath = patchEntryIterator->value.GetString();
                         if (opPath == "remove")
                         {
-                            overrideType = OverrideType::RemoveEntity;
+                            patchType = PatchType::Remove;
                         }
                         else if (opPath == "add")
                         {
-                            overrideType = OverrideType::AddEntity;
+                            patchType = PatchType::Add;
+                        }
+                        else if (opPath == "replace")
+                        {
+                            patchType = PatchType::Edit;
                         }
                     }
                 }
                 else if (link->get().AreOverridesPresent(path))
                 {
                     // Any overrides on descendant paths are edits
-                    overrideType = OverrideType::EditEntity;
+                    patchType = PatchType::Edit;
                 }
             }
 
-            return overrideType;
+            return patchType;
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -152,7 +152,7 @@ namespace Terrain
 
     AZ::Uuid EditorTerrainMacroMaterialComponentMode::GetComponentModeType() const
     {
-        return azrtti_typeid<EditorTerrainMacroMaterialComponentMode>();
+        return AZ::AzTypeInfo<EditorTerrainMacroMaterialComponentMode>::Uuid();
     }
 
     bool EditorTerrainMacroMaterialComponentMode::HandleMouseInteraction(

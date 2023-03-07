@@ -20,6 +20,7 @@
 #include <Editor/KinematicDescriptionDialog.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <System/PhysXSystem.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyBoolComboBoxCtrl.hxx>

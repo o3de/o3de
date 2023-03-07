@@ -62,10 +62,12 @@ namespace AZ::DocumentPropertyEditor
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
-        //! Invoked when the adapter builder builds a new row.
+        //! Creates a node for displaying label information.
+        //! Subclass adapter can override the default behavior.
         //! @param adapterBuilder The adapter builder currently being used by this adapter.
-        //! @param serializedpath The serialized path fetched from AZ::Reflection::DescriptorAttributes.
-        virtual void OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath);
+        //! @param labelText The text string to be displayed in label.
+        //! @param serializedPath The serialized path fetched from AZ::Reflection::DescriptorAttributes.
+        virtual void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath);
 
         void* GetInstance() { return m_instance; }
         const void* GetInstance() const { return m_instance; }
