@@ -6,7 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
@@ -166,4 +165,3 @@ namespace AzToolsFramework
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)

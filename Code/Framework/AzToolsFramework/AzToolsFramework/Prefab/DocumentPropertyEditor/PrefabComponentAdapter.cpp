@@ -114,6 +114,10 @@ namespace AzToolsFramework::Prefab
             relativePathFromOwningPrefab /= m_entityAlias;
             relativePathFromOwningPrefab /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
             relativePathFromOwningPrefab /= m_componentAlias;
+
+            AZ::Dom::Value serializedPathValue = GetContents()[serializedPath];
+            AZ_Assert(serializedPathValue.IsString(), "PrefabComponentAdapter::UpdateDomContents - SerialziedPath attribute value is not a string.");
+
             relativePathFromOwningPrefab /= AZ::Dom::Path(GetContents()[serializedPath].GetString());
 
 
@@ -133,8 +137,19 @@ namespace AzToolsFramework::Prefab
                 {
                     AZ::Dom::Patch patches(
                         { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+
                     AZ::Dom::Path pathToProperty = propertyChangeInfo.path;
+
+                    // Get the path to parent row and its value.
                     pathToProperty.Pop();
+                    AZ::Dom::Value propertyRowValue = GetContents()[pathToProperty];
+
+                    AZ_Assert(
+                        propertyRowValue.IsNode() &&
+                            propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
+                        "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
+
+                    // Patch the first child in the row, which is going to the PrefabOverrideLabel.
                     patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
                         pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
                     NotifyContentsChanged(patches);
