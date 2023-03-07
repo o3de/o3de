@@ -141,9 +141,9 @@ function(ly_file_read path content)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${path})
 endfunction()
 
-#! ly_file_read: wrap ly_file_read but store the file in a cache to avoid 
+#! o3de_file_read_cache: wrap ly_file_read but store the file in a cache to avoid 
 #  extra reads.
-function(ly_file_read_cache path content)
+function(o3de_file_read_cache path content)
     unset(file_content)
     cmake_path(SET path "${path}")
     cmake_path(NORMAL_PATH path)
