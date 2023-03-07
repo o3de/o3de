@@ -31,14 +31,12 @@
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
-// @CYA EDIT: Replace Vulkan allocator by VMA
 #define VMA_IMPLEMENTATION
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 
 #pragma warning(push, 3)
 #include <vma/vk_mem_alloc.h>
 #pragma warning(pop)
-// @CYA END
 
 namespace AZ
 {
@@ -302,11 +300,9 @@ namespace AZ
                 accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
             }
 
-// @CYA EDIT: Replace Vulkan allocator by VMA (add VK_EXT_MEMORY_BUDGET_EXTENSION_NAME if supported)
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) != deviceExtensions.end())
                 requiredExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
-// @CYA END
 
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
@@ -346,11 +342,9 @@ namespace AZ
                 }
             }
 
-// @CYA EDIT: Replace Vulkan allocator by VMA
             RHI::ResultCode resultCode = InitVulkanAllocator(physicalDeviceBase);
             if (resultCode != RHI::ResultCode::Success)
                 return resultCode;
-// @CYA END
 
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
@@ -684,9 +678,7 @@ namespace AZ
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
 
-// @CYA EDIT: Replace Vulkan allocator by VMA
             ShutdownVulkanAllocator();
-// @CYA END
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
             if (!m_isXrNativeDevice)
@@ -1224,7 +1216,6 @@ namespace AZ
             return bufferUsageFlags;
         }
 
-// @CYA EDIT: Replace Vulkan allocator by VMA
         RHI::ResultCode Device::InitVulkanAllocator(RHI::PhysicalDevice& physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
@@ -1302,7 +1293,6 @@ namespace AZ
             if (m_vmaMemoryAllocator != VK_NULL_HANDLE)
                 vmaDestroyAllocator(m_vmaMemoryAllocator);
         }
-// @CYA END
 
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
         {

@@ -11,22 +11,20 @@
 #include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
 #include <RHI/BufferMemoryAllocator.h>
 
-// @CYA EDIT: Replace O3DE allocator by VMA
-#ifdef CYA_DEBUG_VMA_ALLOC
+
+//#define DEBUG_TRACK_VMA_ALLOCATIONS
+#ifdef DEBUG_TRACK_VMA_ALLOCATIONS
 #include <unordered_map>
 #endif
-// @CYA END
 
 namespace AZ
 {
     namespace Vulkan
     {
         class Buffer;
-// @CYA EDIT: Replace O3DE allocator by VMA
-#ifdef CYA_DEBUG_VMA_ALLOC
+#ifdef DEBUG_TRACK_VMA_ALLOCATIONS
         class BufferMemory;
 #endif
-// @CYA END
         class BufferPoolResolver;
         class Device;
 
@@ -74,11 +72,9 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             BufferMemoryAllocator m_memoryAllocator;
-// @CYA EDIT: Replace O3DE allocator by VMA
-#ifdef CYA_DEBUG_VMA_ALLOC
+#ifdef DEBUG_TRACK_VMA_ALLOCATIONS
             std::unordered_map<BufferMemory*, VkDeviceSize> m_allocations;
 #endif
-// @CYA END
         };
     }
 }

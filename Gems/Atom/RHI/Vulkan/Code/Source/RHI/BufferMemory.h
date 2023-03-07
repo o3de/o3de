@@ -10,9 +10,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/MemoryView.h>
 
-// @CYA EDIT: Replace O3DE allocator by VMA
 #include <vma/vk_mem_alloc.h>
-// @CYA END
 
 namespace AZ
 {
@@ -46,17 +44,13 @@ namespace AZ
             ~BufferMemory() = default;
 
             static RHI::Ptr<BufferMemory> Create();
-// @CYA EDIT: Replace O3DE allocator by VMA
             RHI::ResultCode Init(Device& device, const Descriptor& descriptor);
-// @CYA END
             RHI::ResultCode Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor);
             RHI::ResultCode Init(Device& device, VkBuffer vkBuffer, const MemoryView& memoryView, const Descriptor& descriptor);
 
-// @CYA EDIT: Replace O3DE allocator by VMA
             bool IsVmaAllocated() const;
 
             const VmaAllocationInfo& GetVmaAllocationInfo() const;
-// @CYA END
 
             // It maps a memory and returns its mapped address.
             CpuVirtualAddress Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess);
@@ -83,10 +77,8 @@ namespace AZ
             Descriptor m_descriptor;
             VkBuffer m_vkBuffer = VK_NULL_HANDLE;
             MemoryView m_memoryView;
-// @CYA EDIT: Replace O3DE allocator by VMA
             VmaAllocation m_vmaAllocation = VK_NULL_HANDLE;
             VmaAllocationInfo m_vmaAllocationInfo;
-// @CYA END
         };
     }
 }

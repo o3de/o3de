@@ -40,6 +40,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                 AZ::AzCore
                 Gem::Atom_RHI.Reflect
                 3rdParty::glad_vulkan
+                3rdParty::amd_vma
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -68,7 +69,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                     Gem::Atom_RHI.Edit
                     Gem::Atom_RHI.Reflect
                     3rdParty::glad_vulkan
-
+                    3rdParty::amd_vma
         )
     endif()
 
@@ -160,7 +161,8 @@ ly_add_target(
             AZ::AzCore
         PUBLIC
             3rdParty::glad_vulkan
-)
+            3rdParty::amd_vma
+            )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 

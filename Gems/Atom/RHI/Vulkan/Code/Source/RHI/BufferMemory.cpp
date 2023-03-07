@@ -18,7 +18,6 @@ namespace AZ
             return aznew BufferMemory();
         }
 
-// @CYA EDIT: Replace O3DE allocator by VMA
         RHI::ResultCode BufferMemory::Init(Device& device, const Descriptor& descriptor)
         {
             Base::Init(device);
@@ -55,7 +54,6 @@ namespace AZ
 
             return RHI::ResultCode::Success;
         }
-// @CYA END
 
         RHI::ResultCode BufferMemory::Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor)
         {
@@ -78,7 +76,6 @@ namespace AZ
             return result;
         }
 
-// @CYA EDIT: Replace O3DE allocator by VMA
         bool BufferMemory::IsVmaAllocated() const
         {
             return m_vmaAllocation != VK_NULL_HANDLE;
@@ -119,7 +116,6 @@ namespace AZ
 
             vmaUnmapMemory(device.GetMemoryAllocator(), m_vmaAllocation);
         }
-// @CYA END
 
         const VkBuffer BufferMemory::GetNativeBuffer()
         {
@@ -149,11 +145,9 @@ namespace AZ
             if (m_vkBuffer != VK_NULL_HANDLE)
             {
                 Device& device = static_cast<Device&>(GetDevice());
-// @CYA EDIT: Replace O3DE allocator by VMA
                 vmaDestroyBuffer(device.GetMemoryAllocator(), m_vkBuffer, m_vmaAllocation);
                 m_vkBuffer = VK_NULL_HANDLE;
                 m_vmaAllocation = VK_NULL_HANDLE;
-// @CYA END
             }
 
             m_memoryView = MemoryView();

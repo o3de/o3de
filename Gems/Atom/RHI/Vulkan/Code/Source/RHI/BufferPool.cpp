@@ -14,10 +14,8 @@
 #include <RHI/BufferPoolResolver.h>
 #include <RHI/Device.h>
 #include <RHI/MemoryView.h>
-// @CYA EDIT: Replace O3DE allocator by VMA
 #include <RHI/Conversion.h>
 #include <vma/vk_mem_alloc.h>
-// @CYA END
 
 namespace AZ
 {
@@ -101,7 +99,6 @@ namespace AZ
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
 
-// @CYA EDIT: Replace O3DE allocator by VMA
             RHI::Ptr<BufferMemory> bufferMemory = BufferMemory::Create();
             RHI::ResultCode result = bufferMemory->Init(device, bufferDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -117,12 +114,11 @@ namespace AZ
             auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             memoryUsage.m_totalResidentInBytes += allocInfo.size;
 
-#ifdef CYA_DEBUG_VMA_ALLOC
+#ifdef DEBUG_TRACK_VMA_ALLOCATIONS
             m_allocations.emplace(bufferMemory.get(), allocInfo.size);
 #endif
 
             return buffer.Init(device, bufferDescriptor, BufferMemoryView(bufferMemory, 0, bufferMemory->GetDescriptor().m_byteCount, bufferMemory->GetDescriptor().m_alignment, MemoryAllocationType::Unique));
-// @CYA END
         }
 
         void BufferPool::ShutdownResourceInternal(RHI::Resource& resource) 
@@ -139,7 +135,6 @@ namespace AZ
                 poolResolver->OnResourceShutdown(resource);
             }
 
-// @CYA EDIT: Replace O3DE allocator by VMA
             if (BufferMemory* bufferMemory = buffer.GetBufferMemoryView()->GetBufferMemory(); bufferMemory->IsVmaAllocated())
             {
                 const VmaAllocationInfo& allocInfo = buffer.GetBufferMemoryView()->GetBufferMemory()->GetVmaAllocationInfo();
@@ -150,7 +145,7 @@ namespace AZ
                 RHI::HeapMemoryLevel heapMemoryLevel =
                     (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
 
-#ifdef CYA_DEBUG_VMA_ALLOC
+#ifdef DEBUG_TRACK_VMA_ALLOCATIONS
                 auto it = m_allocations.find(bufferMemory);
                 AZ_Assert(it != m_allocations.end(), "Allocation not found");
                 AZ_Assert(it->second == allocInfo.size, "Size mismatch");
@@ -161,7 +156,6 @@ namespace AZ
                 auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
                 memoryUsage.m_totalResidentInBytes -= allocInfo.size;
             }
-// @CYA END
 
             m_memoryAllocator.DeAllocate(buffer.m_memoryView);
             buffer.m_memoryView = BufferMemoryView();
