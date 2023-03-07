@@ -70,6 +70,7 @@ namespace PhysX
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
 
     private:
+        AZStd::string PhysXMeshAssetShapeTypeName() const;
         bool ShowingSubdivisionLevel() const;
         AZ::u32 OnConfigurationChanged();
     };
