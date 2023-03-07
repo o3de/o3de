@@ -314,7 +314,8 @@ def resolve_gem_dependency_paths(
         gem_names_without_optional = utils.get_gem_names_set(active_gem_names, include_optional=False)
         results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, 
                                                                  all_gems_json_data, 
-                                                                 engine_json_data)
+                                                                 engine_json_data,
+                                                                 include_optional=False)
 
     if errors:
         logger.error(f'Failed to resolve dependencies:\n '+ 
@@ -338,6 +339,7 @@ def _resolve_gem_dependency_paths(args: argparse) -> int:
                             project_path=args.project_path,
                             resolved_gem_dependencies_output_path=args.gem_paths_output_file
                              )
+
 def add_parser_args(parser):
     group = parser.add_argument_group("resolve gem dependencies")
     group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
