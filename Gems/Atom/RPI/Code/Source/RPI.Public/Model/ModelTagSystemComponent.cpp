@@ -125,7 +125,7 @@ namespace AZ
             }
 
             tagData.quality = quality;
-            ModelTagNotificationBus::Event(modelTag, &AssetTagNotification<ModelAsset>::template OnAssetTagQualityUpdated, quality);
+            ModelTagNotificationBus::Event(modelTag, &AssetTagNotification<ModelAsset>::OnAssetTagQualityUpdated, quality);
 
             for (const AZ::Data::AssetId& assetId : tagData.registeredModels)
             {

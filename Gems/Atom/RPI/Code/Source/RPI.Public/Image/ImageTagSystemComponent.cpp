@@ -125,7 +125,7 @@ namespace AZ
             }
 
             tagData.m_quality = quality;
-            ImageTagNotificationBus::Event(imageTag, &AssetTagNotification<ImageAsset>::template OnAssetTagQualityUpdated, quality);
+            ImageTagNotificationBus::Event(imageTag, &AssetTagNotification<ImageAsset>::OnAssetTagQualityUpdated, quality);
 
             for (const AZ::Data::AssetId& assetId : tagData.m_registeredImages)
             {
