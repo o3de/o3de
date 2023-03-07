@@ -171,7 +171,10 @@ namespace AzToolsFramework
         {
             auto entries = GetSelectedAssets(false); // you cannot rename product files.
 
-            AssetBrowserViewUtils::RenameEntry(entries, this);
+            if (AssetBrowserViewUtils::RenameEntry(entries, this))
+            {
+                edit(currentIndex());
+            }
         }
 
         void AssetBrowserTableView::AfterRename(QString newVal)
@@ -181,7 +184,7 @@ namespace AzToolsFramework
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets(bool includeProducts) const
+        AZStd::vector<const AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets(bool includeProducts) const
         {
             QModelIndexList sourceIndexes;
             for (const auto& index : selectedIndexes())
@@ -192,7 +195,7 @@ namespace AzToolsFramework
                 }
             }
 
-            AZStd::vector<AssetBrowserEntry*> entries;
+            AZStd::vector<const AssetBrowserEntry*> entries;
             AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
             if (!includeProducts)
             {
@@ -200,7 +203,7 @@ namespace AzToolsFramework
                     AZStd::remove_if(
                         entries.begin(),
                         entries.end(),
-                        [&](AssetBrowserEntry* entry) -> bool
+                        [&](const AssetBrowserEntry* entry) -> bool
                         {
                             return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
                         }),

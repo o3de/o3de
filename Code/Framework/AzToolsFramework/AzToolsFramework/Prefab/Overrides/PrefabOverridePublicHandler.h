@@ -50,8 +50,9 @@ namespace AzToolsFramework
 
             //! Revert overrides on the entity matching the given id from the focused prefab. Returns false if no overrides are present.
             //! @param entityId The id of the entity on which overrides should be reverted.
+            //! @param relativePathFromEntity The relative path from the entity. This can be used to revert overrides on properties.
             //! @return Whether overrides are successfully reverted on the entity.
-            bool RevertOverrides(AZ::EntityId entityId) override;
+            bool RevertOverrides(AZ::EntityId entityId, AZStd::string_view relativePathFromEntity = {}) override;
 
             //! Revert overrides on the given component from the focused prefab. Returns false if no overrides are present.
             //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.

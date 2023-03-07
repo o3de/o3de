@@ -35,7 +35,7 @@ namespace AtomToolsFramework
         AtomToolsAssetBrowserInteractions();
         ~AtomToolsAssetBrowserInteractions();
 
-        using AssetBrowserEntryVector = AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>;
+        using AssetBrowserEntryVector = AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>;
         using FilterCallback = AZStd::function<bool(const AssetBrowserEntryVector&)>;
         using ActionCallback = AZStd::function<void(QWidget* caller, QMenu* menu, const AssetBrowserEntryVector&)>;
 

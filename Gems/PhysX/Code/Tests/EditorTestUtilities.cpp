@@ -50,8 +50,8 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateBoxShapeColliderEditorEntity(
-        const AZ::Transform& transform,
         const AZ::Vector3& boxDimensions,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
@@ -89,9 +89,9 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
         float height,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
@@ -131,8 +131,8 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateSphereShapeColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
@@ -169,9 +169,10 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateBoxPrimitiveColliderEditorEntity(
-        const AZ::Transform& transform,
         const AZ::Vector3& boxDimensions,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
+        const AZ::Quaternion& rotationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
     {
@@ -197,9 +198,12 @@ namespace PhysXEditorTests
             idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, Physics::ShapeType::Box);
 
         AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
-        AzToolsFramework::BoxManipulatorRequestBus::Event(idPair, &AzToolsFramework::BoxManipulatorRequests::SetDimensions, boxDimensions);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetBoxDimensions, boxDimensions);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
         if (nonUniformScale.has_value())
         {
@@ -210,10 +214,11 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateCapsulePrimitiveColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
         float height,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
+        const AZ::Quaternion& rotationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
     {
@@ -243,6 +248,8 @@ namespace PhysXEditorTests
         PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCapsuleHeight, height);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
         if (nonUniformScale.has_value())
         {
@@ -253,9 +260,10 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateSpherePrimitiveColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
+        const AZ::Quaternion& rotationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
     {
@@ -284,6 +292,8 @@ namespace PhysXEditorTests
         PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetSphereRadius, radius);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
         if (nonUniformScale.has_value())
         {
@@ -294,11 +304,11 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateCylinderPrimitiveColliderEditorEntity(
-        const AZ::Transform& transform,
-        const AZ::Vector3& positionOffset,
-        const AZ::Quaternion& rotationOffset,
         float radius,
         float height,
+        const AZ::Transform& transform,
+        const AZ::Vector3& translationOffset,
+        const AZ::Quaternion& rotationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
     {
@@ -325,7 +335,8 @@ namespace PhysXEditorTests
             idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, Physics::ShapeType::Cylinder);
         PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderRadius, radius);
         PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderHeight, height);
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, positionOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
@@ -342,9 +353,10 @@ namespace PhysXEditorTests
     }
 
     EntityPtr CreateMeshColliderEditorEntity(
-        const AZ::Transform& transform,
         AZ::Data::Asset<PhysX::Pipeline::MeshAsset> meshAsset,
+        const AZ::Transform& transform,
         const AZ::Vector3& translationOffset,
+        const AZ::Quaternion& rotationOffset,
         AZStd::optional<AZ::Vector3> nonUniformScale,
         RigidBodyType rigidBodyType)
     {
@@ -375,6 +387,8 @@ namespace PhysXEditorTests
         AZ::TransformBus::Event(editorEntityId, &AZ::TransformBus::Events::SetWorldTM, transform);
         PhysX::EditorColliderComponentRequestBus::Event(
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, translationOffset);
+        PhysX::EditorColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorColliderComponentRequests::SetColliderRotation, rotationOffset);
 
         if (nonUniformScale.has_value())
         {

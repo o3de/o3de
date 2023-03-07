@@ -19,6 +19,7 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER as PHYSX_PRIMITIVE_COLLIDER_NAME
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     OUTER_PREFAB_NAME = 'Outer_prefab'
@@ -27,7 +28,6 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
     INNER_PREFAB_FILE_NAME = Path(__file__).stem + INNER_PREFAB_NAME
     PARENT_ENTITY_NAME = 'ParentEntity'
     CHILD_ENTITY_NAME = 'ChildEntity'
-    PHYSX_PRIMITIVE_COLLIDER_NAME = 'PhysX Primitive Collider'
 
     prefab_test_utils.open_base_tests_level()
 
