@@ -259,9 +259,6 @@ namespace AzToolsFramework
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
             {
             }
-            virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
-            {
-            }
             virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
             {
             }

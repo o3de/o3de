@@ -35,9 +35,11 @@ def Menus_ViewMenuOptions_Work():
         ("Viewport", "Go to Position"),
         ("Viewport", "Center on Selection"),
         ("Viewport", "Go to Location"),
-        ("Viewport", "Show Helpers"),
-        ("Viewport", "Show Icons"),
-        ("Refresh Style",),
+        ("Viewport", "Viewport Helpers", "Show Icons"),
+        ("Viewport", "Viewport Helpers", "Show Helpers for all entities"),
+        ("Viewport", "Viewport Helpers", "Show Helpers for selected entities"),
+        ("Viewport", "Viewport Helpers", "Hide Helpers"),
+        ("Refresh Style",)
     ]
 
     # 1) Open an existing simple level
