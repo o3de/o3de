@@ -588,4 +588,25 @@ namespace O3DE::ProjectManager
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[MobileUX], QModelIndex()));
         EXPECT_FALSE(m_proxyModel->filterAcceptsRow(m_gemRows[CityProps], QModelIndex()));
     }
+
+    TEST_F(GemCatalogMiscFilterTests, GemCatalogFilters_ResetFilters_FiltersReset)
+    {
+        // Set up all filter values that are reset
+        m_proxyModel->SetSearchString("Name");
+        m_proxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Selected);
+        m_proxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Active);
+        m_proxyModel->SetGemOrigins(GemInfo::GemOrigin::Open3DEngine);
+        m_proxyModel->SetPlatforms(GemInfo::Platform::Windows);
+        m_proxyModel->SetTypes(GemInfo::Type::Code);
+        m_proxyModel->SetFeatures({ "Audio" });
+        
+        m_proxyModel->ResetFilters(true);
+
+        EXPECT_TRUE(m_proxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::NoFilter);
+        EXPECT_TRUE(m_proxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::NoFilter);
+        EXPECT_TRUE(m_proxyModel->GetGemOrigins() == GemInfo::GemOrigins({}));
+        EXPECT_TRUE(m_proxyModel->GetPlatforms() == GemInfo::Platforms({}));
+        EXPECT_TRUE(m_proxyModel->GetTypes() == GemInfo::Types({}));
+        EXPECT_TRUE(m_proxyModel->GetFeatures().isEmpty());
+    }
 }
