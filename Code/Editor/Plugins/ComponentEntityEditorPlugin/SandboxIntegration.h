@@ -200,8 +200,6 @@ private:
     DisplayContext* GetDC() override;
 
     // ActionManagerRegistrationNotificationBus overrides ...
-    void OnActionUpdaterRegistrationHook() override;
-    void OnMenuRegistrationHook() override;
     void OnActionRegistrationHook() override;
     void OnMenuBindingHook() override;
 

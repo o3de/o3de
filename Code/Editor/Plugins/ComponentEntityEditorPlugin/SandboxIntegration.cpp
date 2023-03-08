@@ -1437,16 +1437,6 @@ void SandboxIntegrationManager::OnLayerComponentDeactivated(AZ::EntityId entityI
     m_editorEntityUiInterface->UnregisterEntity(entityId);
 }
 
-void SandboxIntegrationManager::OnActionUpdaterRegistrationHook()
-{
-
-}
-
-void SandboxIntegrationManager::OnMenuRegistrationHook()
-{
-
-}
-
 void SandboxIntegrationManager::OnActionRegistrationHook()
 {
     auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
@@ -1454,7 +1444,6 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
     if (!actionManagerInterface || !hotKeyManagerInterface)
     {
-        // TODO - Assert?
         return;
     }
 

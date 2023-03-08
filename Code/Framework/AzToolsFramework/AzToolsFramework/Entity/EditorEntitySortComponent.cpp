@@ -260,7 +260,6 @@ namespace AzToolsFramework
             }
 
             return true;
-
         }
 
         void EditorEntitySortComponent::MoveChildEntityUp(const AZ::EntityId& entityId)
