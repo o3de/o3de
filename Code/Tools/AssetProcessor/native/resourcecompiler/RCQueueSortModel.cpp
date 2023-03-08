@@ -89,23 +89,6 @@ namespace AssetProcessor
                         "This may be due to a mismatched job key.\n"
                         "Job ordering will not be guaranteed and could result in errors or unexpected output.",
                         actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
-
-                    // Print out all dependencies, to help track down the dependency gap.
-                    AZ_Trace(
-                        AssetProcessor::ConsoleChannel,
-                        "All dependencies for file %s\n",
-                        actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData());
-                    for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
-                    {
-                        // Include the source name so if only this log line is seen, it's still useful.
-                        AZ_Trace(
-                            AssetProcessor::ConsoleChannel,
-                            "\tSource %s has dependency - File: %s, JobKey: %s, Platform: %s",
-                            actualJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData(),
-                            jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
-                            jobDependencyInternal.m_jobDependency.m_jobKey.c_str(),
-                            jobDependencyInternal.m_jobDependency.m_platformIdentifier.c_str());
-                    }
                 }
                 bool canProcessJob = true;
                 for (const JobDependencyInternal& jobDependencyInternal : actualJob->GetJobDependencies())
