@@ -346,7 +346,7 @@ class TestRegisterProject:
                                         ) -> dict:
             all_gems_json_data = {}
             for gem_name in registered_gem_versions.keys():
-                all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
+                all_gems_json_data[gem_name] = [get_gem_json_data(gem_name=gem_name)]
             return all_gems_json_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,

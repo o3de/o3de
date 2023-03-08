@@ -127,10 +127,6 @@
             "isTemplated": true
         },
         {
-            "file": "Gem/enabled_gems.cmake",
-            "isTemplated": true
-        },
-        {
             "file": "Gem/gem.json",
             "isTemplated": true
         },

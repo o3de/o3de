@@ -168,19 +168,6 @@ function(query_gem_paths_from_external_subdirs output_gem_dirs gem_names registe
 
             get_property(gem_optional GLOBAL PROPERTY ${gem_name}_OPTIONAL)
             get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-            if(NOT gem_path)
-                if(NOT O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION)
-                    message(WARNING "Failed to find resolved gem path for gem '${gem_name_with_version_specifier}'")
-                    # Make a best effort attempt to find the most compatible gem
-                    o3de_find_most_compatible_gem_with_registered_external_subdirs(${gem_name_with_version_specifier} gem_path "${registered_external_subdirs}")
-                else()
-                    o3de_find_gem_with_registered_external_subdirs(${gem_name_with_version_specifier} gem_path "${registered_external_subdirs}")
-                endif()
-
-                if(gem_path)
-                    set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
-                endif()
-            endif()
 
             if (gem_path)
                 list(APPEND gem_dirs ${gem_path})
@@ -230,21 +217,14 @@ function(resolve_gem_dependencies object_type object_path)
     # Strip any whitespace which might be included in the first or last elements of the list
     string(STRIP "${resolved_gem_dependency_output}" resolved_gem_dependency_output)
 
-    # Set each gem's global path property "@GEMROOT:${gem_name}@" to the resolved gem path
     unset(gem_name)
     foreach(entry IN LISTS resolved_gem_dependency_output)
-        if(NOT gem_name)
+        if(NOT DEFINED gem_name)
             # The first entry is the gem name
             set(gem_name ${entry})
         else()
             # The next entry after every gem name is the gem path
             cmake_path(SET gem_path "${entry}")
-
-            # Most gem root properties have already been set by
-            # add_o3de_object_gem_json_external_subdirectories() but
-            # if multiple gems exist with the same name, only the path for the last
-            # gem.json parsed is used, but gem resolution will provide us with the 
-            # correct gem path to use 
 
             get_property(current_gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
             if(current_gem_path)
@@ -413,8 +393,16 @@ endfunction()
 #! plus all external subdirectories that every active project provides("external_subdirectories")
 #! or references("gem_names")
 function(get_external_subdirectories_in_use output_subdirs)
+    get_property(all_external_subdirs GLOBAL PROPERTY O3DE_ALL_EXTERNAL_SUBDIRECTORIES)
+    if(all_external_subdirs)
+        # This function has already run, use the calculated list of external subdirs
+        set(${output_subdirs} ${all_external_subdirs} PARENT_SCOPE)
+        return()
+    endif()
+
     # Gather the list of external subdirectories set through the O3DE_EXTERNAL_SUBDIRS Cache Variable
     get_property(all_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
+
     # Append the list of external subdirectories from the engine.json
     get_all_external_subdirectories_for_o3de_object(engine_external_subdirs "ENGINE" "" ${LY_ROOT_FOLDER} "engine.json")
     list(APPEND all_external_subdirs ${engine_external_subdirs})
@@ -434,6 +422,10 @@ function(get_external_subdirectories_in_use output_subdirs)
     # are ordered before that gem, so they are parsed first.
     reorder_dependent_gems_before_external_subdirs(all_external_subdirs "${all_external_subdirs}")
     list(REMOVE_DUPLICATES all_external_subdirs)
+
+    # Store in a global property so we don't re-calculate this list again
+    set_property(GLOBAL PROPERTY O3DE_ALL_EXTERNAL_SUBDIRECTORIES "${all_external_subdirs}")
+
     set(${output_subdirs} ${all_external_subdirs} PARENT_SCOPE)
 endfunction()
 
