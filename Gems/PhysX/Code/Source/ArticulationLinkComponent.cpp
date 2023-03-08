@@ -228,6 +228,15 @@ namespace PhysX
         }
         PxArticulationLink* thisLink = m_articulation->createLink(parentLink, PxMathConvert(GetEntity()->GetTransform()->GetWorldTM()));
 
+        if (parentLink)
+        {
+            PxArticulationJointReducedCoordinate* inboundJoint = thisLink->getInboundJoint();
+            // TODO: Set the values for joints from thisLinkData
+            inboundJoint->setJointType(PxArticulationJointType::eFIX);
+            inboundJoint->setParentPose(PxTransform(PxVec3(0.f, 0.25f, -0.9f)));
+            inboundJoint->setChildPose(PxTransform(PxVec3(0.f, -0.05f, 0.f)));
+        }
+
         if (physicsShape)
         {
             thisLink->attachShape(*(PxShape*)physicsShape->GetNativePointer());
