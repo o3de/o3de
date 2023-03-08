@@ -125,7 +125,9 @@ namespace AssetProcessor
         AZStd::string m_newAbsolutePath;
         bool m_hasPathDependencies = false;
         SourceFileRelocationStatus m_operationStatus = SourceFileRelocationStatus::None;
-        bool m_isMetaDataFile = false;
+        // If >= 0, this is a metadata file.  This is the index into the
+        // PlatformConfiguration metadata list (use with GetMetaDataFileTypeAt)
+        int m_metadataIndex = SourceFileRelocationInvalidIndex;
         bool m_isMetadataEnabledType = false; // Indicates if this file uses metadata relocation
         // This is a cached index of the SourceFile in the SourceFileRelocationContainer.
         // This is only used by the metadata file to determine the destination path if needed.

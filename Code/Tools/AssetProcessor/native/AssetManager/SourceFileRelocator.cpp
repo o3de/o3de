@@ -235,7 +235,7 @@ Please note that only those seed files will get updated that are active for your
                     if (!metaDataFileEntries.contains(normalizedFilePath))
                     {
                         SourceFileRelocationInfo metaDataFile(file.toUtf8().data(), scanFolderInfo);
-                        metaDataFile.m_isMetaDataFile = true;
+                        metaDataFile.m_metadataIndex = idx;
                         metadataFiles.emplace_back(metaDataFile);
                         metaDataFileEntries.insert(normalizedFilePath);
                     }
@@ -277,7 +277,7 @@ Please note that only those seed files will get updated that are active for your
                         if (sourceFileIndex != sourceIndexMap.end())
                         {
                             SourceFileRelocationInfo metaDataFile(metadaFileCorrectCase.toUtf8().data(), scanFolderInfo);
-                            metaDataFile.m_isMetaDataFile = true;
+                            metaDataFile.m_metadataIndex = idx;
                             metaDataFile.m_sourceFileIndex = sourceFileIndex.value();
                             metadataFiles.emplace_back(metaDataFile);
                             metaDataFileEntries.insert(metadaFileCorrectCase);
@@ -633,13 +633,21 @@ Please note that only those seed files will get updated that are active for your
             }
             else
             {
+                const auto& metadataInfo = m_platformConfig->GetMetaDataFileTypeAt(relocationInfo.m_metadataIndex);
                 newDestinationPath = relocationContainer[relocationInfo.m_sourceFileIndex].m_newAbsolutePath;
-                AZStd::string fullFileName;
-                AZ::StringFunc::Path::GetFullFileName(relocationInfo.m_oldAbsolutePath.c_str(), fullFileName);
-                AZ::StringFunc::Path::ReplaceFullName(newDestinationPath, fullFileName.c_str());
+
+                if (!metadataInfo.second.isEmpty())
+                {
+                    // Replace extension
+                    newDestinationPath = AZ::IO::FixedMaxPath(newDestinationPath).ReplaceExtension(metadataInfo.first.toUtf8().constData()).c_str();
+                }
+                else
+                {
+                    // Append extension
+                    newDestinationPath += ".";
+                    newDestinationPath += metadataInfo.first.toUtf8().constData();
+                }
             }
-
-
 
             if (!AzFramework::StringFunc::Path::IsRelative(newDestinationPath.c_str()))
             {
@@ -803,7 +811,7 @@ Please note that only those seed files will get updated that are active for your
 
         for (const SourceFileRelocationInfo& relocationInfo : relocationEntries)
         {
-            if (relocationInfo.m_isMetaDataFile)
+            if (relocationInfo.m_metadataIndex != SourceFileRelocationInvalidIndex)
             {
                 report.append(AZStd::string::format(
                     "Metadata file CURRENT PATH: %s, NEW PATH: %s\n",
