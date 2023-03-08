@@ -208,6 +208,11 @@ namespace AzToolsFramework
             return m_dimension;
         }
 
+        const uint32_t AssetBrowserEntry::GetNumVertices() const
+        {
+            return m_vertices;
+        }
+
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const
         {
             if (index < m_children.size())

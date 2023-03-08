@@ -26,8 +26,6 @@ namespace AzQtComponents
         setSortingEnabled(true);
     }
 
-    AssetFolderTableView::~AssetFolderTableView() = default;
-
     void AssetFolderTableView::setRootIndex(const QModelIndex& index)
     {
         if (index != rootIndex())

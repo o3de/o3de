@@ -31,7 +31,7 @@ namespace AZ
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
             virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
-            void CalculateAABB(const aiScene* scene, aiAABB& aabb);
+            void CalculateAABBandVertices(const aiScene* scene, aiAABB& aabb, uint32_t& vertices);
 
             enum class AxisVector
             {
@@ -46,6 +46,7 @@ namespace AZ
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
             aiAABB GetAABB() const { return m_aabb; }
+            uint32_t GetVertices() const { return m_vertices; }
         protected:
             const aiScene* m_assImpScene = nullptr;
             AZStd::unique_ptr<Assimp::Importer> m_importer;
@@ -54,6 +55,7 @@ namespace AZ
             // AssImp does not, so it needs to be specifically handled.
             AZStd::string m_sceneFileName;
             aiAABB m_aabb;
+            uint32_t m_vertices;
         };
 
     } // namespace AssImpSDKWrapper

@@ -106,6 +106,7 @@ namespace AZ
                 aiVector3t dimension = aabb.mMax - aabb.mMin;
                 Vector3 t{ dimension.x, dimension.y, dimension.z };
                 scene.SetSceneDimension(t);
+                scene.SetSceneVertices(assImpSceneWrapper->GetVertices());
 
                 if (upAxisAndSign.second <= 0)
                 {

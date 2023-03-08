@@ -118,6 +118,8 @@ namespace AzToolsFramework
             const size_t GetDiskSize() const;
             //! Returns the dimension of the model
             const AZ::Vector3& GetDimension() const;
+            //! Returns the number of vertices in the model
+            const uint32_t GetNumVertices() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -152,6 +154,7 @@ namespace AzToolsFramework
             AZ::IO::Path m_fullPath;
             size_t m_diskSize;
             AZ::Vector3 m_dimension{ NAN, NAN, NAN };
+            uint32_t m_vertices{ 0 };
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

@@ -13,7 +13,8 @@
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/JSON/filereadstream.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -136,24 +137,31 @@ namespace AzToolsFramework
                 {
                     settingsRegistry->Get(assetPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
                     assetPath /= fileDatabaseEntry.m_fileName + ".metadata.json";
-                    FILE* f1;
-                    azfopen(&f1, assetPath.c_str(), "r");
-                    if (f1)
-                    {
-                        char readBuffer[65536];
-                        rapidjson::FileReadStream is(f1, readBuffer, sizeof(readBuffer));
 
-                        rapidjson::Document doc;
-                        doc.ParseStream(is);
-                        fclose(f1);
+                    auto result = AZ::JsonSerializationUtils::ReadJsonFile(assetPath.Native());
+
+                    if (result)
+                    {
+                        auto& doc = result.GetValue();
 
                         const rapidjson::Value& metadata = doc["metadata"];
-                        const rapidjson::Value& dimension = metadata["dimension"];
-                        if (dimension.IsArray())
+                        if (metadata.HasMember("dimension"))
                         {
-                            source->m_dimension.SetX(static_cast<float>(dimension[0].GetDouble()));
-                            source->m_dimension.SetY(static_cast<float>(dimension[1].GetDouble()));
-                            source->m_dimension.SetZ(static_cast<float>(dimension[2].GetDouble()));
+                            const rapidjson::Value& dimension = metadata["dimension"];
+                            if (dimension.IsArray())
+                            {
+                                source->m_dimension.SetX(static_cast<float>(dimension[0].GetDouble()));
+                                source->m_dimension.SetY(static_cast<float>(dimension[1].GetDouble()));
+                                source->m_dimension.SetZ(static_cast<float>(dimension[2].GetDouble()));
+                            }
+                        }
+                        if (metadata.HasMember("vertices"))
+                        {
+                            const rapidjson::Value& vertices = metadata["vertices"];
+                            if (vertices.IsUint())
+                            {
+                                source->m_vertices = vertices.GetUint();
+                            }
                         }
                     }
                 }

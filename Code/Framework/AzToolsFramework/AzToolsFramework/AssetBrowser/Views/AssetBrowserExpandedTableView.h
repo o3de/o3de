@@ -34,7 +34,7 @@ namespace AzToolsFramework
             : public QStyledItemDelegate
         {
         public:
-            AZ_CLASS_ALLOCATOR(ExpandedTableViewDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExpandedTableViewDelegate, AZ::SystemAllocator);
             ExpandedTableViewDelegate(QWidget* parent = nullptr);
 
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -45,7 +45,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedTableView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedTableView, AZ::SystemAllocator);
 
             explicit AssetBrowserExpandedTableView(QWidget* parent = nullptr);
             ~AssetBrowserExpandedTableView() override;

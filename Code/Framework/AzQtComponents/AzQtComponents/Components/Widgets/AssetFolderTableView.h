@@ -25,7 +25,6 @@ namespace AzQtComponents
 
     public:
         explicit AssetFolderTableView(QWidget* parent = nullptr);
-        ~AssetFolderTableView() override;
 
         void SetShowSearchResultsMode(bool searchMode);
         void setRootIndex(const QModelIndex& index) override;

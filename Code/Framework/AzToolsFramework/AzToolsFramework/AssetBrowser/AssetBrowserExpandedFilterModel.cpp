@@ -35,13 +35,9 @@ namespace AzToolsFramework
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DiskSize));
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Vertices));
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::ApproxSize));
-            m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
+            // The below isn't used at present but will be needed in future
+            // m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
         }
-
-        AssetBrowserExpandedFilterModel::~AssetBrowserExpandedFilterModel()
-        {
-        }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

@@ -23,10 +23,8 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedFilterModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedFilterModel, AZ::SystemAllocator);
             explicit AssetBrowserExpandedFilterModel(QObject* parent = nullptr);
-            ~AssetBrowserExpandedFilterModel() override;
-
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

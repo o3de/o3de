@@ -28,7 +28,7 @@ namespace AzToolsFramework
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
             if (!assetBrowserEntry)
             {
-                return " No Data ";
+                return tr(" No Data ");
             }
 
             switch (role)
@@ -37,29 +37,35 @@ namespace AzToolsFramework
                 {
                     switch (index.column())
                     {
-                    case 0:
+                    case Name:
                         return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
-                    case 1:
+                    case Type:
                         {
                             switch (assetBrowserEntry->GetEntryType())
                             {
                             case AssetBrowserEntry::AssetEntryType::Root:
-                                return "Root";
+                                return tr("Root");
                             case AssetBrowserEntry::AssetEntryType::Folder:
-                                return "Folder";
+                                return tr("Folder");
                             case AssetBrowserEntry::AssetEntryType::Source:
                                 return ExtensionToType(static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetExtension()).c_str();
                             case AssetBrowserEntry::AssetEntryType::Product:
-                                return "Product";
+                                return tr("Product");
                             }
                         }
-                    case 2:
+                    case DiskSize:
                         if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
                         }
-                        return "";
-                    case 4:
+                        break;
+                    case Vertices:
+                        if (assetBrowserEntry->GetNumVertices() > 0)
+                        {
+                            return assetBrowserEntry->GetNumVertices();
+                        }
+                        break;
+                    case ApproxSize:
                         if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
                         {
                             const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
@@ -72,11 +78,11 @@ namespace AzToolsFramework
                         }
                         return "";
                     default:
-                        return "No data";
+                        return "";
                     }
                 }
             case Qt::TextAlignmentRole:
-                if (index.column() == 2)
+                if (index.column() == DiskSize || index.column() == Vertices)
                 {
                     return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
@@ -111,7 +117,7 @@ namespace AzToolsFramework
 
         int AssetBrowserExpandedTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
         {
-            return 6;
+            return ColumnCount;
         }
 
         void AssetBrowserExpandedTableViewProxyModel::SetRootIndex(const QModelIndex& index)
@@ -161,6 +167,7 @@ namespace AzToolsFramework
             case ".lua"_hash:
                 return "Lua Script";
             case ".tif"_hash:
+            case ".tiff"_hash:
                 return "TIF";
             case ".physxmaterial"_hash:
                 return "PhysX Material";
@@ -177,7 +184,7 @@ namespace AzToolsFramework
             case ".exr"_hash:
                 return "EXR";
             case ".wav"_hash:
-                return ".WAV";
+                return "WAV";
             case ".uicanvas"_hash:
                 return "UI Canvas";
             case ".wwu"_hash:

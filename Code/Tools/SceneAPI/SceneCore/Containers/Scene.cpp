@@ -108,6 +108,11 @@ namespace AZ
                 m_hasDimension = true;
             }
 
+            void Scene::SetSceneVertices(uint32_t vertices)
+            {
+                m_vertices = vertices;
+            }
+
             bool Scene::HasDimension() const
             {
                 return m_hasDimension;
@@ -121,6 +126,11 @@ namespace AZ
             Vector3& Scene::GetSceneDimension()
             {
                 return m_sceneDimension;
+            }
+
+            uint32_t Scene::GetSceneVertices() const
+            {
+                return m_vertices;
             }
 
             void Scene::Reflect(ReflectContext* context)

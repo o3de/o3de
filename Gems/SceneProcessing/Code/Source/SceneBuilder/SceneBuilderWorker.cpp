@@ -454,12 +454,13 @@ namespace SceneBuilder
             writer.Double(dimension.GetY());
             writer.Double(dimension.GetZ());
             writer.EndArray();
+            writer.Key("vertices");
+            writer.Uint(scene->GetSceneVertices());
             writer.EndObject();
             writer.EndObject();
-            FILE* f1;
-            azfopen(&f1, folder.c_str(), "w");
-            fwrite(s.GetString(), 1, s.GetSize(), f1);
-            fclose(f1);
+            rapidjson::Document doc;
+            doc.Parse(s.GetString());
+            AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
             AssetBuilderSDK::JobProduct jsonProduct(folder);
             response.m_outputProducts.emplace_back(jsonProduct);
         }
