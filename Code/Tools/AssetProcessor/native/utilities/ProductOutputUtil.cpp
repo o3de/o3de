@@ -25,34 +25,29 @@ namespace AssetProcessor
         outputFilename = QStringLiteral("%1%2").arg(prefix.c_str()).arg(outputFilename);
     }
 
-    void ProductOutputUtil::FinalizeProduct(AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db, const PlatformConfiguration* platformConfig, const SourceAssetReference& sourceAsset, AZStd::vector<AssetBuilderSDK::JobProduct>& products, AZStd::string_view platformIdentifier)
+    void ProductOutputUtil::FinalizeProduct(
+        AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db,
+        const PlatformConfiguration* platformConfig,
+        const SourceAssetReference& sourceAsset,
+        AZStd::vector<AssetBuilderSDK::JobProduct>& products,
+        AZStd::string_view platformIdentifier)
     {
         auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
         AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
 
         if (uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath()))
         {
-            QString overrider =
-                platformConfig->GetOverridingFile(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderPath().c_str());
+            QString overrider = platformConfig->GetOverridingFile(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderPath().c_str());
 
             if (overrider.isEmpty())
             {
                 // There is no other file or this is the highest priority
                 for (auto& product : products)
                 {
-                    QString scanfolder, relativePath;
-
-                    if (!AZ::IO::PathView(product.m_productFileName).IsRelative())
-                    {
-                        platformConfig->ConvertToRelativePath(product.m_productFileName.c_str(), scanfolder, relativePath);
-                    }
-                    else
-                    {
-                        relativePath = product.m_productFileName.c_str();
-                    }
+                    QString filename = AZ::IO::PathView(product.m_productFileName).Filename().FixedMaxPathString().c_str();
 
                     AZStd::string prefix = GetPrefix(sourceAsset.ScanFolderId());
-                    int prefixPos = relativePath.indexOf(prefix.c_str());
+                    int prefixPos = filename.indexOf(prefix.c_str());
 
                     if (prefixPos < 0)
                     {
@@ -65,18 +60,18 @@ namespace AssetProcessor
                     }
 
                     // Remove the prefix and update
-                    QStringRef unprefixedString = relativePath.midRef(prefixPos + prefix.size());
-                    AZStd::string newName =
-                        (AZ::IO::FixedMaxPath(scanfolder.toUtf8().constData()) / unprefixedString.toUtf8().constData()).c_str();
+                    QStringRef unprefixedString = filename.midRef(prefixPos + prefix.size());
+                    AZStd::string newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) /
+                                             unprefixedString.toUtf8().constData())
+                                                .AsPosix()
+                                                .c_str();
 
                     AssetUtilities::ProductPath oldProductPath(product.m_productFileName, platformIdentifier);
                     AssetUtilities::ProductPath newProductPath(newName, platformIdentifier);
                     AssetProcessor::ProductAssetWrapper wrapper{ product, oldProductPath };
 
-                    auto oldAbsolutePath =
-                        wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
-                    auto newAbsolutePath =
-                        wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
+                    auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
+                    auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
 
                     product.m_productFileName = newName;
 
@@ -117,7 +112,11 @@ namespace AssetProcessor
         }
     }
 
-    void ProductOutputUtil::RenameProduct(AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db, AzToolsFramework::AssetDatabase::ProductDatabaseEntry existingProduct, const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, AZStd::string_view platformIdentifier)
+    void ProductOutputUtil::RenameProduct(
+        AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db,
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntry existingProduct,
+        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry,
+        AZStd::string_view platformIdentifier)
     {
         auto oldProductPath = AssetUtilities::ProductPath::FromDatabasePath(existingProduct.m_productName);
         QString newName = oldProductPath.GetRelativePath().c_str();
