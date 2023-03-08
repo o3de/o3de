@@ -130,30 +130,25 @@ namespace PhysX
                     switch (cookedMeshShapeConfiguration->GetMeshType())
                     {
                     case Physics::CookedMeshShapeConfiguration::MeshType::Convex:
-                        {
-                            shapeTypes.push_back(ShapeType::Convex);
-                        }
+                        shapeTypes.push_back(ShapeType::Convex);
+                        break;
                     case Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh:
-                        {
-                            shapeTypes.push_back(ShapeType::TriangleMesh);
-                        }
+                        shapeTypes.push_back(ShapeType::TriangleMesh);
+                        break;
                     default:
-                        {
-                            shapeTypes.push_back(ShapeType::Invalid);
-                        }
+                        shapeTypes.push_back(ShapeType::Invalid);
+                        break;
                     }
-                    break;
                 }
+                break;
             case Physics::ShapeType::Sphere:
             case Physics::ShapeType::Box:
             case Physics::ShapeType::Capsule:
-                {
-                    shapeTypes.push_back(ShapeType::Primitive);
-                }
+                shapeTypes.push_back(ShapeType::Primitive);
+                break;
             default:
-                {
-                    shapeTypes.push_back(ShapeType::Invalid);
-                }
+                shapeTypes.push_back(ShapeType::Invalid);
+                break;
             }
         }
 
@@ -174,21 +169,13 @@ namespace PhysX
         switch (shapeTypes[0])
         {
         case ShapeType::Primitive:
-            {
-                return assetName + " (Primitive)";
-            }
+            return assetName + " (Primitive)";
         case ShapeType::Convex:
-            {
-                return assetName + " (Convex)";
-            }
+            return assetName + " (Convex)";
         case ShapeType::TriangleMesh:
-            {
-                return assetName + " (Triangle Mesh)";
-            }
+            return assetName + " (Triangle Mesh)";
         default:
-            {
-                return assetName;
-            }
+            return assetName;
         }
     }
 
