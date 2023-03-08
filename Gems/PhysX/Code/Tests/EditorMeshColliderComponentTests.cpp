@@ -50,8 +50,11 @@ namespace PhysXEditorTests
         return shapeConfigList[0].second->GetShapeType() == Physics::ShapeType::PhysicsAsset;
     }
 
-    static physx::PxGeometryType::Enum GetSimulatedBodyFirstPxGeometryType(const AzPhysics::SimulatedBody* simulatedBody)
+    static physx::PxGeometryType::Enum GetSimulatedBodyFirstPxGeometryType(const AZ::EntityId& entityId)
     {
+        AzPhysics::SimulatedBody* simulatedBody = nullptr;
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         if (!simulatedBody)
         {
             return physx::PxGeometryType::eINVALID;
@@ -194,32 +197,21 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eSPHERE);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eSPHERE);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.5f, -0.5f, -0.5f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(0.5f, 0.5f, 0.5f), 1e-3f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
         delete meshAssetData;
     }
 
-    // [o3de/o3de#14907]
-    // Asset Scale (with non-uniform value) does not work when the asset contains primitives and there
-    // is no non-uniform scale component present.
-    TEST_F(PhysXEditorFixture, DISABLED_EditorMeshColliderComponent_AssetWithPrimitive_AssetScale_CorrectShapeTypeGeometryTypeAndAabb)
+    TEST_F(PhysXEditorFixture, EditorMeshColliderComponent_AssetWithPrimitive_AssetScale_CorrectShapeTypeGeometryTypeAndAabb)
     {
         auto* meshAssetData = AZ::Utils::LoadObjectFromBuffer<PhysX::Pipeline::MeshAssetData>(
             PhysXMeshTestData::SpherePrimitive.data(), PhysXMeshTestData::SpherePrimitive.size());
@@ -236,24 +228,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
-
             // because there is a non-uniform scale applied, the geometry type used should be a convex mesh
             // rather than a primitive type
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eCONVEXMESH);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eCONVEXMESH);
 
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.55f, -1.75f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.55f, 1.75f), 1e-3f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -283,24 +267,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
-
             // because there is a non-uniform scale applied, the geometry type used should be a convex mesh
             // rather than a primitive type
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eCONVEXMESH);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eCONVEXMESH);
 
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.825f, -1.75f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.825f, 1.75f), 1e-3f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -318,24 +294,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eCONVEXMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eCONVEXMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             // convex shapes used to export the sphere mesh requires a higher toleance
             // when checking its aabb due to the lower tesselation it does to cover the sphere.
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.5f, -0.5f, -0.5f), 1e-1f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(0.5f, 0.5f, 0.5f), 1e-1f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -359,24 +327,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eCONVEXMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eCONVEXMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             // convex shapes used to export the sphere mesh requires a higher toleance
             // when checking its aabb due to the lower tesselation it does to cover the sphere.
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.55f, -1.75f), 1e-1f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.55f, 1.75f), 1e-1f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -406,24 +366,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eCONVEXMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eCONVEXMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             // convex shapes used to export the sphere mesh requires a higher toleance
             // when checking its aabb due to the lower tesselation it does to cover the sphere.
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.825f, -1.75f), 1e-1f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.825f, 1.75f), 1e-1f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -441,22 +393,14 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eTRIANGLEMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eTRIANGLEMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-0.5f, -0.5f, -0.5f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(0.5f, 0.5f, 0.5f), 1e-3f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -480,22 +424,16 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eTRIANGLEMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eTRIANGLEMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.55f, -1.75f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.55f, 1.75f), 1e-3f));
-        };
+        }
 
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -525,22 +463,14 @@ namespace PhysXEditorTests
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
-        auto checkSimulatedBody = [](const AZ::EntityId& entityId)
+        for (const auto& entityId : { editorEntity->GetId(), gameEntity->GetId() })
         {
-            AzPhysics::SimulatedBody* simulatedBody = nullptr;
-            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
-                simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-            ASSERT_TRUE(simulatedBody != nullptr);
+            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(entityId), physx::PxGeometryType::eTRIANGLEMESH);
 
-            EXPECT_EQ(GetSimulatedBodyFirstPxGeometryType(simulatedBody), physx::PxGeometryType::eTRIANGLEMESH);
-
-            const AZ::Aabb aabb = simulatedBody->GetAabb();
+            const AZ::Aabb aabb = GetSimulatedBodyAabb(entityId);
             EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(-1.0f, -0.825f, -1.75f), 1e-3f));
             EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.0f, 0.825f, 1.75f), 1e-3f));
-        };
-
-        checkSimulatedBody(editorEntity->GetId());
-        checkSimulatedBody(gameEntity->GetId());
+        }
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
@@ -564,7 +494,9 @@ namespace PhysXEditorTests
             AZStd::nullopt,
             RigidBodyType::Dynamic);
 
-        EXPECT_EQ(errorHandler.GetExpectedErrorCount(), 1);
+        // The error appears twice because the CreateMeshColliderEditorEntity helper activates
+        // the entity twice when using dynamic rigid bodies.
+        EXPECT_EQ(errorHandler.GetExpectedErrorCount(), 2);
 
         delete meshAssetData;
     }
