@@ -1052,13 +1052,22 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     UnitTests::JobSignalReceiver receiver;
 
     // Process the first asset in the queue, which will be the job for A, because B had a missing dependency and was made lower priority.
-    WaitForNextJobToProcess(receiver);
+    m_rc->DispatchJobsImpl();
 
     // Pause dispatching. In this test scenario, with only two assets queued,
     // it's likely that Job B will finish before Job B is re-issued due to the newly
     // updated source asset.
     // This happens frequently when step-through debugging this function with breakpoints.
+    // This can also happen when running many tests in parallel: There are a lot of async calls
+    // in this test, and depending on the state of the machine running this test, those may resolve
+    // in a different order or timing. Pausing dispatching until the moment that dispatchJobsImpl is called
+    // mitigates this: Jobs only execute when this test needs them to.
     m_rc->SetDispatchPaused(true);
+
+    receiver.WaitForFinish();
+
+    QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
+    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event 
 
     // Product B shouldn't exist yet because A was processed first.
     EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(m_secondProductPath.c_str()));
@@ -1107,23 +1116,28 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     AssetProcessor::RCQueueSortModel& sortModel = m_rc->GetRCQueueSortModel();
     EXPECT_EQ(sortModel.rowCount(), m_rc->NumberOfPendingJobsPerPlatform("pc"));
     m_rc->SetDispatchPaused(false);
+    m_rc->DispatchJobsImpl();
+    m_rc->SetDispatchPaused(true);
 
-    // Unpause dispatch, now that the updated jobs are re-queued.
-    WaitForNextJobToProcess(receiver);
+    receiver.WaitForFinish();
+
+    QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
+    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event 
+
     // Mark this asset as processed, so AP will move on to the next steps.
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);
 
-    // Need to call process events 4 times, to get the job details list populated with the intermediate asset job
-    QCoreApplication::processEvents(); // RCController::DispatchJobsImpl
-    // The second process event updates a lot of general AssetProcessor systems:
-    //  AssetProcessorManager::ScheduleNextUpdate, AssetProcessorManager::ProcessFilesToExamineQueue,
-    //  AssetProcessorManager::QueueIdleCheck, AssetProcessorManager::ProcessBuilders, and more.
-    QCoreApplication::processEvents();
-    // The third process event also updates several AssetProcessor systems that the previous step updates,
+    // Need to call process events multiple times, to get the job details list populated with the intermediate asset job
+    // Due to timing of this test, these events may end up running in different process events calls.
+    // updates a lot of general AssetProcessor systems:
+    // AssetProcessorManager::ScheduleNextUpdate, AssetProcessorManager::ProcessFilesToExamineQueue,
+    // AssetProcessorManager::QueueIdleCheck, AssetProcessorManager::ProcessBuilders, and more.
+    // Also updates several AssetProcessor systems that the previous step updates,
     // but the main events this is run for is two calls to AssetProcessorManager::AssetToProcess
     // which puts Cache/Intermediate Assets/firstfile.a_intermediate and secondfile.b_source in m_jobDetailsList
-    QCoreApplication::processEvents();
     // Make sure the job requests are populated and ready to go, without this, RCJob::PopulateProcessJobRequest sometimes crashes accessing job info.
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
     QCoreApplication::processEvents();
 
     // Verify that the job for the second asset didn't process yet, because it has a job dependency on the intermediate asset job.
@@ -1136,6 +1150,7 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     EXPECT_EQ(m_rc->NumberOfPendingJobsPerPlatform(AssetBuilderSDK::CommonPlatformName), 0);
 
     // Make sure all remaning non-canceled jobs are processed.
+    m_rc->SetDispatchPaused(false);
     WaitForNextJobToProcess(receiver);
 
     // Verify the final product is marked as existing.
