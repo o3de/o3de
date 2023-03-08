@@ -91,6 +91,8 @@ namespace AWSCore
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
         AWSCoreEditorRequestBus::Handler::BusDisconnect();
+
+        m_awsCoreEditorMenu.reset();
     }
 
     void AWSCoreEditorSystemComponent::OnMenuBarRegistrationHook()
