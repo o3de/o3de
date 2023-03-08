@@ -136,7 +136,6 @@ namespace AzToolsFramework
         , m_gui(nullptr)
         , m_listModel(nullptr)
         , m_proxyModel(nullptr)
-        , m_selectionContextId(0)
         , m_selectedEntityIds()
         , m_inObjectPickMode(false)
         , m_scrollToNewContentQueued(false)

@@ -223,6 +223,7 @@ namespace Multiplayer
         }
 
         GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
+        GetNetworkEntityManager()->RemoveEntityFromEntityMap(m_netEntityId);
     }
 
     NetEntityRole NetBindComponent::GetNetEntityRole() const

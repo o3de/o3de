@@ -376,7 +376,6 @@ private:
     mutable CheckboxGroup m_lockCheckBoxes;
 
     const int m_layerDividerLineHeight = 1;
-    const int m_lastEntityInLayerDividerLineHeight = 1;
     const int m_toggleColumnWidth = 16;
 
     // this is a cache, and is hence mutable

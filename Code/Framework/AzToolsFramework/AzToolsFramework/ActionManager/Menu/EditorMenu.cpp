@@ -12,6 +12,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -31,7 +33,7 @@ namespace AzToolsFramework
     {
         m_menuItems[sortKey].emplace_back();
     }
-    
+
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
         if (ContainsAction(actionIdentifier))
@@ -114,7 +116,7 @@ namespace AzToolsFramework
             m_menuItems[sortKey].emplace_back(MenuItemType::Widget, AZStd::move(widgetActionIdentifier));
         }
     }
-    
+
     bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
     {
         return m_actionToSortKeyMap.contains(actionIdentifier);

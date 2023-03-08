@@ -329,13 +329,38 @@ namespace AZ
     //=========================================================================
     // Reflect
     //=========================================================================
-    void  ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
+    void ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
     {
+        // Create a local ObjectFactory that passes the component application descriptor
+        // to the SerializeContext
+        struct DescriptorFactory
+            : public SerializeContext::IObjectFactory
+        {
+            DescriptorFactory(Descriptor* descriptor)
+                : m_descriptor(descriptor)
+            {}
+
+            void* Create(const char*) override
+            {
+                // Return a pointer to the component application descriptor
+                return m_descriptor;
+            }
+            void  Destroy(void*) override
+            {
+                // do nothing as descriptor is part of the component application
+            }
+
+        private:
+            Descriptor* m_descriptor;
+        };
+
+        static DescriptorFactory descriptorFactory(&app->GetDescriptor());
+
         DynamicModuleDescriptor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            serializeContext->Class<Descriptor>(&app->GetDescriptor())
+            serializeContext->Class<Descriptor>(&descriptorFactory)
                 ->Version(2, AppDescriptorConverter)
                 ->Field("useExistingAllocator", &Descriptor::m_useExistingAllocator)
                 ->Field("allocationRecordsSaveNames", &Descriptor::m_allocationRecordsSaveNames)
@@ -384,24 +409,6 @@ namespace AZ
                 ->Attribute(AZ::Script::Attributes::Module, "std")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
-    }
-
-    //=========================================================================
-    // Create
-    //=========================================================================
-    void* ComponentApplication::Descriptor::Create(const char* name)
-    {
-        (void)name;
-        return this; /// we the the factory and the object as we are part of the component application
-    }
-
-    //=========================================================================
-    // Destroy
-    //=========================================================================
-    void ComponentApplication::Descriptor::Destroy(void* data)
-    {
-        // do nothing as descriptor is part of the component application
-        (void)data;
     }
 
     //=========================================================================

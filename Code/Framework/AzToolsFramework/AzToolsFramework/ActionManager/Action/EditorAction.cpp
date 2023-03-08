@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <QAction>
 #include <QIcon>
 
@@ -162,7 +164,7 @@ namespace AzToolsFramework
     {
         return m_action;
     }
-    
+
     void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
         if (enabledStateCallback)
