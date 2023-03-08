@@ -77,7 +77,7 @@ namespace AzToolsFramework
             m_overriddenPropertyPathFromFocusedPrefab =
                 AZ::Dom::Path(PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true));
 
-            m_overriddenPropertyPathFromFocusedPrefab /= AZ::Dom::Path(relativePathFromOwningPrefab);
+            m_overriddenPropertyPathFromFocusedPrefab /= relativePathFromOwningPrefab;
 
             const TemplateId topTemplateId = link->get().GetTargetTemplateId();
             const PrefabDom& topTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(topTemplateId);

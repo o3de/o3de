@@ -25,10 +25,10 @@ namespace AzToolsFramework::Prefab
     PrefabComponentAdapter::PrefabComponentAdapter()
         : ComponentAdapter()
     {
-        m_prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get();
+        m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
         AZ_Assert(m_prefabOverridePublicInterface, "Could not get PrefabOverridePublicInterface on PrefabComponentAdapter construction.");
 
-        m_prefabPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabPublicInterface>::Get();
+        m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface, "Could not get PrefabPublicInterface on PrefabComponentAdapter construction.");
     }
 
@@ -38,7 +38,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
-        auto owningInstance = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get()->FindOwningInstance(
+        auto owningInstance = AZ::Interface<InstanceEntityMapperInterface>::Get()->FindOwningInstance(
             componentInstance->GetEntityId());
         AZ_Assert(owningInstance.has_value(), "Entity owning the component doesn't have an owning prefab instance.");
         auto entityAlias = owningInstance->get().GetEntityAlias(componentInstance->GetEntityId());
@@ -48,6 +48,13 @@ namespace AzToolsFramework::Prefab
         // Set the component alias before calling SetValue() in base SetComponent().
         // Otherwise, an empty component alias will be used in DOM data.
         m_componentAlias = componentInstance->GetSerializedIdentifier();
+
+        if (m_componentAlias.empty())
+        {
+            AZStd::string componentAlias(AZStd::string::format("Component_[%llu]", componentInstance->GetId()));
+            componentInstance->SetSerializedIdentifier(componentAlias);
+            m_componentAlias = AZStd::move(componentAlias);
+        }
         AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
 
         ComponentAdapter::SetComponent(componentInstance);
@@ -110,15 +117,15 @@ namespace AzToolsFramework::Prefab
         {
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
 
-            AZ::Dom::Path relativePathFromOwningPrefab(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
+            AZ::Dom::Path relativePathFromOwningPrefab(PrefabDomUtils::EntitiesName);
             relativePathFromOwningPrefab /= m_entityAlias;
-            relativePathFromOwningPrefab /= AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName;
+            relativePathFromOwningPrefab /= PrefabDomUtils::ComponentsName;
             relativePathFromOwningPrefab /= m_componentAlias;
 
             AZ::Dom::Value serializedPathValue = GetContents()[serializedPath];
             AZ_Assert(serializedPathValue.IsString(), "PrefabComponentAdapter::UpdateDomContents - SerialziedPath attribute value is not a string.");
 
-            relativePathFromOwningPrefab /= AZ::Dom::Path(GetContents()[serializedPath].GetString());
+            relativePathFromOwningPrefab /= AZ::Dom::Path(serializedPathValue.GetString());
 
 
             auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
@@ -185,7 +192,7 @@ namespace AzToolsFramework::Prefab
                     return false;
                 }
 
-                auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+                auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
 
                 if (!prefabSystemComponentInterface)
                 {
@@ -197,7 +204,7 @@ namespace AzToolsFramework::Prefab
                 PrefabDomPath prefabDomPathToComponentProperty(relativePathFromOwningPrefab.data());
                 const PrefabDomValue* beforeValueOfComponentProperty = prefabDomPathToComponentProperty.Get(templateDom);
 
-                AzToolsFramework::Prefab::PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
+                PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
                 ScopedUndoBatch undoBatch("Update component in a prefab template");
                 PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Undo Updating Component");
                 state->SetParent(undoBatch.GetUndoBatch());
@@ -242,7 +249,7 @@ namespace AzToolsFramework::Prefab
                     return false;
                 }
 
-                AzToolsFramework::Prefab::PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
+                PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
                 ScopedUndoBatch undoBatch("override a component in a nested prefab template");
                 PrefabUndoComponentPropertyOverride* state = aznew PrefabUndoComponentPropertyOverride("Undo overriding Component");
                 state->SetParent(undoBatch.GetUndoBatch());
