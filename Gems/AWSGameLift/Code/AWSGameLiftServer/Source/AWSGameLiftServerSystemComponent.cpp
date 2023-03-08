@@ -22,7 +22,6 @@ namespace AWSGameLift
     AZ_CVAR(bool, sv_useGameLiftServer, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Activate GameLift server manager and SDK");
 
     AWSGameLiftServerSystemComponent::AWSGameLiftServerSystemComponent()
-        : m_gameLiftServerManager(AZStd::make_unique<AWSGameLiftServerManager>())
     {
     }
 
@@ -77,6 +76,7 @@ namespace AWSGameLift
     {
         if (sv_useGameLiftServer)
         {
+            m_gameLiftServerManager = AZStd::make_unique<AWSGameLiftServerManager>();
             m_gameLiftServerManager->InitializeGameLiftServerSDK();
             m_gameLiftServerManager->ActivateManager();
         }
@@ -85,10 +85,11 @@ namespace AWSGameLift
 
     void AWSGameLiftServerSystemComponent::Deactivate()
     {
-        if (sv_useGameLiftServer)
+        if (m_gameLiftServerManager)
         {
             m_gameLiftServerManager->DeactivateManager();
             m_gameLiftServerManager->HandleDestroySession();
+            m_gameLiftServerManager.reset();
         }
     }
 
