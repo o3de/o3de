@@ -17,6 +17,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <QApplication>
 #include <QMessageBox>
 

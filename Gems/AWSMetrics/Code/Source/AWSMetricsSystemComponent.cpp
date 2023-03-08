@@ -11,7 +11,8 @@
 #include <MetricsManager.h>
 
 #include <AzCore/IO/FileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AWSMetrics
 {
@@ -71,7 +72,7 @@ namespace AWSMetrics
                 ->Event(
                     "SubmitMetrics", &AWSMetricsRequestBus::Events::SubmitMetrics,
                     { { { "Metrics Attributes list", "The list of metrics attributes to submit." },
-                        { "Event priority", "Priority of the event. Defaults to 0, which is highest priority." }, 
+                        { "Event priority", "Priority of the event. Defaults to 0, which is highest priority." },
                         { "Event source override", "Event source used to override the default, 'AWSMetricGem'." },
                         { "Buffer metrics", "Whether to buffer metrics and send them in a batch." } } })
                 ->Event("FlushMetrics", &AWSMetricsRequestBus::Events::FlushMetrics)

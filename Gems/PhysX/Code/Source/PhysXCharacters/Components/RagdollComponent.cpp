@@ -20,7 +20,7 @@
 
 namespace PhysX
 {
-    bool RagdollComponent::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    bool RagdollComponentVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         // The element "PhysXRagdoll" was changed from a shared pointer to a unique pointer, but a version converter was
         // not added at the time.  This means there may be serialized data with either the shared or unique pointer, but
@@ -70,7 +70,7 @@ namespace PhysX
         if (serializeContext)
         {
             serializeContext->Class<RagdollComponent, AZ::Component>()
-                ->Version(3, &VersionConverter)
+                ->Version(3, &RagdollComponentVersionConverter)
                 ->Field("PositionIterations", &RagdollComponent::m_positionIterations)
                 ->Field("VelocityIterations", &RagdollComponent::m_velocityIterations)
                 ->Field("EnableJointProjection", &RagdollComponent::m_enableJointProjection)

@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 from Editor_TestClass import BaseClass
+from EditorPythonTestTools.consts.physics import PHYSX_MESH_COLLIDER
 
 class Editor_ComponentCommands_Works(BaseClass):
     # Description: 
@@ -25,7 +26,7 @@ class Editor_ComponentCommands_Works(BaseClass):
             return component1.Equal(component2)
 
         # Get Component Types for Mesh and Comment
-        typeNameList = ["Mesh", "Comment", "PhysX Mesh Collider"]
+        typeNameList = ["Mesh", "Comment", PHYSX_MESH_COLLIDER]
         typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', typeNameList, entity.EntityType().Game)
 
         BaseClass.check_result(len(typeIdsList) > 0, "Type Ids List returned correctly")
@@ -38,7 +39,7 @@ class Editor_ComponentCommands_Works(BaseClass):
         typeNamesList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeNames', typeIdsList)
         BaseClass.check_result(typeNamesList[0] == "Mesh", "Type Names List contains: Mesh")
         BaseClass.check_result(typeNamesList[1] == "Comment", "Type Names List contains: Comment")
-        BaseClass.check_result(typeNamesList[2] == "PhysX Mesh Collider", "Type Names List contains: PhysX Mesh Collider")
+        BaseClass.check_result(typeNamesList[2] == PHYSX_MESH_COLLIDER, "Type Names List contains: PhysX Mesh Collider")
 
         # Test Component API
         newEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())

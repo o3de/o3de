@@ -106,6 +106,8 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -154,6 +156,8 @@ namespace AZ
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))

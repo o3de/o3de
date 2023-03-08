@@ -43,6 +43,7 @@ namespace AzToolsFramework::Prefab
         void ShowContextMenu(const QPoint&);
 
         bool m_overridden;
+        AZ::Dom::Value m_node;
 
         QToolButton* m_iconButton;
         AzQtComponents::ElidingLabel* m_textLabel;

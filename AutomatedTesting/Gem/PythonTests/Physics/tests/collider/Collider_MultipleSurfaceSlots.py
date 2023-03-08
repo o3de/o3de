@@ -51,6 +51,7 @@ def Collider_MultipleSurfaceSlots():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -73,8 +74,8 @@ def Collider_MultipleSurfaceSlots():
     mesh_component = test_entity.add_component("Mesh")
     Report.result(Tests.mesh_added, test_entity.has_component("Mesh"))
 
-    collider_component = test_entity.add_component("PhysX Mesh Collider")
-    Report.result(Tests.physx_collider_added, test_entity.has_component("PhysX Mesh Collider"))
+    collider_component = test_entity.add_component(PHYSX_MESH_COLLIDER)
+    Report.result(Tests.physx_collider_added, test_entity.has_component(PHYSX_MESH_COLLIDER))
 
     # 4) Assign the fbx file in PhysX Mesh and Mesh component
     px_asset = Asset.find_asset_by_path(PHYSX_MESH)

@@ -11,6 +11,8 @@
 #include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AZ
 {
     namespace Vulkan

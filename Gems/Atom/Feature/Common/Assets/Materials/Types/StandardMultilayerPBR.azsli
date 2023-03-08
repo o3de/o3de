@@ -119,14 +119,14 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
         inout float4 positionSV,
         float3 positionWS,
-        float3 normal,
-        float3 tangent,
-        float3 bitangent,
+        float3 normalWS,
+        float3 tangentWS,
+        float3 bitangentWS,
         float2 uvs[UvSetCount],
         bool isFrontFace,
         float3 vertexBlendMask)
     {
-        PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace);
+        PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
         geoData.isDisplacementClipped = false;
         geoData.m_vertexBlendMask = vertexBlendMask;
@@ -145,15 +145,15 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
         float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-        float3 vertexNormal, vertexTangent, vertexBitangent;
-        ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+        float3 normalWS, tangentWS, bitangentWS;
+        ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
         return EvaluatePixelGeometry_StandardMultilayerPBR(
             IN.position,
             IN.worldPosition,
-            vertexNormal,
-            vertexTangent,
-            vertexBitangent,
+            normalWS,
+            tangentWS,
+            bitangentWS,
             IN.uvs,
             isFrontFace,
             IN.m_blendMask);
@@ -333,7 +333,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         inputs.m_sampler = MaterialSrg::m_sampler;                                                                     \
         inputs.m_vertexUv = uvs;                                                                                       \
         inputs.m_uvMatrix = srgLayerPrefix##m_uvMatrix;                                                                \
-        inputs.m_normal = vertexNormal;                                                                                \
+        inputs.m_normal = normalWS;                                                                                \
         inputs.m_tangents = tangents;                                                                                  \
         inputs.m_bitangents = bitangents;                                                                              \
         inputs.m_isFrontFace = isFrontFace;                                                                            \
@@ -407,7 +407,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     Surface EvaluateSurface_StandardMultilayerPBR(
         float3 positionWS,
-        float3 vertexNormal,
+        float3 normalWS,
         float3 tangents[UvSetCount],
         float3 bitangents[UvSetCount],
         float2 uvs[UvSetCount],
@@ -422,7 +422,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         if(o_debugDrawMode == DebugDrawMode::BlendMask)
         {
             float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
-            return MakeDebugSurface(positionWS, vertexNormal, blendMaskValues);
+            return MakeDebugSurface(positionWS, normalWS, blendMaskValues);
         }
     
         if(o_debugDrawMode == DebugDrawMode::Displacement)
@@ -431,13 +431,13 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             float stopDepth = -MaterialSrg::m_displacementMin;
             float depth = GetNormalizedDepth(startDepth, stopDepth, uvs[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
             float height = 1 - saturate(depth);
-            return MakeDebugSurface(positionWS, vertexNormal, float3(height,height,height));
+            return MakeDebugSurface(positionWS, normalWS, float3(height,height,height));
         }
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
             float3 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
-            return MakeDebugSurface(positionWS, vertexNormal, blendWeights);
+            return MakeDebugSurface(positionWS, normalWS, blendWeights);
         }
 
         // ------- Calculate Layer Blend Mask Values -------
@@ -514,8 +514,8 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
         }
         // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
-        surface.vertexNormal = vertexNormal;
-        surface.normal = normalize(TangentSpaceToWorld(normalTS, vertexNormal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
+        surface.vertexNormal = normalWS;
+        surface.normal = normalize(TangentSpaceToWorld(normalTS, normalWS, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
         
         // ------- Combine Albedo, roughness, specular, roughness ---------
 
@@ -558,7 +558,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return surface;
     }
 
-    Surface EvaluateSurface_StandardMultilayerPBR(PixelGeometryData geoData)
+    Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData)
     {
         return EvaluateSurface_StandardMultilayerPBR(
             geoData.positionWS,
@@ -585,7 +585,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return ShouldHandleParallax();
     }
     
-    void EvaluateSurface(PixelGeometryData geoData)
+    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         // do nothing, this is where alpha clip can be done if it's supported
     }
