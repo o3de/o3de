@@ -52,8 +52,6 @@ namespace AZ::Render
             
         struct SkyAtmosphere
         {
-            ~SkyAtmosphere();
-
             AtmosphereId m_id;
             SkyAtmosphereParams m_params;
             bool m_passNeedsUpdate = false;

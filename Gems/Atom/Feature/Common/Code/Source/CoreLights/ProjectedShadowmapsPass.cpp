@@ -84,25 +84,25 @@ namespace AZ
             {
                 auto depthAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::D32_FLOAT);
                 AttachImageToSlot(Name("Shadowmap"), depthAttachmentImage);
-                this->SetEnabled(false);
+                SetEnabled(false);
                 return;
             }
 
             AttachImageToSlot(Name("Shadowmap"), m_atlasAttachmentImage);
-            this->SetEnabled(true);
+            SetEnabled(true);
             Base::BuildInternal();
         }
 
         void ProjectedShadowmapsPass::QueueAddChild(RPI::Ptr<Pass> pass)
         {
-            QueueForBuildAndInitialization();
             m_passesToAddOrRemove.push_back({ pass, false });
+            QueueForBuildAndInitialization(); // passes in `m_passesToAddOrRemove` are resolved in `BuildInternal()`
         }
 
         void ProjectedShadowmapsPass::QueueRemoveChild(RPI::Ptr<Pass> pass)
         {
-            QueueForBuildAndInitialization();
             m_passesToAddOrRemove.push_back({ pass, true });
+            QueueForBuildAndInitialization(); // passes in `m_passesToAddOrRemove` are resolved in `BuildInternal()`
         }
 
     } // namespace Render

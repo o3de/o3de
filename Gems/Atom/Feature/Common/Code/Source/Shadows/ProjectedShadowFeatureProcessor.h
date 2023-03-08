@@ -12,6 +12,7 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
 #include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
 #include <CoreLights/ShadowmapPass.h>
@@ -81,6 +82,7 @@ namespace AZ::Render
         {
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
+            RPI::Ptr<ShadowmapPass> m_shadowmapPass;
             float m_bias = 0.1f;
             ShadowId m_shadowId;
             bool m_useCachedShadows = false;
@@ -128,13 +130,12 @@ namespace AZ::Render
             ShadowDataIndex,
             FilterParamIndex,
             ShadowPropertyIdIndex,
-            ShadowPassIndex,
         };
 
         // Stores GPU data that is pushed to buffers in the View SRG. ShadowData corresponds to m_projectedShadows and
         // FilterParameter corresponds to m_projectedFilterParams. The uint16_t is used to reference data in
         // m_shadowProperties.
-        MultiSparseVector<ShadowData, FilterParameter, uint16_t, RPI::Ptr<ShadowmapPass>> m_shadowData;
+        MultiSparseVector<ShadowData, FilterParameter, uint16_t> m_shadowData;
 
         ShadowmapAtlas m_atlas;
         Data::Instance<RPI::AttachmentImage> m_atlasImage;

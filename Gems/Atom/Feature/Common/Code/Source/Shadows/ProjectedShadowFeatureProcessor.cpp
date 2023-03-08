@@ -108,12 +108,12 @@ namespace AZ::Render
     {
         if (id.IsValid())
         {
-            m_shadowProperties.RemoveIndex(m_shadowData.GetElement<ShadowPropertyIdIndex>(id.GetIndex()));
+            auto& shadowProperty = GetShadowPropertyFromShadowId(id);
             if (m_primaryProjectedShadowmapsPass)
             {
-                auto& shadowmapPass = m_shadowData.GetElement<ShadowPassIndex>(id.GetIndex());
-                m_primaryProjectedShadowmapsPass->QueueRemoveChild(shadowmapPass);
+                m_primaryProjectedShadowmapsPass->QueueRemoveChild(shadowProperty.m_shadowmapPass);
             }
+            m_shadowProperties.RemoveData(&shadowProperty);
             m_shadowData.Release(id.GetIndex());
         }
 
@@ -297,7 +297,7 @@ namespace AZ::Render
 
         if (shadowProperty.m_useCachedShadows && m_primaryProjectedShadowmapsPass)
         {
-            m_shadowData.GetElement<ShadowPassIndex>(shadowProperty.m_shadowId.GetIndex())->ForceRenderNextFrame();
+            shadowProperty.m_shadowmapPass->ForceRenderNextFrame();
         }
 
         m_deviceBufferNeedsUpdate = true;
@@ -322,9 +322,8 @@ namespace AZ::Render
 
         if (m_primaryProjectedShadowmapsPass)
         {
-            RPI::Ptr<ShadowmapPass> shadowmapPass = CreateShadowmapPass(shadowId.GetIndex());
-            m_shadowData.GetElement<ShadowPassIndex>(shadowId.GetIndex()) = shadowmapPass;
-            m_primaryProjectedShadowmapsPass->QueueAddChild(shadowmapPass);
+            shadowProperty.m_shadowmapPass = CreateShadowmapPass(shadowId.GetIndex());
+            m_primaryProjectedShadowmapsPass->QueueAddChild(shadowProperty.m_shadowmapPass);
         }
     }
         
@@ -472,12 +471,11 @@ namespace AZ::Render
                     }
                     m_primaryProjectedShadowmapsPass = pass;
 
-                    for (const auto& shadowProperty : m_shadowProperties.GetDataVector())
+                    for (auto& shadowProperty : m_shadowProperties.GetDataVector())
                     {
                         size_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
-                        RPI::Ptr<ShadowmapPass> shadowmapPass = CreateShadowmapPass(shadowIndex);
-                        m_shadowData.GetElement<ShadowPassIndex>(shadowIndex) = shadowmapPass;
-                        m_primaryProjectedShadowmapsPass->QueueAddChild(shadowmapPass);
+                        shadowProperty.m_shadowmapPass = CreateShadowmapPass(shadowIndex);
+                        m_primaryProjectedShadowmapsPass->QueueAddChild(shadowProperty.m_shadowmapPass);
                     }
                 }
                 m_primaryShadowPipeline = pipeline.get();
@@ -656,7 +654,7 @@ namespace AZ::Render
                         continue;
                     }
 
-                    const RPI::PipelineViewTag& viewTag = m_shadowData.GetElement<ShadowPassIndex>(shadowIndex)->GetPipelineViewTag();
+                    const RPI::PipelineViewTag& viewTag = shadowProperty.m_shadowmapPass->GetPipelineViewTag();
                     const RHI::DrawListMask drawListMask = renderPipeline->GetDrawListMask(viewTag);
                     if (shadowProperty.m_shadowmapView->GetDrawListMask() != drawListMask)
                     {
@@ -838,7 +836,7 @@ namespace AZ::Render
             // This index indicates the execution order of the passes.
             // The first pass to render a slice should clear the slice.
             size_t shadowIndex = it.m_shadowId.GetIndex();
-            auto* pass = m_shadowData.GetElement<ShadowPassIndex>(shadowIndex).get();
+            auto* pass = it.m_shadowmapPass.get();
 
             const ShadowmapAtlas::Origin origin = m_atlas.GetOrigin(shadowIndex);
             pass->SetArraySlice(origin.m_arraySlice);
