@@ -40,7 +40,8 @@ parts:
      - libxcb-render-util0
      - libunwind-dev
      - pkg-config
-     - libgcc-12-dev
+     - libstdc++-12-dev
+     
      #- libhogweed6
      #- libssl3
      #- libffi7
