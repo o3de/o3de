@@ -289,12 +289,12 @@ namespace AZ::IO
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context); serializeContext != nullptr)
         {
             serializeContext->Class<Path>()
-                ->Serializer(AZ::SerializeContext::IDataSerializerPtr{ new PathSerializer<Path>{},
+                ->Serializer(AZ::Serialize::IDataSerializerPtr{ new PathSerializer<Path>{},
                 AZ::SerializeContext::IDataSerializer::CreateDefaultDeleteDeleter() })
                 ;
 
             serializeContext->Class<FixedMaxPath>()
-                ->Serializer(AZ::SerializeContext::IDataSerializerPtr{ new PathSerializer<FixedMaxPath>{},
+                ->Serializer(AZ::Serialize::IDataSerializerPtr{ new PathSerializer<FixedMaxPath>{},
                 AZ::SerializeContext::IDataSerializer::CreateDefaultDeleteDeleter() })
                 ;
         }

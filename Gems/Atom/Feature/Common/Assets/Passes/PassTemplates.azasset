@@ -41,6 +41,10 @@
                 "Path": "Passes/MainPipeline.pass"
             },
             {
+                "Name": "CameraPipeline",
+                "Path": "Passes/CameraPipeline.pass"
+            },
+            {
                 "Name": "MainPipelineRenderToTexture",
                 "Path": "Passes/MainPipelineRenderToTexture.pass"
             },

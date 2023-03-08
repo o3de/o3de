@@ -12,10 +12,22 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace DX12
     {
         using ShaderByteCode = AZStd::vector<uint8_t>;
@@ -55,7 +67,10 @@ namespace AZ
         private:
             ShaderStageFunction() = default;
             ShaderStageFunction(RHI::ShaderStage shaderStage);
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             ///////////////////////////////////////////////////////////////////
             // RHI::ShaderStageFunction

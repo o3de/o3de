@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
+
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
@@ -21,7 +22,7 @@ namespace AzToolsFramework
         {
             AskEveryTime,
             SaveAll,
-            SaveNone 
+            SaveNone
         };
 
         /*!

@@ -56,6 +56,7 @@ SEARCH_FRAME_QT ="searchFrame"
 SEARCH_FILTER_QT = "searchFilter"
 PARAMETERS_QT = "Parameters"
 NODE_PALETTE_CLEAR_BUTTON_QT = "ClearToolButton"
+INDICATOR_QT = "Indicator"
 
 """
 File Paths

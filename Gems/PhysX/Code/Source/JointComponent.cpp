@@ -13,6 +13,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
@@ -261,7 +262,7 @@ namespace PhysX
                 info.m_leadBody, m_configuration.m_leadEntity, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
 
             // Report a warning if there's no lead body or the body type is not one of the supported.
-            // In the future only body type validation will be needed 
+            // In the future only body type validation will be needed
             if (!info.m_leadBody ||
                 !(info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBody ||
                  info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBodyStatic))
