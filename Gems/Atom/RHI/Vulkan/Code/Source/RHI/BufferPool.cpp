@@ -106,7 +106,7 @@ namespace AZ
             const VmaAllocationInfo& allocInfo = bufferMemory->GetVmaAllocationInfo();
 
             VkMemoryPropertyFlags memoryProperties;
-            vmaGetMemoryTypeProperties(device.GetMemoryAllocator(), allocInfo.memoryType, &memoryProperties);
+            vmaGetMemoryTypeProperties(device.GetVmaAllocator(), allocInfo.memoryType, &memoryProperties);
 
             RHI::HeapMemoryLevel heapMemoryLevel =
                 (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
@@ -140,7 +140,7 @@ namespace AZ
                 const VmaAllocationInfo& allocInfo = buffer.GetBufferMemoryView()->GetBufferMemory()->GetVmaAllocationInfo();
 
                 VkMemoryPropertyFlags memoryProperties;
-                vmaGetMemoryTypeProperties(device.GetMemoryAllocator(), allocInfo.memoryType, &memoryProperties);
+                vmaGetMemoryTypeProperties(device.GetVmaAllocator(), allocInfo.memoryType, &memoryProperties);
 
                 RHI::HeapMemoryLevel heapMemoryLevel =
                     (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
@@ -172,7 +172,7 @@ namespace AZ
             buffer.m_memoryView = BufferMemoryView();
             buffer.Invalidate();
 
-            // Allocate a new BufferMemmory
+            // Allocate a new BufferMemory
             BufferMemoryView memoryView = m_memoryAllocator.Allocate(buffer.GetDescriptor().m_byteCount, 1);
             if (!memoryView.IsValid())
             {

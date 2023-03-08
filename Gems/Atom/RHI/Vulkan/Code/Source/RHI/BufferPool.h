@@ -14,7 +14,7 @@
 
 //#define DEBUG_TRACK_VMA_ALLOCATIONS
 #ifdef DEBUG_TRACK_VMA_ALLOCATIONS
-#include <unordered_map>
+#include <AzCore/std/containers/unordered_map.h>
 #endif
 
 namespace AZ
@@ -73,7 +73,7 @@ namespace AZ
 
             BufferMemoryAllocator m_memoryAllocator;
 #ifdef DEBUG_TRACK_VMA_ALLOCATIONS
-            std::unordered_map<BufferMemory*, VkDeviceSize> m_allocations;
+            AZStd::unordered_map<BufferMemory*, VkDeviceSize> m_allocations;
 #endif
         };
     }

@@ -34,9 +34,7 @@
 #define VMA_IMPLEMENTATION
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 
-#pragma warning(push, 3)
 #include <vma/vk_mem_alloc.h>
-#pragma warning(pop)
 
 namespace AZ
 {
@@ -302,7 +300,9 @@ namespace AZ
 
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) != deviceExtensions.end())
+            {
                 requiredExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
+            }
 
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
@@ -1271,16 +1271,24 @@ namespace AZ
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
 
             if (context.GetBufferMemoryRequirements2 && context.GetImageMemoryRequirements2)
+            {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+            }
 
             if (context.BindBufferMemory2 && context.BindImageMemory2)
+            {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
+            }
 
             if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) != deviceExtensions.end())
+            {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+            }
 
             if (physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
+            {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+            }
 
             VkResult errorCode = vmaCreateAllocator(&allocatorInfo, &m_vmaMemoryAllocator);
             AssertSuccess(errorCode);
@@ -1291,7 +1299,9 @@ namespace AZ
         void Device::ShutdownVulkanAllocator()
         {
             if (m_vmaMemoryAllocator != VK_NULL_HANDLE)
+            {
                 vmaDestroyAllocator(m_vmaMemoryAllocator);
+            }
         }
 
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const

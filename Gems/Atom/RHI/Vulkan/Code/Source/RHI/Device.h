@@ -38,9 +38,10 @@
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
 
-#include <vma/vk_mem_alloc.h>
-
 #include "BindlessDescriptorPool.h"
+
+// VMA forward declare
+typedef struct VmaAllocator_T* VmaAllocator; // matched from vk_mem_alloc.h v3.0.1
 
 namespace AZ
 {
@@ -95,7 +96,7 @@ namespace AZ
 
             AsyncUploadQueue& GetAsyncUploadQueue();
 
-            VmaAllocator GetMemoryAllocator()
+            VmaAllocator GetVmaAllocator()
             {
                 return m_vmaMemoryAllocator;
             }

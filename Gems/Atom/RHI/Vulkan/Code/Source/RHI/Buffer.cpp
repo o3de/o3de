@@ -51,11 +51,11 @@ namespace AZ
             return &m_memoryView;
         }
 
-        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memmoryView)
+        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memoryView)
         {
             DeviceObject::Init(device);
             m_ownerQueue.Init(bufferDescriptor);
-            m_memoryView = memmoryView;
+            m_memoryView = memoryView;
 
             SetName(GetName());
             return RHI::ResultCode::Success;

@@ -48,11 +48,9 @@ namespace AZ
             allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
             allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-            VmaAllocator allocator = device.GetMemoryAllocator();
-            if (vmaCreateBuffer(allocator, &createInfo, &allocInfo, &m_vkBuffer, &m_vmaAllocation, &m_vmaAllocationInfo) != VK_SUCCESS)
-                return RHI::ResultCode::OutOfMemory;
-
-            return RHI::ResultCode::Success;
+            VmaAllocator allocator = device.GetVmaAllocator();
+            VkResult result = vmaCreateBuffer(allocator, &createInfo, &allocInfo, &m_vkBuffer, &m_vmaAllocation, &m_vmaAllocationInfo);
+            return ConvertResult(result);
         }
 
         RHI::ResultCode BufferMemory::Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor)
@@ -92,16 +90,22 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
 
             void* mappedPtr;
-            VkResult vkResult = vmaMapMemory(device.GetMemoryAllocator(), m_vmaAllocation, &mappedPtr);
+            VkResult vkResult = vmaMapMemory(device.GetVmaAllocator(), m_vmaAllocation, &mappedPtr);
             if (vkResult != VK_SUCCESS)
+            {
+                AZ_Error("RHI", false, "Failed to map vma buffer, error = %s", GetResultString(vkResult));
                 return nullptr;
+            }
 
             if (hostAccess == RHI::HostMemoryAccess::Read)
             {
                 // VMA will check if this is necessary
-                vkResult = vmaInvalidateAllocation(device.GetMemoryAllocator(), m_vmaAllocation, offset, size);
+                vkResult = vmaInvalidateAllocation(device.GetVmaAllocator(), m_vmaAllocation, offset, size);
                 if (vkResult != VK_SUCCESS)
+                {
+                    AZ_Error("RHI", false, "Failed to InvalidateAllocation vma buffer, error = %s", GetResultString(vkResult));
                     return nullptr;
+                }
             }
 
             return static_cast<CpuVirtualAddress>(mappedPtr);
@@ -112,9 +116,12 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
 
             if (hostAccess == RHI::HostMemoryAccess::Write)
-                vmaFlushAllocation(device.GetMemoryAllocator(), m_vmaAllocation, offset, VK_WHOLE_SIZE);
+            {
+                VkResult result = vmaFlushAllocation(device.GetVmaAllocator(), m_vmaAllocation, offset, VK_WHOLE_SIZE);
+                AZ_Error("RHI", result == VK_SUCCESS, "Failed to flush vma allocations, error = %s", GetResultString(result));
+            }
 
-            vmaUnmapMemory(device.GetMemoryAllocator(), m_vmaAllocation);
+            vmaUnmapMemory(device.GetVmaAllocator(), m_vmaAllocation);
         }
 
         const VkBuffer BufferMemory::GetNativeBuffer()
@@ -145,7 +152,7 @@ namespace AZ
             if (m_vkBuffer != VK_NULL_HANDLE)
             {
                 Device& device = static_cast<Device&>(GetDevice());
-                vmaDestroyBuffer(device.GetMemoryAllocator(), m_vkBuffer, m_vmaAllocation);
+                vmaDestroyBuffer(device.GetVmaAllocator(), m_vkBuffer, m_vmaAllocation);
                 m_vkBuffer = VK_NULL_HANDLE;
                 m_vmaAllocation = VK_NULL_HANDLE;
             }
