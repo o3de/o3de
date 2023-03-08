@@ -220,11 +220,11 @@ namespace AzToolsFramework
                 const AssetBrowserEntry* item = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                 if (item)
                 {
-                    if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
+                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product || item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                     {
                         return Qt::ItemIsDragEnabled | defaultFlags;
                     }
-                    if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
+                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
                     {
                         return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
                     }
@@ -243,7 +243,7 @@ namespace AzToolsFramework
             auto sourceparent = mapToSource(parent).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
             // We should only have an item as a folder but will check
-            if (sourceparent && (sourceparent->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
+            if (sourceparent && (sourceparent->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
             {
                 AZStd::vector<const AssetBrowserEntry*> entries;
 
@@ -256,7 +256,7 @@ namespace AzToolsFramework
                         Path toPath;
                         bool isFolder{ true };
 
-                        if (entry && (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
+                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
                         {
                             fromPath = entry->GetFullPath();
                             PathView filename = fromPath.Filename();
@@ -268,7 +268,7 @@ namespace AzToolsFramework
                         {
                             fromPath = entry->GetFullPath() + "/*";
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                            toPath = sourceparent->GetFullPath() + "/" + filename.c_str() + "/*";
+                            toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
                         }
                         AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                     }
