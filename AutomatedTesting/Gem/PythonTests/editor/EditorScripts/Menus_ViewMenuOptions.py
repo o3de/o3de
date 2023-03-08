@@ -39,6 +39,7 @@ def Menus_ViewMenuOptions_Work():
         ("Viewport", "Viewport Helpers", "Show Helpers for all entities"),
         ("Viewport", "Viewport Helpers", "Show Helpers for selected entities"),
         ("Viewport", "Viewport Helpers", "Hide Helpers"),
+        ("Refresh Style",)
     ]
 
     # 1) Open an existing simple level
