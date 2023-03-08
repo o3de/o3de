@@ -18,7 +18,7 @@
 
 namespace AzQtComponents
 {
-    class AssetFolderExpandedTableView;
+    class AssetFolderTableView;
 }
 
 namespace AzToolsFramework
@@ -52,7 +52,7 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
-            AzQtComponents::AssetFolderExpandedTableView* GetExpandedTableViewWidget() const;
+            AzQtComponents::AssetFolderTableView* GetExpandedTableViewWidget() const;
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
 
@@ -63,7 +63,7 @@ namespace AzToolsFramework
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
-            AzQtComponents::AssetFolderExpandedTableView* m_expandedTableViewWidget = nullptr;
+            AzQtComponents::AssetFolderTableView* m_expandedTableViewWidget = nullptr;
             AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
             AssetBrowserExpandedFilterModel* m_assetFilterModel = nullptr;
 

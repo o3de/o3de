@@ -18,14 +18,14 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
-    class AZ_QT_COMPONENTS_API AssetFolderExpandedTableView
+    class AZ_QT_COMPONENTS_API AssetFolderTableView
         : public TableView
     {
         Q_OBJECT
 
     public:
-        explicit AssetFolderExpandedTableView(QWidget* parent = nullptr);
-        ~AssetFolderExpandedTableView() override;
+        explicit AssetFolderTableView(QWidget* parent = nullptr);
+        ~AssetFolderTableView() override;
 
         void SetShowSearchResultsMode(bool searchMode);
         void setRootIndex(const QModelIndex& index) override;

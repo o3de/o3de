@@ -15,7 +15,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Utils/Utils.h>
 
-#include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -32,7 +32,7 @@ namespace AzToolsFramework
     {
         AssetBrowserExpandedTableView::AssetBrowserExpandedTableView(QWidget* parent)
             : QWidget(parent)
-            , m_expandedTableViewWidget(new AzQtComponents::AssetFolderExpandedTableView(parent))
+            , m_expandedTableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
             , m_expandedTableViewProxyModel(new AssetBrowserExpandedTableViewProxyModel(parent))
             , m_assetFilterModel(new AssetBrowserExpandedFilterModel(parent))
         {
@@ -49,7 +49,7 @@ namespace AzToolsFramework
 
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderExpandedTableView::showInFolderTriggered,
+                &AzQtComponents::AssetFolderTableView::showInFolderTriggered,
                 this,
                 [this](const QModelIndex& index)
                 {
@@ -60,7 +60,7 @@ namespace AzToolsFramework
             // Track the root index on the proxy model as well so it can provide info such as whether an entry is first level or not
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderExpandedTableView::rootIndexChanged,
+                &AzQtComponents::AssetFolderTableView::rootIndexChanged,
                 m_expandedTableViewProxyModel,
                 &AssetBrowserExpandedTableViewProxyModel::SetRootIndex);
 
@@ -71,7 +71,7 @@ namespace AzToolsFramework
 
         AssetBrowserExpandedTableView::~AssetBrowserExpandedTableView() = default;
 
-        AzQtComponents::AssetFolderExpandedTableView* AssetBrowserExpandedTableView::GetExpandedTableViewWidget() const
+        AzQtComponents::AssetFolderTableView* AssetBrowserExpandedTableView::GetExpandedTableViewWidget() const
         {
             return m_expandedTableViewWidget;
         }

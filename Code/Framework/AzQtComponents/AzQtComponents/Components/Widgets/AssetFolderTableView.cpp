@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzQtComponents/Components/Widgets/AssetFolderExpandedTableView.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
@@ -20,15 +20,15 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
-    AssetFolderExpandedTableView::AssetFolderExpandedTableView(QWidget* parent)
+    AssetFolderTableView::AssetFolderTableView(QWidget* parent)
         : TableView(parent)
     {
         setSortingEnabled(true);
     }
 
-    AssetFolderExpandedTableView::~AssetFolderExpandedTableView() = default;
+    AssetFolderTableView::~AssetFolderTableView() = default;
 
-    void AssetFolderExpandedTableView::setRootIndex(const QModelIndex& index)
+    void AssetFolderTableView::setRootIndex(const QModelIndex& index)
     {
         if (index != rootIndex())
         {
@@ -38,11 +38,11 @@ namespace AzQtComponents
     }
 
 
-    void AssetFolderExpandedTableView::SetShowSearchResultsMode(bool searchMode)
+    void AssetFolderTableView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
     }
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_AssetFolderExpandedTableView.cpp"
+#include "Components/Widgets/moc_AssetFolderTableView.cpp"
