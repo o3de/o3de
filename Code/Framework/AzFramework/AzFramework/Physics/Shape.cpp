@@ -49,7 +49,7 @@ namespace Physics
                         "If set, this collider will partake in collision in the physical simulation.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetSimulatedPropertyVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_stubIsSimulated, "Simulated",
-                        "If set, this collider will partake in collision in the physical simulation. Currently disabled since this collider is acting as a trigger.")
+                        "If set, this collider will partake in collision in the physical simulation. Currently disabled because this collider is acting as a trigger.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetStubSimulatedPropertyVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isInSceneQueries, "In Scene Queries", "If set, this collider will be visible for scene queries")
