@@ -643,7 +643,8 @@ namespace AZ::Dom
             sourceContext.m_value.EraseMember(sourceContext.m_key.GetKey());
         }
 
-        const PathContext& destContext = destLookup.GetValue();
+        auto newDestLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        const PathContext& destContext = newDestLookup.GetValue();
         const PathEntry& destinationIndex = destContext.m_key;
         Value& targetValue = destContext.m_value;
 
