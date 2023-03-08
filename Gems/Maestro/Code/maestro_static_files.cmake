@@ -39,7 +39,7 @@ set(FILES
     Source/Cinematics/SoundTrack.cpp
     Source/Cinematics/TrackEventTrack.cpp
     Source/Cinematics/AnimSplineTrack.h
-    Source/Cinematics/AnimSplineTrack_Vec2Specialization.h
+    Source/Cinematics/AnimSplineTrack_Vec2Specialization.cpp
     Source/Cinematics/AnimTrack.h
     Source/Cinematics/AssetBlendTrack.h
     Source/Cinematics/BoolTrack.h

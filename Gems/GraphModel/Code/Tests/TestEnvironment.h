@@ -10,11 +10,9 @@
 
 // AZ ...
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzTest/AzTest.h>
@@ -28,6 +26,12 @@
 
 // Mock GraphCanvas buses ...
 #include <Tests/MockGraphCanvas.h>
+
+namespace AZ
+{
+    class ComponentApplication;
+    class ReflectContext;
+}
 
 namespace GraphModelIntegrationTest
 {

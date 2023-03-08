@@ -119,30 +119,21 @@ namespace LmbrCentral
     {
         EditorSplineComponentMode::RegisterActions();
         EditorTubeShapeComponentMode::RegisterActions();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::RegisterActions();
-        }
+        AzToolsFramework::BoxComponentMode::RegisterActions();
     }
 
     void LmbrCentralEditorModule::OnActionContextModeBindingHook()
     {
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToModes();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToModes();
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
     {
         EditorSplineComponentMode::BindActionsToMenus();
         EditorTubeShapeComponentMode::BindActionsToMenus();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToMenus();
     }
 
     void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()

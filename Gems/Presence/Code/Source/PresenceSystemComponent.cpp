@@ -9,6 +9,8 @@
 #include <PresenceSystemComponent.h>
 #include <Presence/PresenceNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Presence
 {

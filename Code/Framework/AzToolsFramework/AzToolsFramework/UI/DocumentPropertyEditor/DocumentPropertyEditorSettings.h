@@ -8,8 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/SettingsRegistrar.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {
@@ -29,15 +35,7 @@ namespace AzToolsFramework
 
         virtual ~DocumentPropertyEditorSettings();
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
-                    "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         void SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
         bool GetExpanderStateForRow(const AZ::Dom::Path& rowPath);

@@ -14,6 +14,7 @@
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -31,14 +32,14 @@ namespace PhysX
     }
 
     FixedJointComponent::FixedJointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties)
         : JointComponent(configuration, genericProperties)
     {
     }
 
     FixedJointComponent::FixedJointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
         const JointLimitProperties& limitProperties)
         : JointComponent(configuration, genericProperties, limitProperties)
@@ -85,8 +86,8 @@ namespace PhysX
         {
             m_jointHandle = sceneInterface->AddJoint(
                 leadFollowerInfo.m_followerBody->m_sceneOwner,
-                &configuration,  
-                parentHandle, 
+                &configuration,
+                parentHandle,
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }

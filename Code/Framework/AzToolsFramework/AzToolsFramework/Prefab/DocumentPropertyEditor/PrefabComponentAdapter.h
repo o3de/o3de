@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 
 namespace AzToolsFramework::Prefab
@@ -16,19 +15,24 @@ namespace AzToolsFramework::Prefab
     class PrefabOverridePublicInterface;
     class PrefabPublicInterface;
 
-    class PrefabAdapter
-        : public AZ::DocumentPropertyEditor::ReflectionAdapter
-        , private PrefabAdapterInterface
+    class PrefabComponentAdapter
+        : public AZ::DocumentPropertyEditor::ComponentAdapter
     {
     public:
-        PrefabAdapter();
-        ~PrefabAdapter();
-    private:
-        void AddPropertyLabelNode(
+        PrefabComponentAdapter();
+        ~PrefabComponentAdapter();
+
+        void SetComponent(AZ::Component* componentInstance) override;
+
+        void CreateLabel(
             AZ::DocumentPropertyEditor::AdapterBuilder* adapterBuilder,
             AZStd::string_view labelText,
-            const AZ::Dom::Path& relativePathFromEntity,
-            AZ::EntityId entityId) override;
+            AZStd::string_view serializedPath) override;
+
+        AZ::Dom::Value HandleMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message) override;
+
+    private:
+        AZStd::string m_componentAlias;
 
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;

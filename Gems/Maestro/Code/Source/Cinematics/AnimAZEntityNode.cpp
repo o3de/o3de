@@ -12,6 +12,7 @@
 
 #include <AzFramework/Components/CameraBus.h>   // for definition of EditorCameraComponentTypeId
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
@@ -122,7 +123,7 @@ CAnimComponentNode* CAnimAzEntityNode::GetComponentNodeForComponentWithTypeId(co
 CAnimComponentNode* CAnimAzEntityNode::GetTransformComponentNode() const
 {
     CAnimComponentNode* retTransformNode = GetComponentNodeForComponentWithTypeId(AZ::Uuid(AZ::EditorTransformComponentTypeId));
-    
+
     if (!retTransformNode)
     {
         // if not Editor transform, try run-time transform
