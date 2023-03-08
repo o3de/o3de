@@ -214,7 +214,8 @@ def resolve_gem_dependency_paths(
         project_json_data = manifest.get_project_json_data(project_path=project_path)
         active_gem_names = project_json_data.get('gem_names',[])
         enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
-        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+        if enabled_gems_file.is_file():
+            active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
     else:
         active_gem_names = engine_json_data.get('gem_names',[])
 
