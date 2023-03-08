@@ -799,7 +799,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
                     AzToolsFramework::EntityOutlinerRequestBus::Broadcast(
                         &AzToolsFramework::EntityOutlinerRequests::RenameEntity, selectedEntities.front());
                 }
-            });
+            }
+        );
 
         m_actionManagerInterface->InstallEnabledStateCallback(
             actionIdentifier,
@@ -816,10 +817,13 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 }
 
                 return true;
-            });
+            }
+        );
 
         // Trigger update whenever entity selection changes.
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+        m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "F2");
     }
 
     // Find Entity (in the Entity Outliner)
