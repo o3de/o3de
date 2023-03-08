@@ -222,12 +222,12 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_DebugDrawCorrect)
     {
-        AZ::Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.4f, -0.2f, -0.4f, 0.8f), 0.7f);
-        AZ::Vector3 nonUniformScale(1.0f, 1.5f, 2.0f);
-        AZ::Vector3 boxDimensions(3.0f, 4.0f, 5.0f);
-        AZ::Vector3 translationOffset(2.0f, -5.0f, 3.0f);
+        const AZ::Vector3 boxDimensions(3.0f, 4.0f, 5.0f);
+        const AZ::Transform transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion(0.4f, -0.2f, -0.4f, 0.8f), 0.7f);
+        const AZ::Vector3 translationOffset(2.0f, -5.0f, 3.0f);
+        const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 2.0f);
 
-        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale);
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(boxDimensions, transform, translationOffset, nonUniformScale);
 
         // turn off the shape visibility, so that only the shape collider component debug draws
         LmbrCentral::EditorShapeComponentRequestsBus::Event(
@@ -241,12 +241,12 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, ShapeCollider_BoxWithTranslationOffset_SamplePointsCorrect)
     {
-        AZ::Transform transform(AZ::Vector3(4.0f, 7.0f, -2.0f), AZ::Quaternion(0.5f, -0.1f, -0.7f, 0.5f), 1.5f);
-        AZ::Vector3 nonUniformScale(2.0f, 1.0f, 1.5f);
-        AZ::Vector3 boxDimensions(6.0f, 2.0f, 7.0f);
-        AZ::Vector3 translationOffset(4.0f, 1.0f, 6.0f);
+        const AZ::Vector3 boxDimensions(6.0f, 2.0f, 7.0f);
+        const AZ::Transform transform(AZ::Vector3(4.0f, 7.0f, -2.0f), AZ::Quaternion(0.5f, -0.1f, -0.7f, 0.5f), 1.5f);
+        const AZ::Vector3 translationOffset(4.0f, 1.0f, 6.0f);
+        const AZ::Vector3 nonUniformScale(2.0f, 1.0f, 1.5f);
 
-        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(transform, boxDimensions, translationOffset, nonUniformScale);
+        EntityPtr boxShapeEntity = CreateBoxShapeColliderEditorEntity(boxDimensions, transform, translationOffset, nonUniformScale);
 
         const AZStd::vector<AZ::Vector3> samplePoints =
             boxShapeEntity->FindComponent<PhysX::EditorShapeColliderComponent>()->GetSamplePoints();
@@ -265,8 +265,8 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, ShapeCollider_SphereWithTranslationOffset_DebugDrawCorrect)
     {
         EntityPtr sphereShapeEntity = CreateSphereShapeColliderEditorEntity(
-            AZ::Transform(AZ::Vector3(-5.0f, -3.0f, 1.0f), AZ::Quaternion(-0.3f, 0.9f, -0.1f, 0.3f), 1.4f),
             2.5f,
+            AZ::Transform(AZ::Vector3(-5.0f, -3.0f, 1.0f), AZ::Quaternion(-0.3f, 0.9f, -0.1f, 0.3f), 1.4f),
             AZ::Vector3(4.0f, -4.0f, 6.0f)
         );
 
@@ -284,8 +284,8 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, ShapeCollider_SphereWithTranslationOffset_SamplePointsCorrect)
     {
         EntityPtr sphereShapeEntity = CreateSphereShapeColliderEditorEntity(
-            AZ::Transform(AZ::Vector3(4.0f, -1.0f, -1.0f), AZ::Quaternion(-0.7f, 0.5f, 0.1f, 0.5f), 2.5f),
             0.6f,
+            AZ::Transform(AZ::Vector3(4.0f, -1.0f, -1.0f), AZ::Quaternion(-0.7f, 0.5f, 0.1f, 0.5f), 2.5f),
             AZ::Vector3(-2.0f, 5.0f, -3.0f)
         );
 
@@ -305,9 +305,9 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, ShapeCollider_CapsuleWithTranslationOffset_DebugDrawCorrect)
     {
         EntityPtr capsuleShapeEntity = CreateCapsuleShapeColliderEditorEntity(
-            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
             1.5f,
             6.0f,
+            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
             AZ::Vector3(-3.0f, -4.0f, -5.0f)
         );
 
@@ -325,9 +325,9 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, ShapeCollider_CapsuleWithTranslationOffset_SamplePointsCorrect)
     {
         EntityPtr sphereShapeEntity = CreateCapsuleShapeColliderEditorEntity(
-            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
             1.5f,
             6.0f,
+            AZ::Transform(AZ::Vector3(2.0f, 6.0f, -1.0f), AZ::Quaternion(0.9f, 0.1f, 0.3f, 0.3f), 2.0f),
             AZ::Vector3(-3.0f, -4.0f, -5.0f)
         );
 
@@ -348,12 +348,12 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, Collider_CylinderWithOffset_CorrectDebugDraw)
     {
+        const float radius = 2.0f;
+        const float height = 7.5f;
         const AZ::Transform transform(AZ::Vector3(-1.0f, -3.0f, -4.0f), AZ::Quaternion(0.3f, 0.1f, 0.9f, 0.3f), 1.0f);
         const AZ::Vector3 positionOffset(2.0f, 6.0f, -3.0f);
         const AZ::Quaternion rotationOffset(-0.5f, -0.1f, 0.7f, 0.5f);
-        const float radius = 2.0f;
-        const float height = 7.5f;
-        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -364,13 +364,13 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndRigidBody_CorrectDebugDraw)
     {
+        const float radius = 2.5f;
+        const float height = 9.0f;
         const AZ::Transform transform(AZ::Vector3(4.0f, -2.0f, 4.0f), AZ::Quaternion(0.2f, 0.8f, -0.4f, 0.4f), 1.5f);
         const AZ::Vector3 positionOffset(2.0f, 3.0f, -7.0f);
         const AZ::Quaternion rotationOffset(-0.1f, -0.7f, 0.1f, 0.7f);
-        const float radius = 2.5f;
-        const float height = 9.0f;
-        EntityPtr editorEntity =
-            CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, AZStd::nullopt, RigidBodyType::Dynamic);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            radius, height, transform, positionOffset, rotationOffset, AZStd::nullopt, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -381,14 +381,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetAndNonUniformScale_CorrectDebugDraw)
     {
-        const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion(0.4f, 0.8f, 0.2f, 0.4f), 0.6f);
-        const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.8f);
-        const AZ::Vector3 positionOffset(3.0f, -2.0f, -6.0f);
-        const AZ::Quaternion rotationOffset(0.3f, 0.3f, -0.1f, 0.9f);
         const float radius = 1.5f;
         const float height = 6.0f;
+        const AZ::Transform transform(AZ::Vector3(2.0f, 4.0f, -7.0f), AZ::Quaternion(0.4f, 0.8f, 0.2f, 0.4f), 0.6f);
+        const AZ::Vector3 positionOffset(3.0f, -2.0f, -6.0f);
+        const AZ::Quaternion rotationOffset(0.3f, 0.3f, -0.1f, 0.9f);
+        const AZ::Vector3 nonUniformScale(2.0f, 0.5f, 0.8f);
         EntityPtr editorEntity =
-            CreateCylinderPrimitiveColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, nonUniformScale);
+            CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset, nonUniformScale);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 
@@ -399,14 +399,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, Collider_CylinderWithOffsetNonUniformScaleAndRigidBody_CorrectDebugDraw)
     {
-        const AZ::Transform transform(AZ::Vector3(-3.0f, -2.0f, -4.0f), AZ::Quaternion(0.5f, 0.1f, -0.7f, 0.5f), 1.8f);
-        const AZ::Vector3 nonUniformScale(0.6f, 0.8f, 1.4f);
-        const AZ::Vector3 positionOffset(2.0f, 7.0f, -1.0f);
-        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
         const float radius = 2.5f;
         const float height = 9.0f;
+        const AZ::Transform transform(AZ::Vector3(-3.0f, -2.0f, -4.0f), AZ::Quaternion(0.5f, 0.1f, -0.7f, 0.5f), 1.8f);
+        const AZ::Vector3 positionOffset(2.0f, 7.0f, -1.0f);
+        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
+        const AZ::Vector3 nonUniformScale(0.6f, 0.8f, 1.4f);
         EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
-            transform, positionOffset, rotationOffset, radius, height, nonUniformScale, RigidBodyType::Dynamic);
+            radius, height, transform, positionOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         const AZ::Aabb debugDrawAabb = GetDebugDrawAabb(editorEntity->GetId());
 

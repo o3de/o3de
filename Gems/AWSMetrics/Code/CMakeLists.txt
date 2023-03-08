@@ -105,7 +105,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Gem::AWSMetrics.Static
+            Gem::AWSCore
+            3rdParty::AWSNativeSDK::Core
     RUNTIME_DEPENDENCIES
             Gem::AWSMetrics
 )

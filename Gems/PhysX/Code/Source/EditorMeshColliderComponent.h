@@ -8,31 +8,24 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/Quaternion.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
-#include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/MeshColliderComponentBus.h>
-#include <System/PhysXSystem.h>
 
 #include <Editor/DebugDraw.h>
 
@@ -70,6 +63,7 @@ namespace PhysX
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
 
     private:
+        AZStd::string PhysXMeshAssetShapeTypeName() const;
         bool ShowingSubdivisionLevel() const;
         AZ::u32 OnConfigurationChanged();
     };
