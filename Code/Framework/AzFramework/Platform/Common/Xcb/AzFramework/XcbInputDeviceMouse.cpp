@@ -328,6 +328,7 @@ namespace AzFramework
 
     void XcbInputDeviceMouse::HandleCursorState(xcb_window_t window, SystemCursorState systemCursorState)
     {
+        return;
         const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
             (systemCursorState == SystemCursorState::ConstrainedAndVisible);
         const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||

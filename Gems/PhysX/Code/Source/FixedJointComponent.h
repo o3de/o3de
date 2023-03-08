@@ -9,11 +9,13 @@
 
 #include <AzCore/Component/Component.h>
 #include <Source/JointComponent.h>
+#include <PhysX/Joint/PhysXJointRequestsBus.h>
 
 namespace PhysX
 {
     class FixedJointComponent
         : public JointComponent
+        , public JointRequestBus::Handler
     {
     public:
         AZ_COMPONENT(FixedJointComponent, "{02E6C633-8F44-4CEE-AE94-DCB06DE36422}", JointComponent);
@@ -30,8 +32,23 @@ namespace PhysX
             const JointLimitProperties& limitProperties);
         ~FixedJointComponent() = default;
 
+        // JointRequestBus::Handler overrides ...
+        float GetPosition() const override;
+        float GetVelocity() const override;
+        AZ::Transform GetTransform() const override;
+        void SetVelocity(float velocity) override;
+        void SetMaximumForce(float force) override;
+        AZStd::pair<float, float> GetLimits() const override;
+        AZStd::pair<AZ::Vector3, AZ::Vector3> GetForces() const override;
+        float GetTargetVelocity() const override;
+
     protected:
         // JointComponent
         void InitNativeJoint() override;
+        void DeinitNativeJoint() override;
+
+    private:
+        physx::PxFixedJoint* GetNativeJoint() const;
+        physx::PxFixedJoint* m_nativeJoint{ nullptr };
     };
 } // namespace PhysX

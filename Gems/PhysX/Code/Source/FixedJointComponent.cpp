@@ -16,6 +16,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <PhysX/NativeTypeIdentifiers.h>
 #include <PxPhysicsAPI.h>
 
 namespace PhysX
@@ -91,5 +92,81 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
+        m_nativeJoint = FixedJointComponent::GetNativeJoint();
+        if (m_nativeJoint)
+        {
+            JointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        }
     }
+
+    void FixedJointComponent::DeinitNativeJoint()
+    {
+        JointRequestBus::Handler::BusDisconnect();
+        m_nativeJoint = nullptr;
+    }
+
+    physx::PxFixedJoint* FixedJointComponent::GetNativeJoint() const
+    {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "No sceneInterface");
+        const auto* joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
+        AZ_Assert(joint->GetNativeType() == NativeTypeIdentifiers::FixedJoint, "It is not PhysxFixed Joint");
+        physx::PxJoint* native = static_cast<physx::PxJoint*>(joint->GetNativePointer());
+        physx::PxFixedJoint* nativeFixed = native->is<physx::PxFixedJoint>();
+        return nativeFixed;
+    }
+
+
+    float FixedJointComponent::GetPosition() const
+    {
+        AZ_Warning("FixedJointComponent::GetPosition", false, "Cannot get position in fixed joint");
+        return 0;
+    }
+
+    float FixedJointComponent::GetVelocity() const
+    {
+        AZ_Warning("FixedJointComponent::GetVelocity", false, "Cannot get velocity in fixed joint");
+        return 0;
+    }
+
+    AZ::Transform FixedJointComponent::GetTransform() const
+    {
+        const auto worldFromLocal = m_nativeJoint->getRelativeTransform();
+        return AZ::Transform(
+            AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
+            AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
+            1.f);
+    }
+
+    void FixedJointComponent::SetVelocity(float velocity)
+    {
+        AZ_Warning("FixedJointComponent::SetVelocity", false, "Cannot set velocity in fixed joint");
+    }
+
+    void FixedJointComponent::SetMaximumForce(float force)
+    {
+        AZ_Warning("FixedJointComponent::SetMaximumForce", false, "Cannot set maximum force in fixed joint");
+    }
+
+    AZStd::pair<float, float> FixedJointComponent::GetLimits() const
+    {
+        AZ_Warning("FixedJointComponent::GetLimits", false, "Cannot get limits in fixed joint");
+        return AZStd::pair<float, float>{ -1.f, -1.f };
+    }
+
+    AZStd::pair<AZ::Vector3, AZ::Vector3> FixedJointComponent::GetForces() const
+    {
+        const auto constraint = m_nativeJoint->getConstraint();
+        physx::PxVec3 linear{ 0.f };
+        physx::PxVec3 angular{ 0.f };
+        constraint->getForce(linear, angular);
+        return { PxMathConvert(linear), PxMathConvert(angular) };
+    }
+
+    float FixedJointComponent::GetTargetVelocity() const
+    {
+        AZ_Warning("FixedJointComponent::GetTargetVelocity", false, "Cannot get GetTargetVelocity in fixed joint");
+        return 0.f;
+    };
+
 } // namespace PhysX

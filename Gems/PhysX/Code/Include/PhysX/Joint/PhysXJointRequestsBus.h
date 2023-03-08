@@ -29,7 +29,7 @@ namespace PhysX
         virtual float GetPosition() const = 0;
 
         //! Returns velocity.
-        //! It is a relative velocity of the entity in the direction of the free axis of the joint.
+        //! It is a relative velocity of the entity in the direction of the free axis of the joint that is measured.
         //! For a hinge joint rotation velocity in radians per second. For prismatic joint it is linear velocity in
         //! meters per second.
         virtual float GetVelocity() const = 0;
@@ -37,6 +37,12 @@ namespace PhysX
         //! Sets drive velocity.
         //! @param velocity velocity in meters per second (for prismatic joint) or radians per second (for hinge joint)
         virtual void SetVelocity(float velocity) = 0;
+
+        //! Returns requested velocity.
+        //! It is a relative velocity of the entity in the direction of the free axis of the joint that was requested from drive.
+        //! For a hinge joint rotation velocity in radians per second. For prismatic joint it is linear velocity in
+        //! meters per second.
+        virtual float GetTargetVelocity() const = 0;
 
         //! Gets local transformation of joint.
         virtual AZ::Transform GetTransform() const = 0;
@@ -47,6 +53,11 @@ namespace PhysX
         //! Sets maximum motor force.
         //! @param force in Newtons (for prismatic joint) or Newton-meters (for hinge joint).
         virtual void SetMaximumForce(float force) = 0;
+
+        //! Get forces (force vector and torque vector) from joint.
+        //! @returns pair of 3d vectors : force in Newtons and torque in Newton-meters.
+        virtual AZStd::pair<AZ::Vector3, AZ::Vector3> GetForces() const = 0;
+
     };
 
     using JointRequestBus = AZ::EBus<JointRequests>;

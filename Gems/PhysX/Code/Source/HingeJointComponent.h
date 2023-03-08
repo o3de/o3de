@@ -10,12 +10,14 @@
 #include <AzCore/Component/Component.h>
 #include <PhysX/Joint/PhysXJointRequestsBus.h>
 #include <Source/JointComponent.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace PhysX
 {
     class HingeJointComponent
         : public JointComponent
         , public JointRequestBus::Handler
+
     {
     public:
         AZ_COMPONENT(HingeJointComponent, "{A5CA0031-72E4-4908-B764-EDECD3091882}", JointComponent);
@@ -37,6 +39,8 @@ namespace PhysX
         void SetVelocity(float velocity) override;
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
+        AZStd::pair<AZ::Vector3, AZ::Vector3> GetForces() const override;
+        float GetTargetVelocity() const override;
 
     protected:
         // JointComponent overrides ...

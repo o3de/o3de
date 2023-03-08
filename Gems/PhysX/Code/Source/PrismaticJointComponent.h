@@ -45,11 +45,21 @@ namespace PhysX
         void SetVelocity(float velocity) override;
         void SetMaximumForce(float force) override;
         AZStd::pair<float, float> GetLimits() const override;
+        AZStd::pair<AZ::Vector3, AZ::Vector3> GetForces() const override;
+        float GetTargetVelocity() const override;
 
     private:
+        physx::PxJoint* GetNativeJoint() const;
         bool TryCachePhysXD6Joint();
+        bool TryCachePhysXPrismaticJoint();
 
         // D6 joint will only be used when the "Use Motor" option is enabled.
         physx::PxD6Joint* m_nativeD6Joint{ nullptr };
+        // Prismatic joint will be used when the "Use Motor" option is disabled.
+        physx::PxPrismaticJoint* m_nativePrismaticJoint{ nullptr };
+        // Native PhysX joint pointer
+        physx::PxJoint* m_nativeJoint{ nullptr };
+        float m_motorVelocity{ 0 };
+
     };
 } // namespace PhysX
