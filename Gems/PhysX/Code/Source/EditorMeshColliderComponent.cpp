@@ -93,6 +93,7 @@ namespace PhysX
     EditorProxyAssetShapeConfig::EditorProxyAssetShapeConfig(
         const Physics::PhysicsAssetShapeConfiguration& assetShapeConfiguration)
     {
+        m_physicsAsset.m_pxAsset = assetShapeConfiguration.m_asset;
         m_physicsAsset.m_configuration = assetShapeConfiguration;
     }
 
