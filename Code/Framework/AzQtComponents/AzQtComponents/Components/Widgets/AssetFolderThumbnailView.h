@@ -113,8 +113,6 @@ namespace AzQtComponents
 
         void SetShowSearchResultsMode(bool searchMode);
 
-        void HideProductAssets(bool checked);
-
     signals:
         void rootIndexChanged(const QModelIndex& idx);
         void showInFolderTriggered(const QModelIndex& idx);
