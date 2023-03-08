@@ -254,7 +254,7 @@ namespace AZ
             imageDescriptor.m_size = RHI::Size(1, 1, 1);
             imageDescriptor.m_format = format;
             imageDescriptor.m_arraySize = 1;
-            imageDescriptor.m_bindFlags = formatBindFlag | RHI::ImageBindFlags::ShaderRead;
+            imageDescriptor.m_bindFlags = formatBindFlag | RHI::ImageBindFlags::ShaderReadWrite;
             imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::All;
 
             RPI::CreateAttachmentImageRequest createImageRequest;
@@ -268,7 +268,7 @@ namespace AZ
 
             auto systemAttachmentImage = RPI::AttachmentImage::Create(createImageRequest);
             m_systemAttachmentImages[format] = systemAttachmentImage;
-            return systemAttachmentImage;
+            return m_systemAttachmentImages[format];
         }
 
         bool ImageSystem::RegisterAttachmentImage(AttachmentImage* attachmentImage)
