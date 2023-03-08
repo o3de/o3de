@@ -79,21 +79,31 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
-    if not enabled_gem_file:
-        enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
-
-    # remove the gem
     gem_name = gem_name or gem_json_data.get('gem_name','')
     ret_val = 0
-    if enabled_gem_file.is_file():
-        ret_val = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
 
-    # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
-    # registered with the project.json nor engine.json
+    # Remove the gem from the deprecated enabled_gems.cmake file
+    gem_enabled_in_cmake = False
+    if not enabled_gem_file:
+        enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    if enabled_gem_file.is_file():
+        gem_enabled_in_cmake = gem_name in cmake.get_enabled_gems(enabled_gem_file)
+        if gem_enabled_in_cmake:
+            ret_val = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
+
+    # Remove the name of the gem from the project.json "gem_names" field 
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f'Could not read project.json content under {project_path}.')
+        return 1
+    gem_names = project_json_data.get('gem_names',[])
+    if not gem_enabled_in_cmake and not gem_name in gem_names:
+        return 1
+
     ret_val = project_properties.edit_project_props(project_path,
                                                     delete_gem_names=gem_name) or ret_val
 
-    return ret_val
+    return ret_val 
 
 
 def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,

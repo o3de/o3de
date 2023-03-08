@@ -12,7 +12,6 @@ Contains methods for query CMake gem target information
 import argparse
 import logging
 import pathlib
-import re
 import sys
 
 from o3de import manifest, utils, compatibility, cmake
@@ -23,63 +22,9 @@ logging.basicConfig(format=utils.LOG_FORMAT)
 enable_gem_start_marker = 'set(ENABLED_GEMS'
 enable_gem_end_marker = ')'
 
-
-def add_gem_dependency(cmake_file: pathlib.Path,
-                       gem_name: str) -> int:
-    """
-    adds a gem dependency to a cmake file
-    :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem with optional version specifier
-    :return: 0 for success or non 0 failure code
-    """
-    if not cmake_file.is_file():
-        logger.error(f'Failed to locate cmake file {str(cmake_file)}')
-        return 1
-
-    gem_name_with_version_specifier = gem_name
-    gem_name, _ = utils.get_object_name_and_optional_version_specifier(gem_name)
-
-    pre_gem_names = ''
-    post_gem_names = ''
-    all_gem_names = '' 
-    indent = 4
-
-    with cmake_file.open('r') as s:
-        file_contents = s.read()
-        if file_contents:
-            # regex to isolate pre, gem names and post 
-            regex_all_gem_names = re.compile('(?P<pre>[\s\S]*set\s*\(\s*ENABLED_GEMS\s*)?(?P<gem_names>[^\)]+)(?P<post>\)[\s\S]*)?')
-            all_gem_names_matches = regex_all_gem_names.search(file_contents)
-            if not all_gem_names_matches:
-                logger.error(f'{cmake_file} is not formatted correctly and cannot be modified.')
-                return 1
-
-            pre_gem_names = all_gem_names_matches.group('pre')
-            post_gem_names = all_gem_names_matches.group('post')
-            if pre_gem_names and not post_gem_names:
-                logger.error(f'{cmake_file} is missing a closing parenthesis or is not formatted correctly.')
-                return 1
-
-            # regex to replace every version of the gem name 
-            regex_replace_gem_name = re.compile(f'(?:^|\s+){gem_name}[=><~]*[\S]*')
-            all_gem_names = regex_replace_gem_name.sub('', all_gem_names_matches.group('gem_names'))
-
-            all_gem_names += f'\n{" "  * indent}{gem_name_with_version_specifier}'
-
-
-    if not pre_gem_names:
-        pre_gem_names = f'\n' \
-                        f'{enable_gem_start_marker}\n' \
-                        f'{" "  * indent}{gem_name_with_version_specifier}\n'
-
-    if not post_gem_names:
-        post_gem_names = f'{enable_gem_end_marker}\n'
-
-    # write the cmake
-    with cmake_file.open('w') as s:
-        s.write(pre_gem_names + all_gem_names + post_gem_names)
-
-    return 0
+# The need for `enabled_gems.cmake` is deprecated
+# Functionality still exists to retrieve and remove gems from `enabled_gems.cmake`
+# but gems should only be added to `project.json` by the o3de CLI
 
 def remove_gem_dependency(cmake_file: pathlib.Path,
                           gem_name: str) -> int:
@@ -96,9 +41,6 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
     # on a line by basis, remove any line with {gem_name}
     t_data = []
     removed = False
-
-    gem_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(gem_name)
-    candidate_gem_name = ''
 
     with cmake_file.open('r') as s:
         in_gem_list = False
@@ -130,15 +72,6 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                     gem_name_list.remove(gem_name)
                     removed = True
                 
-                if not removed:
-                    # Check if there is an alternate match to help the user if they
-                    # didn't provide the correct version
-                    for candidate in gem_name_list:
-                        candidate_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(candidate)
-                        if gem_name_without_version_specifier == candidate_name_without_version_specifier:
-                            candidate_gem_name = candidate
-                            break
-
                 # Append the renaming gems to the line
                 result_line += ' '.join(gem_name_list)
                 # If the in_gem_list was flipped to false, that means the currently parsed line contained the
@@ -152,12 +85,7 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 t_data.append(line)
 
     if not removed:
-        if candidate_gem_name:
-            logger.error(f'Failed to find and remove {gem_name} from {cmake_file},  ' \
-                f'but a similar entry was found "${candidate_gem_name}". ' \
-                'If this is the entry you want to remove please provide the name as listed above.')
-        else:
-            logger.error(f'Failed to remove {gem_name} from {cmake_file}')
+        logger.error(f'Failed to find {gem_name} in {cmake_file}')
         return 1
 
     # write the cmake

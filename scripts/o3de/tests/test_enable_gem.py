@@ -180,9 +180,6 @@ class TestEnableGemCommand:
         def get_engine_gems():
             return [gem_path] if gem_registered_with_engine else []
 
-        def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
-            return 0
-
         def is_file(path : pathlib.Path) -> bool:
             if path.match("*/user/project.json"):
                 return False
@@ -199,7 +196,6 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
-                patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
@@ -212,10 +208,7 @@ class TestEnableGemCommand:
             project_json = get_project_json_data(project_path=project_path)
             gem_name = gem_json.get('gem_name', '')
             gem = gem_name if not optional else {'name':gem_name, 'optional':optional}
-            if not gem_registered_with_engine and not gem_registered_with_project:
-                assert gem in project_json.get('gem_names', [])
-            else:
-                assert gem not in project_json.get('gem_names', [])
+            assert gem in project_json.get('gem_names', [])
 
     @pytest.mark.parametrize("gem_registered_with_project, gem_registered_with_engine, "
                              "gem_version, gem_dependencies, gem_json_data_by_name, dry_run, force, "
@@ -373,8 +366,6 @@ class TestEnableGemCommand:
                 gem_paths.append(gem_path)
             return gem_paths
 
-        def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
-            return 0
 
         def is_file(path : pathlib.Path) -> bool:
             if path.match("*/user/project.json"):
@@ -392,7 +383,6 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
-                patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
@@ -407,7 +397,7 @@ class TestEnableGemCommand:
                 project_json = get_project_json_data(project_path=project_path)
                 gem_name = gem_json.get('gem_name', '')
                 gem = gem_name if not is_optional_gem else {'name':gem_name, 'optional':is_optional_gem}
-                if not gem_registered_with_engine and not gem_registered_with_project and not dry_run:
+                if not dry_run:
                     assert gem in project_json.get('gem_names', [])
                 else:
                     assert gem not in project_json.get('gem_names', [])
@@ -508,8 +498,6 @@ class TestEnableGemCommand:
                         object_validator: callable) -> dict or None:
             return gem_json_data_by_path.get(object_path)
 
-        def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
-            return 0
 
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
             patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
@@ -525,7 +513,6 @@ class TestEnableGemCommand:
             patch('o3de.manifest.get_project_engine_path', side_effect=get_project_engine_path) as get_project_engine_path_patch,\
             patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
             patch('o3de.manifest.get_all_gems', side_effect=get_all_gems) as get_all_gems_patch,\
-            patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
             patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
             patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
             patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:

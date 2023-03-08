@@ -84,12 +84,6 @@ def enable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
-    # Before adding the gem_dependency check if the gem is registered in either the project or engine manifest
-    buildable_gems = manifest.get_engine_gems()
-    buildable_gems.extend(manifest.get_project_gems(project_path))
-    # Convert each path to pathlib.Path object and filter out duplicates using dict.fromkeys
-    buildable_gems = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), buildable_gems)))
-
     # check compatibility
     if force:
         logger.info(f'Bypassing version compatibility check for {gem_json_data["gem_name"]}.')
