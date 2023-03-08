@@ -20,6 +20,7 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -253,7 +254,7 @@ namespace AZ::SceneAPI::Behaviors
             manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GenerateDefaultPrefabMeshGroups, scene);
 
         Events::ManifestMetaInfoBus::Broadcast(&Events::ManifestMetaInfoBus::Events::AddObjects, manifestUpdates);
-        
+
     }
 
     //
