@@ -13,5 +13,6 @@
 namespace PrefabIdentifiers
 {
     inline constexpr AZStd::string_view PrefabFocusChangedUpdaterIdentifier = "o3de.updater.onPrefabFocusChanged";
+    inline constexpr AZStd::string_view PrefabInstancePropagationEndUpdaterIdentifier = "o3de.updater.onPrefabInstancePropagationEnd";
     inline constexpr AZStd::string_view PrefabUnsavedStateChangedUpdaterIdentifier = "o3de.updater.onPrefabUnsavedStateChanged";
 } // namespace PrefabIdentifiers

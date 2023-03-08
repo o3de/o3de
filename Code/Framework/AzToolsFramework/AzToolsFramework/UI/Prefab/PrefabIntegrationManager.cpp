@@ -269,6 +269,9 @@ namespace AzToolsFramework
             // Update actions whenever Prefab Focus changes (or is refreshed).
             m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
 
+            // Update actions whenever the prefab instance propagation process ends.
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier);
+
             // Update actions whenever a Prefab's unsaved state changes.
             m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
         }
@@ -819,6 +822,72 @@ namespace AzToolsFramework
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, actionIdentifier);
                 m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
             }
+
+            if (IsOutlinerOverrideManagementEnabled())
+            {
+                // Revert overrides
+                {
+                    AZStd::string actionIdentifier = "o3de.action.prefabs.revertInstanceOverrides";
+                    AzToolsFramework::ActionProperties actionProperties;
+                    actionProperties.m_name = "Revert overrides";
+                    actionProperties.m_description = "Revert all overrides on this entity.";
+                    actionProperties.m_category = "Prefabs";
+
+                    m_actionManagerInterface->RegisterAction(
+                        EditorIdentifiers::MainWindowActionContextIdentifier,
+                        actionIdentifier,
+                        actionProperties,
+                        [this]()
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() != 1)
+                            {
+                                return;
+                            }
+
+                            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                            if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                                m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
+                                m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity)
+                            {
+                                ContextMenu_RevertOverrides(selectedEntityId);
+                            }
+                        }
+                    );
+
+                    m_actionManagerInterface->InstallEnabledStateCallback(
+                        actionIdentifier,
+                        [prefabPublicInterface = s_prefabPublicInterface,
+                         prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() != 1)
+                            {
+                                return false;
+                            }
+
+                            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                            return !prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                                prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
+                                prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity;
+                        }
+                    );
+
+                    // Refresh this action whenever instance propagation ends, as that could have changed overrideson the current selection.
+                    m_actionManagerInterface->AddActionToUpdater(
+                        EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                    m_actionManagerInterface->AddActionToUpdater(
+                        PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+                }
+            }
         }
 
         void PrefabIntegrationManager::OnWidgetActionRegistrationHook()
@@ -853,6 +922,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
 
             // Viewport Context Menu
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
@@ -865,6 +935,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
             
         }
 
@@ -1948,6 +2019,14 @@ namespace AzToolsFramework
             if (m_actionManagerInterface)
             {
                 m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
+            }
+        }
+
+        void PrefabIntegrationManager::OnPrefabInstancePropagationEnd()
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier);
             }
         }
 

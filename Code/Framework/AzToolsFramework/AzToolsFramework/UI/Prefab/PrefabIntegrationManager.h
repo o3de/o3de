@@ -95,6 +95,7 @@ namespace AzToolsFramework
             // PrefabPublicNotificationBus overrides ...
             void OnRootPrefabInstanceLoaded() override;
             void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
+            void OnPrefabInstancePropagationEnd() override;
 
             // Handles the UI for prefab save operations.
             PrefabSaveHandler m_prefabSaveHandler;
