@@ -12,8 +12,8 @@ set(FILES
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
-    Source/EditorArticulatedBodyComponent.cpp
-    Source/EditorArticulatedBodyComponent.h
+    Source/EditorArticulationLinkComponent.cpp
+    Source/EditorArticulationLinkComponent.h
     Source/EditorComponentDescriptors.cpp
     Source/EditorComponentDescriptors.h
     Source/EditorRigidBodyComponent.cpp

@@ -55,16 +55,16 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<ArticulationLinkData>> m_childLinks;
     };
 
-    class ArticulatedBodyComponent final
+    class ArticulationLinkComponent final
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(ArticulatedBodyComponent, ArticulatedBodyComponentTypeId);
+        AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
 
-        ArticulatedBodyComponent();
-        explicit ArticulatedBodyComponent(AzPhysics::SceneHandle sceneHandle);
-        ~ArticulatedBodyComponent();
+        ArticulationLinkComponent();
+        explicit ArticulationLinkComponent(AzPhysics::SceneHandle sceneHandle);
+        ~ArticulationLinkComponent();
 
         static void Reflect(AZ::ReflectContext* context);
 

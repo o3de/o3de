@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/ArticulatedBodyComponent.h>
+#include <Source/ArticulationLinkComponent.h>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
@@ -30,10 +30,10 @@ namespace PhysX
 {
     // Definitions are put in .cpp so we can have AZStd::unique_ptr<T> member with forward declared T in the header
     // This causes AZStd::unique_ptr<T> ctor/dtor to be generated when full type info is available
-    ArticulatedBodyComponent::ArticulatedBodyComponent() = default;
-    ArticulatedBodyComponent::~ArticulatedBodyComponent() = default;
+    ArticulationLinkComponent::ArticulationLinkComponent() = default;
+    ArticulationLinkComponent::~ArticulationLinkComponent() = default;
 
-    ArticulatedBodyComponent::ArticulatedBodyComponent(AzPhysics::SceneHandle sceneHandle)
+    ArticulationLinkComponent::ArticulationLinkComponent(AzPhysics::SceneHandle sceneHandle)
         : m_attachedSceneHandle(sceneHandle)
     {
 
@@ -66,40 +66,40 @@ namespace PhysX
         *this = ArticulationLinkData();
     }
 
-    void ArticulatedBodyComponent::Reflect(AZ::ReflectContext* context)
+    void ArticulationLinkComponent::Reflect(AZ::ReflectContext* context)
     {
         ArticulationLinkData::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ArticulatedBodyComponent, AZ::Component>()
+            serializeContext->Class<ArticulationLinkComponent, AZ::Component>()
                 ->Version(1)
-                ->Field("ArticulationLinkData", &ArticulatedBodyComponent::m_articulationLinkData)
+                ->Field("ArticulationLinkData", &ArticulationLinkComponent::m_articulationLinkData)
                 ;
         }
     }
 
-    void ArticulatedBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void ArticulationLinkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
-    void ArticulatedBodyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ArticulationLinkComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
     }
 
-    void ArticulatedBodyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void ArticulationLinkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
-    void ArticulatedBodyComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ArticulationLinkComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
     }
 
-    void ArticulatedBodyComponent::CreateRigidBody()
+    void ArticulationLinkComponent::CreateRigidBody()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -128,7 +128,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
     }
 
-    void ArticulatedBodyComponent::DestroyRigidBody()
+    void ArticulationLinkComponent::DestroyRigidBody()
     {
         m_articulation->release();
 
@@ -141,7 +141,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
-    bool ArticulatedBodyComponent::IsRootArticulation() const
+    bool ArticulationLinkComponent::IsRootArticulation() const
     {
         AZ::EntityId parentId = GetEntity()->GetTransform()->GetParentId();
         if (parentId.IsValid())
@@ -150,7 +150,7 @@ namespace PhysX
 
             AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
 
-            if (parentEntity && parentEntity->FindComponent<ArticulatedBodyComponent>())
+            if (parentEntity && parentEntity->FindComponent<ArticulationLinkComponent>())
             {
                 return false;
             }
@@ -159,7 +159,7 @@ namespace PhysX
         return true;
     }
 
-    void ArticulatedBodyComponent::Activate()
+    void ArticulationLinkComponent::Activate()
     {
         if (IsRootArticulation())
         {
@@ -168,7 +168,7 @@ namespace PhysX
         }
     }
 
-    void ArticulatedBodyComponent::CreateArticulation()
+    void ArticulationLinkComponent::CreateArticulation()
     {
         using namespace physx;
 
@@ -186,7 +186,7 @@ namespace PhysX
         pxScene->addArticulation(*m_articulation);
     }
 
-    void ArticulatedBodyComponent::CreateChildArticulationLinks(
+    void ArticulationLinkComponent::CreateChildArticulationLinks(
         physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData)
     {
         using namespace physx;
@@ -239,7 +239,7 @@ namespace PhysX
         }
     }
 
-    void ArticulatedBodyComponent::UpdateArticulationHierarchy()
+    void ArticulationLinkComponent::UpdateArticulationHierarchy()
     {
         AZStd::vector<AZ::EntityId> children = GetEntity()->GetTransform()->GetChildren();
         for (auto childId : children)
@@ -253,7 +253,7 @@ namespace PhysX
                 continue;
             }
 
-            if (auto* articulatedComponent = childEntity->FindComponent<ArticulatedBodyComponent>())
+            if (auto* articulatedComponent = childEntity->FindComponent<ArticulationLinkComponent>())
             {
                 articulatedComponent->UpdateArticulationHierarchy();
                 m_articulationLinkData.m_childLinks.emplace_back(&articulatedComponent->m_articulationLinkData);
@@ -261,7 +261,7 @@ namespace PhysX
         }
     }
 
-    void ArticulatedBodyComponent::Deactivate()
+    void ArticulationLinkComponent::Deactivate()
     {
         if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
@@ -271,13 +271,13 @@ namespace PhysX
         DestroyRigidBody();
     }
 
-    void ArticulatedBodyComponent::OnTransformChanged(
+    void ArticulationLinkComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
 
     }
 
-    void ArticulatedBodyComponent::SetupSample()
+    void ArticulationLinkComponent::SetupSample()
     {
         using namespace physx;
 

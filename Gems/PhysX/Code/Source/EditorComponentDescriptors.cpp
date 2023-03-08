@@ -25,7 +25,7 @@
 #include <Source/Pipeline/MeshBehavior.h>
 #include <Source/Pipeline/MeshExporter.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
-#include "EditorArticulatedBodyComponent.h"
+#include "EditorArticulationLinkComponent.h"
 
 
 namespace PhysX
@@ -49,7 +49,7 @@ namespace PhysX
             EditorStaticRigidBodyComponent::CreateDescriptor(),
             EditorShapeColliderComponent::CreateDescriptor(),
             EditorSystemComponent::CreateDescriptor(),
-            EditorArticulatedBodyComponent::CreateDescriptor(),
+            EditorArticulationLinkComponent::CreateDescriptor(),
             Pipeline::MeshBehavior::CreateDescriptor(),
             Pipeline::MeshExporter::CreateDescriptor()
         };

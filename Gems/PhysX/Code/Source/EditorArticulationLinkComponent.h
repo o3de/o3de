@@ -16,17 +16,17 @@
 namespace PhysX
 {
     //! Class for in-editor PhysX Static Rigid Body Component.
-    class EditorArticulatedBodyComponent
+    class EditorArticulationLinkComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , private AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
-            EditorArticulatedBodyComponent, "{7D23169B-3214-4A32-ABFC-FCCE6E31F2CF}", AzToolsFramework::Components::EditorComponentBase);
+            EditorArticulationLinkComponent, "{7D23169B-3214-4A32-ABFC-FCCE6E31F2CF}", AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
-        EditorArticulatedBodyComponent() = default;
-        ~EditorArticulatedBodyComponent() = default;
+        EditorArticulationLinkComponent() = default;
+        ~EditorArticulationLinkComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);

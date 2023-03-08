@@ -26,7 +26,7 @@
 #include <Source/FixedJointComponent.h>
 #include <Source/HingeJointComponent.h>
 #include <Source/PrismaticJointComponent.h>
-#include "ArticulatedBodyComponent.h"
+#include "ArticulationLinkComponent.h"
 
 namespace PhysX
 {
@@ -53,7 +53,7 @@ namespace PhysX
             FixedJointComponent::CreateDescriptor(),
             HingeJointComponent::CreateDescriptor(),
             PrismaticJointComponent::CreateDescriptor(),
-            ArticulatedBodyComponent::CreateDescriptor()
+            ArticulationLinkComponent::CreateDescriptor()
         };
 
         return descriptors;
