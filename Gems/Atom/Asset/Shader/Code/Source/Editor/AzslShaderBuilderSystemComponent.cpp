@@ -28,6 +28,8 @@
 
 #include <CommonFiles/Preprocessor.h>
 
+#include "HashedVariantListSourceData.h"
+
 namespace AZ
 {
     namespace ShaderBuilder
@@ -46,6 +48,7 @@ namespace AZ
             RHI::ShaderCompilerProfiling::Reflect(context);
             RHI::ShaderBuildArguments::Reflect(context);
             RHI::ShaderBuildOptions::Reflect(context);
+            HashedVariantListSourceData::Reflect(context);
         }
 
         void AzslShaderBuilderSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -113,6 +116,19 @@ namespace AZ
 
                 m_shaderVariantAssetBuilder.BusConnect(shaderVariantAssetBuilderDescriptor.m_busId);
                 AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderVariantAssetBuilderDescriptor);
+
+                // Register Shader Variant List Builder
+                AssetBuilderSDK::AssetBuilderDesc shaderVariantListBuilderDescriptor;
+                shaderVariantListBuilderDescriptor.m_name = "Shader Variant List Builder";
+                shaderVariantListBuilderDescriptor.m_version = 1; // First version of ShaderVariantListBuilder
+                shaderVariantListBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", ShaderVariantListBuilder::Extension/*RPI::ShaderVariantListSourceData::Extension*/), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+                shaderVariantListBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantListBuilder>();
+                shaderVariantListBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantListBuilder::CreateJobs, &m_shaderVariantListBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+                shaderVariantListBuilderDescriptor.m_processJobFunction = AZStd::bind(&ShaderVariantListBuilder::ProcessJob, &m_shaderVariantListBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+
+                m_shaderVariantListBuilder.BusConnect(shaderVariantListBuilderDescriptor.m_busId);
+                AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderVariantListBuilderDescriptor);
+
             }
 
             // Register Precompiled Shader Builder
@@ -134,6 +150,8 @@ namespace AZ
             if (m_enableShaderVariantAssetBuilder)
             {
                 m_shaderVariantAssetBuilder.BusDisconnect();
+                m_shaderVariantListBuilder.BusDisconnect();
+
             }
             m_precompiledShaderBuilder.BusDisconnect();
 
