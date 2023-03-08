@@ -11,7 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
-// Predefination for unit test friend class
+// Predefinition for unit test friend class
 namespace UnitTest
 {
     class DrawPacketTest;
@@ -69,7 +69,7 @@ namespace AZ
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
 
-            //! Update the root constant at the specefied interval. The same root constants are shared by all draw items in the draw packet
+            //! Update the root constant at the specified interval. The same root constants are shared by all draw items in the draw packet
             void SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data);
 
             //! Set the instance count in all draw items.
@@ -81,9 +81,6 @@ namespace AZ
 
             // The allocator used to release the memory when Release() is called.
             IAllocator* m_allocator = nullptr;
-
-            // The size of the allocation, which can be used to allocate a copy of the DrawPacket
-            size_t m_allocationSize = 0;
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;

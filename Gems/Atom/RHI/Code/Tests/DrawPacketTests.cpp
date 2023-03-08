@@ -449,6 +449,9 @@ namespace UnitTest
                 const RHI::DrawItem* drawItem = drawPacket->m_drawItems + i;
                 const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
 
+                // Check the clone is an actual copy not an identical pointer.
+                EXPECT_NE(drawItem, drawItemClone);
+
                 EXPECT_EQ(drawItem->m_arguments.m_type, drawItemClone->m_arguments.m_type);
                 EXPECT_EQ(drawItem->m_pipelineState->GetType(), drawItemClone->m_pipelineState->GetType());
                 EXPECT_EQ(drawItem->m_stencilRef, drawItemClone->m_stencilRef);
@@ -548,27 +551,34 @@ namespace UnitTest
             DrawPacketData drawPacketData(random);
 
             RHI::DrawPacketBuilder builder;
-            RHI::DrawPacket* drawPacket = const_cast<RHI::DrawPacket*>(drawPacketData.Build(builder));
+            const RHI::DrawPacket* drawPacket = drawPacketData.Build(builder);
+            RHI::DrawPacketBuilder builder2;
+            RHI::DrawPacket* drawPacketClone = const_cast<RHI::DrawPacket*>(builder2.Clone(drawPacket));
 
-            uint8_t drawItemCount = drawPacket->m_drawItemCount;
+            uint8_t drawItemCount = drawPacketClone->m_drawItemCount;
 
             // Test default value
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
-                const RHI::DrawItem* drawItem = drawPacket->m_drawItems + i;
-                EXPECT_EQ(drawItem->m_arguments.m_type, RHI::DrawType::Indexed);
-                EXPECT_EQ(drawItem->m_arguments.m_indexed.m_instanceCount, 1);
+                const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                EXPECT_EQ(drawItemClone->m_arguments.m_type, RHI::DrawType::Indexed);
+                EXPECT_EQ(drawItemClone->m_arguments.m_indexed.m_instanceCount, 1);
             }
 
-            drawPacket->SetInstanceCount(12);
+            drawPacketClone->SetInstanceCount(12);
 
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
+                const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                EXPECT_EQ(drawItemClone->m_arguments.m_indexed.m_instanceCount, 12);
+
+                // Check that the original draw packet is not affected
                 const RHI::DrawItem* drawItem = drawPacket->m_drawItems + i;
-                EXPECT_EQ(drawItem->m_arguments.m_indexed.m_instanceCount, 12);
+                EXPECT_EQ(drawItem->m_arguments.m_indexed.m_instanceCount, 1);
             }
 
             delete drawPacket;
+            delete drawPacketClone;
         }
 
         void TestSetRootConstants()
@@ -578,44 +588,55 @@ namespace UnitTest
             DrawPacketData drawPacketData(random);
 
             RHI::DrawPacketBuilder builder;
-            RHI::DrawPacket* drawPacket = const_cast<RHI::DrawPacket*>(drawPacketData.Build(builder));
+            const RHI::DrawPacket* drawPacket = drawPacketData.Build(builder);
+            RHI::DrawPacketBuilder builder2;
+            RHI::DrawPacket* drawPacketClone = const_cast<RHI::DrawPacket*>(builder2.Clone(drawPacket));
 
             AZStd::array<uint8_t, sizeof(unsigned int) * 4> rootConstantOld;
-            EXPECT_EQ(sizeof(unsigned int) * 4, drawPacket->m_rootConstantSize);
+            EXPECT_EQ(sizeof(unsigned int) * 4, drawPacketClone->m_rootConstantSize);
 
-            for (uint8_t i = 0; i < drawPacket->m_rootConstantSize; ++i)
+            // Keep a copy of old root constant for later verification
+            for (uint8_t i = 0; i < drawPacketClone->m_rootConstantSize; ++i)
             {
-                rootConstantOld[i] = drawPacket->m_rootConstants[i];
+                rootConstantOld[i] = drawPacketClone->m_rootConstants[i];
             }
 
+            // Root constant data to be set, partial size as of the full root constant size.
             AZStd::array<uint8_t, sizeof(unsigned int) * 2> rootConstantNew = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
             // Attempt to set beyond the array
             AZ_TEST_START_TRACE_SUPPRESSION;
-            drawPacket->SetRootConstant(9, rootConstantNew);
+            drawPacketClone->SetRootConstant(9, rootConstantNew);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             // Nothing will be set if it triggers the assert
+            for (uint8_t i = 0; i < drawPacketClone->m_rootConstantSize; ++i)
+            {
+                EXPECT_EQ(rootConstantOld[i], drawPacketClone->m_rootConstants[i]);
+            }
+
+            drawPacketClone->SetRootConstant(8, rootConstantNew);
+
+            // Compare the part staying the same.
+            for (uint8_t i = 0; i < drawPacketClone->m_rootConstantSize - 8; ++i)
+            {
+                EXPECT_EQ(rootConstantOld[i], drawPacketClone->m_rootConstants[i]);
+            }
+
+            // Compare the part being set
+            for (uint8_t i = drawPacketClone->m_rootConstantSize - 8; i < drawPacketClone->m_rootConstantSize; ++i)
+            {
+                EXPECT_EQ(rootConstantNew[i - (drawPacketClone->m_rootConstantSize - 8)], drawPacketClone->m_rootConstants[i]);
+            }
+
+            // Compare the origin which shouldn't be affected.
             for (uint8_t i = 0; i < drawPacket->m_rootConstantSize; ++i)
             {
                 EXPECT_EQ(rootConstantOld[i], drawPacket->m_rootConstants[i]);
             }
 
-            drawPacket->SetRootConstant(8, rootConstantNew);
-
-            // Compare the part staying the same.
-            for (uint8_t i = 0; i < drawPacket->m_rootConstantSize - 8; ++i)
-            {
-                EXPECT_EQ(rootConstantOld[i], drawPacket->m_rootConstants[i]);
-            }
-
-            // Compare the part being set
-            for (uint8_t i = drawPacket->m_rootConstantSize - 8; i < drawPacket->m_rootConstantSize; ++i)
-            {
-                EXPECT_EQ(rootConstantNew[i - (drawPacket->m_rootConstantSize -8)], drawPacket->m_rootConstants[i]);
-            }
-
             delete drawPacket;
+            delete drawPacketClone;
         }
     };
 

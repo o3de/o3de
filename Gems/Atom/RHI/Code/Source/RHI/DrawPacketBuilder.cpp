@@ -165,7 +165,6 @@ namespace AZ
             drawPacket->m_allocator = m_allocator;
             drawPacket->m_indexBufferView =  m_indexBufferView;
             drawPacket->m_drawListMask = m_drawListMask;
-            drawPacket->m_allocationSize = allocationSize;
 
             if (shaderResourceGroupsOffset.IsValid())
             {
