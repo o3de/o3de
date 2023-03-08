@@ -5382,9 +5382,19 @@ namespace AssetProcessor
         m_allowModtimeSkippingFeature = enable;
     }
 
+    bool AssetProcessorManager::GetModtimeSkippingFeatureEnabled() const
+    {
+        return m_allowModtimeSkippingFeature;
+    }
+
     void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
     {
         m_initialScanSkippingFeature = enable;
+    }
+
+    bool AssetProcessorManager::GetInitialScanSkippingFeatureEnabled() const
+    {
+        return m_initialScanSkippingFeature;
     }
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)

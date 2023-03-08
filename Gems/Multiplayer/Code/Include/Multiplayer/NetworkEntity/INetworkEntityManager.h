@@ -125,6 +125,10 @@ namespace Multiplayer
         //! @return a NetworkEntityHandle for the newly added entity
         virtual NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) = 0;
 
+        //! Removes the provided netEntityId from the internal entity map.
+        //! @param netEntityId the identifier to use for the added entity
+        virtual void RemoveEntityFromEntityMap(NetEntityId netEntityId) = 0;
+
         //! Marks the specified entity for removal and deletion.
         //! @param entityHandle the entity to remove and delete
         virtual void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) = 0;

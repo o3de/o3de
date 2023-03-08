@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{24961A95-2B17-48FF-8C78-2574DEBDBD66}",
+        "category": "Vertex",
+        "title": "World Tangent",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The surface tangent of the current vertex or fragment in world space",
+        "slotDataTypeGroups": [
+            "outTangent",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outTangent",
+                "displayName": "Tangent",
+                "description": "Tangent",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT_WS;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT_WS.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT_WS.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT_WS.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

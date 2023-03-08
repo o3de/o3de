@@ -48,6 +48,9 @@ namespace AzToolsFramework::Prefab
         // Set up icon
         m_iconButton->setIcon(m_overridden ? s_overrideIcon : s_emptyIcon);
         m_iconButton->setIconSize(s_iconSize);
+
+        // Cache the node so we can retrieve data when we handle context menu actions. 
+        m_node = domValue;
     }
 
     void PrefabOverrideLabelHandler::ShowContextMenu(const QPoint& position)
@@ -64,7 +67,9 @@ namespace AzToolsFramework::Prefab
 
         if (selectedItem == revertAction)
         {
-            // This is the place where revert override code will be added later.
+            AZStd::string_view relativePathFromEntity =
+                PrefabPropertyEditorNodes::PrefabOverrideLabel::RelativePath.ExtractFromDomNode(m_node).value_or("");
+            PrefabPropertyEditorNodes::PrefabOverrideLabel::RevertOverride.InvokeOnDomNode(m_node, relativePathFromEntity);
         }
     }
 } // namespace AzToolsFramework::Prefab

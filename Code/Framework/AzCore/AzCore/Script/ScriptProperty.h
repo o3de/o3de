@@ -14,7 +14,6 @@
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptPropertyWatcherBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
 
 // Ideally, the properties would be able to marshal themselves
@@ -51,7 +50,6 @@ namespace AZ
         static void UpdateScriptProperty(AZ::ScriptDataContext& sdc, int valueIndex, ScriptProperty** targetProperty);
 
         static void Reflect(AZ::ReflectContext* reflection);
-        static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& classElement);
 
         virtual ~ScriptProperty() {}
         AZ_TYPE_INFO_WITH_NAME_DECL(ScriptProperty);
@@ -466,9 +464,6 @@ namespace AZ
     private: // static member functions
 
         AZ::Uuid m_elementTypeId = AZ::Uuid::CreateNull(); // Stores type wrapped by DynamicSerializableField values
-
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
     };
 
     class ScriptPropertyAsset

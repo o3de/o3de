@@ -75,7 +75,7 @@ namespace LmbrCentral
         AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
 
         // ComponentMode
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
     }

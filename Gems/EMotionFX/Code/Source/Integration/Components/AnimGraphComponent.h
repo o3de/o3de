@@ -62,7 +62,10 @@ namespace EMotionFX
 
                     for (AZ::ScriptProperty* p : rhs.m_parameters)
                     {
-                        m_parameters.push_back(p->Clone());
+                        if (p)
+                        {
+                            m_parameters.push_back(p->Clone());
+                        }
                     }
 
                     return *this;
