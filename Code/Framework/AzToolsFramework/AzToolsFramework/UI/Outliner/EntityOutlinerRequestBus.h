@@ -14,13 +14,13 @@
 
 namespace AzToolsFramework
 {
-    class EntityOutlinerRequests
-        : public AZ::EBusTraits
+    //! Bus to request UI operations on the Entity Outliner widget.
+    class EntityOutlinerRequests : public AZ::EBusTraits
     {
     public:
         //! Request to trigger the rename workflow on the Entity Outliner for the entity provided.
-        virtual void RenameEntity(const AZ::EntityId& entityId) = 0;
+        virtual void TriggerRenameEntityUi(const AZ::EntityId& entityId) = 0;
     };
     using EntityOutlinerRequestBus = AZ::EBus<EntityOutlinerRequests>;
 
-}
+} // namespace AzToolsFramework

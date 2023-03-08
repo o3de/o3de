@@ -1360,7 +1360,7 @@ namespace AzToolsFramework
 
         bool PrefabIntegrationManager::CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
         {
-            if(selectedEntities.empty())
+            if (selectedEntities.empty())
             {
                 // Can't create an empty prefab.
                 return false;

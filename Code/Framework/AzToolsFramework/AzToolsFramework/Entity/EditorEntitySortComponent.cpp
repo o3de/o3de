@@ -253,8 +253,8 @@ namespace AzToolsFramework
             }
 
             // Only return true if the entityId is in the sort order array and isn't first.
-            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
-            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityItr == m_childEntityOrderArray.end())
+            auto entityIt = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityIt == m_childEntityOrderArray.end())
             {
                 return false;
             }

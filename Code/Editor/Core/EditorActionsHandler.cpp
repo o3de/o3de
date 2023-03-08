@@ -797,7 +797,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 if (selectedEntities.size() == 1)
                 {
                     AzToolsFramework::EntityOutlinerRequestBus::Broadcast(
-                        &AzToolsFramework::EntityOutlinerRequests::RenameEntity, selectedEntities.front());
+                        &AzToolsFramework::EntityOutlinerRequests::TriggerRenameEntityUi, selectedEntities.front());
                 }
             }
         );
@@ -806,17 +806,12 @@ void EditorActionsHandler::OnActionRegistrationHook()
             actionIdentifier,
             []() -> bool
             {
-                AzToolsFramework::EntityIdList selectedEntities;
+                int selectedEntitiesCount;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+                    selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntitiesCount);
 
                 // Can only rename one entity at a time
-                if (selectedEntities.size() != 1)
-                {
-                    return false;
-                }
-
-                return true;
+                return selectedEntitiesCount == 1;
             }
         );
 
@@ -844,7 +839,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-                if (selectedEntities.size() > 0)
+                if (!selectedEntities.empty())
                 {
                     AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
                         &EditorEntityContextNotification::OnFocusInEntityOutliner, selectedEntities);
@@ -860,12 +855,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-                if (selectedEntities.empty())
-                {
-                    return false;
-                }
-
-                return true;
+                return !selectedEntities.empty();
             }
         );
 

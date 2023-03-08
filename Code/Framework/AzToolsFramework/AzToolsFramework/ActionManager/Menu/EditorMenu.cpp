@@ -183,7 +183,7 @@ namespace AzToolsFramework
 
     void EditorMenu::DisplayUnderCursor() const
     {
-        m_menu->popup(QCursor::pos());
+        DisplayAtPosition(QCursor::pos());
     }
 
     void EditorMenu::RefreshMenu()

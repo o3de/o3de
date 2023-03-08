@@ -11,6 +11,7 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
+//! Provides additional functionality for the editor's context menu.
 class EditorContextMenuHandler
     : private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
@@ -27,5 +28,4 @@ private:
     // ActionManagerRegistrationNotificationBus overrides ...
     void OnMenuBindingHook() override;
     void OnActionRegistrationHook() override;
-
 };

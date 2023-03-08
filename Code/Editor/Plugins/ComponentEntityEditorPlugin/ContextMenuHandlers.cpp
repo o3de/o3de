@@ -77,7 +77,6 @@ void EditorContextMenuHandler::OnMenuBindingHook()
     // Viewport Context Menu
     menuManagerInterface->AddActionToMenu(
         EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.entity.openPinnedInspector", 50100);
-
 }
 
 void EditorContextMenuHandler::OnActionRegistrationHook()
@@ -92,7 +91,7 @@ void EditorContextMenuHandler::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.entity.openPinnedInspector";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open pinned Inspector";
+        actionProperties.m_name = "Open Pinned Inspector";
         actionProperties.m_description = "Open a new instance of the Entity Inspector for the current selection.";
         actionProperties.m_category = "Edit";
 
@@ -115,12 +114,13 @@ void EditorContextMenuHandler::OnActionRegistrationHook()
             actionIdentifier,
             []() -> bool
             {
-                AzToolsFramework::EntityIdList selectedEntities;
+                int selectedEntitiesCount;
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+                    selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntitiesCount);
 
-                return selectedEntities.size() > 0;
-            });
+                return selectedEntitiesCount > 0;
+            }
+        );
 
         // Trigger update whenever entity selection changes.
         actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);

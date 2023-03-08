@@ -1227,7 +1227,7 @@ namespace AzToolsFramework
         EnableUi(enable);
     }
 
-    void EntityOutlinerWidget::RenameEntity(const AZ::EntityId& entityId)
+    void EntityOutlinerWidget::TriggerRenameEntityUi(const AZ::EntityId& entityId)
     {
         // Only allow renaming the entity if the UI Handler did not block it.
         auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);

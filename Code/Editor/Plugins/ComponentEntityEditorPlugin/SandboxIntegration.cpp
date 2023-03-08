@@ -1467,7 +1467,7 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                     selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
                 // when nothing is selected, entity is created at root level.
-                if (selectedEntities.size() == 0)
+                if (selectedEntities.empty())
                 {
                     ContextMenu_NewEntity();
                 }
@@ -1534,7 +1534,6 @@ void SandboxIntegrationManager::OnMenuBindingHook()
 
     if (!menuManagerInterface)
     {
-        // TODO - Assert?
         return;
     }
 

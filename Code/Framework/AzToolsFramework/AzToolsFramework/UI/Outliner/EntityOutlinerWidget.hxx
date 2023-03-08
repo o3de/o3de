@@ -125,7 +125,7 @@ namespace AzToolsFramework
         void SetEditorUiEnabled(bool enable) override;
 
         // EntityOutlinerRequestBus overrides ...
-        void RenameEntity(const AZ::EntityId& entityId) override;
+        void TriggerRenameEntityUi(const AZ::EntityId& entityId) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>
