@@ -122,6 +122,12 @@ namespace AZ
 
             auto passTemplate = passSystem->GetPassTemplate(Name(desc.m_rootPassTemplate));
 
+            if (!passTemplate)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: the render pipeline root pass template doesn't exist");
+                return nullptr;
+            }
+
             PassConnection passConnection;
 
             // use first output slot for connection
