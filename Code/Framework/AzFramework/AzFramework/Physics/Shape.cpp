@@ -25,7 +25,7 @@ namespace Physics
                 ->Field("Visible", &ColliderConfiguration::m_visible)
                 ->Field("Trigger", &ColliderConfiguration::m_isTrigger)
                 ->Field("Simulated", &ColliderConfiguration::m_isSimulated)
-                ->Field("StubSimulated", &ColliderConfiguration::m_stubIsSimulated)
+                ->Field("DummySimulated", &ColliderConfiguration::m_dummyIsSimulated)
                 ->Field("InSceneQueries", &ColliderConfiguration::m_isInSceneQueries)
                 ->Field("Exclusive", &ColliderConfiguration::m_isExclusive)
                 ->Field("Position", &ColliderConfiguration::m_position)
@@ -48,9 +48,9 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isSimulated, "Simulated",
                         "If set, this collider will partake in collision in the physical simulation.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetSimulatedPropertyVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_stubIsSimulated, "Simulated",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_dummyIsSimulated, "Simulated",
                         "If set, this collider will partake in collision in the physical simulation. Currently disabled because this collider is acting as a trigger.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetStubSimulatedPropertyVisibility)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetDummySimulatedPropertyVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isInSceneQueries, "In Scene Queries", "If set, this collider will be visible for scene queries")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
@@ -151,7 +151,7 @@ namespace Physics
         }
     }
 
-    AZ::Crc32 ColliderConfiguration::GetStubSimulatedPropertyVisibility() const
+    AZ::Crc32 ColliderConfiguration::GetDummySimulatedPropertyVisibility() const
     {
         if (GetIsTriggerVisibility() == AZ::Edit::PropertyVisibility::Show)
         {
