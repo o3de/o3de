@@ -425,8 +425,6 @@ namespace PhysXEditorTests
 
     void PhysXEditorFixture::SetUp()
     {
-        UnitTest::RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
-
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             //in case a test modifies the default world config setup a config without getting the default(eg. SetWorldConfiguration_ForwardsConfigChangesToWorldRequestBus)
@@ -452,8 +450,6 @@ namespace PhysXEditorTests
         {
             physicsSystem->RemoveScene(m_defaultSceneHandle);
         }
-
-        UnitTest::RegistryTestHelper::TearDown();
     }
 
     void PhysXEditorFixture::ConnectToPVD()
