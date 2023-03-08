@@ -297,12 +297,7 @@ namespace AtomToolsFramework
             return false;
         }
 
-        if(!DestroyDocument(documentId))
-        {
-            // documentId doesn't exist in m_documentMap
-            // This can happen when a view doesn't have document, e.g. ShaderManagementConsoleStatisticView
-            return false;
-        }
+        DestroyDocument(documentId);
 
         return true;
     }

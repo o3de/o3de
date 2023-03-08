@@ -184,7 +184,27 @@ namespace ShaderManagementConsole
         }
         progressDialog.close();
 
-        AddDocumentTab(AZ::Uuid::CreateRandom(), new ShaderManagementConsoleStatisticView(statisticData, this));
+        if (m_statisticView)
+        {
+            delete m_statisticView;
+            m_statisticView = nullptr;
+        }
+
+        m_statisticView = new ShaderManagementConsoleStatisticView(statisticData, nullptr);
+        m_statisticView->setWindowTitle(tr("Shader Variant Statistic View"));
+        m_statisticView->show();
+    }
+
+    void ShaderManagementConsoleWindow::closeEvent(QCloseEvent* closeEvent)
+    {
+        if (m_statisticView)
+        {
+            m_statisticView->close();
+            delete m_statisticView;
+            m_statisticView = nullptr;
+        }
+
+        Base::closeEvent(closeEvent);
     }
 } // namespace ShaderManagementConsole
 

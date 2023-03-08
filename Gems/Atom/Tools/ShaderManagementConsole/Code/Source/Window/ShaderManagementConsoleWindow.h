@@ -38,6 +38,9 @@ namespace ShaderManagementConsole
         void GenerateStatisticView();
 
     private:
+        void closeEvent(QCloseEvent* closeEvent) override;
+
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
+        QWidget* m_statisticView = nullptr;
     };
 } // namespace ShaderManagementConsole

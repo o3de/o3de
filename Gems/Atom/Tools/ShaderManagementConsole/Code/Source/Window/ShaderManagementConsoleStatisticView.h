@@ -17,7 +17,7 @@
 
 namespace ShaderManagementConsole
 {
-     class ShaderManagementConsoleStatisticView
+    class ShaderManagementConsoleStatisticView
         : public QTableWidget
     {
     public:
