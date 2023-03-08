@@ -1432,7 +1432,7 @@ namespace AZ
             }
         }
 
-        void Pass::GetPipelineViewTags(SortedPipelineViewTags& outTags) const
+        void Pass::GetPipelineViewTags(PipelineViewTags& outTags) const
         {
             if (HasPipelineViewTag())
             {

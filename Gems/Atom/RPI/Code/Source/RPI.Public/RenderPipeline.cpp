@@ -135,7 +135,7 @@ namespace AZ
             }
 
             // Get view tags from all passes.
-            SortedPipelineViewTags viewTags;
+            PipelineViewTags viewTags;
             m_passTree.m_rootPass->GetPipelineViewTags(viewTags);
 
             // Use a new list for building pipeline views since we may need information from the previous list in m_views in the process

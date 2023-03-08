@@ -57,6 +57,7 @@ ly_add_target(
         awsclientauth_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
+            Include
             Source
     COMPILE_DEFINITIONS
         PRIVATE
@@ -70,8 +71,6 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
-        PUBLIC
-            Gem::AWSClientAuth.Static
     RUNTIME_DEPENDENCIES
         Gem::AWSClientAuth
 )
