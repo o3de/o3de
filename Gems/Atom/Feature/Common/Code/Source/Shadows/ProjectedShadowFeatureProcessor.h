@@ -97,6 +97,7 @@ namespace AZ::Render
         // Shadow specific functions
         void UpdateShadowView(ShadowProperty& shadowProperty);
         void InitializeShadow(ShadowId shadowId);
+        void SetEsmPassedIsEnabled(uint16_t id, bool Enabled);
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
         void CheckRemovePrimaryPasses(RPI::RenderPipeline* renderPipeline);
@@ -156,5 +157,7 @@ namespace AZ::Render
         bool m_deviceBufferNeedsUpdate = false;
         bool m_shadowmapPassNeedsUpdate = true;
         bool m_filterParameterNeedsUpdate = false;
+
+        AZStd::set<uint16_t> m_esmShadowsId;
     };
 }

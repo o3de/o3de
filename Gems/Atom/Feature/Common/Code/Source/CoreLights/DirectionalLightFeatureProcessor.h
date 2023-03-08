@@ -19,6 +19,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+#define USING_SCREENSHADOW_COMPUTEPASS 1
+
 namespace AZ
 {
     namespace RPI
@@ -31,6 +33,7 @@ namespace AZ
         class CascadedShadowmapsPass;
         class EsmShadowmapsPass;
         class FullscreenShadowPass;
+        class FullscreenShadowComputePass;
 
         //! Cascaded shadow specific camera configuration.
         struct CascadeShadowCameraConfiguration
@@ -390,8 +393,11 @@ namespace AZ
 
             RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
             AZStd::vector<const RPI::View*> m_viewsRetainingAuxGeomDraw;
+#if USING_SCREENSHADOW_COMPUTEPASS
+            FullscreenShadowComputePass* m_fullscreenShadowComputePass = nullptr;
+#else
             FullscreenShadowPass* m_fullscreenShadowPass = nullptr;
-
+#endif
             RPI::ParentPass* m_fullscreenShadowBlurPass = nullptr;
 
             bool m_lightBufferNeedsUpdate = false;
