@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AZStd
 {
     template class vector<AzToolsFramework::AssetSystem::JobInfo>;
