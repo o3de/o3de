@@ -435,8 +435,6 @@ namespace PhysXEditorTests
 
         EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
 
-        EXPECT_TRUE(MeshColliderHasOnePhysicsAssetShapeType(gameEntity->FindComponent<PhysX::MeshColliderComponent>()));
-
         delete meshAssetData;
     }
 
