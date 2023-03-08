@@ -47,6 +47,9 @@ namespace Physics
         static constexpr float DefaultSphereRadius = 0.5f;
         static const AZ::Vector3 DefaultBoxDimensions = AZ::Vector3::CreateOne();
         static const AZ::Vector3 DefaultScale = AZ::Vector3::CreateOne();
+        static constexpr float DefaultCylinderRadius = 1.0f;
+        static constexpr float DefaultCylinderHeight = 1.0f;
+        static constexpr AZ::u8 DefaultCylinderSubdivisionCount = 16;
     } // namespace ShapeConstants
 
     class ShapeConfiguration

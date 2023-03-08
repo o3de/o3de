@@ -6,33 +6,18 @@
  *
  */
 
-#include <AzCore/Script/ScriptTimePoint.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Viewport/ViewportColors.h>
-#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
-#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
-#include <AzToolsFramework/Maths/TransformUtils.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
-#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+
+#include <Editor/ColliderComponentMode.h>
+#include <System/PhysXSystem.h>
+
 #include <Source/BoxColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
-#include <Source/EditorColliderComponent.h>
-#include <Source/EditorRigidBodyComponent.h>
-#include <Source/EditorStaticRigidBodyComponent.h>
-#include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/SphereColliderComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 #include <Source/Utils.h>
-
-#include <LyViewPaneNames.h>
-#include <Editor/ConfigurationWindowBus.h>
-#include <Editor/ColliderComponentMode.h>
+#include <Source/EditorColliderComponent.h>
 
 namespace PhysX
 {
@@ -718,13 +703,12 @@ namespace PhysX
 
     AZ::Vector3 EditorColliderComponent::GetDimensions() const
     {
-        return m_proxyShapeConfiguration.m_box.m_dimensions;
+        return GetBoxDimensions();
     }
 
     void EditorColliderComponent::SetDimensions(const AZ::Vector3& dimensions)
     {
-        m_proxyShapeConfiguration.m_box.m_dimensions = dimensions;
-        UpdateCollider();
+        SetBoxDimensions(dimensions);
     }
 
     AZ::Vector3 EditorColliderComponent::GetTranslationOffset() const
@@ -909,6 +893,17 @@ namespace PhysX
     Physics::ShapeType EditorColliderComponent::GetShapeType() const
     {
         return m_proxyShapeConfiguration.m_shapeType;
+    }
+
+    void EditorColliderComponent::SetBoxDimensions(const AZ::Vector3& dimensions)
+    {
+        m_proxyShapeConfiguration.m_box.m_dimensions = dimensions;
+        UpdateCollider();
+    }
+
+    AZ::Vector3 EditorColliderComponent::GetBoxDimensions() const
+    {
+        return m_proxyShapeConfiguration.m_box.m_dimensions;
     }
 
     void EditorColliderComponent::SetSphereRadius(float radius)
