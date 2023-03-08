@@ -357,8 +357,8 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
         list(APPEND gem_names ${gem_name_with_version_specifier})
     endforeach()
 
-    # Ensure all gems from "gem_names" are included settings registry file
-    # used to load runtime gems libraries
+    # Ensure all gems from "gem_names" are included in the settings registry 
+    # file used to load runtime gems libraries
     ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
 
     add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
