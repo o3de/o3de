@@ -6,16 +6,14 @@
  *
  */
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Multiplayer/Session/SessionConfig.h>
 
-#include <AWSGameLiftClientLocalTicketTracker.h>
 #include <AWSCoreBus.h>
-#include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
+
 #include <Request/AWSGameLiftAcceptMatchRequest.h>
 #include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 #include <Request/AWSGameLiftCreateSessionRequest.h>
@@ -98,8 +96,6 @@ namespace AWSGameLift
         m_gameliftClient.reset();
         m_gameliftManager->ActivateManager();
         m_gameliftTicketTracker->ActivateTracker();
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSGameLiftEnabled);
     }
 
     void AWSGameLiftClientSystemComponent::Deactivate()

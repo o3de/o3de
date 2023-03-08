@@ -764,7 +764,7 @@ class EditorEntity:
         Reverts overrides on a given entity if overrides are present
         :return: True is overrides were detected and reverted, False otherwise
         """
-        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id)
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id, "")
 
 
 class EditorLevelEntity:

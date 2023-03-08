@@ -188,7 +188,6 @@ namespace GraphCanvas
         AZStd::string        m_style;
         
         QPointF m_initialClick;
-        bool m_pressed;
 
         AZ::EntityId m_entityId;
     };

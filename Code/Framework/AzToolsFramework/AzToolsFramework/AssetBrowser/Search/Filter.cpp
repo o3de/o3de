@@ -246,28 +246,31 @@ namespace AzToolsFramework
 
         bool StringFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // no filter string matches any asset
-            if (m_filterString.isEmpty())
-            {
-                return true;
-            }
+            // Return true if the filter is empty or the display name matches.
+            return m_filterString.isEmpty() || StringMatch(m_filterString, entry->GetDisplayName());
+        }
 
-            // entry's name matches search pattern
-            if (StringMatch(m_filterString, entry->GetDisplayName()))
-            {
-                return true;
-            }
+        //////////////////////////////////////////////////////////////////////////
+        // CustomFilter
+        //////////////////////////////////////////////////////////////////////////
+        CustomFilter::CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn)
+            : m_filterFn(filterFn)
+        {
+        }
 
-            return false;
+        QString CustomFilter::GetNameInternal() const
+        {
+            return "Custom Filter";
+        }
+
+        bool CustomFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            return m_filterFn && m_filterFn(entry);
         }
 
         //////////////////////////////////////////////////////////////////////////
         // RegExpFilter
         //////////////////////////////////////////////////////////////////////////
-        RegExpFilter::RegExpFilter()
-        {
-        }
-
         void RegExpFilter::SetFilterPattern(const QRegExp& filterPattern)
         {
             m_filterPattern = filterPattern;
@@ -281,7 +284,7 @@ namespace AzToolsFramework
 
         bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // entry's name matches regular expression pattern if specified
+            // Return true if the filter is empty or the display name matches.
             return m_filterPattern.isEmpty() || m_filterPattern.exactMatch(entry->GetDisplayName());
         }
 
@@ -428,7 +431,7 @@ namespace AzToolsFramework
 
         bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            AZ::IO::Path entryPath = entry->GetFullPath();
+            const AZ::IO::Path entryPath = entry->GetFullPath();
             return entryPath.IsRelativeTo(m_assetPath);
         }
 

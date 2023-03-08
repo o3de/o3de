@@ -244,7 +244,7 @@ namespace AZ::Render
                 vertices[i].StoreToFloat4(&pointArray.at(i).x); // StoreToFloat4 is faster and w is ignored by the shader.
             }
             data.SetEndIndex(data.GetStartIndex() + clippedCount);
-            direction.StoreToFloat3(data.m_direction.data());
+            direction.GetNormalized().StoreToFloat3(data.m_direction.data());
         }
 
         UpdateBounds(handle);
@@ -254,6 +254,11 @@ namespace AZ::Render
     const Data::Instance<RPI::Buffer> PolygonLightFeatureProcessor::GetLightBuffer()const
     {
         return m_lightBufferHandler.GetBuffer();
+    }
+
+    const Data::Instance<RPI::Buffer> PolygonLightFeatureProcessor::GetLightPointBuffer() const
+    {
+        return m_lightPolygonPointBufferHandler.GetBuffer();
     }
 
     uint32_t PolygonLightFeatureProcessor::GetLightCount() const

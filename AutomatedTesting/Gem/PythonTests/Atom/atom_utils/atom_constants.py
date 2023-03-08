@@ -297,6 +297,30 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def chromatic_aberration(property: str = 'name') -> str:
+        """
+        Chromatic Aberration component properties
+          - 'Enable Chromatic Aberration' Toggle active state of the component (bool) default False
+          - 'Strength' Strength of effect. 0.0 (default) to 1.0 (float)
+          - 'Blend' Factor for additive blending with original image. 0.0 (default) to 1.0 (float)
+          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool) default False
+          - 'Strength Override' Override for Strength factor. 0.0 (default) to 1.0 (float)
+          - 'Blend Override' Override for Blend factor. 0.0 (default) to 1.0 (float)
+        parameter property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Chromatic Aberration',
+            'Enable Chromatic Aberration': 'Controller|Configuration|Enable Chromatic Aberration',
+            'Strength': 'Controller|Configuration|Strength',
+            'Blend': 'Controller|Configuration|Blend',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'Blend Override': 'Controller|Configuration|Overrides|Blend Override',
+        }
+        return properties[property]
+
+    @staticmethod
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.

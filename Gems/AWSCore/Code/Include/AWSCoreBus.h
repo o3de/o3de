@@ -23,6 +23,14 @@ namespace AWSCore
 
 namespace AWSCore
 {
+    static constexpr AZStd::string_view AWSMenuIdentifier = "o3de.menu.editor.aws";
+    static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
+    static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
+    static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+    static constexpr AZStd::string_view ActionContext = "o3de.context.editor.mainwindow";
+
+    static constexpr const char AWS_MENU_TEXT[] = "&AWS";
+
     //! AWSCore request interface
     class AWSCoreRequests
         : public AZ::EBusTraits
@@ -51,9 +59,8 @@ namespace AWSCore
         : public AZ::EBusTraits
     {
     public:
-        virtual void SetAWSClientAuthEnabled() = 0;
-        virtual void SetAWSMetricsEnabled() = 0;
-        virtual void SetAWSGameLiftEnabled() = 0;
+        virtual void CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[], int sort) = 0;
+        virtual void AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort) = 0;
 
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides

@@ -41,6 +41,10 @@
                 "Path": "Passes/MainPipeline.pass"
             },
             {
+                "Name": "CameraPipeline",
+                "Path": "Passes/CameraPipeline.pass"
+            },
+            {
                 "Name": "MainPipelineRenderToTexture",
                 "Path": "Passes/MainPipelineRenderToTexture.pass"
             },
@@ -535,6 +539,10 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "SplashScreenPassTemplate",
+                "Path": "Passes/SplashScreen.pass"
             }
         ]
     }

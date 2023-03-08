@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
@@ -17,6 +16,11 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace physx
 {
@@ -64,6 +68,7 @@ namespace PhysX
             void ClearCachedGeometry();
 
             void SetDisplayFlag(bool enable);
+            bool IsDisplayFlagEnabled() const;
 
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
@@ -139,7 +144,7 @@ namespace PhysX
 
             void RefreshTreeHelper();
 
-            // Internal mesh drawing subroutines 
+            // Internal mesh drawing subroutines
             void DrawTriangleMesh(
                 AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
                 const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;

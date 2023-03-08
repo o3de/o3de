@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

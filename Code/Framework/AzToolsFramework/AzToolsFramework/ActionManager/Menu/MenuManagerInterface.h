@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 class QMainWindow;
 
@@ -53,7 +55,7 @@ namespace AzToolsFramework
         //! @param menuIdentifier The identifier for the menu to query.
         //! @return True if a Menu with the identifier provided was found, false otherwise.
         virtual bool IsMenuRegistered(const AZStd::string& menuIdentifier) const = 0;
-        
+
         //! Add an Action to a Menu. Will prompt an update of the menu.
         //! @param menuIdentifier The identifier for the menu the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the menu.

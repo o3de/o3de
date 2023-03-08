@@ -163,19 +163,26 @@ namespace AZ::DocumentPropertyEditor
             return {};
         }
 
-        void ExtractLabel(const Reflection::IAttributes& attributes)
+        AZStd::string_view ExtractSerializedPath(const Reflection::IAttributes& attributes)
         {
-            Dom::Value label = attributes.Find(Reflection::DescriptorAttributes::Label);
-            if (!label.IsNull())
+            if (auto serializedPathAttribute = attributes.Find(Reflection::DescriptorAttributes::SerializedPath);
+                serializedPathAttribute.IsString())
             {
-                if (!label.IsString())
-                {
-                    AZ_Warning("DPE", false, "Unable to read Label from property, Label was not a string");
-                }
-                else
-                {
-                    m_builder.Label(label.GetString());
-                }
+                return serializedPathAttribute.GetString();
+            }
+            else
+            {
+                return {};
+            }
+        }
+
+        void ExtractAndCreateLabel(const Reflection::IAttributes& attributes)
+        {
+            if (auto labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+                labelAttribute.IsString())
+            {
+                AZStd::string_view serializedPath = ExtractSerializedPath(attributes);
+                m_adapter->CreateLabel(&m_builder, labelAttribute.GetString(), serializedPath);
             }
         }
 
@@ -215,6 +222,7 @@ namespace AZ::DocumentPropertyEditor
         void VisitValue(
             Dom::Value value,
             void* instance,
+            size_t valueSize,
             const Reflection::IAttributes& attributes,
             AZStd::function<Dom::Value(const Dom::Value&)> onChanged,
             bool createRow,
@@ -223,7 +231,7 @@ namespace AZ::DocumentPropertyEditor
             if (createRow)
             {
                 m_builder.BeginRow();
-                ExtractLabel(attributes);
+                ExtractAndCreateLabel(attributes);
             }
 
             m_builder.BeginPropertyEditor(GetPropertyEditor(attributes), AZStd::move(value));
@@ -234,10 +242,9 @@ namespace AZ::DocumentPropertyEditor
 
             if (hashValue)
             {
-                AZStd::any anyVal(&instance);
                 m_builder.Attribute(
                     Nodes::PropertyEditor::ValueHashed,
-                    AZ::Uuid::CreateData(reinterpret_cast<AZStd::byte*>(AZStd::any_cast<void>(&anyVal)), anyVal.get_type_info().m_valueSize));
+                    AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize));
             }
             m_builder.EndPropertyEditor();
 
@@ -262,7 +269,8 @@ namespace AZ::DocumentPropertyEditor
             auto convertToAzDomResult = AZ::Dom::Json::VisitRapidJsonValue(serializedValue, *outputWriter, AZ::Dom::Lifetime::Temporary);
             VisitValue(
                 instancePointerValue,
-                access.Get(),
+                reinterpret_cast<void*>(&valuePointer),
+                sizeof(void*),
                 attributes,
                 [valuePointer, valueType, this](const Dom::Value& newValue)
                 {
@@ -310,6 +318,7 @@ namespace AZ::DocumentPropertyEditor
             VisitValue(
                 Dom::Utils::ValueFromType(value),
                 &value,
+                sizeof(value),
                 attributes,
                 [&value](const Dom::Value& newValue)
                 {
@@ -435,10 +444,6 @@ namespace AZ::DocumentPropertyEditor
 
             m_builder.BeginRow();
 
-            AZ::Reflection::AttributeDataType serializedPathAttribute =
-                attributes.Find(AZ::Reflection::DescriptorAttributes::SerializedPath);
-            m_adapter->OnBeginRow(&m_builder, serializedPathAttribute.GetString());
-
             for (const auto& attribute : Nodes::Row::RowAttributes)
             {
                 auto attributeValue = attributes.Find(attribute->GetName());
@@ -450,11 +455,13 @@ namespace AZ::DocumentPropertyEditor
 
             if (access.GetType() == azrtti_typeid<AZStd::string>())
             {
-                ExtractLabel(attributes);
+                ExtractAndCreateLabel(attributes);
+
                 AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
                 VisitValue(
                     Dom::Utils::ValueFromType(value),
                     &value,
+                    sizeof(value),
                     attributes,
                     [&value](const Dom::Value& newValue)
                     {
@@ -466,33 +473,32 @@ namespace AZ::DocumentPropertyEditor
             }
             else
             {
-                AZStd::string_view labelAttribute = "MISSING_LABEL";
-                Dom::Value label = attributes.Find(Reflection::DescriptorAttributes::Label);
-                if (!label.IsNull())
-                {
-                    if (!label.IsString())
-                    {
-                        AZ_Warning("DPE", false, "Unable to read Label from property, Label was not a string");
-                    }
-                    else
-                    {
-                        labelAttribute = label.GetString();
-                    }
-                }
-
-                auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
+                auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
                 if (!containerAttribute.IsNull())
                 {
                     auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(containerAttribute);
                     m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ container, access.Get() });
-                    size_t containerSize = container->Size(access.Get());
-                    if (containerSize == 1)
+
+                    Reflection::AttributeDataType labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
+                    if (!labelAttribute.IsNull() && labelAttribute.IsString())
                     {
-                        m_builder.Label(AZStd::string::format("%s (1 element)", labelAttribute.data()));
-                    }
-                    else
-                    {
-                        m_builder.Label(AZStd::string::format("%s (%zu elements)", labelAttribute.data(), container->Size(access.Get())));
+                        AZStd::string_view serializedPath = ExtractSerializedPath(attributes);
+
+                        size_t containerSize = container->Size(access.Get());
+                        if (containerSize == 1)
+                        {
+                            m_adapter->CreateLabel(
+                                &m_builder,
+                                AZStd::string::format("%s (1 element)", labelAttribute.GetString().data()),
+                                serializedPath);
+                        }
+                        else
+                        {
+                            m_adapter->CreateLabel(
+                                &m_builder,
+                                AZStd::string::format("%s (%zu elements)", labelAttribute.GetString().data(), containerSize),
+                                serializedPath);
+                        }
                     }
 
                     if (!container->IsFixedSize())
@@ -525,7 +531,7 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    m_builder.Label(labelAttribute.data());
+                    ExtractAndCreateLabel(attributes);
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
@@ -540,15 +546,18 @@ namespace AZ::DocumentPropertyEditor
                 // is fully developed. Since the original utils funtion is in AzToolsFramework and we can't access it from here, we are
                 // duplicating it in this class temporarily till we can do more testing and gain confidence about this new way of storing
                 // serialized values of opaque types directly in the DPE DOM.
-                if (IsInspectorOverrideManagementEnabled() && !serializedPathAttribute.GetString().empty())
+                AZStd::string_view serializedPath = ExtractSerializedPath(attributes);
+                if (IsInspectorOverrideManagementEnabled() && !serializedPath.empty())
                 {
                     VisitValueWithSerializedPath(access, attributes);
                 }
                 else
                 {
+                    void* instance = access.Get();
                     VisitValue(
                         instancePointerValue,
-                        access.Get(),
+                        reinterpret_cast<void*>(&instance),
+                        sizeof(instance), // Without knowning the real size of the instance, hashing occurs on the pointer value directly
                         attributes,
                         // this needs to write the value back into the reflected object via Json serialization
                         [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
@@ -695,8 +704,10 @@ namespace AZ::DocumentPropertyEditor
         m_propertyChangeEvent.Signal(changeInfo);
     }
 
-    void ReflectionAdapter::OnBeginRow(AdapterBuilder*, AZStd::string_view)
+    void ReflectionAdapter::CreateLabel(
+        AdapterBuilder* adapterBuilder, AZStd::string_view labelText, [[maybe_unused]] AZStd::string_view serializedPath)
     {
+        adapterBuilder->Label(labelText);
     }
 
     Dom::Value ReflectionAdapter::GenerateContents()

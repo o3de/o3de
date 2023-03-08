@@ -191,7 +191,6 @@ set(FILES
     Viewport/ViewportUiClusterTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
-    Viewport/ViewportUiManagerTests.h
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
     Viewport/ViewBookmarkTests.cpp

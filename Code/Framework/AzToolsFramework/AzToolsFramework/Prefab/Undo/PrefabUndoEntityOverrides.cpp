@@ -97,7 +97,7 @@ namespace AzToolsFramework
                         PrefabUndoUtils::AppendUpdateEntityPatch(
                             overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
-                    else if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entity->GetId());
+                    else if (auto overrideType = m_prefabOverridePublicInterface->GetEntityOverrideType(entity->GetId());
                         overrideType.has_value() && overrideType == OverrideType::AddEntity)
                     {
                         // Override patches on the entity would be merged into the entity DOM value stored in the

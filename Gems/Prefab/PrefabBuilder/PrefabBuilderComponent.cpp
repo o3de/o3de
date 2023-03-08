@@ -306,7 +306,7 @@ namespace AZ::Prefab
         }
 
         AZ_TracePrintf("Prefab Builder", "Loading Prefab in '%s'.\n", request.m_fullPath.c_str());
-        TemplateId templateId = loader->LoadTemplateFromFile(AZStd::string_view(request.m_fullPath));
+        AzToolsFramework::Prefab::TemplateId templateId = loader->LoadTemplateFromFile(AZStd::string_view(request.m_fullPath));
         if (templateId == InvalidTemplateId)
         {
             AZ_Error("Prefab Builder", false, "Failed to load Prefab template.");

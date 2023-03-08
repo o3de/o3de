@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <TestRunner/Python/TestImpactPythonInstrumentedNullTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 

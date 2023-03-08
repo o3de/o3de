@@ -313,7 +313,7 @@ namespace AZ
                 , public LuaMaterialFunctorAPI::ConfigureShaders
             {
             public:
-                AZ_TYPE_INFO(LuaMaterialFunctorAPI::LuaMaterialFunctorPipelineRuntimeContext, "{632F1E52-79EE-4184-A7B0-55C0EEEC5AB2}");
+                AZ_TYPE_INFO(PipelineRuntimeContext, "{632F1E52-79EE-4184-A7B0-55C0EEEC5AB2}");
 
                 static void Reflect(BehaviorContext* behaviorContext);
 

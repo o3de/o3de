@@ -103,14 +103,14 @@ namespace ScriptEvents
         m_argumentToolTips.resize(numArguments);
     }
 
-    void ScriptEventBroadcast::SetArgumentName(size_t index, const AZStd::string& name)
+    void ScriptEventBroadcast::SetArgumentName(size_t index, AZStd::string name)
     {
         if (index >= m_argumentNames.size())
         {
             m_argumentNames.resize(index + 1);
         }
 
-        m_argumentNames[index] = name;
+        m_argumentNames[index] = AZStd::move(name);
     }
 
     size_t ScriptEventBroadcast::GetMinNumberOfArguments() const

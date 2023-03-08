@@ -551,36 +551,10 @@ AZStd::string GetUniqueLogFileName(AZStd::string logFileName)
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(AZ::ThreadSafety, "{E334B1DC-5F86-4642-9A7D-FBFC2B849E20}");
+    // Purposely Null Uuid, so it isn't aggregated into the ConsoleDataWrapper Uuid
+    AZ_TYPE_INFO_SPECIALIZE(AZ::ThreadSafety, AZ::Uuid{});
 
-    template<typename BASE_TYPE, ThreadSafety THREAD_SAFETY>
-    struct AzTypeInfo<AZ::ConsoleDataWrapper<BASE_TYPE, THREAD_SAFETY>, false>
-    {
-        static constexpr const char* Name()
-        {
-            return s_name.c_str();
-        }
-        static constexpr AZ::TypeId Uuid()
-        {
-            return AZ::TypeId("{1E5AB0FC-83FF-4715-BBE9-348B880613B0}") + azrtti_typeid<BASE_TYPE>();
-        }
-        static constexpr TypeTraits GetTypeTraits()
-        {
-            return TypeTraits();
-        }
-        static constexpr size_t Size()
-        {
-            return sizeof(AZ::ConsoleDataWrapper<BASE_TYPE, THREAD_SAFETY>);
-        }
-        static constexpr bool Specialized()
-        {
-            return true;
-        }
-        static constexpr auto s_name = []()
-        {
-            return AZStd::fixed_string<64>("ConsoleDataWrapper<") + ">";
-        }();
-    };
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(AZ::ConsoleDataWrapper, "ConsoleDataWrapper", "{1E5AB0FC-83FF-4715-BBE9-348B880613B0}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_AUTO);
 } // namespace AZ
 
 class AzConsoleToCryConsoleBinder final

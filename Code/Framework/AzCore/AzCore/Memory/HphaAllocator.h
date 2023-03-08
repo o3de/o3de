@@ -26,7 +26,6 @@ namespace AZ
         * we will allocate system memory using system calls. You can
         * provide arena (memory block) with pre-allocated memory.
         */
-        AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
 
         HphaSchemaBase();
         virtual ~HphaSchemaBase();
@@ -76,6 +75,7 @@ namespace AZ
         : public HphaSchemaBase<Internal::HphaDebugAllocator>
     {
     public:
+        AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
         using HphaSchemaBase<Internal::HphaDebugAllocator>::HphaSchemaBase;
     };
 } // namespace AZ

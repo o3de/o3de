@@ -101,7 +101,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             info.m_assetType = product.GetAssetType();
             info.m_relativePath = product.GetId();
             AZ::Data::AssetData* assetData = product.ReleaseAsset().release();
-            assetDataInfoContainer.emplace_back(AZStd::make_pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>(assetData, info));
+            assetDataInfoContainer.emplace_back(AZStd::make_pair(assetData, info));
 
             if (info.m_assetType == azrtti_typeid<AzFramework::Spawnable>())
             {
