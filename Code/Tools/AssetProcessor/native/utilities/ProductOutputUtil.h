@@ -37,7 +37,6 @@ namespace AssetProcessor
         static void RenameProduct(
             AZStd::shared_ptr<AssetDatabaseConnection> db,
             AzToolsFramework::AssetDatabase::ProductDatabaseEntry existingProduct,
-            const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry,
-            AZStd::string_view platformIdentifier);
+            const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry);
     };
 } // namespace AssetProcessor

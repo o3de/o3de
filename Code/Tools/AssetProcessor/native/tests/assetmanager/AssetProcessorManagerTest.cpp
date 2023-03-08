@@ -386,8 +386,8 @@ public:
         AZ::Interface<IUuidRequests>::Get()->EnableGenerationForTypes({ ".stage1" });
 
         AZ::IO::Path assetRootDir = m_databaseLocationListener.GetAssetRootDir();
-        m_sourceA = SourceAssetReference{ assetRootDir / "folder" / "file.stage1" };
-        m_sourceB = SourceAssetReference{ assetRootDir / "folder2" / "file.stage1" };
+        m_sourceA = SourceAssetReference{ assetRootDir / "folder" / "subfolder" / "file.stage1" };
+        m_sourceB = SourceAssetReference{ assetRootDir / "folder2" / "subfolder" / "file.stage1" };
     }
 
     void SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms)
@@ -401,20 +401,20 @@ public:
     void VerifyProducts()
     {
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
-        EXPECT_TRUE(this->m_stateData->GetProductsByProductName("pc/file.stage2", products));
+        EXPECT_TRUE(this->m_stateData->GetProductsByProductName("pc/subfolder/file.stage2", products));
         EXPECT_EQ(products.size(), 1);
 
         products = {};
         EXPECT_TRUE(m_stateData->GetProductsByProductName(
-            AZStd::string::format("pc/%sfile.stage2", ProductOutputUtil::GetPrefix(m_sourceB.ScanFolderId()).c_str()).c_str(), products));
+            AZStd::string::format("pc/subfolder/%sfile.stage2", ProductOutputUtil::GetPrefix(m_sourceB.ScanFolderId()).c_str()).c_str(), products));
         EXPECT_EQ(products.size(), 1);
 
         auto io = AZ::IO::FileIOBase::GetInstance();
-        EXPECT_TRUE(io->Exists(MakePath("file.stage2", false).c_str()));
-        EXPECT_FALSE(io->Exists(MakePath("(2)file.stage2", false).c_str()));
-        EXPECT_TRUE(io->Exists(MakePath("(3)file.stage2", false).c_str()));
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+        EXPECT_FALSE(io->Exists(MakePath("subfolder/(2)file.stage2", false).c_str()));
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
 
-        auto fileContentsResult = AZ::Utils::ReadFile(MakePath("file.stage2", false).c_str());
+        auto fileContentsResult = AZ::Utils::ReadFile(MakePath("subfolder/file.stage2", false).c_str());
 
         ASSERT_TRUE(fileContentsResult);
         EXPECT_STREQ(fileContentsResult.GetValue().c_str(), "unit test file A");
@@ -447,8 +447,8 @@ TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityProcessedFirst_Outputs
     ProcessFileMultiStage(1, false, m_sourceB);
 
     auto io = AZ::IO::FileIOBase::GetInstance();
-    EXPECT_FALSE(io->Exists(MakePath("file.stage2", false).c_str()));
-    EXPECT_TRUE(io->Exists(MakePath("(3)file.stage2", false).c_str()));
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
 
     ProcessFileMultiStage(1, false, m_sourceA);
 
@@ -462,8 +462,8 @@ TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityCreatedFirst_OutputsCo
     ProcessFileMultiStage(1, false, m_sourceB);
 
     auto io = AZ::IO::FileIOBase::GetInstance();
-    EXPECT_TRUE(io->Exists(MakePath("file.stage2", false).c_str()));
-    EXPECT_FALSE(io->Exists(MakePath("(3)file.stage2", false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
 
     // Create and process the high priority file second
     AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());

@@ -333,11 +333,14 @@ namespace UnitTests
                 }
             }
 
-            AZ::IO::Path outputFile = request.m_sourceFile;
+            AZ::IO::FixedMaxPath outputFile = AZ::IO::FixedMaxPath(request.m_sourceFile);
             outputFile.ReplaceExtension(outputExtension.c_str());
+            outputFile = outputFile.Filename();
 
-            AZ::IO::LocalFileIO::GetInstance()->Copy(
-                request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
+            AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Copy(
+                request.m_fullPath.c_str(), (AZ::IO::FixedMaxPath(request.m_tempDirPath) / outputFile).c_str());
+
+            EXPECT_TRUE(result);
 
             auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
 

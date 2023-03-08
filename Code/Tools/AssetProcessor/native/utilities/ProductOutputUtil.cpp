@@ -90,7 +90,7 @@ namespace AssetProcessor
                                     // Found a different source already using this product name
                                     // This should be a previously-higher priority override
                                     // Rename the existing file/product entries from non-prefixed to prefixed version
-                                    RenameProduct(db, existingProduct, existingSource, platformIdentifier);
+                                    RenameProduct(db, existingProduct, existingSource);
                                 }
                             }
                         }
@@ -115,14 +115,15 @@ namespace AssetProcessor
     void ProductOutputUtil::RenameProduct(
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db,
         AzToolsFramework::AssetDatabase::ProductDatabaseEntry existingProduct,
-        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry,
-        AZStd::string_view platformIdentifier)
+        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
     {
         auto oldProductPath = AssetUtilities::ProductPath::FromDatabasePath(existingProduct.m_productName);
-        QString newName = oldProductPath.GetRelativePath().c_str();
+        AZ::IO::FixedMaxPath existingProductName(existingProduct.m_productName);
+        QString newName = existingProductName.Filename().StringAsPosix().c_str();
         ModifyProductPath(newName, sourceEntry.m_scanFolderPK);
 
-        AssetUtilities::ProductPath newProductPath(newName.toUtf8().constData(), platformIdentifier);
+        auto newProductPath = AssetUtilities::ProductPath::FromDatabasePath(
+            (AZ::IO::FixedMaxPath(existingProductName.ParentPath()) / newName.toUtf8().constData()).Native().c_str());
         AssetProcessor::ProductAssetWrapper wrapper{ existingProduct, oldProductPath };
 
         auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
