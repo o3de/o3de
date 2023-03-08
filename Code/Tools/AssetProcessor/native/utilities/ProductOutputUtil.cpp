@@ -57,7 +57,7 @@ namespace AssetProcessor
                     if (prefixPos < 0)
                     {
                         AZ_Error(
-                            "OutputManager",
+                            "ProductOutputUtil",
                             false,
                             "Product " AZ_STRING_FORMAT " is expected to be prefixed but was not",
                             AZ_STRING_ARG(product.m_productFileName));
@@ -101,12 +101,12 @@ namespace AssetProcessor
                         }
                     }
 
-                    auto result = AZ::IO::SmartMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+                    bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
 
                     if (!result)
                     {
                         AZ_Error(
-                            "OutputManager",
+                            "ProductOutputUtil",
                             false,
                             "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT,
                             AZ_STRING_ARG(oldAbsolutePath),
@@ -129,12 +129,12 @@ namespace AssetProcessor
         auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
         auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
 
-        auto result = AZ::IO::SmartMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+        bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
 
         if (!result)
         {
             AZ_Error(
-                "OutputManager",
+                "ProductOutputUtil",
                 false,
                 "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT,
                 AZ_STRING_ARG(oldAbsolutePath),
