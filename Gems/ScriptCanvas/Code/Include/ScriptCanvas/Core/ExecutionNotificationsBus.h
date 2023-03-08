@@ -114,7 +114,7 @@ namespace ScriptCanvas
 
     struct BreakTag
     {
-        AZ_TYPE_INFO_LEGACY(BreakTag, "{B1B0976D-E300-470B-B01C-8EED7571414A}", );
+        AZ_TYPE_INFO(BreakTag, "{B1B0976D-E300-470B-B01C-8EED7571414A}");
         static const char* ToString() { return "Break"; }
     };
     struct BreakpointTag
@@ -189,7 +189,7 @@ namespace ScriptCanvas
     };
     struct StepOverTag
     {
-        AZ_TYPE_INFO_LEGACY(StepOverTag, "{44980605-0FF2-4A5C-870E-324B4184ADD6}", );
+        AZ_TYPE_INFO(StepOverTag, "{44980605-0FF2-4A5C-870E-324B4184ADD6}");
         static const char* ToString() { return "StepOver"; }
     };
     struct VariableChangeTag
@@ -221,8 +221,8 @@ namespace ScriptCanvas
         , public LoggableEvent
     {
         using ThisType = TaggedParent<t_Tag, t_Parent>;
-        AZ_CLASS_ALLOCATOR(ThisType, AZ::SystemAllocator);
         AZ_RTTI((TaggedParent, "{CF75CEEE-2305-49D4-AD41-407E82F819D7}", t_Tag, t_Parent), t_Parent, LoggableEvent);
+        AZ_CLASS_ALLOCATOR(ThisType, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -397,8 +397,8 @@ namespace ScriptCanvas
     {
         using ThisType = TaggedDataValue<t_Tag>;
 
-        AZ_CLASS_ALLOCATOR(TaggedDataValue<t_Tag>, AZ::SystemAllocator);
         AZ_RTTI((TaggedDataValue, "{893B73BA-E1CC-4D91-92D1-C1CF46817A57}", t_Tag), DatumValue, GraphInfo, LoggableEvent);
+        AZ_CLASS_ALLOCATOR(TaggedDataValue<t_Tag>, AZ::SystemAllocator);
         using DatumValue::DatumValue;
 
         static void Reflect(AZ::ReflectContext* context)

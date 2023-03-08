@@ -25,7 +25,6 @@ namespace AZ::DocumentPropertyEditor
         , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
     {
     public:
-
         //! Creates an uninitialized (empty) ComponentAdapter.
         ComponentAdapter();
         //! Creates a ComponentAdapter with a specific component instance, see SetComponent
@@ -42,21 +41,21 @@ namespace AZ::DocumentPropertyEditor
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
-        void SetComponent(AZ::Component* componentInstance);
+        virtual void SetComponent(AZ::Component* componentInstance);
 
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
-        //! Request the PrefabAdapterInterface to add a property handler if an override is present corresponding to the path provided.
-        //! @param adapterBuilder The adapter builder to use for adding property handler
-        //! @param serializedpath The serialized path to use to check whether an override is present corresponding to it
-        void OnBeginRow(AdapterBuilder* adapterBuilder, AZStd::string_view serializedPath) override;
+        //! Creates a node for displaying label information.
+        //! Requests the PrefabAdapterInterface to add a property node and configures its style if an override exist.
+        //! @param adapterBuilder The adapter builder to use for adding property node.
+        //! @param labelText The text string to be displayed in label.
+        //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.
+        void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
     protected:
-
-        AZStd::string m_componentAlias;
         AZ::EntityId m_entityId;
 
         AZ::Component* m_componentInstance = nullptr;

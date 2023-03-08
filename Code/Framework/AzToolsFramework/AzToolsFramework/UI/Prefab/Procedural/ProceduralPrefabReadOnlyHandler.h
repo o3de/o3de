@@ -28,7 +28,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_CLASS_ALLOCATOR(ProceduralPrefabReadOnlyHandler, AZ::SystemAllocator);
-            AZ_RTTI(AzToolsFramework::ProceduralPrefabReadOnlyHandler, "{A2D72461-8CA3-45EE-81D2-4976BC0B6AE9}");
+            AZ_RTTI(ProceduralPrefabReadOnlyHandler, "{A2D72461-8CA3-45EE-81D2-4976BC0B6AE9}");
 
             ProceduralPrefabReadOnlyHandler();
             ~ProceduralPrefabReadOnlyHandler() override;

@@ -256,7 +256,7 @@ namespace AZ::RPI
         // For the setting up of the parameter for SPD shader, refer to:
         // https://github.com/GPUOpen-Effects/FidelityFX-SPD/blob/c52944f547884774a1b33066f740e6bf89f927f5/ffx-spd/ffx_spd.h#L327
 
-        bool succeeded = true;
+        [[maybe_unused]] bool succeeded = true;
         ShaderResourceGroup& srg = *m_shaderResourceGroup;
         succeeded &= srg.SetConstant(
             m_numWorkGroupsIndex,

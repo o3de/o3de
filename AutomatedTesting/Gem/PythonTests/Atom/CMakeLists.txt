@@ -88,7 +88,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Main_GPU
@@ -103,7 +102,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Editor
         COMPONENT
             Atom
-        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::Atom_TestSuite_Benchmark_GPU
@@ -170,6 +168,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             AssetProcessor
             AutomatedTesting.Assets
             MaterialEditor
+        COMPONENT
+            Atom
+    )
+    ly_add_pytest(
+        NAME AutomatedTesting::RGATest 
+        TEST_SUITE sandbox
+        TIMEOUT 1200
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Manual.py
+        TEST_SERIAL 
+        RUNTIME_DEPENDENCIES 
+            AssetProcessor
+            AutomatedTesting.Assets
         COMPONENT
             Atom
     )

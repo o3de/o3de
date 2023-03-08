@@ -16,11 +16,11 @@ namespace AWSGameLift
 {
     //! Gem client system component. Responsible for creating the gamelift client manager.
     class AWSGameLiftClientEditorSystemComponent
-        : public AWSGameLiftClientSystemComponent
+        : public AZ::Component
         , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(AWSGameLiftClientEditorSystemComponent, "{AE1388B1-542A-4B49-8B4F-48988D78AD67}", AWSGameLiftClientSystemComponent);
+        AZ_COMPONENT(AWSGameLiftClientEditorSystemComponent, "{AE1388B1-542A-4B49-8B4F-48988D78AD67}");
 
         AWSGameLiftClientEditorSystemComponent();
 

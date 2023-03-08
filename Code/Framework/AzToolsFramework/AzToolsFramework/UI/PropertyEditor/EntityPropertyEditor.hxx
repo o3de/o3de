@@ -32,7 +32,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapter.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -494,6 +493,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;
@@ -642,8 +642,7 @@ namespace AzToolsFramework
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
-        // An adapter that works in conjuction with the DPE system as a manager for all prefab related operations in a DPE DOM.
-        AZStd::unique_ptr<Prefab::PrefabAdapter> m_prefabAdapter;
+        // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
@@ -690,6 +689,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();
