@@ -77,6 +77,8 @@ namespace AzToolsFramework
             }
         }
 
+
+
         SearchWidget::SearchWidget(QWidget* parent)
             : AzQtComponents::FilteredSearchWidget(parent)
             , m_filter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
@@ -170,15 +172,19 @@ namespace AzToolsFramework
             }
 
             //auto productFilter = new EntryTypeFilter();
-            //productFilter->SetName("Product");
-            //productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+            //productFilter->SetName("Source");
+            //productFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
             //auto inverseProductFilter = new InverseFilter();
             //inverseProductFilter->SetFilter(FilterConstType(productFilter));
             //m_projectSourceFilter->AddFilter(FilterConstType(inverseProductFilter));
 
-            auto pathFilter = new AssetPathFilter();
+           /* auto pathFilter = new AssetPathFilter();
             pathFilter->SetAssetPath(AZ::IO::Path(AZ::Utils::GetProjectPath()));
-            m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));
+            m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));*/
+
+            auto extensionFilter = new AssetExtensionFilter();
+            extensionFilter->SetAssetExtension(QString(".lua"));
+            m_projectSourceFilter->AddFilter(FilterConstType(extensionFilter));
 
             auto directoryFilter = new EntryTypeFilter();
             directoryFilter->SetName("Folder");

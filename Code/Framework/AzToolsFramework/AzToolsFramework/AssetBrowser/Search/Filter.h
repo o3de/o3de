@@ -208,6 +208,28 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
+        // AssetExtensionFilter
+        //////////////////////////////////////////////////////////////////////////
+        //! AssetExtensionFilter filters assets based on their file extension
+        class AssetExtensionFilter : public AssetBrowserEntryFilter
+        {
+            Q_OBJECT
+        public:
+            AssetExtensionFilter();
+            ~AssetExtensionFilter() override = default;
+
+            void SetAssetExtension(const QString& extension);
+            const QString& GetAssetExtension() const;
+
+        protected:
+            QString GetNameInternal() const override;
+            bool MatchInternal(const AssetBrowserEntry* entry) const override;
+
+        private:
+            QString m_extension;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
         // EntryTypeFilter
         //////////////////////////////////////////////////////////////////////////
         class EntryTypeFilter
