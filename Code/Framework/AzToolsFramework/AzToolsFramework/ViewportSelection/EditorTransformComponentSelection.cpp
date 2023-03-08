@@ -3228,6 +3228,145 @@ namespace AzToolsFramework
 
             m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
         }
+
+        // Move Up
+        {
+            const AZStd::string_view actionIdentifier = "o3de.action.entitySorting.moveUp";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Move Up";
+            actionProperties.m_description = "Move the current selection up one row.";
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Can only move one entity at a time
+                    if (selectedEntities.size() != 1)
+                    {
+                        return;
+                    }
+
+                    // Retrieve this entity's parent.
+                    AZ::EntityId parentId;
+                    AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                        parentId, selectedEntities.front(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
+
+                    AzToolsFramework::ScopedUndoBatch undo("Move Entity Up");
+
+                    EditorEntitySortRequestBus::Event(parentId, &EditorEntitySortRequestBus::Events::MoveChildEntityUp, selectedEntities.front());
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []() -> bool
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Can only move one entity at a time
+                    if (selectedEntities.size() != 1)
+                    {
+                        return false;
+                    }
+
+                    // Retrieve this entity's parent.
+                    AZ::EntityId parentId;
+                    AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                        parentId, selectedEntities.front(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
+
+                    bool result = false;
+                    EditorEntitySortRequestBus::EventResult(
+                        result, parentId, &EditorEntitySortRequestBus::Events::CanMoveChildEntityUp, selectedEntities.front());
+
+                    return result;
+                }
+            );
+
+            // Trigger update whenever entity selection changes.
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+        }
+
+        // Move Down
+        {
+            const AZStd::string_view actionIdentifier = "o3de.action.entitySorting.moveDown";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Move Down";
+            actionProperties.m_description = "Move the current selection down one row.";
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Can only move one entity at a time
+                    if (selectedEntities.size() != 1)
+                    {
+                        return;
+                    }
+
+                    // Retrieve this entity's parent.
+                    AZ::EntityId parentId;
+                    AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                        parentId, selectedEntities.front(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
+
+                    AzToolsFramework::ScopedUndoBatch undo("Move Entity Down");
+
+                    EditorEntitySortRequestBus::Event(
+                        parentId, &EditorEntitySortRequestBus::Events::MoveChildEntityDown, selectedEntities.front());
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []() -> bool
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // Can only move one entity at a time
+                    if (selectedEntities.size() != 1)
+                    {
+                        return false;
+                    }
+
+                    // Retrieve this entity's parent.
+                    AZ::EntityId parentId;
+                    AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                        parentId, selectedEntities.front(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
+
+                    bool result = false;
+                    EditorEntitySortRequestBus::EventResult(
+                        result, parentId, &EditorEntitySortRequestBus::Events::CanMoveChildEntityDown, selectedEntities.front());
+
+                    return result;
+                }
+            );
+
+            // Trigger update whenever entity selection changes.
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            // This action is only accessible outside of Component Modes
+            m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+        }
     }
 
     void EditorTransformComponentSelection::OnMenuBindingHook()
@@ -3258,10 +3397,14 @@ namespace AzToolsFramework
         // Entity Outliner Context Menu
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.delete", 40200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.edit.togglePivot", 60200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.entitySorting.moveUp", 70200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.entitySorting.moveDown", 70300);
 
         // Viewport Context Menu
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 40200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.togglePivot", 60200);
     }
 
     void EditorTransformComponentSelection::UnregisterActions()

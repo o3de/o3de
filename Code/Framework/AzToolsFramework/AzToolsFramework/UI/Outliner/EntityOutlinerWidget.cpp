@@ -313,10 +313,12 @@ namespace AzToolsFramework
         Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
+        EntityOutlinerRequestBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
+        EntityOutlinerRequestBus::Handler::BusDisconnect();
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
@@ -1224,6 +1226,26 @@ namespace AzToolsFramework
     void EntityOutlinerWidget::SetEditorUiEnabled(bool enable)
     {
         EnableUi(enable);
+    }
+
+    void EntityOutlinerWidget::RenameEntity(const AZ::EntityId& entityId)
+    {
+        // Only allow renaming the entity if the UI Handler did not block it.
+        auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+        bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+        // Disable renaming for read-only entities.
+        bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+        if (canRename && !isReadOnly)
+        {
+            const QModelIndex proxyIndex = GetIndexFromEntityId(entityId);
+            if (proxyIndex.isValid())
+            {
+                m_gui->m_objectTree->setCurrentIndex(proxyIndex);
+                m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+            }
+        }
     }
 
     void EntityOutlinerWidget::OnEditorModeActivated(

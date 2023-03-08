@@ -176,12 +176,12 @@ namespace AzToolsFramework
 
     void EditorMenu::DisplayAtPosition(QPoint screenPosition) const
     {
-        m_menu->exec(screenPosition);
+        m_menu->popup(screenPosition);
     }
 
     void EditorMenu::DisplayUnderCursor() const
     {
-        m_menu->exec(QCursor::pos());
+        m_menu->popup(QCursor::pos());
     }
 
     void EditorMenu::RefreshMenu()

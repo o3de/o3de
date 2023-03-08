@@ -934,6 +934,7 @@ set(FILES
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
+    UI/Outliner/EntityOutlinerRequestBus.h
     UI/Outliner/EntityOutlinerSearchWidget.h
     UI/Outliner/EntityOutlinerSearchWidget.cpp
     UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx

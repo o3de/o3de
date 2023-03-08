@@ -1910,8 +1910,7 @@ namespace AzToolsFramework
                     AZ_Assert(
                         false,
                         "An error occurred in function EntitiesBelongToSameInstance: "
-                        "Owning instance of entity with id '%llu' couldn't be found",
-                        entityId);
+                        "Owning instance of entity couldn't be found");
                     return false;
                 }
 

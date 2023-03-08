@@ -282,7 +282,7 @@ private:
     };
 
 private:
-    ContextMenuBottomHandler m_contextMenuBottomHandler;
+    EditorContextMenuHandler m_contextMenuBottomHandler;
 
     //! Position of the cursor when the context menu is opened inside the 3d viewport.
     //! note: The optional will be empty if the context menu was opened outside the 3d viewport.

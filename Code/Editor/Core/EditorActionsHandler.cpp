@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerRequestBus.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -772,6 +773,103 @@ void EditorActionsHandler::OnActionRegistrationHook()
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
+    // Rename Entity (in the Entity Outliner)
+    {
+        const AZStd::string_view actionIdentifier = "o3de.action.entity.rename";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Rename";
+        actionProperties.m_description = "Rename the current selection.";
+        actionProperties.m_category = "Entity";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []()
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                // Can only rename one entity at a time
+                if (selectedEntities.size() == 1)
+                {
+                    AzToolsFramework::EntityOutlinerRequestBus::Broadcast(
+                        &AzToolsFramework::EntityOutlinerRequests::RenameEntity, selectedEntities.front());
+                }
+            });
+
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            actionIdentifier,
+            []() -> bool
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                // Can only rename one entity at a time
+                if (selectedEntities.size() != 1)
+                {
+                    return false;
+                }
+
+                return true;
+            });
+
+        // Trigger update whenever entity selection changes.
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+    }
+
+    // Find Entity (in the Entity Outliner)
+    {
+        const AZStd::string_view actionIdentifier = "o3de.action.entityOutliner.findEntity";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Find in Entity Outliner";
+        actionProperties.m_description = "Ensure the current entity is visible in the Entity Outliner.";
+        actionProperties.m_category = "Entity";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []()
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                if (selectedEntities.size() > 0)
+                {
+                    AzToolsFramework::EditorEntityContextNotificationBus::Broadcast(
+                        &EditorEntityContextNotification::OnFocusInEntityOutliner, selectedEntities);
+                }
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            actionIdentifier,
+            []() -> bool
+            {
+                AzToolsFramework::EntityIdList selectedEntities;
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                if (selectedEntities.empty())
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        );
+
+        // Trigger update whenever entity selection changes.
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+        // Trigger update whenever entity selection changes.
+        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
     }
 
     // --- Game Actions
@@ -1904,7 +2002,9 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 50000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 60000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 70000);
-    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 70100);
+    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.entity.rename", 70100);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 80000);
+    m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 80100);
 
     // Viewport Context Menu
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 10000);
@@ -1914,6 +2014,9 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 50000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 60000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 70000);
+    m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 80000);
+    m_menuManagerInterface->AddActionToMenu(
+        EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.entityOutliner.findEntity", 80100);
 }
 
 void EditorActionsHandler::OnToolBarAreaRegistrationHook()
