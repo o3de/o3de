@@ -101,6 +101,15 @@
         "Gems/VirtualGamepad",
         "Gems/WhiteBox"
     ],
+    "gem_names": [
+        "AtomShader",
+        "Atom_Bootstrap",
+        "CommonFeaturesAtom",
+        "Camera",
+        "Maestro",
+        "PrefabBuilder",
+        "SceneProcessing"
+    ],
     "projects": [
         "AutomatedTesting"
     ],

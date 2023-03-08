@@ -227,6 +227,9 @@ function(resolve_gem_dependencies object_type object_path)
         return()
     endif()
 
+    # Strip any whitespace which might be included in the first or last elements of the list
+    string(STRIP "${resolved_gem_dependency_output}" resolved_gem_dependency_output)
+
     # Set each gem's global path property "@GEMROOT:${gem_name}@" to the resolved gem path
     unset(gem_name)
     foreach(entry IN LISTS resolved_gem_dependency_output)
@@ -248,7 +251,7 @@ function(resolve_gem_dependencies object_type object_path)
                 cmake_path(SET current_gem_path "${current_gem_path}")
                 cmake_path(COMPARE "${gem_path}" NOT_EQUAL "${current_gem_path}" paths_are_different)
                 if (paths_are_different)
-                    message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current: ${current_gem_path}\n  New:${gem_path}")
+                    message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current:'${current_gem_path}'\n  New:'${gem_path}'")
                 endif()
             else()
                 message(VERBOSE "New path found for gem '${gem_name}' ${current_gem_path}")
@@ -373,6 +376,10 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
         # Build the gem_names list with extracted names
         list(APPEND gem_names ${gem_name_with_version_specifier})
     endforeach()
+
+    # Ensure all gems from "gem_names" are included settings registry file
+    # used to load runtime gems libraries
+    ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
 
     add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
     list(APPEND subdirs_for_object ${object_gem_reference_dirs})

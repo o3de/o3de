@@ -82,19 +82,16 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file:
         enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
 
-    # make sure this is a project has an enabled gems file
-    if not enabled_gem_file.is_file():
-        logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
-        return 1
-
     # remove the gem
     gem_name = gem_name or gem_json_data.get('gem_name','')
-    error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
+    ret_val = 0
+    if enabled_gem_file.is_file():
+        ret_val = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
 
     # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
     # registered with the project.json nor engine.json
     ret_val = project_properties.edit_project_props(project_path,
-                                                    delete_gem_names=gem_name) or error_code
+                                                    delete_gem_names=gem_name) or ret_val
 
     return ret_val
 

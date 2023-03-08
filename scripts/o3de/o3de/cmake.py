@@ -335,7 +335,7 @@ def resolve_gem_dependency_paths(
         with resolved_gem_dependencies_output_path.open('w') as output:
             output.write(gem_paths_list)
     else:
-        print(f'${gem_paths_list}')
+        print(gem_paths_list)
 
     return 0
 
