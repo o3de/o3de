@@ -114,10 +114,6 @@ namespace AzQtComponents
         void SetShowSearchResultsMode(bool searchMode);
 
         void HideProductAssets(bool checked);
-
-        void rowsInserted(const QModelIndex& parent, int start, int end) override;
-        void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
-        void reset() override;
     signals:
         void rootIndexChanged(const QModelIndex& idx);
         void showInFolderTriggered(const QModelIndex& idx);
