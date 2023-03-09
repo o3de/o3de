@@ -149,6 +149,13 @@ namespace AzToolsFramework::Prefab
                             propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
                         "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
 
+                    AZ::Dom::Value firstRowElement = propertyRowValue[0];
+                    AZ_Assert(
+                        firstRowElement.IsNode() &&
+                            firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name &&
+                            firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name,
+                        "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a 'PrefabOverrideLabel'.");
+
                     // Patch the first child in the row, which is going to the PrefabOverrideLabel.
                     patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
                         pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
