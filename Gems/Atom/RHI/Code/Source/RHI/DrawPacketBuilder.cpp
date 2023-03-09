@@ -292,5 +292,34 @@ namespace AZ
             m_scissors.clear();
             m_viewports.clear();
         }
+
+        const DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
+        {
+            Begin(original->m_allocator);
+            SetDrawArguments(original->GetDrawItem(0).m_item->m_arguments);
+            SetIndexBufferView(original->m_indexBufferView);
+            SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
+            SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
+            SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));
+            for (uint8_t i = 0; i < original->m_shaderResourceGroupCount; ++i)
+            {
+                const ShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
+                AddShaderResourceGroup(*srg);
+            }
+            for (uint8_t i = 0; i < original->m_drawItemCount; ++i)
+            {
+                const DrawItem* drawItem = original->m_drawItems + i;
+                DrawRequest drawRequest;
+                drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
+                drawRequest.m_listTag = *(original->m_drawListTags + i);
+                drawRequest.m_pipelineState = drawItem->m_pipelineState;
+                drawRequest.m_sortKey = *(original->m_drawItemSortKeys + i);
+                drawRequest.m_stencilRef = drawItem->m_stencilRef;
+                drawRequest.m_streamBufferViews = AZStd::span(drawItem->m_streamBufferViews, drawItem->m_streamBufferViewCount);
+                drawRequest.m_uniqueShaderResourceGroup = drawItem->m_uniqueShaderResourceGroup;
+                AddDrawItem(drawRequest);
+            }
+            return End();
+        }
     }
 }

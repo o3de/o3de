@@ -11,6 +11,12 @@
 #include <Atom/RHI/DrawList.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
+// Predefinition for unit test friend class
+namespace UnitTest
+{
+    class DrawPacketTest;
+}
+
 namespace AZ
 {
     class IAllocator;
@@ -37,10 +43,12 @@ namespace AZ
         class DrawPacket final : public AZStd::intrusive_base
         {
             friend class DrawPacketBuilder;
+            friend class UnitTest::DrawPacketTest;
         public:
             using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
 
             //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
+            //! Use DrawPacketBuilder::Clone to copy a draw packet.
             AZ_DISABLE_COPY_MOVE(DrawPacket);
 
             //! Returns the mask representing all the draw lists affected by the packet.
@@ -60,6 +68,12 @@ namespace AZ
 
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
+
+            //! Update the root constant at the specified interval. The same root constants are shared by all draw items in the draw packet
+            void SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data);
+
+            //! Set the instance count in all draw items.
+            void SetInstanceCount(uint32_t instanceCount);
 
         private:
             /// Use DrawPacketBuilder to construct an instance.
