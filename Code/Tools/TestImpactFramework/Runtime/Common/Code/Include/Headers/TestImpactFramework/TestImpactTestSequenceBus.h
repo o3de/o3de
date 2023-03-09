@@ -26,7 +26,7 @@ namespace TestImpact
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        ~TestSequenceNotificationsBase() = default;
+        virtual ~TestSequenceNotificationsBase() = default;
 
         //! Callback for test runs that have completed for any reason.
         //! @param testRunMeta The test that has completed.
@@ -52,7 +52,7 @@ namespace TestImpact
         : public TestSequenceNotificationsBase
     {
     public:
-        ~NonImpactAnalysisTestSequenceNotificationsBase() = default;
+        virtual ~NonImpactAnalysisTestSequenceNotificationsBase() = default;
 
         //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
         //! @param suiteSet The test suites to select tests from.

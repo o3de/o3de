@@ -558,10 +558,8 @@ namespace TestImpact
         SeedTestSequenceNotificationsBus::Broadcast(
             &SeedTestSequenceNotificationsBus::Events::OnTestSequenceStart, m_suiteSet, m_suiteLabelExcludeSet, selectedTests);
 
-        //
-        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
-
         // Run the test targets and collect the test run results
+        TestEngineNotificationHandler<PythonTestTarget> handler(includedTestTargets.size());
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,

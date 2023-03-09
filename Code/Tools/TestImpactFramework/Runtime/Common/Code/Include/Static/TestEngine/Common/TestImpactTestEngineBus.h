@@ -6,11 +6,11 @@
  *
  */
 
+#pragma once
+
 #include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
 
 #include <AzCore/EBus/EBus.h>
-
-#pragma once
 
 namespace TestImpact
 {

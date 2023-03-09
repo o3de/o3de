@@ -6,13 +6,13 @@
  *
  */
 
+#pragma once
+
 #include <TestImpactFramework/TestImpactTestSequenceBus.h>
 
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
-
-#pragma once
 
 namespace TestImpact
 {
@@ -31,7 +31,7 @@ namespace TestImpact
         {
         public:
             TestSequenceNotificationHandlerBase(ConsoleOutputMode consoleOutputMode);
-            ~TestSequenceNotificationHandlerBase();
+            virtual ~TestSequenceNotificationHandlerBase();
 
         private:
             // TestSequenceNotificationsBaseBus overrides ...

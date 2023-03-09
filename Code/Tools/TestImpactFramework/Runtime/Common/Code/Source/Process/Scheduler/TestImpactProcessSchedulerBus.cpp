@@ -12,7 +12,7 @@ namespace TestImpact
 {
     ProcessCallbackResult GetAggregateProcessCallbackResult(const AZ::EBusAggregateResults<ProcessCallbackResult>& results)
     {
-        return std::count(results.values.begin(), results.values.end(), ProcessCallbackResult::Abort)
+        return std::count(results.values.begin(), results.values.end(), ProcessCallbackResult::Abort) > 0
             ? ProcessCallbackResult::Abort
             : ProcessCallbackResult::Continue;
     }
