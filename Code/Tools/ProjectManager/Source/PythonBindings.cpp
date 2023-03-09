@@ -771,56 +771,46 @@ namespace O3DE::ProjectManager
         return GemRegistration(gemPath, projectPath, /*remove*/true);
     }
 
-    bool PythonBindings::AddProject(const QString& path)
+    IPythonBindings::DetailedOutcome PythonBindings::AddProject(const QString& path)
     {
+        using namespace pybind11::literals;
         bool registrationResult = false;
-        bool result = ExecuteWithLock(
-            [&]
-        {
-            auto projectPath = QString_To_Py_Path(path);
-            auto pythonRegistrationResult = m_register.attr("register")(pybind11::none(), projectPath);
+        bool result = ExecuteWithLock([&] {
+            auto pythonRegistrationResult = m_register.attr("register")(
+                "project_path"_a = QString_To_Py_Path(path));
 
             // Returns an exit code so boolify it then invert result
             registrationResult = !pythonRegistrationResult.cast<bool>();
         });
 
-        return result && registrationResult;
+        if (!result || !registrationResult)
+        {
+            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+        }
+
+        return AZ::Success();
     }
 
-    bool PythonBindings::RemoveProject(const QString& path)
+    IPythonBindings::DetailedOutcome PythonBindings::RemoveProject(const QString& path)
     {
         using namespace pybind11::literals;
-
         bool registrationResult = false;
-        bool result = ExecuteWithLock(
-            [&]
-        {
+        bool result = ExecuteWithLock([&] {
             auto pythonRegistrationResult = m_register.attr("register")(
-                "engine_path"_a                  = pybind11::none(),
-                "project_path"_a                 = QString_To_Py_Path(path),
-                "gem_path"_a                     = pybind11::none(),
-                "external_subdir_path"_a         = pybind11::none(),
-                "template_path"_a                = pybind11::none(),
-                "restricted_path"_a              = pybind11::none(),
-                "repo_uri"_a                     = pybind11::none(),
-                "default_engines_folder"_a       = pybind11::none(),
-                "default_projects_folder"_a      = pybind11::none(),
-                "default_gems_folder"_a          = pybind11::none(),
-                "default_templates_folder"_a     = pybind11::none(),
-                "default_restricted_folder"_a    = pybind11::none(),
-                "default_third_party_folder"_a   = pybind11::none(),
-                "external_subdir_engine_path"_a  = pybind11::none(),
-                "external_subdir_project_path"_a = pybind11::none(),
-                "external_subdir_gem_path"_a     = pybind11::none(),
-                "remove"_a                       = true,
-                "force"_a                        = false
+                "project_path"_a = QString_To_Py_Path(path),
+                "remove"_a       = true
                 );
 
             // Returns an exit code so boolify it then invert result
             registrationResult = !pythonRegistrationResult.cast<bool>();
         });
 
-        return result && registrationResult;
+        if (!result || !registrationResult)
+        {
+            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+        }
+
+        return AZ::Success();
     }
 
     AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)

@@ -212,21 +212,21 @@ namespace O3DE::ProjectManager
         /**
          * Adds existing project on disk
          * @param path the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool AddProject(const QString& path) = 0;
+        virtual DetailedOutcome AddProject(const QString& path) = 0;
 
         /**
          * Adds existing project on disk
          * @param path the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool RemoveProject(const QString& path) = 0;
+        virtual DetailedOutcome RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
          * @param projectInfo the info to use to update the project 
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
         virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
 

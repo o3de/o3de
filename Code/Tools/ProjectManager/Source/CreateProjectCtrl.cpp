@@ -256,8 +256,7 @@ namespace O3DE::ProjectManager
             auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
             if (result.IsSuccess())
             {
-                // automatically register the project
-                PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
+                // don't need to register here, the project is already registered in CreateProject()
 
                 const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
                 if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)

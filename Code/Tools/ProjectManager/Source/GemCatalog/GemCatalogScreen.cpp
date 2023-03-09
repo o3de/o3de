@@ -606,7 +606,7 @@ namespace O3DE::ProjectManager
             if (enabledGemNamesResult.IsSuccess())
             {
                 const auto& enabledGemNames = enabledGemNamesResult.GetValue();
-                for ( auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
+                for (auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
                 {
                     const QString& gemNameWithSpecifier = itr.key();
                     const QString& gemPath = itr.value(); 
