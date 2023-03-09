@@ -16,7 +16,6 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyOverride.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
-
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -131,8 +130,6 @@ namespace AzToolsFramework
                         "PrefabUndoComponentPropertyOverride::CaptureAndRedo - Cannot reach overridden property value from the DOM of the prefab being edited.");
                 }
             }
-
-            
         }
 
         void PrefabUndoComponentPropertyOverride::Undo()

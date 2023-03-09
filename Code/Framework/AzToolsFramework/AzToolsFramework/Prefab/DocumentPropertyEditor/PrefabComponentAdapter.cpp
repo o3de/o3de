@@ -48,13 +48,6 @@ namespace AzToolsFramework::Prefab
         // Set the component alias before calling SetValue() in base SetComponent().
         // Otherwise, an empty component alias will be used in DOM data.
         m_componentAlias = componentInstance->GetSerializedIdentifier();
-
-        if (m_componentAlias.empty())
-        {
-            AZStd::string componentAlias(AZStd::string::format("Component_[%llu]", componentInstance->GetId()));
-            componentInstance->SetSerializedIdentifier(componentAlias);
-            m_componentAlias = AZStd::move(componentAlias);
-        }
         AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
 
         ComponentAdapter::SetComponent(componentInstance);
@@ -108,7 +101,7 @@ namespace AzToolsFramework::Prefab
 
         message.Match(PrefabPropertyEditorNodes::PrefabOverrideLabel::RevertOverride, handleRevertOverride);
 
-        return ComponentAdapter::HandleMessage(message);
+        return ReflectionAdapter::HandleMessage(message);
     }
 
     void PrefabComponentAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
@@ -166,8 +159,7 @@ namespace AzToolsFramework::Prefab
     }
 
     bool PrefabComponentAdapter::CreateAndApplyComponentEditPatch(
-        AZStd::string_view relativePathFromOwningPrefab,
-        const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
+        AZStd::string_view relativePathFromOwningPrefab, const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
     {
         if (!propertyChangeInfo.newValue.IsOpaqueValue())
         {
@@ -217,14 +209,13 @@ namespace AzToolsFramework::Prefab
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
             return false;
         }
     }
 
     bool PrefabComponentAdapter::CreateAndApplyComponentOverridePatch(
-        AZ::Dom::Path relativePathFromOwningPrefab,
-        const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
+        AZ::Dom::Path relativePathFromOwningPrefab, const ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo)
     {
         if (!propertyChangeInfo.newValue.IsOpaqueValue())
         {
@@ -261,7 +252,7 @@ namespace AzToolsFramework::Prefab
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
             return false;
         }
     }
