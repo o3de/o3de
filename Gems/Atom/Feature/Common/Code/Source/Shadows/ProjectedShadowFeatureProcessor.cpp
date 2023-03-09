@@ -720,7 +720,7 @@ namespace AZ::Render
         RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
         variant.ConfigurePipelineState(pipelineStateDescriptor);
 
-        bool foundPipelineState = GetParentScene()->ConfigurePipelineState(m_clearShadowShader->GetDrawListTag(), pipelineStateDescriptor);
+        [[maybe_unused]] bool foundPipelineState = GetParentScene()->ConfigurePipelineState(m_clearShadowShader->GetDrawListTag(), pipelineStateDescriptor);
         AZ_Assert(foundPipelineState, "Could not find pipeline state for ClearShadow shader's draw list '%s'", shaderAsset->GetDrawListName().GetCStr())
 
         RHI::InputStreamLayoutBuilder layoutBuilder;
