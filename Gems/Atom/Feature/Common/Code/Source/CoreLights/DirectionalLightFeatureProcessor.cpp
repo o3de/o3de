@@ -208,6 +208,7 @@ namespace AZ
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_fullScreenBlurEnableName, AZ::RPI::ShaderOptionValue{m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_fullscreenBlurEnabled});
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
 
@@ -1725,6 +1726,7 @@ namespace AZ
 #if USING_SCREENSHADOW_COMPUTEPASS
             if (m_fullscreenShadowComputePass)
             {
+                m_fullscreenShadowComputePass->SetEnabled(fullscreenBlurEnabled);
                 if(fullscreenBlurEnabled)
                 {
                     const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
@@ -1738,6 +1740,7 @@ namespace AZ
 #else
             if (m_fullscreenShadowPass)
             {
+                m_fullscreenShadowPass->SetEnabled(fullscreenBlurEnabled);
                 if(fullscreenBlurEnabled)
                 {
                     const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;

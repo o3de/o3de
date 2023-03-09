@@ -22,11 +22,12 @@
 option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
 option bool o_directional_shadow_receiver_plane_bias_enable = true;
 option bool o_blend_between_cascades_enable = false;
+option bool o_full_screen_blur_enable = false;
 
 // DirectionalLightShadow calculates lit ratio for a directional light.
 class DirectionalLightShadow
 {
-    static bool UseFullscreenShadows();
+    static bool UseFullscreenShadows(uint lightIndex);
 
     //! Calculates visibility ratio of the surface from the light origin. Should be called from fragment shaders.
     //! Returns lit ratio from the light (1.0 is fully visible, 0.0 is fully shadowed).
@@ -43,13 +44,13 @@ class DirectionalLightShadow
     static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector);
 };
 
-bool DirectionalLightShadow::UseFullscreenShadows()
+bool DirectionalLightShadow::UseFullscreenShadows(uint lightIndex)
 {
 #if FORCE_OPAQUE
-    return true;
+    return o_full_screen_blur_enable;
 #else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
-    return useFullscreenShadows;
+    return useFullscreenShadows && o_full_screen_blur_enable;
 #endif
 }
 
@@ -71,7 +72,7 @@ float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, f
     float visibility;
     DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     
-    if (UseFullscreenShadows())
+    if (UseFullscreenShadows(lightIndex))
     {
         visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
 
@@ -93,9 +94,9 @@ float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, fl
     float visibility;
     DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
 
-    if (UseFullscreenShadows())
+    if (UseFullscreenShadows(lightIndex))
     {
-        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
+        visibility = PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x; 
     }
     else
     {    
@@ -114,7 +115,7 @@ float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, fl
 
 float DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
 {    
-    if (UseFullscreenShadows())
+    if (UseFullscreenShadows(lightIndex))
     {
         return PassSrg::m_fullscreenShadow.Load(int3(screenUv.xy, 0)).x;
     }
