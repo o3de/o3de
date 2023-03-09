@@ -62,27 +62,6 @@ namespace AZ
         return emplace(values...);
     }
 
-    template<typename T, typename Arg>
-    static void ConstructElement(
-        T* item,
-        Arg& arg)
-    {
-        // must be copy constructable?
-        // TODO: verify this statement
-        AZStd::construct_at(item, arg);
-    }
-
-    template<typename... value_types, typename... Args>
-    static void ConstructElements(
-        AZStd::tuple<value_types*...> items, AZStd::initializer_list<AZStd::initializer_list<Args...>>& initializerLists)
-    {
-        AZStd::apply(
-            [initializerLists](value_types*... data)
-            {
-                ((ConstructElement<value_types...>(data, initializerLists)), ...);
-            }, items);
-    }
-
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<typename... Args>
     auto StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::emplace(
@@ -95,14 +74,13 @@ namespace AZ
             size_t pageElementIndex = m_firstAvailablePage->Reserve();
             if (pageElementIndex != Page::InvalidPage)
             {
-                AZStd::tuple<value_types*...> items = m_firstAvailablePage->GetItems(pageElementIndex);
+                ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
                 AZStd::apply([&](value_types* ...dataItems)
                     {
                         ((AZStd::construct_at(dataItems, args)), ...);
                     },
                     items
                 );
-                //((AZStd::construct_at(AZStd::get<value_types*>(items), args)), ...);
 
                 ++m_itemCount;
                 return Handle(items, m_firstAvailablePage);
@@ -132,14 +110,13 @@ namespace AZ
         
         size_t pageElementIndex = m_firstAvailablePage->Reserve();
 
-        AZStd::tuple<value_types*...> items = m_firstAvailablePage->GetItems(pageElementIndex);
+        ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
         AZStd::apply([&](value_types* ...dataItems)
             {
                 ((AZStd::construct_at(dataItems, args)), ...);
             },
             items
         );
-        //((AZStd::construct_at(AZStd::get<value_types*>(items), args)), ...);
 
         ++m_itemCount;
         return Handle(items, m_firstAvailablePage);
@@ -196,10 +173,10 @@ namespace AZ
         return pageIterators;
     }
 
-    template<typename... value_types, size_t... Ints>
+    template<typename ItemTupleType, size_t... Ints>
     static void MoveData(
-        AZStd::tuple<value_types*...>& sourceItem,
-        AZStd::tuple<value_types*...>& destinationItem,
+        ItemTupleType& sourceItem,
+        ItemTupleType& destinationItem,
         AZStd::index_sequence<Ints...>)
     {
         ((AZStd::get<Ints>(destinationItem) = AZStd::move(AZStd::get<Ints>(sourceItem))), ...);
@@ -404,9 +381,9 @@ namespace AZ
     }
 
 
-    template<typename PageType, typename... value_types, size_t... Ints>
+    template<typename PageType, typename ItemTupleType, size_t... Ints>
     static void SetDataPtrsOnItem(
-        AZStd::tuple<value_types*...>& items,
+        ItemTupleType& items,
         PageType page,
         size_t pageElementIndex,
         AZStd::index_sequence<Ints...>)
@@ -415,10 +392,8 @@ namespace AZ
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    AZStd::tuple<value_types *...> StableDynamicStructOfArrays<
-        ElementsPerPage,
-        Allocator,
-        value_types...>::Page::GetItems(size_t elementIndex)
+    typename StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Page::ItemTupleType
+        StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Page::GetItems(size_t elementIndex)
     {
         ItemTupleType items;
 
@@ -432,10 +407,9 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>* StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Page::GetItem(
+    auto* StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Page::GetItem(
         size_t index)
     {
-        //using AlignedStorageType = AZStd::tuple_element_t<RowIndex,AZStd::tuple<AZStd::aligned_storage_t<ElementsPerPage * sizeof(value_types), alignof(value_types)>...>>;
         using DataType = AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>;
         return (reinterpret_cast<DataType*>(&AZStd::get<RowIndex>(m_data)) + index);
     }
@@ -475,9 +449,9 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto* StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::iterator::GetItem() const
+    auto& StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::iterator::GetItem() const
     {
-        return m_page->GetItem<RowIndex>(m_itemIndex);
+        return *m_page->GetItem<RowIndex>(m_itemIndex);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -579,9 +553,9 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto* StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::const_iterator::GetItem() const
+    auto& StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::const_iterator::GetItem() const
     {
-        return base_type::m_page->GetItem<RowIndex>(base_type::m_itemIndex);
+        return *base_type::m_page->GetItem<RowIndex>(base_type::m_itemIndex);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -620,9 +594,9 @@ namespace AZ
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     template<size_t RowIndex>
-    auto* StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::pageIterator::GetItem() const
+    auto& StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::pageIterator::GetItem() const
     {
-        return m_page->GetItem<RowIndex>(m_itemIndex);
+        return *m_page->GetItem<RowIndex>(m_itemIndex);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -701,7 +675,7 @@ namespace AZ
 
     // StableDynamicStructOfArrays::WeakHandle
     template<typename... value_types>
-    StableDynamicStructOfArraysWeakHandle<value_types...>::StableDynamicStructOfArraysWeakHandle(const AZStd::tuple<value_types*...>& data)
+    StableDynamicStructOfArraysWeakHandle<value_types...>::StableDynamicStructOfArraysWeakHandle(const ItemTupleType& data)
         : m_data(data)
     {
     }
@@ -719,16 +693,17 @@ namespace AZ
     }
 
     template<typename... value_types>
-    inline AZStd::tuple<value_types*...>& StableDynamicStructOfArraysWeakHandle<value_types...>::operator*()
+    inline typename StableDynamicStructOfArraysWeakHandle<value_types...>::ItemTupleType&
+        StableDynamicStructOfArraysWeakHandle<value_types...>::operator*()
     {
         return m_data;
     }
 
     template<typename... value_types>
     template<size_t RowIndex>
-    inline auto* StableDynamicStructOfArraysWeakHandle<value_types...>::GetItem() const
+    inline auto& StableDynamicStructOfArraysWeakHandle<value_types...>::GetItem() const
     {
-        return AZStd::get<RowIndex>(m_data);
+        return *AZStd::get<RowIndex>(m_data);
     }
 
     // StableDynamicStructOfArrays::Handle
@@ -737,9 +712,9 @@ namespace AZ
     template<typename... value_types>
     template<typename PageType>
     inline StableDynamicStructOfArraysHandle<value_types...>::StableDynamicStructOfArraysHandle(
-        AZStd::tuple<value_types *...> data, PageType* page)
-        : m_page(page)
-        , m_data(data)
+        ItemTupleType data, PageType* page)
+        : m_data(data)
+        , m_page(page)
     {
         // Store container type information in the non-capturing lambda callback so the Handle itself doesn't need it.
         m_destructorCallback = [](void* typelessHandlePointer)
@@ -800,16 +775,17 @@ namespace AZ
     }
 
     template<typename... value_types>
-    inline AZStd::tuple<value_types*...>& StableDynamicStructOfArraysHandle<value_types...>::operator*()
+    inline typename StableDynamicStructOfArraysHandle<value_types...>::ItemTupleType&
+        StableDynamicStructOfArraysHandle<value_types...>::operator*()
     {
         return m_data;
     }
 
     template<typename... value_types>
     template<size_t RowIndex>
-    inline auto* StableDynamicStructOfArraysHandle<value_types...>::GetItem() const
+    inline auto& StableDynamicStructOfArraysHandle<value_types...>::GetItem() const
     {
-        return AZStd::get<RowIndex>(m_data);
+        return *AZStd::get<RowIndex>(m_data);
     }
 
     template <typename... value_types>

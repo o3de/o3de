@@ -157,14 +157,14 @@ namespace AZ
         /// True if this page is completely empty
         bool IsEmpty() const;
 
-        AZStd::tuple<value_types *...> GetItems(size_t index);
+        ItemTupleType GetItems(size_t index);
 
         /**
         * Gets a specific item from the Page
         * Note: may return empty slots.
         */
         template<size_t RowIndex>
-        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>* GetItem(size_t index);
+        auto* GetItem(size_t index);
 
         /// Gets the number of items allocated on this page.
         size_t GetItemCount() const;
@@ -197,7 +197,7 @@ namespace AZ
         // TODO: is this operator needed?
         const this_type& operator*() const;
         template <size_t RowIndex>
-        auto* GetItem() const;
+        auto& GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -231,7 +231,7 @@ namespace AZ
         explicit const_iterator(Page* firstPage);
 
         template<size_t RowIndex>
-        auto* GetItem() const;
+        auto& GetItem() const;
 
         this_type& operator++();
         this_type operator++(int);
@@ -252,7 +252,7 @@ namespace AZ
 
         const this_type& operator*() const;
         template<size_t RowIndex>
-        auto* GetItem() const;
+        auto& GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -282,6 +282,9 @@ namespace AZ
     class StableDynamicStructOfArraysWeakHandle
     {
     public:
+        using ItemTupleType = AZStd::tuple<value_types*...>;
+
+        /// Default constructor creates an invalid handle.
         StableDynamicStructOfArraysWeakHandle() = default;
 
         /// Returns true if this Handle currently holds a valid value.
@@ -290,15 +293,15 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        AZStd::tuple<value_types*...>& operator*();
+        ItemTupleType& operator*();
 
         template <size_t RowIndex>
-        auto* GetItem() const;
+        auto& GetItem() const;
         
     private:
-        StableDynamicStructOfArraysWeakHandle(const AZStd::tuple<value_types*...>& data);
+        StableDynamicStructOfArraysWeakHandle(const ItemTupleType& data);
 
-        AZStd::tuple<value_types*...> m_data;
+        ItemTupleType m_data;
 
         template<typename... value_types>
         friend class StableDynamicStructOfArraysHandle;
@@ -315,6 +318,7 @@ namespace AZ
         template<size_t ElementsPerPage, class Allocator, typename... value_types>
         friend class StableDynamicStructOfArrays;
     public:
+        using ItemTupleType = AZStd::tuple<value_types*...>;
 
         /// Default constructor creates an invalid handle.
         StableDynamicStructOfArraysHandle() = default;
@@ -337,17 +341,17 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        AZStd::tuple<value_types*...>& operator*();
+        ItemTupleType& operator*();
 
         /// Returns a pointer to the item in the row specified by RowIndex
         template <size_t RowIndex>
-        auto* GetItem() const;
+        auto& GetItem() const;
 
         /// Returns a non-owning weak handle to the data
         StableDynamicStructOfArraysWeakHandle<value_types...> GetWeakHandle() const;
     private:
         template<typename PageType>
-        StableDynamicStructOfArraysHandle(AZStd::tuple<value_types *...> data, PageType* page);
+        StableDynamicStructOfArraysHandle(ItemTupleType data, PageType* page);
 
         StableDynamicStructOfArraysHandle(const StableDynamicStructOfArraysHandle&) = delete;
 
@@ -357,7 +361,7 @@ namespace AZ
         /// Called for valid handles on delete so the underlying data can be removed from the StableDynamicArray
         HandleDestructor m_destructorCallback = nullptr; 
         void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
-        AZStd::tuple<value_types *...> m_data;
+        ItemTupleType m_data;
     };
     
     /// Used for returning information about the internal state of the StableDynamicStructOfArrays.
