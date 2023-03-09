@@ -1138,9 +1138,9 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    // The asset might have been created in-memory, for example for the default asset provided
-                    // via DefaultAsset attribute, and therefore it wound't have a job info.
-                    // Only report an asset missing error if the asset doen't exist in the asset manager.
+                    // The asset might have been created in-memory (for example for the default asset provided
+                    // via DefaultAsset attribute) and therefore it doesn't have a job info.
+                    // Only report the asset missing if it doesn't exist in the asset manager.
                     if (!AZ::Data::AssetManager::Instance().FindAsset(assetID, AZ::Data::AssetLoadBehavior::Default))
                     {
                         UpdateErrorButtonWithMessage(AZStd::string::format(
