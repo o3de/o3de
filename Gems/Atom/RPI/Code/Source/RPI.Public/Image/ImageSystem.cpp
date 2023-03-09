@@ -232,21 +232,18 @@ namespace AZ
                 return it->second;
             }
             
-            RHI::ImageBindFlags formatBindFlag = RHI::ImageBindFlags::Color;
-            RHI::ImageAspectFlags formatAspectFlag = RHI::ImageAspectFlags::Color;
+            RHI::ImageBindFlags formatBindFlag = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
 
             switch (format)
             {
             case RHI::Format::D16_UNORM:
             case RHI::Format::D32_FLOAT:
-                formatBindFlag = RHI::ImageBindFlags::Depth;
-                formatAspectFlag = RHI::ImageAspectFlags::Depth;
+                formatBindFlag = RHI::ImageBindFlags::Depth | RHI::ImageBindFlags::ShaderRead;
                 break;
             case RHI::Format::D16_UNORM_S8_UINT:
             case RHI::Format::D24_UNORM_S8_UINT:
             case RHI::Format::D32_FLOAT_S8X24_UINT:
-                formatBindFlag = RHI::ImageBindFlags::DepthStencil;
-                formatAspectFlag = RHI::ImageAspectFlags::DepthStencil;
+                formatBindFlag = RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::ShaderRead;
                 break;
             }
 
@@ -254,7 +251,7 @@ namespace AZ
             imageDescriptor.m_size = RHI::Size(1, 1, 1);
             imageDescriptor.m_format = format;
             imageDescriptor.m_arraySize = 1;
-            imageDescriptor.m_bindFlags = formatBindFlag | RHI::ImageBindFlags::ShaderReadWrite;
+            imageDescriptor.m_bindFlags = formatBindFlag;
             imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::All;
 
             RPI::CreateAttachmentImageRequest createImageRequest;
@@ -262,9 +259,6 @@ namespace AZ
             createImageRequest.m_imageDescriptor = imageDescriptor;
             createImageRequest.m_imageName = "SystemAttachmentImage";
             createImageRequest.m_isUniqueName = false;
-
-            RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDescriptor.m_format, 0, 0);
-            viewDesc.m_aspectFlags = formatAspectFlag;
 
             auto systemAttachmentImage = RPI::AttachmentImage::Create(createImageRequest);
             m_systemAttachmentImages[format] = systemAttachmentImage;
