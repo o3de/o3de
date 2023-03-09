@@ -69,6 +69,7 @@ def Menus_EditMenuOptions_Work():
     # 2) Some menu items will not display when no entity is selected (For example, Delete or Duplicate)
     # We create an entity as it's the quickest way to have a selection (new entities are selected by default).    
     EditorEntity.create_editor_entity()
+    general.idle_wait_frames(1)
 
     # 3) Interact with Edit Menu options
     editor_window = pyside_utils.get_editor_main_window()
