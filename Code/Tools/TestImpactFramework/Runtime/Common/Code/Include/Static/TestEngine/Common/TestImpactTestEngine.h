@@ -88,7 +88,7 @@ namespace TestImpact
     // Functor for handling test job runner callbacks
     template<typename TestJobRunner, typename TestTarget>
     class TestJobRunnerNotificationHandler
-        : private TestJobRunner::NotificationsBus::Handler
+        : private TestJobRunner::NotificationBus::Handler
     {
         using IdType = typename TestJobRunner::JobInfo::IdType;
         using JobInfo = typename TestJobRunner::JobInfo;
@@ -106,12 +106,12 @@ namespace TestImpact
             , m_testFailurePolicy(testFailurePolicy)
             , m_errorCodeCheckerCallback(&errorCodeCheckerCallback)
         {
-            TestJobRunner::NotificationsBus::Handler::BusConnect();
+            TestJobRunner::NotificationBus::Handler::BusConnect();
         }
 
         ~TestJobRunnerNotificationHandler()
         {
-            TestJobRunner::NotificationsBus::Handler::BusDisconnect();
+            TestJobRunner::NotificationBus::Handler::BusDisconnect();
         }
 
     private:
@@ -129,8 +129,8 @@ namespace TestImpact
                 TestEngineJob<TestTarget>(
                     target, args, meta, result, AZStd::move(std.m_out.value_or("")), AZStd::move(std.m_err.value_or(""))));
 
-            TestEngineNotificationsBus<TestTarget>::Broadcast(
-                &TestEngineNotificationsBus<TestTarget>::Events::OnJobComplete, it->second);
+            TestEngineNotificationBus<TestTarget>::Broadcast(
+                &TestEngineNotificationBus<TestTarget>::Events::OnJobComplete, it->second);
 
             if ((result == Client::TestRunResult::FailedToExecute && m_executionFailurePolicy == Policy::ExecutionFailure::Abort) ||
                 (result == Client::TestRunResult::TestFailures && m_testFailurePolicy == Policy::TestFailure::Abort))

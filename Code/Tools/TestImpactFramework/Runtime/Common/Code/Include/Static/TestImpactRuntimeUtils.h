@@ -58,15 +58,15 @@ namespace TestImpact
     //! Handler for test run complete events.
     template<typename TestTarget>
     class TestEngineNotificationHandler
-        : private ProcessSchedulerNotificationsBus::Handler
-        , private TestEngineNotificationsBus<TestTarget>::Handler
+        : private ProcessSchedulerNotificationBus::Handler
+        , private TestEngineNotificationBus<TestTarget>::Handler
     {
     public:
         TestEngineNotificationHandler(size_t totalTests);
         ~TestEngineNotificationHandler();
 
     private:
-        // TestEngineNotificationsBus override ...
+        // TestEngineNotificationBus override ...
         void OnJobComplete(const TestEngineJob<TestTarget>& testJob) override;
         void OnRealtimeStdContent(
             [[maybe_unused]] ProcessId processId,
@@ -83,15 +83,15 @@ namespace TestImpact
     TestEngineNotificationHandler<TestTarget>::TestEngineNotificationHandler(size_t totalTests)
         : m_totalTests(totalTests)
     {
-        ProcessSchedulerNotificationsBus::Handler::BusConnect();
-        TestEngineNotificationsBus<TestTarget>::Handler::BusConnect();
+        ProcessSchedulerNotificationBus::Handler::BusConnect();
+        TestEngineNotificationBus<TestTarget>::Handler::BusConnect();
     }
 
     template<typename TestTarget>
     TestEngineNotificationHandler<TestTarget>::~TestEngineNotificationHandler()
     {
-        TestEngineNotificationsBus<TestTarget>::Handler::BusDisconnect();
-        ProcessSchedulerNotificationsBus::Handler::BusDisconnect();
+        TestEngineNotificationBus<TestTarget>::Handler::BusDisconnect();
+        ProcessSchedulerNotificationBus::Handler::BusDisconnect();
     }
 
     template<typename TestTarget>
@@ -522,8 +522,8 @@ namespace TestImpact
         const auto draftedTests = ExtractTestTargetNames(draftedTestTargets);
 
         // Inform the client that the sequence is about to start
-        ImpactAnalysisTestSequenceNotificationsBus::Broadcast(
-            &ImpactAnalysisTestSequenceNotificationsBus::Events::OnTestSequenceStart,
+        ImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &ImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceStart,
             suiteSet,
             suiteLabelExcludeSet,
             selectedTests,
@@ -587,8 +587,8 @@ namespace TestImpact
                 draftedTestRunData.m_jobs));
 
         // Inform the client that the sequence has ended
-        ImpactAnalysisTestSequenceNotificationsBus::Broadcast(
-            &ImpactAnalysisTestSequenceNotificationsBus::Events::OnTestSequenceComplete, sequenceReport);
+        ImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &ImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
         // Update the dynamic dependency map with the latest coverage data (if any)
         if (updateCoverage.has_value())

@@ -233,12 +233,12 @@ namespace TestImpact
         RegularTestSequenceNotificationHandler::RegularTestSequenceNotificationHandler(const ConsoleOutputMode consoleOutputMode)
             : NonImpactAnalysisTestSequenceNotificationHandlerBase(consoleOutputMode)
         {
-            RegularTestSequenceNotificationsBus::Handler::BusConnect();
+            RegularTestSequenceNotificationBus::Handler::BusConnect();
         }
 
         RegularTestSequenceNotificationHandler::~RegularTestSequenceNotificationHandler()
         {
-            RegularTestSequenceNotificationsBus::Handler::BusDisconnect();
+            RegularTestSequenceNotificationBus::Handler::BusDisconnect();
         }
 
         void RegularTestSequenceNotificationHandler::OnTestSequenceComplete(const Client::RegularSequenceReport& sequenceReport)
@@ -250,12 +250,12 @@ namespace TestImpact
         SeedTestSequenceNotificationHandler::SeedTestSequenceNotificationHandler(const ConsoleOutputMode consoleOutputMode)
             : NonImpactAnalysisTestSequenceNotificationHandlerBase(consoleOutputMode)
         {
-            SeedTestSequenceNotificationsBus::Handler::BusConnect();
+            SeedTestSequenceNotificationBus::Handler::BusConnect();
         }
 
         SeedTestSequenceNotificationHandler::~SeedTestSequenceNotificationHandler()
         {
-            SeedTestSequenceNotificationsBus::Handler::BusDisconnect();
+            SeedTestSequenceNotificationBus::Handler::BusDisconnect();
         }
 
         void SeedTestSequenceNotificationHandler::OnTestSequenceComplete(const Client::SeedSequenceReport& sequenceReport)
@@ -267,12 +267,12 @@ namespace TestImpact
             const ConsoleOutputMode consoleOutputMode)
             : TestSequenceNotificationHandlerBase(consoleOutputMode)
         {
-            ImpactAnalysisTestSequenceNotificationsBus::Handler::BusConnect();
+            ImpactAnalysisTestSequenceNotificationBus::Handler::BusConnect();
         }
 
         ImpactAnalysisTestSequenceNotificationHandler::~ImpactAnalysisTestSequenceNotificationHandler()
         {
-            ImpactAnalysisTestSequenceNotificationsBus::Handler::BusDisconnect();
+            ImpactAnalysisTestSequenceNotificationBus::Handler::BusDisconnect();
         }
 
         void ImpactAnalysisTestSequenceNotificationHandler::OnTestSequenceStart(
@@ -304,12 +304,12 @@ namespace TestImpact
         SafeImpactAnalysisTestSequenceNotificationHandler::SafeImpactAnalysisTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode)
             : TestSequenceNotificationHandlerBase(consoleOutputMode)
         {
-            SafeImpactAnalysisTestSequenceNotificationsBus::Handler::BusConnect();
+            SafeImpactAnalysisTestSequenceNotificationBus::Handler::BusConnect();
         }
 
         SafeImpactAnalysisTestSequenceNotificationHandler::~SafeImpactAnalysisTestSequenceNotificationHandler()
         {
-            SafeImpactAnalysisTestSequenceNotificationsBus::Handler::BusDisconnect();
+            SafeImpactAnalysisTestSequenceNotificationBus::Handler::BusDisconnect();
         }
 
         void SafeImpactAnalysisTestSequenceNotificationHandler::OnTestSequenceStart(

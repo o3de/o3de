@@ -40,7 +40,7 @@ namespace TestImpact
         using PayloadMap = typename JobRunner::PayloadMap;
         using JobDataMap = typename JobRunner::JobDataMap;
         using JobPayloadOutcome = PayloadOutcome<JobPayload>;
-        using NotificationsBus = typename JobRunner::NotificationsBus;
+        using NotificationBus = typename JobRunner::NotificationBus;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.

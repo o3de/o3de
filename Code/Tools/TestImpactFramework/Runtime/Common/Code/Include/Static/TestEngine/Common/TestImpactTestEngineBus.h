@@ -32,5 +32,5 @@ namespace TestImpact
     };
 
     template<typename TestTarget>
-    using TestEngineNotificationsBus = AZ::EBus<TestEngineNotifications<TestTarget>>;
+    using TestEngineNotificationBus = AZ::EBus<TestEngineNotifications<TestTarget>>;
 } // namespace TestImpact

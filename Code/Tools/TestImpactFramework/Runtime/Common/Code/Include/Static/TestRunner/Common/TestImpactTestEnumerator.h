@@ -26,7 +26,7 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, TestEnumeration>;
         using TestJobRunner::TestJobRunner;
-        using NotificationsBus = typename TestJobRunner::NotificationsBus;
+        using NotificationBus = typename TestJobRunner::NotificationBus;
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
@@ -94,7 +94,7 @@ namespace TestImpact
                         cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
 
                         AZ::EBusAggregateResults<ProcessCallbackResult> results;
-                        NotificationsBus::BroadcastResult(results, &NotificationsBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
+                        NotificationBus::BroadcastResult(results, &NotificationBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
                         if (GetAggregateProcessCallbackResult(results) == ProcessCallbackResult::Abort)
                         {
                             // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks

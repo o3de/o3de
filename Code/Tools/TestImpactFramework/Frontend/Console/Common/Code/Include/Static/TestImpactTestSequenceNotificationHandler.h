@@ -61,42 +61,42 @@ namespace TestImpact
         //! Handler for regular test sequence notifications.
         class RegularTestSequenceNotificationHandler
             : public NonImpactAnalysisTestSequenceNotificationHandlerBase
-            , private RegularTestSequenceNotificationsBus::Handler
+            , private RegularTestSequenceNotificationBus::Handler
         {
         public:
             RegularTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode);
             ~RegularTestSequenceNotificationHandler();
 
         private:
-            // RegularTestSequenceNotificationsBus overrides ...
+            // RegularTestSequenceNotificationBus overrides ...
             void OnTestSequenceComplete(const Client::RegularSequenceReport& sequenceReport) override;
         };
 
         //! Handler for seed test sequence notifications.
         class SeedTestSequenceNotificationHandler
             : public NonImpactAnalysisTestSequenceNotificationHandlerBase
-            , private SeedTestSequenceNotificationsBus::Handler
+            , private SeedTestSequenceNotificationBus::Handler
         {
         public:
             SeedTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode);
             ~SeedTestSequenceNotificationHandler();
 
         private:
-            // SeedTestSequenceNotificationsBus overrides ...
+            // SeedTestSequenceNotificationBus overrides ...
             void OnTestSequenceComplete(const Client::SeedSequenceReport& sequenceReport) override;
         };
 
         //! Handler for impact analysis test sequence notifications.
         class ImpactAnalysisTestSequenceNotificationHandler
             : public TestSequenceNotificationHandlerBase
-            , private ImpactAnalysisTestSequenceNotificationsBus::Handler
+            , private ImpactAnalysisTestSequenceNotificationBus::Handler
         {
         public:
             ImpactAnalysisTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode);
             ~ImpactAnalysisTestSequenceNotificationHandler();
 
         private:
-            // ImpactAnalysisTestSequenceNotificationsBus overrides ...
+            // ImpactAnalysisTestSequenceNotificationBus overrides ...
             void OnTestSequenceStart(
                 const SuiteSet& suiteSet,
                 const SuiteLabelExcludeSet& suiteLabelExcludeSet,
@@ -109,14 +109,14 @@ namespace TestImpact
         //! Handler for safe impact analysis test sequence notifications.
         class SafeImpactAnalysisTestSequenceNotificationHandler
             : public TestSequenceNotificationHandlerBase
-            , private SafeImpactAnalysisTestSequenceNotificationsBus::Handler
+            , private SafeImpactAnalysisTestSequenceNotificationBus::Handler
         {
         public:
             SafeImpactAnalysisTestSequenceNotificationHandler(ConsoleOutputMode consoleOutputMode);
             ~SafeImpactAnalysisTestSequenceNotificationHandler();
 
         private:
-            // SafeImpactAnalysisTestSequenceNotificationsBus overrides ...
+            // SafeImpactAnalysisTestSequenceNotificationBus overrides ...
             void OnTestSequenceStart(
                 const SuiteSet& suiteSet,
                 const SuiteLabelExcludeSet& suiteLabelExcludeSet,

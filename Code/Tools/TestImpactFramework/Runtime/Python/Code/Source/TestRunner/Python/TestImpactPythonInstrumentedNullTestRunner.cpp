@@ -32,7 +32,7 @@ namespace TestImpact
                 // As these jobs weren't executed, no return code exists, so use the test pass/failure result to set the appropriate error code
                 meta.m_returnCode = outcome.GetValue().first->GetNumFailures() ? ErrorCodes::PyTest::TestFailures : 0;
                 jobs.push_back(job);
-                NotificationsBus::Broadcast(&NotificationsBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
+                NotificationBus::Broadcast(&NotificationBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
             }
             else
             {
@@ -40,7 +40,7 @@ namespace TestImpact
                 meta.m_result = JobResult::FailedToExecute;
                 Job job(jobInfo, AZStd::move(meta), AZStd::nullopt);
                 jobs.push_back(job);
-                NotificationsBus::Broadcast(&NotificationsBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
+                NotificationBus::Broadcast(&NotificationBus::Events::OnJobComplete, job.GetJobInfo(), meta, StdContent{});
             }
         }
 

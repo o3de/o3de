@@ -153,8 +153,8 @@ namespace TestImpact
 
     using TestSequenceNotificationsBaseBus = AZ::EBus<TestSequenceNotificationsBase>;
     using NonImpactAnalysisTestSequenceNotificationsBaseBus = AZ::EBus<NonImpactAnalysisTestSequenceNotificationsBase>;
-    using RegularTestSequenceNotificationsBus = AZ::EBus<RegularTestSequenceNotifications>;
-    using SeedTestSequenceNotificationsBus = AZ::EBus<SeedTestSequenceNotifications>;
-    using ImpactAnalysisTestSequenceNotificationsBus = AZ::EBus<ImpactAnalysisTestSequenceNotifications>;
-    using SafeImpactAnalysisTestSequenceNotificationsBus = AZ::EBus<SafeImpactAnalysisTestSequenceNotifications>;
+    using RegularTestSequenceNotificationBus = AZ::EBus<RegularTestSequenceNotifications>;
+    using SeedTestSequenceNotificationBus = AZ::EBus<SeedTestSequenceNotifications>;
+    using ImpactAnalysisTestSequenceNotificationBus = AZ::EBus<ImpactAnalysisTestSequenceNotifications>;
+    using SafeImpactAnalysisTestSequenceNotificationBus = AZ::EBus<SafeImpactAnalysisTestSequenceNotifications>;
 } // namespace TestImpact

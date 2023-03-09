@@ -69,7 +69,7 @@ namespace TestImpact
         }
     };
 
-    using ProcessSchedulerNotificationsBus = AZ::EBus<ProcessSchedulerNotifications>;
+    using ProcessSchedulerNotificationBus = AZ::EBus<ProcessSchedulerNotifications>;
 
     //! Returns the aggregate process callback result where if one or more aborts exists, the result is abort, otherwise continue.
     ProcessCallbackResult GetAggregateProcessCallbackResult(const AZ::EBusAggregateResults<ProcessCallbackResult>& results);

@@ -126,9 +126,9 @@ namespace TestImpact
 
                         // Inform the client that the processes has exited
                         AZ::EBusAggregateResults<ProcessCallbackResult> results;
-                        ProcessSchedulerNotificationsBus::BroadcastResult(
+                        ProcessSchedulerNotificationBus::BroadcastResult(
                             results,
-                            &ProcessSchedulerNotificationsBus::Events::OnProcessExit,
+                            &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                             processId,
                             ExitCondition::Gracefull,
                             returnCode,
@@ -170,9 +170,9 @@ namespace TestImpact
                             processInFlight.m_process.reset();
 
                             AZ::EBusAggregateResults<ProcessCallbackResult> results;
-                            ProcessSchedulerNotificationsBus::BroadcastResult(
+                            ProcessSchedulerNotificationBus::BroadcastResult(
                                 results,
-                                &ProcessSchedulerNotificationsBus::Events::OnProcessExit,
+                                &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                                 processId,
                                 ExitCondition::Timeout,
                                 returnCode,
@@ -238,9 +238,9 @@ namespace TestImpact
         }
 
          AZ::EBusAggregateResults<ProcessCallbackResult> results;
-        ProcessSchedulerNotificationsBus::BroadcastResult(
+        ProcessSchedulerNotificationBus::BroadcastResult(
             results,
-            &ProcessSchedulerNotificationsBus::Events::OnProcessLaunch, processInfo.GetId(), createResult, createTime);
+            &ProcessSchedulerNotificationBus::Events::OnProcessLaunch, processInfo.GetId(), createResult, createTime);
         
         return GetAggregateProcessCallbackResult(results);
     }
@@ -254,8 +254,8 @@ namespace TestImpact
 
         if (stdContents.m_out.has_value() || stdContents.m_err.has_value())
         {
-            ProcessSchedulerNotificationsBus::Broadcast(
-                &ProcessSchedulerNotificationsBus::Events::OnRealtimeStdContent,
+            ProcessSchedulerNotificationBus::Broadcast(
+                &ProcessSchedulerNotificationBus::Events::OnRealtimeStdContent,
                 processInFlight.m_process->GetProcessInfo().GetId(),
                 processInFlight.m_stdOutput,
                 processInFlight.m_stdError,
@@ -293,9 +293,9 @@ namespace TestImpact
                 {
                     const auto exitTime = AZStd::chrono::steady_clock::now();
                     AZ::EBusAggregateResults<ProcessCallbackResult> results;
-                    ProcessSchedulerNotificationsBus::BroadcastResult(
+                    ProcessSchedulerNotificationBus::BroadcastResult(
                         results,
-                        &ProcessSchedulerNotificationsBus::Events::OnProcessExit,
+                        &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                         processInFlight.m_process->GetProcessInfo().GetId(),
                         exitStatus,
                         returnCode,

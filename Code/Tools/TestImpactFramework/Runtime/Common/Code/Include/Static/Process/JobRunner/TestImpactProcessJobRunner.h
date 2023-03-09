@@ -84,7 +84,7 @@ namespace TestImpact
             }
         };
 
-        using NotificationsBus = AZ::EBus<Notifications>;
+        using NotificationBus = AZ::EBus<Notifications>;
 
         //! Constructs the job runner with the specified parameters to constrain job runs.
         //! @param maxConcurrentProcesses he maximum number of concurrent jobs in-flight.
@@ -118,7 +118,7 @@ namespace TestImpact
 
     template<typename AdditionalInfo, typename Payload>
     class JobRunner<AdditionalInfo, Payload>::ProcessSchedulerNotificationHandler
-        : private ProcessSchedulerNotificationsBus::Handler
+        : private ProcessSchedulerNotificationBus::Handler
     {
     public:
         ProcessSchedulerNotificationHandler(
@@ -127,7 +127,7 @@ namespace TestImpact
         ~ProcessSchedulerNotificationHandler();
 
     private:
-        // ProcessSchedulerNotificationsBus overrides ...
+        // ProcessSchedulerNotificationBus overrides ...
         ProcessCallbackResult OnProcessLaunch(
             ProcessId processId, LaunchResult launchResult, AZStd::chrono::steady_clock::time_point createTime) override;
         ProcessCallbackResult OnProcessExit(
@@ -152,13 +152,13 @@ namespace TestImpact
         AZStd::unordered_map<typename Job::Info::IdType, AZStd::pair<JobMeta, const typename Job::Info*>>& metas)
         : m_metas(&metas)
     {
-        ProcessSchedulerNotificationsBus::Handler::BusConnect();
+        ProcessSchedulerNotificationBus::Handler::BusConnect();
     }
 
     template<typename AdditionalInfo, typename Payload>
     JobRunner<AdditionalInfo, Payload>::ProcessSchedulerNotificationHandler::~ProcessSchedulerNotificationHandler()
     {
-        ProcessSchedulerNotificationsBus::Handler::BusDisconnect();
+        ProcessSchedulerNotificationBus::Handler::BusDisconnect();
     }
 
     template<typename AdditionalInfo, typename Payload>
@@ -170,8 +170,8 @@ namespace TestImpact
         {
             meta.m_result = JobResult::FailedToExecute;
             AZ::EBusAggregateResults<ProcessCallbackResult> results;
-            NotificationsBus::BroadcastResult(
-                results, &NotificationsBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
+            NotificationBus::BroadcastResult(
+                results, &NotificationBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
             return GetAggregateProcessCallbackResult(results);
         }
         else
@@ -210,7 +210,7 @@ namespace TestImpact
         }
 
         AZ::EBusAggregateResults<ProcessCallbackResult> results;
-        NotificationsBus::BroadcastResult(results, &NotificationsBus::Events::OnJobComplete, *jobInfo, meta, std);
+        NotificationBus::BroadcastResult(results, &NotificationBus::Events::OnJobComplete, *jobInfo, meta, std);
         return GetAggregateProcessCallbackResult(results);
     }
 
@@ -223,8 +223,8 @@ namespace TestImpact
         const AZStd::string& stdErrorDelta)
     {
         auto& [meta, jobInfo] = m_metas->at(processId);
-        NotificationsBus::Broadcast(
-            &NotificationsBus::Events::OnRealtimeStdContent, *jobInfo, stdOutput, stdError, stdOutputDelta, stdErrorDelta);
+        NotificationBus::Broadcast(
+            &NotificationBus::Events::OnRealtimeStdContent, *jobInfo, stdOutput, stdError, stdOutputDelta, stdErrorDelta);
     }
 
     template<typename AdditionalInfo, typename Payload>
