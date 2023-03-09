@@ -30,6 +30,16 @@
 
 namespace PhysXEditorTests
 {
+    // This function reactivates the entity to cause the simulated body to be recreated.
+    // This is necessary when modifying properties that affect a dynamic rigid body,
+    // because it will delay applying the changes until the next simulation tick,
+    // which happens automatically in the editor but not in test environment.
+    static void ForceSimulatedBodyRecreation(AZ::Entity& entity)
+    {
+        entity.Deactivate();
+        entity.Activate();
+    }
+
     EntityPtr CreateInactiveEditorEntity(const char* entityName)
     {
         AZ::Entity* entity = nullptr;
@@ -85,13 +95,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -136,13 +142,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -183,13 +185,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -237,13 +235,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -292,13 +286,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -345,13 +335,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -399,13 +385,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -454,13 +436,9 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // If using a dynamic rigid body then reactivate the entity to recreate the editor world body.
-        // This is because the dynamic rigid body only applies the changes in the next simulation tick,
-        // which happens automatically in the editor but not in test environment.
         if (rigidBodyType == RigidBodyType::Dynamic)
         {
-            editorEntity->Deactivate();
-            editorEntity->Activate();
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
