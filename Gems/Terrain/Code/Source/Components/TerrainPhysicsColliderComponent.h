@@ -46,9 +46,6 @@ namespace Terrain
         AZ::Data::Asset<Physics::MaterialAsset> m_materialAsset;
 
     private:
-        friend class EditorTerrainPhysicsColliderComponent;
-        AZ::Data::AssetId GetDefaultPhysicsMaterialAssetIdEditContext() const;
-
         const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
     };
 
@@ -61,10 +58,6 @@ namespace Terrain
 
         AZ::Data::Asset<Physics::MaterialAsset> m_defaultMaterialAsset;
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
-
-    private:
-        friend class EditorTerrainPhysicsColliderComponent;
-        AZ::Data::AssetId GetDefaultPhysicsMaterialAssetIdEditContext() const;
     };
 
 
