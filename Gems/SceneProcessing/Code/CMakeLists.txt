@@ -111,6 +111,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::SceneProcessing.Editor.Static
                     AZ::AzTest
                     AZ::SceneData
+                    AZ::AzToolsFrameworkTestCommon
         )
         ly_add_googletest(
             NAME Gem::SceneProcessing.Editor.Tests

@@ -25,7 +25,7 @@ namespace NvCloth
     //! Configuration data for Cloth.
     struct ClothConfiguration
     {
-        AZ_CLASS_ALLOCATOR(ClothConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClothConfiguration, AZ::SystemAllocator);
         AZ_TYPE_INFO(ClothConfiguration, "{96E2AF5E-3C98-4872-8F90-F56302A44F2A}");
 
         static void Reflect(AZ::ReflectContext* context);

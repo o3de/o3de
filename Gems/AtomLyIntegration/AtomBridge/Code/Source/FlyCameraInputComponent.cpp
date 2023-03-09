@@ -172,7 +172,7 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     }
 
     AZ::Transform worldTransform = AZ::Transform::Identity();
-    EBUS_EVENT_ID_RESULT(worldTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+    AZ::TransformBus::EventResult(worldTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
     // Update movement
     const float moveSpeed = m_moveSpeed * deltaTime;
@@ -192,7 +192,7 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     const AZ::Quaternion newOrientation = LYQuaternionToAZQuaternion(Quat(newRotation));
     worldTransform.SetRotation(newOrientation);
 
-    EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, worldTransform);
+    AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, worldTransform);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

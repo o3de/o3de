@@ -15,8 +15,6 @@ namespace AZ
     {
         class SwapChainPass;
 
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
-
         //! A parent pass doesn't do any rendering itself, but instead contains child passes that it delegates functionality to.
         //! A child can be a RenderPass or it can be a ParentPass itself. This creates a pass tree hierarchy that defines the
         //! the order in which passes and their logic are executed in.
@@ -34,7 +32,7 @@ namespace AZ
             using ChildPassIndex = RHI::Handle<uint32_t, class ChildPass>;
 
             AZ_RTTI(ParentPass, "{0801AD74-85A8-4895-A5E5-C500AEE535A6}", Pass);
-            AZ_CLASS_ALLOCATOR(ParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ParentPass, SystemAllocator);
 
             virtual ~ParentPass();
 
@@ -46,7 +44,7 @@ namespace AZ
             virtual Ptr<ParentPass> Recreate() const;
 
             //! Recursively collects all different view tags from this pass's children 
-            void GetPipelineViewTags(SortedPipelineViewTags& outTags) const override;
+            void GetPipelineViewTags(PipelineViewTags& outTags) const override;
 
             //! Recursively searches children for given viewTag, and collects their DrawListTags in outDrawListMask.
             void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const override;

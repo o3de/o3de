@@ -45,7 +45,7 @@ namespace GraphCanvas
             : public DataSlotDragDropInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataTypeConversionDataSlotDragDropInterface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataTypeConversionDataSlotDragDropInterface, AZ::SystemAllocator);
 
             DataTypeConversionDataSlotDragDropInterface(const SlotId& slotId);
 
@@ -66,7 +66,7 @@ namespace GraphCanvas
             : public SceneEventFilter
         {
         public:
-            AZ_CLASS_ALLOCATOR(DoubleClickSceneEventFilter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DoubleClickSceneEventFilter, AZ::SystemAllocator);
 
             DoubleClickSceneEventFilter(DataSlotLayout& dataSlotLayout)
                 : SceneEventFilter(nullptr)
@@ -100,7 +100,7 @@ namespace GraphCanvas
         friend class DoubleClickSceneEventFilter;
 
     public:
-        AZ_CLASS_ALLOCATOR(DataSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotLayout, AZ::SystemAllocator);
 
         DataSlotLayout(DataSlotLayoutComponent& owner);
         ~DataSlotLayout();

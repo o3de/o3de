@@ -17,8 +17,8 @@
 
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AWSMetrics
 {
@@ -393,7 +393,7 @@ namespace AWSMetrics
         if (!enable && submitLocalMetrics)
         {
             SubmitLocalMetricsAsync();
-        }       
+        }
     }
 
     void MetricsManager::SubmitLocalMetricsAsync()

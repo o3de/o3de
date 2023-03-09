@@ -25,7 +25,7 @@ namespace BarrierInput
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseBarrier, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseBarrier, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom factory create function

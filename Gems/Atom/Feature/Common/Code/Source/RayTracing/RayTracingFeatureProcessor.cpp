@@ -11,6 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
@@ -75,6 +76,13 @@ namespace AZ
             const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
             m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
+
+            EnableSceneNotification();
+        }
+
+        void RayTracingFeatureProcessor::Deactivate()
+        {
+            DisableSceneNotification();
         }
 
         void RayTracingFeatureProcessor::AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
@@ -200,17 +208,30 @@ namespace AZ
                 worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                 meshInfo.m_bufferFlags = subMesh.m_bufferFlags;
 
+                AZ_Assert(subMesh.m_indexShaderBufferView.get(), "RayTracing Mesh IndexBuffer cannot be null");
+                AZ_Assert(subMesh.m_positionShaderBufferView.get(), "RayTracing Mesh PositionBuffer cannot be null");
+                AZ_Assert(subMesh.m_normalShaderBufferView.get(), "RayTracing Mesh NormalBuffer cannot be null");
+
                 // add mesh buffers
                 meshInfo.m_bufferStartIndex = m_meshBufferIndices.AddEntry(
                 {
+#if USE_BINDLESS_SRG
+                    subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetBindlessReadIndex() : InvalidIndex
+#else
                     m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
+#endif
                 });
-                
+
                 meshInfo.m_indexByteOffset = subMesh.m_indexBufferView.GetByteOffset();
                 meshInfo.m_positionByteOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
                 meshInfo.m_normalByteOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
@@ -227,11 +248,19 @@ namespace AZ
 
                 materialInfo.m_textureStartIndex = m_materialTextureIndices.AddEntry(
                 {
+#if USE_BINDLESS_SRG
+                    subMesh.m_baseColorImageView.get() ? subMesh.m_baseColorImageView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_normalImageView.get() ? subMesh.m_normalImageView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_metallicImageView.get() ? subMesh.m_metallicImageView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_roughnessImageView.get() ? subMesh.m_roughnessImageView->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_emissiveImageView.get() ? subMesh.m_emissiveImageView->GetBindlessReadIndex() : InvalidIndex
+#else
                     m_materialTextures.AddResource(subMesh.m_baseColorImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_normalImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_metallicImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_roughnessImageView.get()),
                     m_materialTextures.AddResource(subMesh.m_emissiveImageView.get())
+#endif
                 });
             }
 
@@ -281,6 +310,7 @@ namespace AZ
                     m_meshBufferIndices.RemoveEntry(meshInfo.m_bufferStartIndex);
                     m_materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
 
+#if !USE_BINDLESS_SRG
                     m_meshBuffers.RemoveResource(subMesh.m_indexShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_positionShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_normalShaderBufferView.get());
@@ -293,6 +323,7 @@ namespace AZ
                     m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
                     m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
                     m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+#endif
 
                     if (globalIndex < m_subMeshes.size() - 1)
                     {
@@ -331,8 +362,10 @@ namespace AZ
                     m_meshBufferIndices.Reset();
                     m_materialTextureIndices.Reset();
 
+#if !USE_BINDLESS_SRG
                     m_meshBuffers.Reset();
                     m_materialTextures.Reset();
+#endif
                 }
             }
 
@@ -497,6 +530,7 @@ namespace AZ
                     currentMeshBufferIndicesGpuBuffer->Resize(newMeshBufferIndicesByteCount);
                 }
 
+#if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
                 IndexVector resolvedMeshBufferIndices(m_meshBufferIndices.GetIndexList().size());
@@ -514,6 +548,9 @@ namespace AZ
                 }
 
                 currentMeshBufferIndicesGpuBuffer->UpdateData(resolvedMeshBufferIndices.data(), newMeshBufferIndicesByteCount);
+#else
+                currentMeshBufferIndicesGpuBuffer->UpdateData(m_meshBufferIndices.GetIndexList().data(), newMeshBufferIndicesByteCount);
+#endif
 
                 // update material texture indices buffer
                 Data::Instance<RPI::Buffer>& currentMaterialTextureIndicesGpuBuffer = m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex];
@@ -536,6 +573,7 @@ namespace AZ
                     currentMaterialTextureIndicesGpuBuffer->Resize(newMaterialTextureIndicesByteCount);
                 }
 
+#if !USE_BINDLESS_SRG
                 // resolve to the true indices using the indirection list
                 // Note: this is done on the CPU to avoid double-indirection in the shader
                 IndexVector resolvedMaterialTextureIndices(m_materialTextureIndices.GetIndexList().size());
@@ -553,6 +591,9 @@ namespace AZ
                 }
 
                 currentMaterialTextureIndicesGpuBuffer->UpdateData(resolvedMaterialTextureIndices.data(), newMaterialTextureIndicesByteCount);
+#else
+                currentMaterialTextureIndicesGpuBuffer->UpdateData(m_materialTextureIndices.GetIndexList().data(), newMaterialTextureIndicesByteCount);
+#endif
 
                 m_indexListNeedsUpdate = false;
             }
@@ -648,8 +689,10 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshBufferIndices"));
             m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
 
+#if !USE_BINDLESS_SRG
             RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayIndex = srgLayout->FindShaderInputBufferUnboundedArrayIndex(AZ::Name("m_meshBuffers"));
             m_rayTracingSceneSrg->SetBufferViewUnboundedArray(bufferUnboundedArrayIndex, m_meshBuffers.GetResourceList());
+#endif
             m_rayTracingSceneSrg->Compile();
         }
 
@@ -664,9 +707,34 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialTextureIndices"));
             m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex]->GetBufferView());
 
+#if !USE_BINDLESS_SRG
             RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));
             m_rayTracingMaterialSrg->SetImageViewUnboundedArray(textureUnboundedArrayIndex, m_materialTextures.GetResourceList());
+#endif
             m_rayTracingMaterialSrg->Compile();
+        }
+
+        void RayTracingFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
+        {
+            if (!m_rayTracingEnabled)
+            {
+                return;
+            }
+
+            // only enable the RayTracingAccelerationStructurePass on the first pipeline in this scene, this will avoid multiple updates to the same AS
+            bool enabled = true;
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("RayTracingAccelerationStructurePass"), GetParentScene());
+                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&enabled](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                    {
+                        pass->SetEnabled(enabled);
+                        enabled = false;
+
+                        return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
+            }
         }
     }        
 }

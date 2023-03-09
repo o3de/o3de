@@ -26,7 +26,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(StyledLogPanel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledLogPanel, AZ::SystemAllocator);
             explicit StyledLogPanel(QWidget* parent = nullptr);
             ~StyledLogPanel();
 
@@ -72,7 +72,6 @@ namespace AzToolsFramework
             AZStd::unordered_map<QObject*, TabSettings> m_settingsForTabs;
 
             QWidget* m_noTabsWidget = nullptr;
-            bool m_pauseCheckForBlankTab = false;
         };
 
         // Replaces BaseLogView
@@ -81,7 +80,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(StyledLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledLogTab, AZ::SystemAllocator);
             explicit StyledLogTab(const TabSettings& settings, QWidget* pParent = nullptr);
 
             // utility function.  You can call this to determine if you need to continue to keep scrolling to the bottom whenever

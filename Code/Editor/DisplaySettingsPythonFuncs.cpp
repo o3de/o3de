@@ -11,8 +11,8 @@
 #include "DisplaySettingsPythonFuncs.h"
 
 // AzCore
-#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 // Editor
 #include "DisplaySettings.h"
@@ -74,7 +74,7 @@ namespace AzToolsFramework
             };
             addLegacyGeneral(behaviorContext->Method("get_misc_editor_settings", PyGetMiscDisplaySettings, nullptr, "Get miscellaneous Editor settings (camera collides with terrain, AI/Physics enabled, etc)."));
             addLegacyGeneral(behaviorContext->Method("set_misc_editor_settings", PySetMiscDisplaySettings, nullptr, "Set miscellaneous Editor settings (camera collides with terrain, AI/Physics enabled, etc)."));
-            
+
             behaviorContext->EnumProperty<EDisplaySettingsFlags::SETTINGS_NOCOLLISION>("DisplaySettings_NoCollision")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             behaviorContext->EnumProperty<EDisplaySettingsFlags::SETTINGS_NOLABELS>("DisplaySettings_NoLabels")

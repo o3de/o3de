@@ -70,8 +70,8 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetHeightfieldAabb, AZ::Aabb());
         MOCK_CONST_METHOD0(GetHeightfieldMinHeight, float());
         MOCK_CONST_METHOD0(GetHeightfieldMaxHeight, float());
-        MOCK_CONST_METHOD0(GetHeightfieldGridColumns, size_t());
-        MOCK_CONST_METHOD0(GetHeightfieldGridRows, size_t());
+        MOCK_CONST_METHOD0(GetHeightfieldGridColumns, AZ::u64());
+        MOCK_CONST_METHOD0(GetHeightfieldGridRows, AZ::u64());
         MOCK_CONST_METHOD5(GetHeightfieldIndicesFromRegion, void(const AZ::Aabb&, size_t&, size_t&, size_t&, size_t&));
         MOCK_CONST_METHOD5(
             UpdateHeightsAndMaterials, void(const Physics::UpdateHeightfieldSampleFunction&, size_t, size_t, size_t, size_t));

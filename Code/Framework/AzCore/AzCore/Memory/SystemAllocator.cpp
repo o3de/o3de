@@ -15,6 +15,7 @@
 #include <AzCore/std/functional.h>
 
 #include <AzCore/Debug/Profiler.h>
+#include <memory>
 
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
@@ -24,17 +25,12 @@
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
-    // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
-    static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-
-    //////////////////////////////////////////////////////////////////////////
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SystemAllocator, "SystemAllocator", "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SystemAllocator, AllocatorBase);
 
     SystemAllocator::SystemAllocator()
     {
         AllocatorInstance<OSAllocator>::Get();
-#if defined(AZ_ENABLE_TRACING)
-        SetProfilingActive(true);
-#endif
         Create();
         PostCreate();
     }
@@ -54,17 +50,8 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        m_subAllocator = new (&g_systemSchema) HphaSchema();
+        m_subAllocator = AZStd::make_unique<HphaSchema>();
         return true;
-    }
-
-    //=========================================================================
-    // Allocate
-    // [9/2/2009]
-    //=========================================================================
-    void SystemAllocator::Destroy()
-    {
-        static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
     }
 
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()

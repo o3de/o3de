@@ -125,7 +125,6 @@ namespace AzToolsFramework
                     "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }
@@ -902,7 +901,7 @@ namespace AzToolsFramework
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_SettingsQueueMutex);
         m_settingsQueue.push(AZStd::move(result));
-        EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);
+        AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this);
     }
 
     bool PerforceComponent::CheckConnectivityForAction(const char* actionDesc, const char* filePath) const
@@ -1458,7 +1457,7 @@ namespace AzToolsFramework
             {
                 AZStd::lock_guard<AZStd::mutex> locker(m_ResultQueueMutex);
                 m_resultQueue.push(AZStd::move(resp));
-                EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);// narrow events to the main thread.
+                AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this); // narrow events to the main thread.
             }
         }
     }

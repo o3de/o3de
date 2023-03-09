@@ -62,24 +62,27 @@ namespace Physics
             return materialFound;
         }
 
-        // Take a reference so we can mutate it.
-        AZ::Data::Asset<AZ::Data::AssetData> assetLocal = materialAsset;
-        if (!assetLocal.IsReady())
-        {
-            assetLocal.QueueLoad();
-            assetLocal.BlockUntilLoadComplete();
-
-            // Failed to load the asset
-            if (!assetLocal.IsReady())
-            {
-                return nullptr;
-            }
-        }
-
-        auto newMaterial = CreateMaterialInternal(id, assetLocal);
+        auto newMaterial = CreateMaterialInternal(id, materialAsset);
         if (newMaterial)
         {
             m_materials.emplace(newMaterial->GetId(), newMaterial);
+        }
+
+        // Block until the material asset is loaded.
+        // It's important that the loading of physics material assets is not delayed,
+        // otherwise objects would react differently during simulation for a few
+        // frames until the material is loaded, causing unexpected behaviors.
+        AZ::Data::Asset<AZ::Data::AssetData> assetLocal = materialAsset; // Take a reference so we can mutate it for loading.
+        if (!assetLocal.IsReady())
+        {
+            assetLocal.QueueLoad();
+
+            // The call to BlockUntilLoadComplete must happen after the new material
+            // has been added to m_materials container. This is because BlockUntilLoadComplete
+            // will dispatch events for other assets while waiting, and if other OnAssetReady
+            // code ends up trying find/create the same material it needs to find it in the
+            // container and return it.
+            assetLocal.BlockUntilLoadComplete();
         }
 
         return newMaterial;

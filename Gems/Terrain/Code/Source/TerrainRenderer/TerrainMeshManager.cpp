@@ -551,7 +551,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
+        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != TerrainDataChangedMask::None)
         {
             AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -1107,13 +1107,14 @@ namespace Terrain
                 uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
                 AZ::Vector2 xyPosition = AZ::Vector2(raytracingBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
 
-                float floatHeight = 0.0f;
+                float zPosition = 0.0f;
                 if (meshHeightsNormals.at(localIndex).m_height != NoTerrainVertexHeight)
                 {
-                    floatHeight = meshHeightsNormals.at(localIndex).m_height / float(AZStd::numeric_limits<uint16_t>::max()) * zExtent;
+                    float height = meshHeightsNormals.at(localIndex).m_height / aznumeric_cast<float>(AZStd::numeric_limits<uint16_t>::max());
+                    zPosition = aznumeric_cast<float>(m_worldHeightBounds.m_min) + height * zExtent;
                 }
 
-                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), floatHeight };
+                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), zPosition };
 
                 float normalX = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.first) / AZStd::numeric_limits<int16_t>::max();
                 float normalY = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.second) / AZStd::numeric_limits<int16_t>::max();

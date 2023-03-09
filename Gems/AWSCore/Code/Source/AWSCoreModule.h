@@ -17,7 +17,7 @@ namespace AWSCore
     {
     public:
         AZ_RTTI(AWSCoreModule, "{291657AE-6725-4D41-9EEF-5E6096B79600}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSCoreModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSCoreModule, AZ::SystemAllocator);
 
         AWSCoreModule();
         ~AWSCoreModule() override = default;

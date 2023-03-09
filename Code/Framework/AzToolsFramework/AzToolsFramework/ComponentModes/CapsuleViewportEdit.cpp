@@ -8,224 +8,360 @@
 
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 namespace AzToolsFramework
 {
-    namespace
+    namespace CapsuleViewportEditConstants
     {
         const AZ::Vector3 RadiusManipulatorAxis = AZ::Vector3::CreateAxisX();
         const AZ::Vector3 HeightManipulatorAxis = AZ::Vector3::CreateAxisZ();
         const float MinCapsuleRadius = 0.001f;
         const float MinCapsuleHeight = 0.002f;
-        const float HalfHeight = 0.5f;
         const float ResetCapsuleHeight = 1.0f;
         const float ResetCapsuleRadius = 0.25f;
-    } // namespace
+    } // namespace CapsuleViewportEditConstants
 
-    AZ::Vector3 CapsuleViewportEdit::GetCapsuleNonUniformScale() const
+    CapsuleViewportEdit::CapsuleViewportEdit(bool allowAsymmetricalEditing)
+        : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
     {
-        return AZ::Vector3::CreateOne();
+    }
+
+    void CapsuleViewportEdit::SetEnsureHeightExceedsTwiceRadius(bool ensureHeightExceedsTwiceRadius)
+    {
+        m_ensureHeightExceedsTwiceRadius = ensureHeightExceedsTwiceRadius;
+    }
+
+    void CapsuleViewportEdit::InstallGetCapsuleRadius(AZStd::function<float()> getCapsuleRadius)
+    {
+        m_getCapsuleRadius = AZStd::move(getCapsuleRadius);
+    }
+
+    void CapsuleViewportEdit::InstallGetCapsuleHeight(AZStd::function<float()> getCapsuleHeight)
+    {
+        m_getCapsuleHeight = AZStd::move(getCapsuleHeight);
+    }
+
+    void CapsuleViewportEdit::InstallSetCapsuleRadius(AZStd::function<void(float)> setCapsuleRadius)
+    {
+        m_setCapsuleRadius = AZStd::move(setCapsuleRadius);
+    }
+
+    void CapsuleViewportEdit::InstallSetCapsuleHeight(AZStd::function<void(float)> setCapsuleHeight)
+    {
+        m_setCapsuleHeight = AZStd::move(setCapsuleHeight);
+    }
+
+    float CapsuleViewportEdit::GetCapsuleRadius() const
+    {
+        if (m_getCapsuleRadius)
+        {
+            return m_getCapsuleRadius();
+        }
+        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetCapsuleRadius");
+        return CapsuleViewportEditConstants::ResetCapsuleRadius;
+    }
+
+    float CapsuleViewportEdit::GetCapsuleHeight() const
+    {
+        if (m_getCapsuleHeight)
+        {
+            return m_getCapsuleHeight();
+        }
+        AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for GetCapsuleHeight");
+        return CapsuleViewportEditConstants::ResetCapsuleHeight;
+    }
+
+    void CapsuleViewportEdit::SetCapsuleRadius(float radius)
+    {
+        if (m_setCapsuleRadius)
+        {
+            m_setCapsuleRadius(radius);
+        }
+        else
+        {
+            AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for SetCapsuleRadius");
+        }
+    }
+
+    void CapsuleViewportEdit::SetCapsuleHeight(float height)
+    {
+        if (m_setCapsuleHeight)
+        {
+            m_setCapsuleHeight(height);
+        }
+        else
+        {
+            AZ_ErrorOnce("CapsuleViewportEdit", false, "No implementation provided for SetCapsuleHeight");
+        }
     }
 
     void CapsuleViewportEdit::OnCameraStateChanged(const AzFramework::CameraState& cameraState)
     {
-        const float radius = GetCapsuleRadius();
-        const AZ::Transform capsuleLocalTransform = GetCapsuleLocalTransform();
-        m_radiusManipulator->SetAxis(cameraState.m_side);
-        m_radiusManipulator->SetLocalTransform(capsuleLocalTransform * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
+        if (m_radiusManipulator)
+        {
+            const float radius = GetCapsuleRadius();
+            const AZ::Transform localTransform = GetLocalTransform();
+            const AZ::Transform localInverse = localTransform.GetInverse();
+            const AZ::Transform manipulatorSpaceInverse = GetManipulatorSpace().GetInverse();
+
+            const AZ::Vector3 inverseTransformedForward =
+                localInverse.TransformVector(manipulatorSpaceInverse.TransformVector(cameraState.m_forward) / GetNonUniformScale());
+            AZ::Vector3 axis = inverseTransformedForward.Cross(CapsuleViewportEditConstants::HeightManipulatorAxis);
+            if (axis.GetLengthSq() < AZ::Constants::Tolerance * AZ::Constants::Tolerance)
+            {
+                axis = AZ::Vector3::CreateAxisX();
+            }
+            else
+            {
+                axis.Normalize();
+            }
+            m_radiusManipulator->SetAxis(axis);
+            m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(radius * axis));
+        }
     }
 
-    void CapsuleViewportEdit::SetupCapsuleManipulators(const ManipulatorManagerId manipulatorManagerId)
+    void CapsuleViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
     {
-        const AZ::Transform& worldTransform = GetCapsuleWorldTransform();
-        const AZ::Vector3& nonUniformScale = GetCapsuleNonUniformScale();
-        const AZ::Transform& localTransform = GetCapsuleLocalTransform();
-        m_manipulatorManagerId = manipulatorManagerId;
+        const AZ::Transform worldTransform = GetManipulatorSpace();
+        const AZ::Vector3 nonUniformScale = GetNonUniformScale();
+        const AZ::Transform localTransform = GetLocalTransform();
 
-        SetupRadiusManipulator(worldTransform, localTransform, nonUniformScale);
-        SetupHeightManipulator(worldTransform, localTransform, nonUniformScale);
+        SetupRadiusManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale);
+        m_topManipulator = SetupHeightManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale, 1.0f);
+        if (m_allowAsymmetricalEditing)
+        {
+            m_bottomManipulator = SetupHeightManipulator(manipulatorManagerId, worldTransform, localTransform, nonUniformScale, -1.0f);
+        }
     }
 
-    void CapsuleViewportEdit::UpdateCapsuleManipulators()
+    void CapsuleViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        AZ::Transform worldTransform = GetCapsuleWorldTransform();
-        AZ::Vector3 nonUniformScale = GetCapsuleNonUniformScale();
-        AZ::Transform localTransform = GetCapsuleLocalTransform();
+        for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
+        {
+            if (manipulator)
+            {
+                manipulator->AddEntityComponentIdPair(entityComponentIdPair);
+            }
+        }
+        AZ_WarningOnce(
+            "CapsuleViewportEdit",
+            m_radiusManipulator && m_topManipulator && (!m_allowAsymmetricalEditing || m_bottomManipulator),
+            "Attempting to AddEntityComponentIdPair before manipulators have been created");
+    }
+
+    void CapsuleViewportEdit::UpdateManipulators()
+    {
+        const AZ::Transform worldTransform = GetManipulatorSpace();
+        const AZ::Vector3 nonUniformScale = GetNonUniformScale();
+        const AZ::Transform localTransform = GetLocalTransform();
 
         const float capsuleHeight = GetCapsuleHeight();
         const float capsuleRadius = GetCapsuleRadius();
 
-        m_radiusManipulator->SetSpace(worldTransform);
-        m_radiusManipulator->SetLocalTransform(
-            localTransform * AZ::Transform::CreateTranslation(m_radiusManipulator->GetAxis() * capsuleRadius));
-        m_radiusManipulator->SetNonUniformScale(nonUniformScale);
-        m_heightManipulator->SetSpace(worldTransform);
-        m_heightManipulator->SetLocalTransform(
-            localTransform * AZ::Transform::CreateTranslation(m_heightManipulator->GetAxis() * capsuleHeight * HalfHeight));
-        m_heightManipulator->SetNonUniformScale(nonUniformScale);
+        if (m_radiusManipulator)
+        {
+            m_radiusManipulator->SetSpace(worldTransform);
+            m_radiusManipulator->SetLocalTransform(
+                localTransform * AZ::Transform::CreateTranslation(m_radiusManipulator->GetAxis() * capsuleRadius));
+            m_radiusManipulator->SetNonUniformScale(nonUniformScale);
+            m_radiusManipulator->SetBoundsDirty();
+        }
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
+        {
+            if (heightManipulator)
+            {
+                heightManipulator->SetSpace(worldTransform);
+                heightManipulator->SetLocalTransform(
+                    localTransform * AZ::Transform::CreateTranslation(0.5f * capsuleHeight * heightManipulator->GetAxis()));
+                heightManipulator->SetNonUniformScale(nonUniformScale);
+                heightManipulator->SetBoundsDirty();
+            }
+        }
     }
 
-    void CapsuleViewportEdit::ResetCapsuleManipulators()
+    void CapsuleViewportEdit::ResetValuesImpl()
     {
-        SetCapsuleHeight(ResetCapsuleHeight);
-        SetCapsuleRadius(ResetCapsuleRadius);
+        SetCapsuleHeight(CapsuleViewportEditConstants::ResetCapsuleHeight);
+        SetCapsuleRadius(CapsuleViewportEditConstants::ResetCapsuleRadius);
     }
 
-    void CapsuleViewportEdit::TeardownCapsuleManipulators()
+    void CapsuleViewportEdit::Teardown()
     {
-        m_radiusManipulator->Unregister();
-        m_heightManipulator->Unregister();
+        for (auto manipulator : { m_radiusManipulator.get(), m_topManipulator.get(), m_bottomManipulator.get() })
+        {
+            if (manipulator)
+            {
+                manipulator->Unregister();
+            }
+        }
     }
 
     void CapsuleViewportEdit::SetupRadiusManipulator(
-        const AZ::Transform& worldTransform, const AZ::Transform& localTransform, const AZ::Vector3& nonUniformScale)
+        const ManipulatorManagerId manipulatorManagerId,
+        const AZ::Transform& worldTransform,
+        const AZ::Transform& localTransform,
+        const AZ::Vector3& nonUniformScale)
     {
         float capsuleRadius = GetCapsuleRadius();
-        m_radiusManipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
-        m_radiusManipulator->SetAxis(RadiusManipulatorAxis);
-        m_radiusManipulator->Register(m_manipulatorManagerId);
-        m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(RadiusManipulatorAxis * capsuleRadius));
+        m_radiusManipulator = LinearManipulator::MakeShared(worldTransform);
+        m_radiusManipulator->SetAxis(CapsuleViewportEditConstants::RadiusManipulatorAxis);
+        m_radiusManipulator->Register(manipulatorManagerId);
+        m_radiusManipulator->SetLocalTransform(
+            localTransform * AZ::Transform::CreateTranslation(CapsuleViewportEditConstants::RadiusManipulatorAxis * capsuleRadius));
         m_radiusManipulator->SetNonUniformScale(nonUniformScale);
         {
-            AzToolsFramework::ManipulatorViews views;
-            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(
+            ManipulatorViews views;
+            views.emplace_back(CreateManipulatorViewQuadBillboard(
                 AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
             m_radiusManipulator->SetViews(AZStd::move(views));
         }
         m_radiusManipulator->InstallLeftMouseDownCallback(
-            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
             {
                 BeginEditing();
             });
         m_radiusManipulator->InstallMouseMoveCallback(
-            [this](const AzToolsFramework::LinearManipulator::Action& action)
+            [this](const LinearManipulator::Action& action)
             {
                 OnRadiusManipulatorMoved(action);
             });
         m_radiusManipulator->InstallLeftMouseUpCallback(
-            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
     }
 
-    void CapsuleViewportEdit::SetupHeightManipulator(
-        const AZ::Transform& worldTransform, const AZ::Transform& localTransform, const AZ::Vector3& nonUniformScale)
+    AZStd::shared_ptr<LinearManipulator> CapsuleViewportEdit::SetupHeightManipulator(
+        const ManipulatorManagerId manipulatorManagerId,
+        const AZ::Transform& worldTransform,
+        const AZ::Transform& localTransform,
+        const AZ::Vector3& nonUniformScale,
+        float axisDirection)
     {
         float capsuleHeight = GetCapsuleHeight();
-        m_heightManipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
-        m_heightManipulator->SetAxis(HeightManipulatorAxis);
-        m_heightManipulator->Register(m_manipulatorManagerId);
-        m_heightManipulator->SetLocalTransform(
-            localTransform * AZ::Transform::CreateTranslation(HeightManipulatorAxis * capsuleHeight * HalfHeight));
-        m_heightManipulator->SetNonUniformScale(nonUniformScale);
+        auto manipulator = LinearManipulator::MakeShared(worldTransform);
+        manipulator->SetAxis(axisDirection * CapsuleViewportEditConstants::HeightManipulatorAxis);
+        manipulator->Register(manipulatorManagerId);
+        manipulator->SetLocalTransform(
+            localTransform *
+            AZ::Transform::CreateTranslation(axisDirection * 0.5f * capsuleHeight * CapsuleViewportEditConstants::HeightManipulatorAxis));
+        manipulator->SetNonUniformScale(nonUniformScale);
         {
-            AzToolsFramework::ManipulatorViews views;
-            views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(
+            ManipulatorViews views;
+            views.emplace_back(CreateManipulatorViewQuadBillboard(
                 AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
-            m_heightManipulator->SetViews(AZStd::move(views));
+            manipulator->SetViews(AZStd::move(views));
         }
-        m_heightManipulator->InstallLeftMouseDownCallback(
-            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+        manipulator->InstallLeftMouseDownCallback(
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
             {
                 BeginEditing();
             });
-        m_heightManipulator->InstallMouseMoveCallback(
-            [this](const AzToolsFramework::LinearManipulator::Action& action)
+        manipulator->InstallMouseMoveCallback(
+            [this](const LinearManipulator::Action& action)
             {
                 OnHeightManipulatorMoved(action);
             });
-        m_heightManipulator->InstallLeftMouseUpCallback(
-            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+        manipulator->InstallLeftMouseUpCallback(
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
+        return manipulator;
     }
 
-    void CapsuleViewportEdit::OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action)
+    void CapsuleViewportEdit::OnRadiusManipulatorMoved(const LinearManipulator::Action& action)
     {
         // manipulator action offsets do not take entity transform scale into account, so need to apply it here
-        const AZ::Transform capsuleLocalTransform = GetCapsuleLocalTransform();
-        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
-            m_radiusManipulator->GetSpace().GetUniformScale(), capsuleLocalTransform, action);
+        const AZ::Transform localTransform = GetLocalTransform();
+        const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(
+            m_radiusManipulator->GetSpace().GetUniformScale(), localTransform, action);
 
-        // Get the distance the manipulator has moved along the axis.
         float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
+        extent = AZ::GetMax(extent, CapsuleViewportEditConstants::MinCapsuleRadius);
+        m_radiusManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
 
-        // Clamp radius to a small value.
-        extent = AZ::GetMax(extent, MinCapsuleRadius);
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustHeightManipulators(extent);
+        }
 
-        // Update the manipulator and capsule radius.
-        m_radiusManipulator->SetLocalTransform(capsuleLocalTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
-
-        // Adjust the height manipulator so it is always clamped to twice the radius.
-        AdjustHeightManipulator(extent);
-
-        // The final radius of the capsule is the manipulator's extent.
         SetCapsuleRadius(extent);
     }
 
-    void CapsuleViewportEdit::OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action)
+    void CapsuleViewportEdit::OnHeightManipulatorMoved(const LinearManipulator::Action& action)
     {
+        const bool symmetrical = !m_allowAsymmetricalEditing || action.m_modifiers.IsHeld(DefaultSymmetricalEditingModifier);
+
         // manipulator action offsets do not take entity transform scale into account, so need to apply it here
-        const AZ::Transform localTransform = GetCapsuleLocalTransform();
+        const AZ::Transform localTransform = GetLocalTransform();
         const AZ::Vector3 manipulatorPosition =
-            AzToolsFramework::GetPositionInManipulatorFrame(m_heightManipulator->GetSpace().GetUniformScale(), localTransform, action);
+            GetPositionInManipulatorFrame(GetManipulatorSpace().GetUniformScale(), localTransform, action);
 
-        // Get the distance the manipulator has moved along the axis.
-        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
+        // factor of 2 for symmetrical editing because both ends of the capsule move
+        const float symmetryFactor = symmetrical ? 2.0f : 1.0f;
 
-        // Ensure capsule's half height is always greater than the radius.
-        extent = AZ::GetMax(extent, MinCapsuleHeight);
+        const float oldCapsuleHeight = GetCapsuleHeight();
+        const float newAxisLength = AZ::GetMax(
+            0.5f * CapsuleViewportEditConstants::MinCapsuleHeight, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+        const float oldAxisLength = 0.5f * symmetryFactor * oldCapsuleHeight;
+        const float capsuleHeightDelta = newAxisLength - oldAxisLength;
 
-        // Update the manipulator and capsule height.
-        m_heightManipulator->SetLocalTransform(localTransform * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
+        const float newCapsuleHeight = AZ::GetMax(oldCapsuleHeight + capsuleHeightDelta, CapsuleViewportEditConstants::MinCapsuleHeight);
 
-        // The final height of the capsule is twice the manipulator's extent.
-        float capsuleHeight = extent / HalfHeight;
+        if (m_ensureHeightExceedsTwiceRadius)
+        {
+            AdjustRadiusManipulator(newCapsuleHeight);
+        }
 
-        // Adjust the radius manipulator so it is always clamped to half the capsule height.
-        AdjustRadiusManipulator(capsuleHeight);
+        SetCapsuleHeight(newCapsuleHeight);
 
-        // Finally adjust the capsule height
-        SetCapsuleHeight(capsuleHeight);
+        if (!symmetrical)
+        {
+            const AZ::Vector3 transformedAxis = localTransform.TransformVector(action.m_fixed.m_axis);
+            const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
+            const AZ::Vector3 translationOffset = GetTranslationOffset();
+            SetTranslationOffset(translationOffset + translationOffsetDelta);
+        }
+
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
+        {
+            if (heightManipulator)
+            {
+                const AZ::Transform updatedLocalTransform = GetLocalTransform();
+                heightManipulator->SetLocalTransform(
+                    updatedLocalTransform * AZ::Transform::CreateTranslation(0.5f * newCapsuleHeight * heightManipulator->GetAxis()));
+            }
+        }
     }
 
     void CapsuleViewportEdit::AdjustRadiusManipulator(float capsuleHeight)
     {
         float capsuleRadius = GetCapsuleRadius();
-
-        // Clamp the radius to half height.
-        capsuleRadius = AZ::GetMin(capsuleRadius, capsuleHeight * HalfHeight);
-
-        // Update manipulator and the capsule radius.
-        const AZ::Transform localTransform = GetCapsuleLocalTransform();
+        capsuleRadius = AZ::GetMin(capsuleRadius, 0.5f * capsuleHeight);
+        const AZ::Transform localTransform = GetLocalTransform();
         m_radiusManipulator->SetLocalTransform(
             localTransform * AZ::Transform::CreateTranslation(capsuleRadius * m_radiusManipulator->GetAxis()));
         SetCapsuleRadius(capsuleRadius);
     }
 
-    void CapsuleViewportEdit::AdjustHeightManipulator(float capsuleRadius)
+    void CapsuleViewportEdit::AdjustHeightManipulators(float capsuleRadius)
     {
         float capsuleHeight = GetCapsuleHeight();
-
-        // Clamp the height to twice the radius.
-        capsuleHeight = AZ::GetMax(capsuleHeight, capsuleRadius / HalfHeight);
-
-        // Update the manipulator and capsule height.
-        const AZ::Transform localTransform = GetCapsuleLocalTransform();
-        m_heightManipulator->SetLocalTransform(
-            localTransform * AZ::Transform::CreateTranslation(capsuleHeight * HalfHeight * m_heightManipulator->GetAxis()));
+        capsuleHeight = AZ::GetMax(capsuleHeight, 2.0f * capsuleRadius);
+        const AZ::Transform localTransform = GetLocalTransform();
+        for (auto heightManipulator : { m_topManipulator.get(), m_bottomManipulator.get() })
+        {
+            if (heightManipulator)
+            {
+                heightManipulator->SetLocalTransform(
+                    localTransform * AZ::Transform::CreateTranslation(0.5f * capsuleHeight * heightManipulator->GetAxis()));
+            }
+        }        
         SetCapsuleHeight(capsuleHeight);
-    }
-
-    void CapsuleViewportEdit::BeginEditing()
-    {
-    }
-
-    void CapsuleViewportEdit::FinishEditing()
-    {
     }
 } // namespace AzToolsFramework

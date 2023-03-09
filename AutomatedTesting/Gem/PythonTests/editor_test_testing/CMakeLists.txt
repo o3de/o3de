@@ -19,5 +19,6 @@
             AutomatedTesting.Assets
         COMPONENT
             TestTools
+        LABELS REQUIRES_tiaf
     )
  endif()

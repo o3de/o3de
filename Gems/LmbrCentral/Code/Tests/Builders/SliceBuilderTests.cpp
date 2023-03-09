@@ -34,6 +34,7 @@ namespace UnitTest
     struct MockAsset
         : public AZ::Data::AssetData
     {
+        AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator)
         AZ_RTTI(MockAsset, "{6A98A05A-5B8B-455B-BA92-508A7CF76024}", AZ::Data::AssetData);
 
         static void Reflect(ReflectContext* reflection)
@@ -189,7 +190,7 @@ namespace UnitTest
         AZStd::vector<AssetId> m_mockAssetIds;
 
     public:
-        AZ_CLASS_ALLOCATOR(SliceBuilderTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceBuilderTest_MockCatalog, AZ::SystemAllocator);
 
         SliceBuilderTest_MockCatalog()
         {
@@ -321,9 +322,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             m_serializeContext = aznew SerializeContext(true, true);
 
             ComponentApplicationBus::Handler::BusConnect();
@@ -366,9 +364,6 @@ namespace UnitTest
             delete m_mockAssetDescriptor;
             delete m_sliceDescriptor;
             delete m_serializeContext;
-
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }

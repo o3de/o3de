@@ -104,6 +104,7 @@ namespace UnitTest
             : public MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(ValueFunctor, SystemAllocator)
             AZ_RTTI(MaterialPropertyValueSourceDataTests::ValueFunctor, "{07CE498C-6E97-45C9-8B2D-18BC03724055}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context)
@@ -126,6 +127,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(ValueFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(ValueFunctorSourceData, "{777CE7A5-3023-4C63-BA43-5763DF51D82D}", AZ::RPI::MaterialFunctorSourceData);
 
             static void Reflect(ReflectContext* context)

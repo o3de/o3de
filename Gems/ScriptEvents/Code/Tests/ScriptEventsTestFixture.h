@@ -16,7 +16,6 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 

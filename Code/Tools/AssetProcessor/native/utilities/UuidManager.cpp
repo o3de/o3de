@@ -11,26 +11,15 @@
 #include <native/utilities/UuidManager.h>
 #include <native/utilities/assetUtils.h>
 #include <Metadata/MetadataManager.h>
+#include <native/AssetManager/FileStateCache.h>
+#include "UuidManager.h"
+#include <QDir>
 
 namespace AssetProcessor
 {
     void UuidManager::Reflect(AZ::ReflectContext* context)
     {
-        UuidEntry::Reflect(context);
         UuidSettings::Reflect(context);
-    }
-
-    void UuidManager::UuidEntry::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<UuidEntry>()
-                ->Version(0)
-                ->Field("uuid", &UuidEntry::m_uuid)
-                ->Field("legacyUuids", &UuidEntry::m_legacyUuids)
-                ->Field("originalPath", &UuidEntry::m_originalPath)
-                ->Field("creationUnixEpochMS", &UuidEntry::m_millisecondsSinceUnixEpoch);
-        }
     }
 
     void UuidSettings::Reflect(AZ::ReflectContext* context)
@@ -41,42 +30,49 @@ namespace AssetProcessor
         }
     }
 
-    AZ::Uuid UuidManager::GetUuid(const SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZ::Uuid, AZStd::string> UuidManager::GetUuid(const SourceAssetReference& sourceAsset)
     {
         auto entry = GetOrCreateUuidEntry(sourceAsset);
 
-        return entry.m_uuid;
+        if (entry.IsSuccess())
+        {
+            return AZ::Success(entry.GetValue().m_uuid);
+        }
+
+        return AZ::Failure(entry.GetError());
     }
 
-    AZStd::unordered_set<AZ::Uuid> UuidManager::GetLegacyUuids(const SourceAssetReference& sourceAsset)
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> UuidManager::GetLegacyUuids(const SourceAssetReference& sourceAsset)
     {
         auto entry = GetOrCreateUuidEntry(sourceAsset);
 
-        return entry.m_legacyUuids;
+        if (entry.IsSuccess())
+        {
+            return AZ::Success(entry.GetValue().m_legacyUuids);
+        }
+
+        return AZ::Failure(entry.GetError());
     }
 
-    void UuidManager::FileChanged(AZ::IO::Path file)
+    void UuidManager::FileChanged(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::FileRemoved(AZ::IO::Path file)
+    void UuidManager::FileRemoved(AZ::IO::PathView file)
     {
-        InvalidateCacheEntry(AZStd::move(file));
+        InvalidateCacheEntry(file);
     }
 
-    void UuidManager::InvalidateCacheEntry(AZ::IO::Path file)
+    void UuidManager::InvalidateCacheEntry(AZ::IO::FixedMaxPath file)
     {
         AZStd::string extension = file.Extension().Native();
 
-        // Only metadata files are cached, so make sure the file is a metadata file before continuing
-        if (extension != AzToolsFramework::MetadataManager::MetadataFileExtension)
+        if (extension == AzToolsFramework::MetadataManager::MetadataFileExtension)
         {
-            return;
+            // Remove the metadata part of the extension since the cache is actually keyed by the source file path
+            file.ReplaceExtension("");
         }
-
-        // Remove the metadata part of the extension since the cache is actually keyed by the source file path
-        file.ReplaceExtension("");
 
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
@@ -85,8 +81,14 @@ namespace AssetProcessor
 
         if (itr != m_uuids.end())
         {
+            m_existingUuids.erase(itr->second.m_uuid);
             m_uuids.erase(itr);
         }
+    }
+
+    bool UuidManager::IsGenerationEnabledForFile(AZ::IO::PathView file)
+    {
+        return m_enabledTypes.contains(file.Extension().Native());
     }
 
     void UuidManager::EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types)
@@ -99,7 +101,7 @@ namespace AssetProcessor
         return file.LexicallyNormal().FixedMaxPathStringAsPosix().c_str();
     }
 
-    UuidManager::UuidEntry UuidManager::GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset)
+    AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> UuidManager::GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset)
     {
         AZStd::scoped_lock scopeLock(m_uuidMutex);
 
@@ -109,31 +111,131 @@ namespace AssetProcessor
         // Check if we already have the UUID loaded into memory
         if (itr != m_uuids.end())
         {
-            return itr->second;
+            return AZ::Success(itr->second);
         }
 
-        UuidEntry uuidInfo;
+        auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
 
-        // Check if there's a metadata file that already contains a saved UUID
-        if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), UuidKey, uuidInfo))
+        if (!fileStateInterface)
         {
-            m_uuids[normalizedPath] = uuidInfo;
-
-            return uuidInfo;
+            AZ_Assert(false, "Programmer Error - IFileStateRequests interface is not available");
+            return AZ::Failure(AZStd::string("Programmer Error - IFileStateRequests interface is not available"));
         }
 
+        const AZ::IO::Path metadataFilePath = AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str());
+        AssetProcessor::FileStateInfo metadataFileInfo;
+        bool metadataFileExists = fileStateInterface->GetFileInfo(metadataFilePath.c_str(), &metadataFileInfo);
         const bool isEnabledType = m_enabledTypes.contains(sourceAsset.AbsolutePath().Extension().Native());
-        // Last resort - generate a new UUID and save it to the metadata file
-        UuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
 
-        if (!isEnabledType || GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), UuidKey, newUuid))
+        if constexpr (ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
         {
-            m_uuids[normalizedPath] = newUuid;
+            // On case sensitive filesystems, the above exists check will fail if the case is not correct
+            // In that case, try to update the case to determine if the file actually exists
+            if (!metadataFileExists)
+            {
+                QString parentPath = QString::fromStdString(AZStd::string(metadataFilePath.ParentPath().Native()).c_str());
+                QString caseCorrectedMetadataRelPath = QString::fromStdString(AZStd::string(metadataFilePath.Filename().Native()).c_str());
+                metadataFileExists = AssetUtilities::UpdateToCorrectCase(parentPath, caseCorrectedMetadataRelPath);
 
-            return newUuid;
+                if (metadataFileExists)
+                {
+                    AZ::IO::FixedMaxPath correctAbsolutePath(parentPath.toUtf8().constData());
+                    correctAbsolutePath /= caseCorrectedMetadataRelPath.toUtf8().constData();
+                    fileStateInterface->GetFileInfo(correctAbsolutePath.c_str(), &metadataFileInfo);
+                }
+            }
         }
 
-        return {};
+        // Metadata manager can't use the file state cache since it is in AzToolsFramework, so it's faster to do an Exists check up-front.
+        if (metadataFileExists)
+        {
+            AzToolsFramework::MetaUuidEntry uuidInfo;
+
+            // Check if the path computed based on the source asset's filename is different from the on-disk path
+            if (metadataFileInfo.m_absolutePath.compare(metadataFilePath.c_str()) != 0)
+            {
+                // Metadata filename case does not match source filename case
+                // Rename the metadata file to match
+                AZ::IO::FileIOBase::GetInstance()->Rename(
+                    metadataFileInfo.m_absolutePath.toUtf8().constData(), metadataFilePath.c_str());
+            }
+
+            // Check if there's a metadata file that already contains a saved UUID
+            if (GetMetadataManager()->GetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo))
+            {
+                // Validate the entry - a null UUID is not ok
+                if (uuidInfo.m_uuid.IsNull())
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Metadata file exists for %s but UUID is missing or invalid", sourceAsset.AbsolutePath().c_str()));
+                }
+
+                // Missing other entries is ok, just generate them now and update the metadata file
+                if (uuidInfo.m_legacyUuids.empty() || uuidInfo.m_originalPath.empty() || uuidInfo.m_millisecondsSinceUnixEpoch == 0)
+                {
+                    AzToolsFramework::MetaUuidEntry regeneratedEntry = CreateUuidEntry(sourceAsset, isEnabledType);
+
+                    if (uuidInfo.m_legacyUuids.empty())
+                    {
+                       uuidInfo.m_legacyUuids = regeneratedEntry.m_legacyUuids;
+                    }
+
+                    if (uuidInfo.m_originalPath.empty())
+                    {
+                        uuidInfo.m_originalPath = regeneratedEntry.m_originalPath;
+                    }
+
+                    if (uuidInfo.m_millisecondsSinceUnixEpoch == 0)
+                    {
+                        uuidInfo.m_millisecondsSinceUnixEpoch = regeneratedEntry.m_millisecondsSinceUnixEpoch;
+                    }
+
+                    // Update the metadata file
+                    GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, uuidInfo);
+                }
+
+                auto outcome = CacheUuidEntry(normalizedPath, uuidInfo, isEnabledType);
+
+                if (outcome)
+                {
+                    return uuidInfo;
+                }
+                else
+                {
+                    return AZ::Failure(outcome.GetError());
+                }
+            }
+        }
+
+        if (!fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str()))
+        {
+            AZ_Error(
+                "UuidManager",
+                false,
+                "Programmer Error - cannot request UUID for file which does not exist - %s",
+                sourceAsset.AbsolutePath().c_str());
+            return AZ::Failure(AZStd::string("Programmer Error - cannot request UUID for file which does not exist"));
+        }
+
+        // Last resort - generate a new UUID and save it to the metadata file
+        AzToolsFramework::MetaUuidEntry newUuid = CreateUuidEntry(sourceAsset, isEnabledType);
+
+        if (!isEnabledType ||
+            GetMetadataManager()->SetValue(sourceAsset.AbsolutePath(), AzToolsFramework::UuidUtilComponent::UuidKey, newUuid))
+        {
+            auto outcome = CacheUuidEntry(normalizedPath, newUuid, isEnabledType);
+
+            if (outcome)
+            {
+                return newUuid;
+            }
+            else
+            {
+                return AZ::Failure(outcome.GetError());
+            }
+        }
+
+        return AZ::Failure(AZStd::string::format("Failed to save UUID to metadata file - %s", sourceAsset.AbsolutePath().c_str()));
     }
 
     AzToolsFramework::IMetadataRequests* UuidManager::GetMetadataManager()
@@ -146,9 +248,9 @@ namespace AssetProcessor
         return m_metadataManager;
     }
 
-    UuidManager::UuidEntry UuidManager::CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType)
+    AzToolsFramework::MetaUuidEntry UuidManager::CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType)
     {
-        UuidEntry newUuid;
+        AzToolsFramework::MetaUuidEntry newUuid;
 
         newUuid.m_uuid = enabledType ? CreateUuid() : AssetUtilities::CreateSafeSourceUUIDFromName(sourceAsset.RelativePath().c_str());
         newUuid.m_legacyUuids = CreateLegacyUuids(sourceAsset.RelativePath().c_str());
@@ -158,9 +260,48 @@ namespace AssetProcessor
         return newUuid;
     }
 
+    AZ::Outcome<void, AZStd::string> UuidManager::CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType)
+    {
+        if (enabledType)
+        {
+            auto result = m_existingUuids.emplace(entry.m_uuid, normalizedPath);
+
+            if (!result.second)
+            {
+                // Insertion failure means this UUID is duplicated
+                return AZ::Failure(AZStd::string::format(
+                    "Source " AZ_STRING_FORMAT " has duplicate UUID " AZ_STRING_FORMAT " which is already assigned to another asset " AZ_STRING_FORMAT ". "
+                    "Every asset must have a unique ID.  Please change the UUID for one of these assets to resolve the conflict.",
+                    AZ_STRING_ARG(normalizedPath),
+                    AZ_STRING_ARG(entry.m_uuid.ToFixedString()),
+                    AZ_STRING_ARG(result.first->second)));
+            }
+        }
+
+        m_uuids[normalizedPath] = AZStd::move(entry);
+        return AZ::Success();
+    }
+
     AZ::Uuid UuidManager::CreateUuid()
     {
-        return AZ::Uuid::CreateRandom();
+        constexpr int MaxRetry = 50;
+
+        auto uuid = AZ::Uuid::CreateRandom();
+        int retry = 0;
+
+        while (m_existingUuids.contains(uuid) && retry < MaxRetry)
+        {
+            uuid = AZ::Uuid::CreateRandom();
+            ++retry;
+        }
+
+        if (retry >= MaxRetry)
+        {
+            AZ_Error("UuidManager", false, "Failed to randomly generate a unique UUID after %d attempts.  UUID not assigned.", retry);
+            return AZ::Uuid::CreateNull();
+        }
+
+        return uuid;
     }
 
     AZStd::unordered_set<AZ::Uuid> UuidManager::CreateLegacyUuids(const AZStd::string& relativePath)

@@ -20,7 +20,6 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/Internal/NameData.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>

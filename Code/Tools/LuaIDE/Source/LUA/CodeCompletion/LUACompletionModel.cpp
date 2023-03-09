@@ -64,9 +64,9 @@ namespace LUAEditor
     void CompletionModel::UpdateKeywords()
     {
         const HighlightedWords::LUAKeywordsType* keywords = nullptr;
-        EBUS_EVENT_RESULT(keywords, HighlightedWords::Bus, GetLUAKeywords);
+        HighlightedWords::Bus::BroadcastResult(keywords, &HighlightedWords::Bus::Events::GetLUAKeywords);
         const HighlightedWords::LUAKeywordsType* libraryFuncs = nullptr;
-        EBUS_EVENT_RESULT(libraryFuncs, HighlightedWords::Bus, GetLUALibraryFunctions);
+        HighlightedWords::Bus::BroadcastResult(libraryFuncs, &HighlightedWords::Bus::Events::GetLUALibraryFunctions);
 
         m_keywords.clear();
         m_builtIns.Reset();

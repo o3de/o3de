@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetNumTags",
-                    "context": "SurfaceMaskGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNumTags"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetTag",
-                    "context": "SurfaceMaskGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTag"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "RemoveTag",
-                    "context": "SurfaceMaskGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveTag"
@@ -110,7 +107,6 @@
                 },
                 {
                     "base": "AddTag",
-                    "context": "SurfaceMaskGradientConfig",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddTag"

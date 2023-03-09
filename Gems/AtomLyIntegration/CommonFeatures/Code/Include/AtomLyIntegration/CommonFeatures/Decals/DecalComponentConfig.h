@@ -18,6 +18,7 @@ namespace AZ
         struct DecalComponentConfig final
             : public ComponentConfig
         {
+            AZ_CLASS_ALLOCATOR(DecalComponentConfig, SystemAllocator)
             AZ_RTTI(DecalComponentConfig, "{5DFDC832-38B6-4F46-8C53-4CA0C82BC0AB}", ComponentConfig);
             static void Reflect(AZ::ReflectContext* context);
 

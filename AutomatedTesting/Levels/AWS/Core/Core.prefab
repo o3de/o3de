@@ -34,14 +34,14 @@
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
             },
-            "Component_[4449562597279702259]": {
-                "$type": "LocalViewBookmarkComponent",
-                "Id": 4449562597279702259,
-                "LocalBookmarkFileName": "Core_16678912793063527.setreg"
-            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
+            },
+            "Component_[6193509537440135612]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 6193509537440135612,
+                "LocalBookmarkFileName": "Core_16782990514934211.setreg"
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
@@ -200,7 +200,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 11198752135444979890
+                            "EditorEntityId": 6861302815203973165
                         }
                     }
                 },
@@ -485,20 +485,6 @@
                                 "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                             }
                         }
-                    },
-                    "diffuseImageAsset": {
-                        "assetId": {
-                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
-                            "subId": 3000
-                        },
-                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage"
-                    },
-                    "specularImageAsset": {
-                        "assetId": {
-                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
-                            "subId": 2000
-                        },
-                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                     }
                 },
                 "Component_[14994774102579326069]": {

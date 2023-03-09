@@ -24,6 +24,7 @@ namespace RecastNavigation
         : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(RecastNavigationMeshConfig, AZ::SystemAllocator)
         AZ_RTTI(RecastNavigationMeshConfig, "{472141BB-7C36-4D2C-A508-78DB0D3C07F2}");
 
         static void Reflect(AZ::ReflectContext* context);

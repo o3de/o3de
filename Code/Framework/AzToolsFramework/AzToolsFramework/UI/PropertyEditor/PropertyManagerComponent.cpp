@@ -36,6 +36,7 @@ namespace AzToolsFramework
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
     void RegisterExeSelectPropertyHandler();
+    void RegisterLabelHandler();
 
     namespace Components
     {
@@ -117,6 +118,11 @@ namespace AzToolsFramework
             }
     #endif
             pHandler->RegisterDpeHandler();
+
+            auto propertyEditorSystemInterface = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(propertyEditorSystemInterface,
+                "PropertyEditorSystemInterface was nullptr when attempting to register property handler adapter elements");
+            pHandler->RegisterWithPropertySystem(propertyEditorSystemInterface);
 
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
@@ -217,6 +223,7 @@ namespace AzToolsFramework
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
             RegisterExeSelectPropertyHandler();
+            RegisterLabelHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
@@ -230,7 +237,9 @@ namespace AzToolsFramework
             PropertyHandlerBase* pHandlerFound = nullptr;
             while ((it != m_Handlers.end()) && (it->first == handlerName))
             {
-                if ((it->second->Priority() > highestPriorityFound) && (it->second->HandlesType(handlerType)))
+                // Don't need to check against the handlerType if its null, which would only happen
+                // for non-data elements (e.g. UIElement) where the handler was requested specifically by name
+                if ((it->second->Priority() > highestPriorityFound) && (handlerType.IsNull() || it->second->HandlesType(handlerType)))
                 {
                     highestPriorityFound = it->second->Priority();
                     pHandlerFound = it->second;
@@ -258,7 +267,7 @@ namespace AzToolsFramework
             {
                 // does a base class have a handler?
                 AZ::SerializeContext* sc = nullptr;
-                EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZStd::vector<const AZ::SerializeContext::ClassData*> classes;
 
                 sc->EnumerateBase(
@@ -312,7 +321,6 @@ namespace AzToolsFramework
                         "Property Manager", "Provides services for registration of property editors")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }

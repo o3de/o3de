@@ -9,7 +9,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzFramework/Application/Application.h>
 #include <Tests/Environment.h>
 
@@ -47,8 +46,6 @@ namespace NumericalMethods
 
     void NumericalMethodsTestEnvironment::SetupEnvironment()
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         // Create application and descriptor
         m_application = aznew AZ::ComponentApplication;
         AZ::ComponentApplication::Descriptor appDesc;
@@ -58,7 +55,6 @@ namespace NumericalMethods
         AZ::ComponentApplication::StartupParameters startupParams;
         m_systemEntity = m_application->Create(appDesc, startupParams);
         AZ_TEST_ASSERT(m_systemEntity);
-        m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
         m_systemEntity->Init();
         m_systemEntity->Activate();
     }
@@ -66,7 +62,6 @@ namespace NumericalMethods
     void NumericalMethodsTestEnvironment::TeardownEnvironment()
     {
         delete m_application;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
 } // namespace NumericalMethods

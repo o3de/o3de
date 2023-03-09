@@ -38,7 +38,7 @@ namespace AZ::SceneAPI::Containers
     {
     public:
         AZ_RTTI(MockManifestRule, "{D6F96B48-4E6F-4EE8-A5A3-959B76F90DA8}", IManifestObject);
-        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MockManifestRule, AZ::SystemAllocator);
 
         MockManifestRule() = default;
 

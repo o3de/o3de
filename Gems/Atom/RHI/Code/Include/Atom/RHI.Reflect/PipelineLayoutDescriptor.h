@@ -13,13 +13,24 @@
 #include <AzCore/std/containers/span.h>
 
 #include <AzCore/Name/Name.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RHI
     {
         struct ResourceBindingInfo
@@ -82,7 +93,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{F2901A0F-9700-49E9-A266-55DCF1E39CF9}");
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();
@@ -140,7 +151,10 @@ namespace AZ
 
             ///////////////////////////////////////////////////////////////////
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             // A hash of 0 is valid if the descriptor is empty.
             static constexpr HashValue64 InvalidHash = ~HashValue64{ 0 };
@@ -148,7 +162,7 @@ namespace AZ
 
             /// List of layout and binding information for each Shader Resource Group that is part of this Pipeline.
             AZStd::fixed_vector<ShaderResourceGroupLayoutInfo, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroupLayoutsInfo;
-             
+
             /// Layout info about inline constants.
             Ptr<ConstantsLayout> m_rootConstantsLayout;
 

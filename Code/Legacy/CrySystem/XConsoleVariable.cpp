@@ -197,12 +197,9 @@ void CXConsoleVariableBase::SetOnChangeCallback(ConsoleVarFunc pChangeFunc)
     m_pChangeFunc = pChangeFunc;
 }
 
-uint64 CXConsoleVariableBase::AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor)
+bool CXConsoleVariableBase::AddOnChangeFunctor(AZ::Name functorName, const AZStd::function<void()>& pChangeFunctor)
 {
-    static int uniqueIdGenerator = 0;
-    int newId = uniqueIdGenerator++;
-    m_changeFunctors.push_back(std::make_pair(newId, pChangeFunctor));
-    return newId;
+    return m_changeFunctors.insert_or_assign(functorName, pChangeFunctor).second;
 }
 
 ConsoleVarFunc CXConsoleVariableBase::GetOnChangeCallback() const
@@ -217,10 +214,9 @@ void CXConsoleVariableBase::CallOnChangeFunctions()
         m_pChangeFunc(this);
     }
 
-    const size_t nTotal(m_changeFunctors.size());
-    for (size_t nCount = 0; nCount < nTotal; ++nCount)
+    for ([[maybe_unused]] auto [name, functor] : m_changeFunctors)
     {
-        m_changeFunctors[nCount].second();
+        functor();
     }
 }
 

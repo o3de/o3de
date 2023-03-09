@@ -28,7 +28,7 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator);
         LiveLoggingDataAggregator();
         ~LiveLoggingDataAggregator();
 

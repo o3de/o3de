@@ -12,6 +12,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -21,8 +23,9 @@ namespace AzToolsFramework
     {
     }
 
-    EditorMenu::EditorMenu(const AZStd::string& name)
-        : m_menu(new QMenu(name.c_str()))
+    EditorMenu::EditorMenu(AZStd::string identifier, const AZStd::string& name)
+        : m_identifier(AZStd::move(identifier))
+        , m_menu(new QMenu(name.c_str()))
     {
     }
 
@@ -30,7 +33,7 @@ namespace AzToolsFramework
     {
         m_menuItems[sortKey].emplace_back();
     }
-    
+
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
         if (ContainsAction(actionIdentifier))
@@ -113,7 +116,7 @@ namespace AzToolsFramework
             m_menuItems[sortKey].emplace_back(MenuItemType::Widget, AZStd::move(widgetActionIdentifier));
         }
     }
-    
+
     bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
     {
         return m_actionToSortKeyMap.contains(actionIdentifier);
@@ -186,8 +189,16 @@ namespace AzToolsFramework
                     {
                         if (QAction* action = s_actionManagerInternalInterface->GetAction(menuItem.m_identifier))
                         {
-                            if (!action->isEnabled() &&
-                                s_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(menuItem.m_identifier))
+                            auto outcome = s_actionManagerInterface->IsActionActiveInCurrentMode(menuItem.m_identifier);
+                            bool isActiveInCurrentMode = outcome.IsSuccess() && outcome.GetValue();
+
+                            if (
+                                !IsActionVisible(
+                                    s_actionManagerInternalInterface->GetActionMenuVisibility(menuItem.m_identifier),
+                                    isActiveInCurrentMode,
+                                    action->isEnabled()
+                                )
+                            )
                             {
                                 continue;
                             }
@@ -198,7 +209,7 @@ namespace AzToolsFramework
                     }
                 case MenuItemType::SubMenu:
                     {
-                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier))
+                        if (QMenu* menu = s_menuManagerInternalInterface->GetMenu(menuItem.m_identifier); menu && !menu->isEmpty())
                         {
                             m_menu->addMenu(menu);
                         }
@@ -218,6 +229,13 @@ namespace AzToolsFramework
                     break;
                 }
             }
+        }
+
+        // If the menu contents changed from empty to full or viceversa, refresh all the menus containing this menu.
+        if (m_menu->isEmpty() != m_empty)
+        {
+            s_menuManagerInternalInterface->QueueRefreshForMenusContainingSubMenu(m_identifier);
+            m_empty = m_menu->isEmpty();
         }
     }
 

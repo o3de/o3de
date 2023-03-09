@@ -17,7 +17,7 @@ namespace ScriptCanvasMultiplayer
     {
     public:
         AZ_RTTI(ScriptCanvasMultiplayerModule, "{6cf9ae34-9d26-45cf-b48e-ffc7d8f0c56e}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasMultiplayerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasMultiplayerModule, AZ::SystemAllocator);
 
         ScriptCanvasMultiplayerModule()
             : AZ::Module()
@@ -43,4 +43,4 @@ namespace ScriptCanvasMultiplayer
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasMultiplayer, ScriptCanvasMultiplayer::ScriptCanvasMultiplayerModule)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_ScriptCanvas, ScriptCanvasMultiplayer::ScriptCanvasMultiplayerModule)

@@ -48,7 +48,7 @@ namespace AZ
             friend class MaterialSystem;
         public:
             AZ_INSTANCE_DATA(Material, "{C99F75B2-8BD5-4CD8-8672-1E01EF0A04CF}");
-            AZ_CLASS_ALLOCATOR(Material, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Material, SystemAllocator);
 
             //! Material objects use a ChangeId to track when changes have been made to the material at runtime. See GetCurrentChangeId()
             using ChangeId = size_t;
@@ -213,7 +213,7 @@ namespace AZ
             ChangeId m_compiledChangeId = DEFAULT_CHANGE_ID;
 
             bool m_isInitializing = false;
-                
+
             MaterialPropertyPsoHandling m_psoHandling = MaterialPropertyPsoHandling::Warning;
         };
 

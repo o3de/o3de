@@ -16,7 +16,7 @@ namespace PhysX
     struct D6JointLimitConfiguration
         : public AzPhysics::JointConfiguration
     {
-        AZ_CLASS_ALLOCATOR(D6JointLimitConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(D6JointLimitConfiguration, AZ::SystemAllocator);
         AZ_RTTI(D6JointLimitConfiguration, "{88E067B4-21E8-4FFA-9142-6C52605B704C}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,7 +47,7 @@ namespace PhysX
             SelfCollide = 1 << 1
         };
 
-        AZ_CLASS_ALLOCATOR(JointGenericProperties, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JointGenericProperties, AZ::SystemAllocator);
         AZ_TYPE_INFO(JointGenericProperties, "{6CB15399-24F6-4F03-AAEF-1AE013B683E0}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -66,7 +66,7 @@ namespace PhysX
 
     struct JointLimitProperties
     {
-        AZ_CLASS_ALLOCATOR(JointLimitProperties, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JointLimitProperties, AZ::SystemAllocator);
         AZ_TYPE_INFO(JointLimitProperties, "{31F941CB-6699-48BB-B12D-61874B52B984}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -84,9 +84,21 @@ namespace PhysX
         float m_tolerance = 0.1f; ///< Distance from the joint at which limits becomes enforced. Used if limit is hard.
     };
 
+    struct JointMotorProperties
+    {
+        AZ_CLASS_ALLOCATOR(JointMotorProperties, AZ::SystemAllocator);
+        AZ_TYPE_INFO(JointMotorProperties, "{9CF35393-82CD-4726-B387-96F6381046B3}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        JointMotorProperties() = default;
+
+        bool m_useMotor = false; ///< Enables joint actuation.
+        float m_driveForceLimit = 1.0f; ///< Force/torque limit applied by motor.
+    };
+
     struct FixedJointConfiguration : public AzPhysics::JointConfiguration 
     {
-        AZ_CLASS_ALLOCATOR(FixedJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FixedJointConfiguration, AZ::SystemAllocator);
         AZ_RTTI(FixedJointConfiguration, "{9BCB368B-8D71-4928-B231-0225907E3BD9}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -95,7 +107,7 @@ namespace PhysX
 
     struct BallJointConfiguration : public AzPhysics::JointConfiguration 
     {
-        AZ_CLASS_ALLOCATOR(BallJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BallJointConfiguration, AZ::SystemAllocator);
         AZ_RTTI(BallJointConfiguration, "{C2DE2479-B752-469D-BE05-900CD2CD8481}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -105,12 +117,13 @@ namespace PhysX
     
     struct HingeJointConfiguration : public AzPhysics::JointConfiguration 
     {
-        AZ_CLASS_ALLOCATOR(HingeJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HingeJointConfiguration, AZ::SystemAllocator);
         AZ_RTTI(HingeJointConfiguration, "{FB04198E-0BA5-45C2-8343-66DA28ED45EA}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
         JointGenericProperties m_genericProperties;
         JointLimitProperties m_limitProperties;
+        JointMotorProperties m_motorProperties;
     };
 
     //! Configuration for a prismatic joint.
@@ -118,11 +131,12 @@ namespace PhysX
     //! joint frames.
     struct PrismaticJointConfiguration : public AzPhysics::JointConfiguration
     {
-        AZ_CLASS_ALLOCATOR(PrismaticJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrismaticJointConfiguration, AZ::SystemAllocator);
         AZ_RTTI(PrismaticJointConfiguration, "{66CA235F-FBDF-4E91-B7A0-39132BD4399D}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
         JointGenericProperties m_genericProperties;
         JointLimitProperties m_limitProperties;
+        JointMotorProperties m_motorProperties;
     };
 } // namespace PhysX

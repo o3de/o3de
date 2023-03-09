@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DescriptorListCombinerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DescriptorListCombinerConfig, AZ::SystemAllocator);
         AZ_RTTI(DescriptorListCombinerConfig, "{A62E9C87-093C-4534-AB48-DEF8EC80C190}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZStd::vector<AZ::EntityId> m_descriptorProviders;

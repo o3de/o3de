@@ -115,7 +115,7 @@ namespace AzToolsFramework
         PropertyStringLineEditCtrl* newCtrl = aznew PropertyStringLineEditCtrl(pParent);
         connect(newCtrl, &PropertyStringLineEditCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         return newCtrl;
     }
@@ -159,7 +159,8 @@ namespace AzToolsFramework
 
     void RegisterStringLineEditHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew StringPropertyLineEditHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew StringPropertyLineEditHandler());
     }
 
 }

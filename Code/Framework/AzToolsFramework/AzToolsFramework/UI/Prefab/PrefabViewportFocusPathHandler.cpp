@@ -22,10 +22,16 @@ namespace AzToolsFramework::Prefab
 
         // Connect to Prefab Focus Notifications
         PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
+
+        // Connect to Viewport Editor Mode Notifications
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(m_editorEntityContextId);
     }
 
     PrefabViewportFocusPathHandler::~PrefabViewportFocusPathHandler()
     {
+        // Disconnect from Viewport Editor Mode Notifications
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+
         // Disconnect from Prefab Focus Notifications
         PrefabFocusNotificationBus::Handler::BusDisconnect();
     }
@@ -85,6 +91,30 @@ namespace AzToolsFramework::Prefab
         Refresh();
     }
 
+    void PrefabViewportFocusPathHandler::OnEditorModeActivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        // This function triggers when the Editor changes from regular editing to a Component Mode.
+        if (mode == ViewportEditorMode::Component)
+        {
+            // Disable the widgets to prevent it from being used to change selection.
+            m_backButton->setEnabled(false);
+            m_breadcrumbsWidget->setEnabled(false);
+        }
+    }
+
+    void PrefabViewportFocusPathHandler::OnEditorModeDeactivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        // This function triggers when the Editor changes from a Component Mode to regular editing.
+        if (mode == ViewportEditorMode::Component)
+        {
+            // Enable the widgets when leaving component mode.
+            m_backButton->setEnabled(true);
+            m_breadcrumbsWidget->setEnabled(true);
+        }
+    }
+
     void PrefabViewportFocusPathHandler::Refresh()
     {
         if (int prefabFocusPathLength = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId);
@@ -135,10 +165,12 @@ namespace AzToolsFramework::Prefab
         );
 
         PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(m_editorEntityContextId);
     }
 
     PrefabFocusPathWidget::~PrefabFocusPathWidget()
     {
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         PrefabFocusNotificationBus::Handler::BusDisconnect();
     }
 
@@ -151,6 +183,28 @@ namespace AzToolsFramework::Prefab
     void PrefabFocusPathWidget::OnPrefabFocusRefreshed()
     {
         Refresh();
+    }
+
+    void PrefabFocusPathWidget::OnEditorModeActivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        // This function triggers when the Editor changes from regular editing to a Component Mode.
+        if (mode == ViewportEditorMode::Component)
+        {
+            // Disable the widgets to prevent it from being used to change selection.
+            setEnabled(false);
+        }
+    }
+
+    void PrefabFocusPathWidget::OnEditorModeDeactivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        // This function triggers when the Editor changes from a Component Mode to regular editing.
+        if (mode == ViewportEditorMode::Component)
+        {
+            // Enable the widgets when leaving component mode.
+            setEnabled(true);
+        }
     }
 
     void PrefabFocusPathWidget::Refresh()

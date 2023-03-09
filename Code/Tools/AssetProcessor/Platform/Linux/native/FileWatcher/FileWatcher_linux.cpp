@@ -315,8 +315,8 @@ void FileWatcher::PlatformStop()
 void FileWatcher::WatchFolderLoop()
 {
     char eventBuffer[s_inotifyReadBufferSize];
-    
-    int cycleCount = 0;
+
+    [[maybe_unused]] int cycleCount = 0;
 
     constexpr const nfds_t nfds = 2;
     struct pollfd fds[nfds];

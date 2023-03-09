@@ -87,7 +87,7 @@ namespace AZ::Render
 
             if (m_showAttachments)
             {
-                ImGui::SliderFloat2("Color Range", m_attachmentColorTranformRange, 0.0f, 1.0f);
+                Scriptable_ImGui::SliderFloat2("Color Range", m_attachmentColorTranformRange, 0.0f, 1.0f);
             }
 
             if (Scriptable_ImGui::Button("Save Attachment"))

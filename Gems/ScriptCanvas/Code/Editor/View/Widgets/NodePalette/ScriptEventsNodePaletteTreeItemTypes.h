@@ -35,7 +35,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateScriptEventsHandlerMimeEvent, "{4734F4B6-5915-4AEF-92A3-25FE3DBB6700}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateScriptEventsHandlerMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateScriptEventsHandlerMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -64,7 +64,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(ScriptEventsPaletteTreeItem, "{50839A0D-5FD4-4964-BEA2-CB9A74A50477}", GraphCanvas::NodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(ScriptEventsPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsPaletteTreeItem, AZ::SystemAllocator);
 
         ScriptEventsPaletteTreeItem(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset);
         ~ScriptEventsPaletteTreeItem() override;
@@ -102,7 +102,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateScriptEventsReceiverMimeEvent, "{F957AF1F-55D9-4D85-AC92-EBFABCDF9D96}", SpecializedCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateScriptEventsReceiverMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateScriptEventsReceiverMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -128,7 +128,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(ScriptEventsHandlerEventPaletteTreeItem, "{0E96CD24-C5DB-491C-9A3E-6EE82F73ADBA}", GraphCanvas::DraggableNodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(ScriptEventsHandlerEventPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsHandlerEventPaletteTreeItem, AZ::SystemAllocator);
 
         ScriptEventsHandlerEventPaletteTreeItem(const AZ::Data::AssetId assetId, const ScriptEvents::Method& m_methodDefinition);
         ~ScriptEventsHandlerEventPaletteTreeItem() = default;
@@ -153,7 +153,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateScriptEventsSenderMimeEvent, "{9D9146EB-5FA9-4C07-BFC7-399F4F3964E4}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateScriptEventsSenderMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateScriptEventsSenderMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -179,7 +179,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(ScriptEventsSenderPaletteTreeItem, "{0E27EB7A-9F52-4A4E-9D63-28FFAD82310B}", GraphCanvas::DraggableNodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(ScriptEventsSenderPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsSenderPaletteTreeItem, AZ::SystemAllocator);
 
         ScriptEventsSenderPaletteTreeItem(const AZ::Data::AssetId assetId, const ScriptEvents::Method& eventDefinition);
         ~ScriptEventsSenderPaletteTreeItem() = default;
@@ -201,7 +201,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateSendOrReceiveScriptEventsMimeEvent, "{355FC877-358E-41AF-A78C-16A7DCE0550D}", MultiCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateSendOrReceiveScriptEventsMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateSendOrReceiveScriptEventsMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -228,7 +228,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(ScriptEventsEventNodePaletteTreeItem, "{C6528466-C1FF-43BE-B292-21D8F8AA7C24}", GraphCanvas::DraggableNodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(ScriptEventsEventNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsEventNodePaletteTreeItem, AZ::SystemAllocator);
         ScriptEventsEventNodePaletteTreeItem(const AZ::Data::AssetId& m_assetId, const ScriptEvents::Method& methodDefinition, const ScriptCanvas::EBusEventId& eventId);
         ~ScriptEventsEventNodePaletteTreeItem() = default;
 

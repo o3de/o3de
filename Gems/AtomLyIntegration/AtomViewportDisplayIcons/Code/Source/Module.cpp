@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AtomViewportDisplayInfoModule, "{8D72F14E-958D-4225-B3BC-C5C87BDDD426}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AtomViewportDisplayInfoModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AtomViewportDisplayInfoModule, AZ::SystemAllocator);
 
             AtomViewportDisplayInfoModule()
                 : AZ::Module()

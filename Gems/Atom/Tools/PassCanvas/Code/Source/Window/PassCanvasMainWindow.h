@@ -32,7 +32,7 @@ namespace PassCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PassCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PassCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
@@ -51,6 +51,7 @@ namespace PassCanvas
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
+        void OnSettingsDialogClosed() override;
         AZStd::string GetHelpDialogText() const override;
 
     private:

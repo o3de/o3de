@@ -27,7 +27,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(NodeNudgingController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeNudgingController, AZ::SystemAllocator);
     
         NodeNudgingController();
         NodeNudgingController(const GraphId& graphId, const AZStd::unordered_set< NodeId >& rootElements);

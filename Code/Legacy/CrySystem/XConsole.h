@@ -333,6 +333,28 @@ private: // ----------------------------------------------------------
     ConsoleVariablesVector          m_alwaysCheckedVariables;
     std::vector<IOutputPrintSink*> m_OutputSinks;                       // objects in this vector are not released
 
+    template<typename T>
+    struct FunctorWrapper
+    {
+        FunctorWrapper(const char* name, const char* desc, T initialValue)
+            : proxyValue(AZStd::move(initialValue))
+            , m_functor(name, desc, AZ::ConsoleFunctorFlags::DontDuplicate, AZ::AzTypeInfo<T>::Uuid(), proxyValue, ArgToValue)
+        {
+        }
+        T proxyValue;
+        AZ::ConsoleFunctor<T, true> m_functor;
+
+    private:
+        static void ArgToValue(T& outValue, const AZ::ConsoleCommandContainer& arguments)
+        {
+            AZ::ConsoleTypeHelpers::ToValue(outValue, arguments);
+        }
+    };
+
+    AZStd::vector<FunctorWrapper<float>> m_floatWrappers;
+    AZStd::vector<FunctorWrapper<int>> m_intWrappers;
+    AZStd::vector<FunctorWrapper<AZStd::string>> m_stringWrappers;
+
     TDeferredCommandList                        m_deferredCommands;             // A fifo of deferred commands
     bool                                                        m_deferredExecution;            // True when deferred commands are processed
     int                                                         m_waitFrames;                           // A counter which is used by wait_frames command

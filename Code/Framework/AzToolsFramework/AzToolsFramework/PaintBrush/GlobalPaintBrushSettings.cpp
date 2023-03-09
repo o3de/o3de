@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AzToolsFramework
@@ -19,7 +20,8 @@ namespace AzToolsFramework
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GlobalPaintBrushSettings, PaintBrushSettings>()
-                ->Version(1)
+                ->Version(2)
+                ->Field("BrushMode", &GlobalPaintBrushSettings::m_brushMode)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -31,11 +33,8 @@ namespace AzToolsFramework
                 editContext->Class<PaintBrushSettings>("Paint Brush", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
-                        ->Attribute(
-                            AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AzFramework::PaintBrushMode>())
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnBrushModeChanged)
+                        // There's no special meaning to 100, we just want the PaintBrushSettings to display after the GlobalPaintBrushSettings
+                        ->Attribute(AZ::Edit::Attributes::DisplayOrder, 100)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
@@ -49,7 +48,7 @@ namespace AzToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PaintBrushSettings::m_brushColor, "Color", "Color of the paint brush.")
                     ->Attribute(
                         "ColorEditorConfiguration",
-                        [](PaintBrushSettings* handler) -> AzToolsFramework::ColorEditorConfiguration
+                        []([[maybe_unused]] void* voidHandler) -> AzToolsFramework::ColorEditorConfiguration
                         {
                             enum ColorSpace : uint32_t
                             {
@@ -60,11 +59,8 @@ namespace AzToolsFramework
                             AzToolsFramework::ColorEditorConfiguration configuration;
                             configuration.m_colorPickerDialogConfiguration = AzQtComponents::ColorPicker::Configuration::RGBA;
 
-                            // The property is in either SRGB or linear, depending on paintbrush settings, but we should display the colors
-                            // using SRGB.
-                            configuration.m_propertyColorSpaceId =
-                                (handler->GetColorMode() == AzFramework::PaintBrushColorMode::SRGB)
-                                ? ColorSpace::SRGB : ColorSpace::LinearSRGB;
+                            // The property is in linear color space, but we should display the colors using SRGB.
+                            configuration.m_propertyColorSpaceId = ColorSpace::LinearSRGB;
                             configuration.m_colorPickerDialogColorSpaceId = ColorSpace::SRGB;
                             configuration.m_colorSwatchColorSpaceId = ColorSpace::SRGB;
 
@@ -95,7 +91,6 @@ namespace AzToolsFramework
 
                             return configuration;
                         })
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetColorReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetColorVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnColorChanged)
                     ->DataElement(
@@ -108,7 +103,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetIntensityReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetIntensityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnIntensityChanged)
                     ->DataElement(
@@ -121,7 +115,6 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &PaintBrushSettings::GetOpacityReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetOpacityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChanged)
                     ->DataElement(
@@ -189,6 +182,10 @@ namespace AzToolsFramework
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &GlobalPaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AzToolsFramework::PaintBrushMode>())
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GlobalPaintBrushSettings::OnBrushModeChanged)
                     ;
             }
         }
@@ -223,5 +220,71 @@ namespace AzToolsFramework
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
+        // The following settings aren't visible in Eyedropper mode, but are available in Paint / Smooth modes
+
+    bool GlobalPaintBrushSettings::GetSizeVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool GlobalPaintBrushSettings::GetHardnessVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool GlobalPaintBrushSettings::GetFlowVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool GlobalPaintBrushSettings::GetDistanceVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    bool GlobalPaintBrushSettings::GetBlendModeVisibility() const
+    {
+        return (m_brushMode != PaintBrushMode::Eyedropper);
+    }
+
+    // The following settings are only visible in Smooth mode
+
+    bool GlobalPaintBrushSettings::GetSmoothingRadiusVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Smooth);
+    }
+
+    bool GlobalPaintBrushSettings::GetSmoothModeVisibility() const
+    {
+        return (m_brushMode == PaintBrushMode::Smooth);
+    }
+
+    // The color / intensity settings have their visibility controlled by both the color mode and the brush mode.
+
+    bool GlobalPaintBrushSettings::GetColorVisibility() const
+    {
+        return (m_colorMode != PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+    }
+
+    bool GlobalPaintBrushSettings::GetIntensityVisibility() const
+    {
+        return (m_colorMode == PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+    }
+
+    void GlobalPaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
+    {
+        m_brushMode = brushMode;
+
+        OnBrushModeChanged();
+        OnSettingsChanged();
+    }
+
+    void GlobalPaintBrushSettings::SetColorMode(PaintBrushColorMode colorMode)
+    {
+        m_colorMode = colorMode;
+
+        OnColorModeChanged();
+        OnSettingsChanged();
+    }
 
 } // namespace AzToolsFramework

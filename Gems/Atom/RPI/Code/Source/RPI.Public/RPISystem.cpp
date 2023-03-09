@@ -88,7 +88,7 @@ namespace AZ
                 {
                     UnregisterXRSystem();
                 }
-                AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
+                AZ_Error("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled");
             }
 
             //Init RHI device
@@ -379,7 +379,6 @@ namespace AZ
         {
             if (m_systemAssetsInitialized)
             {
-                AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
                 return;
             }
 
@@ -474,7 +473,7 @@ namespace AZ
                     // MSAA state set to the render pipeline at creation time from its data might be different
                     // from the one set to the application. So it can arrive here having the same new
                     // target state, but still needs to be marked as its MSAA state has changed so its passes
-                    // are recreated using the new supervariant name comming from MSAA at application level just set above.
+                    // are recreated using the new supervariant name coming from MSAA at application level just set above.
                     // In conclusion, it's not safe to skip here setting MSAA state to the render pipeline when it's the
                     // same as the target.
                     renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;

@@ -33,9 +33,9 @@ namespace AzPhysics
         float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
         float m_fixedTimestep = DefaultFixedTimestep; //!< Timestep in seconds to run the physics update. See DefaultFixedTimestep.
 
-        AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
-        AZ::u64 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
-        AZ::u64 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
+        AZ::u32 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
+        AZ::u32 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
+        AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         //! Contains the default global collision layers and groups.
         //! Each Physics Scene uses this as a base and will override as needed.
@@ -58,7 +58,7 @@ namespace AzPhysics
         // padding was added. But having this structure limits the warnings to this member usage because
         // SystemConfiguration won't need extra padding to achieve 16 byte alignment.
         AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") // structure was padded due to alignment
-        struct alignas(16)
+        [[maybe_unused]] struct alignas(16)
         {
             unsigned char m_unused[16];
         } m_unusedPadding;

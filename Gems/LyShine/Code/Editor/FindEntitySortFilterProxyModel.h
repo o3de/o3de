@@ -26,7 +26,7 @@ class FindEntitySortFilterProxyModel
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(FindEntitySortFilterProxyModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FindEntitySortFilterProxyModel, AZ::SystemAllocator);
 
     FindEntitySortFilterProxyModel(QObject* pParent = nullptr);
 

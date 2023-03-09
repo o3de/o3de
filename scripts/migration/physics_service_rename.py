@@ -36,6 +36,8 @@ def rename_physics_services():
         "\"PhysXJointService\"": "\"PhysicsJointService\"",
         "\"PhysXRagdollService\"": "\"PhysicsRagdollService\"",
         "\"PhysXRigidBodyService\"": "\"PhysicsRigidBodyService\"",
+        "\"PhysXStaticRigidBodyService\"": "\"PhysicsStaticRigidBodyService\"",
+        "\"PhysXDynamicRigidBodyService\"": "\"PhysicsDynamicRigidBodyService\"",
         "\"PhysXService\"": "\"PhysicsService\"",
         "\"PhysXShapeColliderService\"": "\"PhysicsShapeColliderService\"",
         "\"PhysXTriggerService\"": "\"PhysicsTriggerService\""

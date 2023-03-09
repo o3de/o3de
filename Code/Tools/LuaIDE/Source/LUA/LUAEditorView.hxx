@@ -62,7 +62,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator);
 
         LUAViewWidget(QWidget *pParent = NULL);
         virtual ~LUAViewWidget();

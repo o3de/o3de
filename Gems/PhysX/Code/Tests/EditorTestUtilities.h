@@ -9,12 +9,14 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/optional.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 
 #include <System/PhysXSystem.h>
+#include <PhysX/MeshAsset.h>
 
 namespace AzPhysics
 {
@@ -37,51 +39,92 @@ namespace PhysXEditorTests
         Dynamic
     };
 
-    //! Creates an active editor entity with shape collider and box shape components.
-    //! Adds a rigid body component if the dynamic parameter is true.
+    //! Creates an active editor entity with a shape collider and box shape components.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
     EntityPtr CreateBoxShapeColliderEditorEntity(
-        const AZ::Transform& transform,
-        const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& boxDimensions,
-        const AZ::Vector3& translationOffset,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
         RigidBodyType rigidBodyType = RigidBodyType::Static);
 
-    //! Creates an active editor entity with shape collider and capsule shape components.
-    //! Adds a rigid body component if the dynamic parameter is true.
+    //! Creates an active editor entity with a shape collider and capsule shape components.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
     EntityPtr CreateCapsuleShapeColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
         float height,
-        const AZ::Vector3& translationOffset,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
         RigidBodyType rigidBodyType = RigidBodyType::Static);
 
-    //! Creates an active editor entity with shape collider and sphere shape components.
-    //! Adds a rigid body component if the dynamic parameter is true.
+    //! Creates an active editor entity with a shape collider and sphere shape components.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
     EntityPtr CreateSphereShapeColliderEditorEntity(
-        const AZ::Transform& transform,
         float radius,
-        const AZ::Vector3& translationOffset,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
+    
+    //! Creates an active editor entity with a primitive collider configured as a box.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
+    EntityPtr CreateBoxPrimitiveColliderEditorEntity(
+        const AZ::Vector3& boxDimensions,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        const AZ::Quaternion& rotationOffset = AZ::Quaternion::CreateIdentity(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
         RigidBodyType rigidBodyType = RigidBodyType::Static);
 
-    //! Creates an active editor entity with collider component with cylinder geometry.
-    //! Adds a rigid body component if the dynamic parameter is true.
-    EntityPtr CreateCylinderColliderEditorEntity(
-        const AZ::Transform& transform,
-        const AZ::Vector3& positionOffset,
-        const AZ::Quaternion& rotationOffset,
+    //! Creates an active editor entity with a primitive collider configured as a capsule.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
+    EntityPtr CreateCapsulePrimitiveColliderEditorEntity(
         float radius,
         float height,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        const AZ::Quaternion& rotationOffset = AZ::Quaternion::CreateIdentity(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
         RigidBodyType rigidBodyType = RigidBodyType::Static);
 
-    //! Creates an active editor entity with collider component with cylinder geometry and non-uniform scale component.
-    //! Adds a rigid body component if the dynamic parameter is true.
-    EntityPtr CreateCylinderColliderNonUniformScaleEditorEntity(
-        const AZ::Transform& transform,
-        const AZ::Vector3& nonUniformScale,
-        const AZ::Vector3& positionOffset,
-        const AZ::Quaternion& rotationOffset,
+    //! Creates an active editor entity with a primitive collider configured as a sphere.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
+    EntityPtr CreateSpherePrimitiveColliderEditorEntity(
+        float radius,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        const AZ::Quaternion& rotationOffset = AZ::Quaternion::CreateIdentity(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
+
+    //! Creates an active editor entity with a primitive collider configured as a cylinder.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
+    EntityPtr CreateCylinderPrimitiveColliderEditorEntity(
         float radius,
         float height,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        const AZ::Quaternion& rotationOffset = AZ::Quaternion::CreateIdentity(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
+        RigidBodyType rigidBodyType = RigidBodyType::Static);
+
+    //! Creates an active editor entity with mesh collider.
+    //! It can be created with either static or dynamic rigid body component and with
+    //! or without uniform scale component.
+    EntityPtr CreateMeshColliderEditorEntity(
+        AZ::Data::Asset<PhysX::Pipeline::MeshAsset> meshAsset,
+        const AZ::Transform& transform = AZ::Transform::CreateIdentity(),
+        const AZ::Vector3& translationOffset = AZ::Vector3::CreateZero(),
+        const AZ::Quaternion& rotationOffset = AZ::Quaternion::CreateIdentity(),
+        AZStd::optional<AZ::Vector3> nonUniformScale = AZStd::nullopt,
         RigidBodyType rigidBodyType = RigidBodyType::Static);
 
     //! Gets the AABB for the simulated body on the entity with the given ID, or returns a null AABB if no body is found.
@@ -103,7 +146,6 @@ namespace PhysXEditorTests
     class PhysXEditorFixture
         : public testing::Test
         , public Physics::DefaultWorldBus::Handler
-        , public UnitTest::RegistryTestHelper
     {
     public:
         void SetUp() override;
@@ -120,5 +162,6 @@ namespace PhysXEditorTests
 
         // workaround for parameterized tests causing issues with this (and any derived) fixture
         void ValidateInvalidEditorShapeColliderComponentParams(float radius, float height);
+        void ValidateInvalidEditorColliderComponentParams(float radius, float height);
     };
 } // namespace PhysXEditorTests

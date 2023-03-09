@@ -39,7 +39,7 @@ namespace AzFramework
     class RemoteToolsMessage : public AZStd::intrusive_refcount<size_t>
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator);
         AZ_RTTI(RemoteToolsMessage, "{8512328C-949D-4F0C-B48D-77C26C207443}");
 
         RemoteToolsMessage() = default;
@@ -105,7 +105,7 @@ namespace AzFramework
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator);
         AZ_TYPE_INFO(RemoteToolsEndpointInfo, "{DD0E9B2A-3B25-43B1-951E-CACCEC5D6754}");
 
         explicit RemoteToolsEndpointInfo(AZStd::string displayName = AZStd::string{}, AZ::u32 networkId = 0)

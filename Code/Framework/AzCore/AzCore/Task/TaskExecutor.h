@@ -16,7 +16,9 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
-#define ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING AZ_DEBUG_BUILD
+#ifdef AZ_DEBUG_BUILD
+#define ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+#endif
 
 namespace AZ
 {
@@ -75,7 +77,7 @@ namespace AZ
         class CompiledTaskGraph final
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompiledTaskGraph, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(CompiledTaskGraph, SystemAllocator);
 
             CompiledTaskGraph(
                 AZStd::vector<Task>&& tasks,
@@ -117,7 +119,7 @@ namespace AZ
     class TaskExecutor final
     {
     public:
-        AZ_CLASS_ALLOCATOR(TaskExecutor, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaskExecutor, SystemAllocator);
 
         static TaskExecutor& Instance();
 
