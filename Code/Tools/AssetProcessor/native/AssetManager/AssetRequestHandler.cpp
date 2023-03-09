@@ -468,11 +468,11 @@ void AssetRequestHandler::OnRequestAssetExistsResponse(NetworkRequestID groupID,
 
     if (located == m_pendingAssetRequests.end())
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
+        AZ_Trace(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
         return;
     }
 
-    AZ_TracePrintf(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
+    AZ_Trace(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
         located.value().GetDisplayString().toUtf8().constData(),
         exists ? "compiled already" : "missing" );
 
