@@ -23,8 +23,6 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     float2 ndcPos = float2(uv.x , 1.0f - uv.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(ndcPos, 0.f, 1.0f);
     float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
-    positionWS /= positionWS.w;
-
     float3 viewToPosition =  positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition;
     float3 worldDir = normalize(viewToPosition);
 

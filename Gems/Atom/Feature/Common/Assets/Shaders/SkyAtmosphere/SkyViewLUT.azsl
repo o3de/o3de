@@ -32,8 +32,6 @@ SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
 
     float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
     float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(ndcPos, depth, 1.0f));
-    positionWS /= positionWS.w;
-
     float3 worldDir = normalize(positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition);
     const float worldDepthKm = length(worldDir);
     float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
