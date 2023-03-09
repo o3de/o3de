@@ -29,3 +29,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_PhysX_Mesh_Collider_Component_CRUD(EditorBatchedTest):
         from .tests.EntityComponentTests import PhysX_Mesh_Collider_Component_CRUD as test_module
+
+    class test_PhysX_Dynamic_Rigid_Body_Component(EditorBatchedTest):
+        from .tests.EntityComponentTests import PhysX_Dynamic_Rigid_Body_Component as test_module

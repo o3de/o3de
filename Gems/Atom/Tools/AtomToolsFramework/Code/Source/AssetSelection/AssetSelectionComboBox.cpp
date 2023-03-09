@@ -80,7 +80,30 @@ namespace AtomToolsFramework
         const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         if (const int index = findData(pathItemData); index < 0)
         {
-            addItem(GetDisplayNameFromPath(pathWithAlias).c_str(), pathItemData);
+            const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+            const auto& title = GetDisplayNameFromPath(pathWithoutAlias);
+
+            // Compare the item title against all other items and append a suffix until the new title is unique
+            AZStd::string uniqueTitle = title;
+            int uniqueTitleSuffix = 0;
+            bool uniqueTitleFound = true;
+            while (uniqueTitleFound)
+            {
+                uniqueTitleFound = false;
+                for (int i = 0; i < count(); ++i)
+                {
+                    if (uniqueTitle == itemText(i).toUtf8().constData())
+                    {
+                        uniqueTitle = AZStd::string::format("%s (%i)",title.c_str(), ++uniqueTitleSuffix);
+                        uniqueTitleFound = true;
+                        break;
+                    }
+                }
+            }
+
+            addItem(uniqueTitle.c_str(), pathItemData);
+            setItemData(count() - 1, pathWithoutAlias.c_str(), Qt::ToolTipRole);
+
             QueueSort();
             RegisterThumbnail(pathWithAlias);
         }
