@@ -186,7 +186,7 @@ def register_all_projects_in_folder(projects_path: pathlib.Path,
                                     force: bool = False,
                                     dry_run: bool = False) -> int:
     return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, force,
-                                                       stop_on_template_folders, engine_path=engine_path, 
+                                                       stop_on_template_folders, engine_path=engine_path,
                                                        dry_run=dry_run)
 
 
@@ -402,8 +402,9 @@ def register_external_subdirectory(json_data: dict,
     completed successfully
     """
     # If a gem path, project path or engine path has not been supplied auto detect which manifest to register the input path with
-    if not gem_path:
-        gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path)
+    # Start from the parent of the external_subdirectory to catch the case that if it is a gem, it does not register itself
+    if not gem_path and external_subdir_path.parent != external_subdir_path:
+        gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path.parent)
     elif not project_path:
         project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
     elif not engine_path:
@@ -419,11 +420,18 @@ def register_gem_path(json_data: dict,
                       remove: bool = False,
                       engine_path: pathlib.Path = None,
                       project_path:  pathlib.Path = None,
+                      ancestor_gem_path: pathlib.Path = None,
                       force: bool = False,
                       dry_run:bool = False) -> int:
-    # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
-    if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
+    # If an ancestor gem_ path, project path or engine path has not been supplied
+    # auto detect which manifest to register the input path with
+
+    if not ancestor_gem_path and not project_path and not engine_path:
+        # Start from the parent of the gem_path to make sure the gem doesn't register itself as an external subdirectory
+        if gem_path.parent != gem_path:
+            ancestor_gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), gem_path.parent)
+        if not ancestor_gem_path:
+            project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), gem_path)
 
@@ -433,12 +441,12 @@ def register_gem_path(json_data: dict,
             logger.error(f'Failed to load gem.json data needed for registration from {gem_path}')
             return 1
 
-        # do not check compatibility if the project has not been registered with an engine 
-        # because most gems depend on engine gems which would not be found 
+        # do not check compatibility if the project has not been registered with an engine
+        # because most gems depend on engine gems which would not be found
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
             incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
-            if incompatible_objects: 
+            if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
@@ -454,7 +462,7 @@ def register_gem_path(json_data: dict,
                 external_subdirectories=[gem_path])
 
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, engine_gems_json_data)
-            if incompatible_objects: 
+            if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
@@ -464,6 +472,7 @@ def register_gem_path(json_data: dict,
                                      validation.valid_o3de_gem_json, remove,
                                      pathlib.Path(engine_path).resolve() if engine_path else None,
                                      pathlib.Path(project_path).resolve() if project_path else None,
+                                     gem_path=pathlib.Path(ancestor_gem_path).resolve() if ancestor_gem_path else None,
                                      dry_run=dry_run)
 
     if result == 0 and dry_run:
@@ -839,6 +848,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                              external_subdir_engine_path, external_subdir_project_path,
+                                             external_subdir_gem_path,
                                              force, dry_run)
 
     if isinstance(external_subdir_path, pathlib.PurePath):
@@ -846,7 +856,7 @@ def register(engine_path: pathlib.Path = None,
             logger.error(f'External Subdirectory path is None.')
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
-                                                          external_subdir_engine_path, external_subdir_project_path, 
+                                                          external_subdir_engine_path, external_subdir_project_path,
                                                           external_subdir_gem_path)
 
     if isinstance(template_path, pathlib.PurePath):
