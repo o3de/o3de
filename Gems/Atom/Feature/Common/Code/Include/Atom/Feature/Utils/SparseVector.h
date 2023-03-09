@@ -26,6 +26,9 @@ namespace AZ::Render
     {
     public:
 
+        // Elements must be at least as large as size_t because empty slots are used to hold the index of the next
+        // empty slot, which is a size_t. In the future this could be relaxed with an additional template argument
+        // that would control the index type and therefor the maximum size of the SparseVector.
         static_assert(sizeof(T) >= sizeof(size_t), "Data stored in SparseVector must be at least as large as a size_t.");
 
         SparseVector();
@@ -110,7 +113,7 @@ namespace AZ::Render
         {
             // Because the memory in the underlying vector is used to store a linked list of the removed items,
             // a destructor could be called on bogus memory when the vector is cleared or destroyed. To fix this,
-            // through each free slot and default-construct an object there so it can be safely deleted.
+            // iterate through each free slot and default-construct an object there so it can be safely deleted.
             while (m_nextFreeSlot != NoFreeSlot)
             {
                 size_t thisSlot = m_nextFreeSlot;

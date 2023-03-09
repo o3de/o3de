@@ -23,6 +23,9 @@ namespace AZ::Render
     class MultiSparseVector
     {
     public:
+        // Elements must be at least as large as size_t because empty slots are used to hold the index of the next
+        // empty slot, which is a size_t. In the future this could be relaxed with an additional template argument
+        // that would control the index type and therefor the maximum size of the MultiSparseVector.
         static_assert(sizeof(AZStd::tuple_element_t<0, AZStd::tuple<Ts...>>) >= sizeof(size_t),
             "Data stored in the first element of MultiSparseVector must be at least as large as a size_t.");
 
@@ -144,7 +147,7 @@ namespace AZ::Render
     {
         // Because the memory in the underlying vector is used to store a linked list of the removed items,
         // a destructor could be called on bogus memory when the vector is cleared or destroyed. To fix this,
-        // through each free slot and default-construct an object there so it can be safely deleted.
+        // iterate through each free slot and default-construct an object there so it can be safely deleted.
 
         // First create a tuple which only contains the vectors with non-trivial destructors.
         auto TuplesToReset = [](auto&... dataVectors)
