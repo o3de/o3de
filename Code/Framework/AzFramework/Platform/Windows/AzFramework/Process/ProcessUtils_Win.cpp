@@ -6,6 +6,9 @@
  *
  */
 #include <AzFramework/Process/ProcessUtils.h>
+#include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/string.h>
+
 #include <tlhelp32.h>
 
 namespace AzFramework::ProcessUtils
