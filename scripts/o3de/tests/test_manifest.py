@@ -368,6 +368,140 @@ class TestGetAllGems:
 
             assert self.cycle_detected == expected_cycle_detected
 
+class TestGetProjectEnabledGems:
+
+    project_path = pathlib.Path("project")
+
+    @staticmethod
+    def get_this_engine_path() -> pathlib.Path:
+        return pathlib.Path('D:/o3de/o3de')
+
+    @staticmethod
+    def resolve(self):
+        return self
+
+    @staticmethod
+    def as_posix(self):
+        return self
+
+    @pytest.mark.parametrize("""project_gem_names, cmake_gem_names, 
+                                all_gems_json_data, include_dependencies,
+                                expected_result""", [
+            # When gems are provided without version specifiers expect they are found
+            pytest.param(
+                ['GemA'], ['GemB'],
+                {
+                    'GemA':[{'gem_name':'GemA','path':pathlib.Path('c:/GemA')}],
+                    'GemB':[{'gem_name':'GemB','path':pathlib.Path('c:/GemB')}]
+                },
+                True,
+                {'GemA':'c:/GemA', 'GemB':'c:/GemB'}
+            ),
+            # When dependencies exist they are not included if include_dependencies is False 
+            pytest.param(
+                ['GemA'], ['GemB'],
+                {
+                    'GemA':[{'gem_name':'GemA','path':pathlib.Path('c:/GemA'), 'dependencies':['GemC']}],
+                    'GemB':[{'gem_name':'GemB','path':pathlib.Path('c:/GemB')}],
+                    'GemC':[{'gem_name':'GemC','path':pathlib.Path('c:/GemC')}]
+                },
+                False,
+                {'GemA':'c:/GemA', 'GemB':'c:/GemB'}
+            ),
+            # When dependencies exist they are included if include_dependencies is True 
+            pytest.param(
+                ['GemA'], ['GemB'],
+                {
+                    'GemA':[{'gem_name':'GemA','path':pathlib.Path('c:/GemA'), 'dependencies':['GemC']}],
+                    'GemB':[{'gem_name':'GemB','path':pathlib.Path('c:/GemB')}],
+                    'GemC':[{'gem_name':'GemC','path':pathlib.Path('c:/GemC')}]
+                },
+                True,
+                {'GemA':'c:/GemA', 'GemB':'c:/GemB', 'GemC':'c:/GemC'}
+            ),
+            # When a mix of gems are provided with and without version specifiers expect they are found
+            pytest.param(
+                ['GemA>=1.0.0'], ['GemB'],
+                {
+                    'GemA':[
+                        {'gem_name':'GemA','version':'1.0.0', 'path':pathlib.Path('c:/GemA1')},
+                        {'gem_name':'GemA','version':'2.0.0', 'path':pathlib.Path('c:/GemA2')}
+                    ],
+                    'GemB':[{'gem_name':'GemB','path':pathlib.Path('c:/GemB')}]
+                },
+                True,
+                {'GemA>=1.0.0':'c:/GemA2', 'GemB':'c:/GemB'}
+            ),
+            # When no gems are installed expect the names are returned without paths
+            pytest.param(
+                ['GemA>=1.0.0'], ['GemB==2.0.0'],
+                {},
+                True,
+                {'GemA>=1.0.0':None, 'GemB==2.0.0':None}
+            ),
+            # When some gems are missing expect their paths are none 
+            pytest.param(
+                ['GemA<3.0.0'], ['GemB==2.0.0'],
+                {
+                    'GemA':[
+                        {'gem_name':'GemA','version':'2.0.0','path':pathlib.Path('c:/GemA2')}, # <-- correct
+                        {'gem_name':'GemA','version':'3.0.0','path':pathlib.Path('c:/GemA3')},
+                    ]
+                    # no GemB
+                },
+                True,
+                {'GemA<3.0.0':'c:/GemA2', 'GemB==2.0.0':None}
+            ),
+        ]
+    )
+    def test_get_project_enabled_gems(self, project_gem_names, cmake_gem_names, 
+                                      all_gems_json_data, include_dependencies, expected_result):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
+            project_json_data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+            project_json_data['gem_names'] = project_gem_names
+            return project_json_data
+        
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            return json.loads(TEST_ENGINE_JSON_PAYLOAD)
+
+        def get_enabled_gem_cmake_file(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                platform: str = 'Common'):
+            return None if not cmake_gem_names else pathlib.Path('enabled_gems.cmake')
+
+        def get_enabled_gems(cmake_file: pathlib.Path) -> set:
+            return cmake_gem_names 
+
+        def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
+                                        project_path: pathlib.Path = None, 
+                                        include_manifest_gems: bool = False,
+                                        include_engine_gems: bool = False,
+                                        external_subdirectories: list = None
+                                        ) -> dict:
+            return all_gems_json_data
+
+        def get_project_engine_path(project_path: pathlib.Path) -> pathlib.Path or None:
+            return None
+
+        with patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) \
+                as get_engine_json_data_patch,\
+            patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) \
+                as get_gems_json_data_by_name_patch,\
+            patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) \
+                as get_project_json_data_patch, \
+            patch('o3de.manifest.get_project_engine_path', side_effect=get_project_engine_path) \
+                as get_project_engine_path_patch,\
+            patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) \
+                as get_enabled_gem_cmake_file_patch, \
+            patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch, \
+            patch('pathlib.Path.resolve', self.resolve) as resolve_patch, \
+            patch('pathlib.Path.is_file', return_value=True) as is_file_patch:
+
+            assert expected_result == manifest.get_project_enabled_gems(self.project_path, include_dependencies)
+
 class TestManifestGetRegistered:
     @staticmethod
     def get_this_engine_path() -> pathlib.Path:

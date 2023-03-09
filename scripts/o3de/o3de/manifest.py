@@ -16,7 +16,7 @@ import pathlib
 from packaging.version import Version
 from collections import deque
 
-from o3de import validation, utils, repo, compatibility
+from o3de import validation, utils, repo, compatibility, cmake
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.manifest')
@@ -300,6 +300,83 @@ def get_engine_templates() -> list:
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
     return get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
+
+def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True) -> dict or None:
+    """
+    Returns a dictionary of "<gem name with optional specifier>":"<gem path>"
+    Example: {"gemA>=1.2.3":"c:/gemA", "gemB":"c:/gemB"}
+    :param project_path The path to the project
+    :param include_gem_dependencies True to include all gem dependencies, otherwise just return
+    gems listed in project.json and the deprecated enabled_gems.json
+    """
+    project_json_data = get_project_json_data(project_path=project_path)
+    active_gem_names = project_json_data.get('gem_names',[])
+    enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    if enabled_gems_file and enabled_gems_file.is_file():
+        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+
+    gem_names_with_optional_gems = utils.get_gem_names_set(active_gem_names, include_optional=True)
+    if not gem_names_with_optional_gems:
+        return {}
+    
+    # We have the gem names but not the resolved paths yet
+    result = {gem_name: None for gem_name in gem_names_with_optional_gems}
+
+    engine_path = get_project_engine_path(project_path=project_path)
+    if not engine_path:
+        engine_path = get_this_engine_path()
+        if not engine_path:
+            logger.error('Failed to find an engine path for the project at '
+                            f'"{project_path}" which is required to resolve gem dependencies.')
+            return result
+
+        logger.warning('Failed to determine the correct engine for the project at '
+                        f'"{project_path}", falling back to this engine at {engine_path}.')
+    
+    engine_json_data = get_engine_json_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error('Failed to retrieve engine json data for the engine at '
+                     f'"{engine_path}" which is required to resolve gem dependencies.')
+        return result 
+
+    all_gems_json_data = get_gems_json_data_by_name(engine_path=engine_path, 
+                                                    project_path=project_path, 
+                                                    include_manifest_gems=True, 
+                                                    include_engine_gems=True)
+
+    # we need a mapping of gem name to gem name with version specifier because
+    # the resolver will remove the version specifier
+    gem_names_with_version_specifiers = {}
+    for gem_name_with_specifier in gem_names_with_optional_gems:
+        gem_name_only, _ = utils.get_object_name_and_optional_version_specifier(gem_name_with_specifier)
+        gem_names_with_version_specifiers[gem_name_only] = gem_name_with_specifier
+
+    # Try to resolve with optional gems
+    resolved_gems, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, 
+                                                             all_gems_json_data, 
+                                                             engine_json_data, 
+                                                             include_optional=True)
+    if errors:
+        # Try without optional gems
+        gem_names_without_optional = utils.get_gem_names_set(active_gem_names, include_optional=False)
+        resolved_gems, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, 
+                                                                 all_gems_json_data, 
+                                                                 engine_json_data,
+                                                                 include_optional=False)
+    if not errors:
+        for _, gem in resolved_gems.items():
+            gem_name = gem.gem_json_data['gem_name']
+            gem_name_with_specifier = gem_names_with_version_specifiers.get(gem_name,gem_name)
+            if gem_name_with_specifier in result or include_dependencies:
+                result[gem_name_with_specifier] = gem.gem_json_data['path'].resolve().as_posix()
+    else:
+        # Likely there is no resolution because gems are missing or wrong version
+        # Provide the paths for the gems that are available
+        for gem_name in result.keys():
+            gem_path = get_most_compatible_gem(gem_name, all_gems_json_data)
+            if gem_path:
+                result[gem_name] = gem_path.resolve().as_posix()
+    return result
 
 
 def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
@@ -760,11 +837,45 @@ def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pa
     return cache_file
 
 
+def get_most_compatible_gem(gem_name: str, 
+                            gem_json_data_by_name: dict or None) -> pathlib.Path or None:
+    """
+    Optimized version of get_most_compatible_object() for gems when we have already
+    opened all the gem.json files
+    :param gem_name The gem name with optional version specifier, example: o3de>=1.2.3
+    :param gem_json_data_by_name Gem data from get_gems_json_data_by_name()
+    """
+    gem_name_with_version_specifier = gem_name
+    gem_name, version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
+    if not gem_name in gem_json_data_by_name:
+        return None
+
+    matching_paths = deque()
+    most_compatible_version = Version('0.0.0')
+    for gem_json_data in gem_json_data_by_name[gem_name]:
+        if version_specifier:
+            candidate_version = gem_json_data.get('version','0.0.0')
+            if compatibility.has_compatible_version([gem_name_with_version_specifier], gem_name, candidate_version):
+                if not matching_paths:
+                    matching_paths.appendleft(gem_json_data['path'])
+                    most_compatible_version = Version(candidate_version)
+                elif Version(candidate_version) > most_compatible_version:
+                    matching_paths.appendleft(gem_json_data['path'])
+                    most_compatible_version = Version(candidate_version)
+                else:
+                    matching_paths.append(gem_json_data['path'])
+        else:
+            matching_paths.append(gem_json_data['path'])
+
+    return None if not matching_paths else matching_paths[0]
+
+
 def get_most_compatible_object(object_name: str, 
                               object_typename: str, 
                               object_validator: callable, 
                               name_key: str, 
-                              objects: list) -> pathlib.Path or None:
+                              objects: list,
+                              gem_json_data_by_name: dict or None) -> pathlib.Path or None:
     """
     Looks for the most compatible object based on object_name which may contain a version specifier.
     Example: o3de>=1.2.3
@@ -774,6 +885,7 @@ def get_most_compatible_object(object_name: str,
     :param object_validator: Validator to use for json file 
     :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
     :param objects: List of paths to search
+    :param gem_json_data_by_name
     """
     matching_paths = deque()
     most_compatible_version = Version('0.0.0')

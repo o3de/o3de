@@ -146,10 +146,14 @@ namespace O3DE::ProjectManager
 
         /**
          * Get a list of all enabled gem names for a given project.
-         * @param[in] projectPath Absolute file path to the project.
-         * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
+         * @param projectPath Absolute file path to the project.
+         * @param includeDependencies Whether to return gem dependencies or only gems listed in project.json
+         *                            and the deprecated enabled_gems.cmake file if it exists
+         * @return A QHash of gem names with optional version specifiers and gem paths of all
+           the enabled gems for a given project or a error message on failure.
          */
-        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const = 0;
+        virtual AZ::Outcome<QHash<QString /*gem name with specifier*/, QString /* gem path */>, AZStd::string> GetEnabledGems(
+            const QString& projectPath, bool includeDependencies = true) const = 0;
 
         /**
          * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given

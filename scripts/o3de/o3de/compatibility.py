@@ -482,6 +482,10 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             # If the version field exists but is empty use '0.0.0'
             # This gives us a preference for gems with version fields
             gem_version = gem_json_data.get('version','0.0.0') or '0.0.0'
+            if gem_version[:1] == '$':
+                # Special case where this version is a variable in a template
+                # and looks like '${Version}' or similar
+                gem_version = '0.0.0'
             gem_dependencies = gem_json_data.get('dependencies',[])
 
             # Add gem requirements

@@ -688,37 +688,29 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath) const
+    AZ::Outcome<QHash<QString, QString>, AZStd::string> PythonBindings::GetEnabledGems(const QString& projectPath, bool includeDependencies) const
     {
-        // Retrieve the path to the cmake file that lists the enabled gems.
-        pybind11::str enabledGemsFilename;
+        QHash<QString, QString> enabledGems;
         auto result = ExecuteWithLockErrorHandling([&]
         {
-            enabledGemsFilename = m_cmake.attr("get_enabled_gem_cmake_file")(
-                pybind11::none(), // project_name
-                QString_To_Py_Path(projectPath)); // project_path
-        });
-        if (!result.IsSuccess())
-        {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
-        }
-
-        // Retrieve the actual list of names from the cmake file.
-        QVector<AZStd::string> gemNames;
-        result = ExecuteWithLockErrorHandling([&]
-        {
-            const auto pyGemNames = m_cmake.attr("get_enabled_gems")(enabledGemsFilename);
-            for (auto gemName : pyGemNames)
+            auto enabledGemsData = m_projectManagerInterface.attr("get_enabled_gems")(QString_To_Py_Path(projectPath), includeDependencies);
+            if (pybind11::isinstance<pybind11::dict>(enabledGemsData))
             {
-                gemNames.push_back(Py_To_String(gemName));
+                for (auto item : pybind11::dict(enabledGemsData))
+                {
+                    enabledGems.insert(Py_To_String(item.first), Py_To_String(item.second));
+                }
             }
         });
+
         if (!result.IsSuccess())
         {
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
-
-        return AZ::Success(AZStd::move(gemNames));
+        else
+        {
+            return AZ::Success(AZStd::move(enabledGems));
+        }
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
@@ -1315,16 +1307,17 @@ namespace O3DE::ProjectManager
         if (templateInfo.IsValid())
         {
             QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
-            auto enabledGemNames = GetEnabledGemNames(templateProjectPath);
-            if (enabledGemNames)
+            constexpr bool includeDependencies = false;
+            auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies);
+            if (enabledGems)
             {
-                for (auto gem : enabledGemNames.GetValue())
+                for (auto gemName : enabledGems.GetValue().keys())
                 {
                     // Exclude the template ${Name} placeholder for the list of included gems
                     // That Gem gets created with the project
-                    if (!gem.contains("${Name}"))
+                    if (!gemName.contains("${Name}"))
                     {
-                        templateInfo.m_includedGems.push_back(Py_To_String(gem.c_str()));
+                        templateInfo.m_includedGems.push_back(gemName);
                     }
                 }
             }
