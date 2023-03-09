@@ -208,10 +208,15 @@ namespace UnitTest
     class MockGradientSignal : public GradientSignal::PerlinGradientComponent
     {
     public:
-        MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration) :
-            GradientSignal::PerlinGradientComponent(configuration)
+        AZ_COMPONENT(MockGradientSignal, "{72B18966-6B4A-42C7-86AE-72AB6B1B84C5}", GradientSignal::PerlinGradientComponent);
+
+        MockGradientSignal() = default;
+        MockGradientSignal(const GradientSignal::PerlinGradientConfig& configuration)
+            : GradientSignal::PerlinGradientComponent(configuration)
         {
         }
+
+        static void Reflect(AZ::ReflectContext*) {}
 
         void Activate() override
         {

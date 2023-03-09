@@ -26,7 +26,7 @@ namespace ScriptCanvasUnitTest
     {
     public:
         AZ_RTTI(TestClass, TestClassUuid);
-        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator);
 
         TestClass() = default;
         virtual ~TestClass() = default;

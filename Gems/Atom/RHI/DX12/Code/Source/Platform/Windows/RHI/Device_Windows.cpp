@@ -35,8 +35,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Device");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
 
                 if (S_OK == dxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &memoryInfo))
@@ -44,8 +44,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Host");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
             }
 
@@ -193,21 +193,22 @@ namespace AZ
                 {
                     EnableGPUBasedValidation();
                 }
-            }
 
+                // DRED has a perf cost on some drivers/hw so only enable it if RHI validation is enabled.
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
 #else
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
 #endif
-            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
-            {
-                // Turn on auto-breadcrumbs and page fault reporting.
-                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
-                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+                {
+                    // Turn on auto-breadcrumbs and page fault reporting.
+                    pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-                pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #endif
+                }
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;

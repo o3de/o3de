@@ -174,7 +174,7 @@ namespace AZ
             {
             public:
                 AZ_TYPE_INFO(AZ::RPI::CullingDebugContext::CullStats, "{3B70C5D3-54F8-4160-8324-DFC71EB47412}");
-                AZ_CLASS_ALLOCATOR(CullStats, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(CullStats, AZ::SystemAllocator);
 
                 CullStats(AZ::Name name) : m_name(name) {}
                 CullStats() = default;
@@ -231,7 +231,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(CullingScene, "{5B23B55B-8A1D-4B0D-9760-15E87FC8518A}");
-            AZ_CLASS_ALLOCATOR(CullingScene, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CullingScene, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(CullingScene);
 
             CullingScene() = default;

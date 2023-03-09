@@ -36,7 +36,7 @@ namespace AzToolsFramework
         */
         class EntryCache
         {
-            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator);
         public:
             static EntryCache* GetInstance();
 

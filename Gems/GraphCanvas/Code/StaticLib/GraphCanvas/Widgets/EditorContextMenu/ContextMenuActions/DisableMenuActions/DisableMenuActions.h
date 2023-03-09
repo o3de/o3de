@@ -15,7 +15,7 @@ namespace GraphCanvas
         : public DisableContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SetEnabledStateMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SetEnabledStateMenuAction, AZ::SystemAllocator);
 
         SetEnabledStateMenuAction(QObject* parent);
         virtual ~SetEnabledStateMenuAction() = default;

@@ -19,7 +19,7 @@ namespace AZ
             using Base = RHI::BufferPool;
         public:
             AZ_RTTI(BufferPool, "{5F02ECA6-135C-4C96-895E-514E273EEFC2}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             virtual ~BufferPool() = default;
             
             static RHI::Ptr<BufferPool> Create();

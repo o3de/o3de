@@ -412,6 +412,7 @@ namespace AZ::Render
         {
             AZ::Aabb aabb;
             instance->CalcNodeBasedAabb(&aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -423,6 +424,7 @@ namespace AZ::Render
             AZ::Aabb aabb;
             const size_t lodLevel = instance->GetLODLevel();
             instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -431,8 +433,7 @@ namespace AZ::Render
 
         if (enableStaticAabb)
         {
-            AZ::Aabb aabb;
-            instance->CalcStaticBasedAabb(&aabb);
+            auto& aabb = instance->GetAabb();
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -961,7 +962,7 @@ namespace AZ::Render
     void AtomActorDebugDraw::UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime)
     {
         // Find the corresponding trajectory trace path for the given actor instance
-        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        auto trajectoryPath = FindTrajectoryPath(actorInstance);
         if (!trajectoryPath)
         {
             return;
@@ -1084,22 +1085,21 @@ namespace AZ::Render
     // Find the trajectory path for a given actor instance
     AtomActorDebugDraw::TrajectoryTracePath* AtomActorDebugDraw::FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance)
     {
-        for (TrajectoryTracePath* trajectoryPath : m_trajectoryTracePaths)
+        for (const auto& trajectoryPath : m_trajectoryTracePaths)
         {
             if (trajectoryPath->m_actorInstance == actorInstance)
             {
-                return trajectoryPath;
+                return trajectoryPath.get();
             }
         }
 
         // We haven't created a path for the given actor instance yet, do so
-        TrajectoryTracePath* tracePath = new TrajectoryTracePath();
+        auto tracePath = AZStd::make_unique<TrajectoryTracePath>();
 
         tracePath->m_actorInstance = actorInstance;
         tracePath->m_traceParticles.reserve(512);
 
-        m_trajectoryTracePaths.emplace_back(tracePath);
-        return tracePath;
+        return m_trajectoryTracePaths.emplace_back(AZStd::move(tracePath)).get();
     }
 
     void AtomActorDebugDraw::RenderTrajectoryPath(AzFramework::DebugDisplayRequests* debugDisplay,
@@ -1107,7 +1107,7 @@ namespace AZ::Render
         const AZ::Color& headColor,
         const AZ::Color& pathColor)
     {
-        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        auto trajectoryPath = FindTrajectoryPath(actorInstance);
         if (!trajectoryPath)
         {
             return;

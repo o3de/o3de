@@ -14,6 +14,7 @@
 #include <RHI/MergedShaderResourceGroupPool.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -194,7 +195,7 @@ namespace AZ
             if (m_nativePipelineLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, nullptr);
+                device.GetContext().DestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, VkSystemAllocator::Get());
                 m_nativePipelineLayout = VK_NULL_HANDLE;
             }
             m_layoutDescriptor = nullptr;
@@ -255,8 +256,8 @@ namespace AZ
             createInfo.pPushConstantRanges = m_pushConstantRanges.empty() ? nullptr : m_pushConstantRanges.data();
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreatePipelineLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineLayout);
+            const VkResult result = device.GetContext().CreatePipelineLayout(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativePipelineLayout);
 
             return ConvertResult(result);
         }

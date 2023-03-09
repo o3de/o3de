@@ -13,7 +13,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxColliderConfiguration, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxColliderConfiguration, AZ::SystemAllocator)
 
     void WhiteBoxColliderConfiguration::Reflect(AZ::ReflectContext* context)
     {

@@ -21,8 +21,6 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
         AZ_Assert(sceneCoreModule, "SceneBuilder unit tests failed to create SceneCore module.");
         [[maybe_unused]] bool loaded = sceneCoreModule->Load(false);
@@ -51,8 +49,6 @@ protected:
         AZ_Assert(uninit, "SceneBuilder unit tests failed to find the uninitialization function the SceneCore module.");
         (*uninit)();
         sceneCoreModule.reset();
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
 private:

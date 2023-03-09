@@ -59,9 +59,11 @@ ly_add_target(
 # by default, load the above "Gem::LyShine" module in Client and Server applications:
 ly_create_alias(NAME LyShine.Clients NAMESPACE Gem TARGETS Gem::LyShine)
 ly_create_alias(NAME LyShine.Servers NAMESPACE Gem TARGETS Gem::LyShine)
+ly_create_alias(NAME LyShine.Unified NAMESPACE Gem TARGETS Gem::LyShine)
 # create an alias for other gems to depend on an LyShine public API (may be converted to a target in the future):
 ly_create_alias(NAME LyShine.Clients.API NAMESPACE Gem TARGETS Gem::LyShine.Clients)
 ly_create_alias(NAME LyShine.Servers.API NAMESPACE Gem TARGETS Gem::LyShine.Servers)
+ly_create_alias(NAME LyShine.Unified.API NAMESPACE Gem TARGETS Gem::LyShine.Unified)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -245,6 +247,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
+                    AZ::AzToolsFrameworkTestCommon
                     Gem::LyShine.Tools.Static
                     Gem::LyShine.Builders.Static
                     Gem::LmbrCentral.Editor

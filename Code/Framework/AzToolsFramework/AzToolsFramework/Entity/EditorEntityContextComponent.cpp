@@ -51,6 +51,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityContextRequests);
 
 namespace AzToolsFramework
 {
@@ -91,7 +92,6 @@ namespace AzToolsFramework
                     "Editor Entity Context", "System component responsible for owning the edit-time entity context")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }

@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(BufferPoolResolver, "{116743AC-5861-4BF8-9ED9-3DDB644AC004}", ResourcePoolResolver);
-            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator);
 
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor)
             {

@@ -17,9 +17,13 @@
 #include <native/tests/assetmanager/AssetManagerTestingBase.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <unittests/UnitTestUtils.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
 
 namespace UnitTests
 {
+    const char* JOB_PROCESS_FAIL_TEXT = "AUTO_FAIL_JOB";
+
     void TestingAssetProcessorManager::CheckActiveFiles(int count)
     {
         ASSERT_EQ(m_activeFiles.size(), count);
@@ -75,6 +79,7 @@ namespace UnitTests
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
+        m_platformConfig->ReadMetaDataFromSettingsRegistry();
 
         m_platformConfig->AddScanFolder(
             AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
@@ -92,15 +97,24 @@ namespace UnitTests
 
         // Configure our mock builder so APM can find the builder and run CreateJobs
         m_builderInfoHandler.CreateBuilderDesc(
-            "test", AZ::Uuid::CreateRandom().ToString<QString>(),
+            "test", AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, {});
         m_builderInfoHandler.BusConnect();
 
         // Set up the Job Context, required for the PathDependencyManager to do its work
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
+        // Set up serialize and json context
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
+        m_componentApplication = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
+
+        using namespace testing;
+
+        ON_CALL(*m_componentApplication.get(), GetSerializeContext()).WillByDefault(Return(m_serializeContext.get()));
+        ON_CALL(*m_componentApplication.get(), GetJsonRegistrationContext()).WillByDefault(Return(m_jsonRegistrationContext.get()));
+        ON_CALL(*m_componentApplication.get(), AddEntity(_)).WillByDefault(Return(true));
+
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
 
@@ -108,6 +122,9 @@ namespace UnitTests
         m_jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
         m_jobManagerEntity->Init();
         m_jobManagerEntity->Activate();
+
+        AzToolsFramework::MetadataManager::Reflect(m_serializeContext.get());
+        AzToolsFramework::UuidUtilComponent::Reflect(m_serializeContext.get());
 
         // Set up a mock disk space responder, required for RCController to process a job
         m_diskSpaceResponder = AZStd::make_unique<::testing::NiceMock<MockDiskSpaceResponder>>();
@@ -126,7 +143,7 @@ namespace UnitTests
         AZStd::string testFilename = "test.stage1";
         m_testFilePath = (scanFolderDir / testFilename).AsPosix().c_str();
 
-        UnitTestUtils::CreateDummyFile(m_testFilePath.c_str(), "unit test file");
+        AZ::Utils::WriteFile("unit test file", m_testFilePath);
 
         m_rc = AZStd::make_unique<AssetProcessor::RCController>(1, 1);
         m_rc->SetDispatchPaused(false);
@@ -149,7 +166,7 @@ namespace UnitTests
                 m_processJobResponse = response;
             });
 
-        m_localFileIo->SetAlias("@log@", (AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "logs").c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@log@", (AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "logs").c_str());
     }
 
     void AssetManagerTestingBase::TearDown()
@@ -158,6 +175,13 @@ namespace UnitTests
         m_builderInfoHandler.BusDisconnect();
 
         AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+        m_jsonRegistrationContext->EnableRemoveReflection();
+        AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());
+        m_jsonRegistrationContext->DisableRemoveReflection();
+
+        m_jsonRegistrationContext.reset();
+        m_serializeContext.reset();
 
         if (m_localFileIo)
         {
@@ -170,9 +194,6 @@ namespace UnitTests
         delete m_jobManagerEntity;
 
         delete m_descriptor;
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         m_stateData.reset();
         m_assetProcessorManager.reset();
@@ -251,13 +272,26 @@ namespace UnitTests
         // Capture by copy because we need these to stay around a long time
         return [outputExtension, flags, outputExtraFile](const ProcessJobRequest& request, ProcessJobResponse& response)
         {
+            // If tests put the text "FAIL_JOB" at the beginning of the source file, then fail this job instead.
+            // This lets tests easily handle cases where they want job processing to fail.
+            auto readResult = AZ::Utils::ReadFile<AZStd::string>(request.m_fullPath, AZStd::numeric_limits<size_t>::max());
+            // Don't fail if the read fails, there may be existing tests that create unreadable files.
+            if (readResult.IsSuccess())
+            {
+                if (readResult.GetValue().starts_with(JOB_PROCESS_FAIL_TEXT))
+                {
+                    response.m_resultCode = ProcessJobResult_Failed;
+                    return;
+                }
+            }
+
             AZ::IO::Path outputFile = request.m_sourceFile;
             outputFile.ReplaceExtension(outputExtension.c_str());
 
             AZ::IO::LocalFileIO::GetInstance()->Copy(
                 request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
 
-            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), 1 };
+            auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName(outputExtension.c_str()), AssetSubId };
 
             product.m_outputFlags = flags;
             product.m_dependenciesHandled = true;
@@ -268,9 +302,9 @@ namespace UnitTests
                 auto extraFilePath =
                     AZ::IO::Path(request.m_tempDirPath) / "z_extra.txt"; // Z prefix to place at end of list when sorting for processing
 
-                UnitTestUtils::CreateDummyFile(extraFilePath.c_str(), "unit test file");
+                AZ::Utils::WriteFile("unit test file", extraFilePath.Native());
 
-                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), 2 };
+                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), ExtraAssetSubId };
 
                 extraProduct.m_outputFlags = flags;
                 extraProduct.m_dependenciesHandled = true;
@@ -279,6 +313,21 @@ namespace UnitTests
 
             response.m_resultCode = ProcessJobResult_Success;
         };
+    }
+
+    const char* AssetManagerTestingBase::GetJobProcessFailText()
+    {
+        return JOB_PROCESS_FAIL_TEXT;
+    }
+
+    AZ::IO::Path AssetManagerTestingBase::GetCacheDir()
+    {
+        return AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
+    }
+
+    AZ::IO::FixedMaxPath AssetManagerTestingBase::GetIntermediateAssetsDir()
+    {
+        return AssetUtilities::GetIntermediateAssetsFolder(GetCacheDir());
     }
 
     void AssetManagerTestingBase::CreateBuilder(
@@ -302,7 +351,7 @@ namespace UnitTests
 
     AZStd::string AssetManagerTestingBase::MakePath(const char* filename, bool intermediate)
     {
-        auto cacheDir = AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
+        auto cacheDir = GetCacheDir();
 
         if (intermediate)
         {
@@ -320,10 +369,13 @@ namespace UnitTests
         EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedProductPath.c_str()), exists) << expectedProductPath.c_str();
     }
 
-    void AssetManagerTestingBase::CheckIntermediate(const char* relativePath, bool exists)
+    void AssetManagerTestingBase::CheckIntermediate(const char* relativePath, bool exists, bool hasMetadata)
     {
         auto expectedIntermediatePath = MakePath(relativePath, true);
+        auto expectedMetadataPath = AzToolsFramework::MetadataManager::ToMetadataPath(expectedIntermediatePath);
+
         EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedIntermediatePath.c_str()), exists) << expectedIntermediatePath.c_str();
+        EXPECT_EQ(AZ::IO::SystemFile::Exists(expectedMetadataPath.c_str()), hasMetadata) << expectedMetadataPath.c_str();
     }
 
     void AssetManagerTestingBase::ProcessSingleStep(int expectedJobCount, int expectedFileCount, int jobToRun, bool expectSuccess)
@@ -359,8 +411,7 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessFileMultiStage(
         int endStage, bool doProductOutputCheck, const char* file, int startStage, bool expectAutofail, bool hasExtraFile)
     {
-        auto cacheDir = AZ::IO::Path(m_databaseLocationListener.GetAssetRootDir()) / "Cache";
-        auto intermediatesDir = AssetUtilities::GetIntermediateAssetsFolder(cacheDir);
+        auto intermediatesDir = GetIntermediateAssetsDir();
 
         if (file == nullptr)
         {

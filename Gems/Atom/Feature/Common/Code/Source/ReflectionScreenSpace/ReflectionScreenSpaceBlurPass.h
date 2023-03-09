@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceBlurPass, "{BC3D92C5-E38A-46FE-8EBD-CAD14E505946}", ParentPass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurPass, SystemAllocator);
           
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurPass> Create(const RPI::PassDescriptor& descriptor);

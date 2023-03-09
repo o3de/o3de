@@ -18,7 +18,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnap, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnap, AZ::SystemAllocator);
 
     void JointsSubComponentModeSnap::Setup(const AZ::EntityComponentIdPair& idPair)
     {
@@ -28,7 +28,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         m_manipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
         m_manipulator->AddEntityComponentIdPair(m_entityComponentId);
@@ -51,7 +51,7 @@ namespace PhysX
     {
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         m_manipulator->SetLocalTransform(localTransform);
     }
@@ -103,7 +103,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         return worldTransform.GetTranslation() + worldRotate.TransformVector(localTransform.GetTranslation());
     }
@@ -119,7 +119,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);
@@ -130,7 +130,7 @@ namespace PhysX
 
         AngleLimitsFloatPair yzSwingAngleLimits;
         EditorJointRequestBus::EventResult(
-            yzSwingAngleLimits, m_entityComponentId, &EditorJointRequests::GetLinearValuePair, JointsComponentModeCommon::ParamaterNames::SwingLimit);
+            yzSwingAngleLimits, m_entityComponentId, &EditorJointRequests::GetLinearValuePair, JointsComponentModeCommon::ParameterNames::SwingLimit);
 
         const AZ::u32 numEllipseSamples = 16;
         AZStd::array<AZ::Vector3, numEllipseSamples> ellipseSamples;

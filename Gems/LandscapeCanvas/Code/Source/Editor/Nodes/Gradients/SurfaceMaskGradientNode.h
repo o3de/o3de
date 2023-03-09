@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class SurfaceMaskGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskGradientNode, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskGradientNode, "{A14FC1D9-1D3D-4385-AD07-8E4170637290}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

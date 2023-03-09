@@ -19,14 +19,14 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapRotation, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeSnapRotation, AZ::SystemAllocator);
 
     void JointsSubComponentModeSnapRotation::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         JointsSubComponentModeSnap::Setup(idPair);
 
         PhysX::EditorJointRequestBus::EventResult(
-            m_resetRotation, m_entityComponentId, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation);
+            m_resetRotation, m_entityComponentId, &PhysX::EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation);
 
         m_manipulator->InstallLeftMouseDownCallback(
             [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action) mutable
@@ -39,7 +39,7 @@ namespace PhysX
                 AZ::EntityId leadEntityId;
                 PhysX::EditorJointRequestBus::EventResult(
                     leadEntityId, m_entityComponentId, &PhysX::EditorJointRequests::GetEntityIdValue,
-                    JointsComponentModeCommon::ParamaterNames::LeadEntity);
+                    JointsComponentModeCommon::ParameterNames::LeadEntity);
 
                 if (leadEntityId.IsValid() && m_pickedEntity == leadEntityId)
                 {
@@ -57,7 +57,7 @@ namespace PhysX
 
                 AZ::Transform localTransform = AZ::Transform::CreateIdentity();
                 EditorJointRequestBus::EventResult(
-                    localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+                    localTransform, m_entityComponentId, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
                 AZ::Transform pickedEntityTransform = AZ::Transform::CreateIdentity();
                 AZ::TransformBus::EventResult(pickedEntityTransform, m_pickedEntity, &AZ::TransformInterface::GetWorldTM);
@@ -82,7 +82,7 @@ namespace PhysX
 
                 PhysX::EditorJointRequestBus::Event(
                     m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value,
-                    JointsComponentModeCommon::ParamaterNames::Rotation // using rotation parameter name to set the local rotation value
+                    JointsComponentModeCommon::ParameterNames::Rotation // using rotation parameter name to set the local rotation value
                     ,
                     newLocalRotation.GetEulerDegrees());
             });
@@ -91,7 +91,7 @@ namespace PhysX
     void JointsSubComponentModeSnapRotation::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         PhysX::EditorJointRequestBus::Event(
-            m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation, m_resetRotation);
+            m_entityComponentId, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation, m_resetRotation);
     }
 
     void JointsSubComponentModeSnapRotation::DisplaySpecificSnapType(

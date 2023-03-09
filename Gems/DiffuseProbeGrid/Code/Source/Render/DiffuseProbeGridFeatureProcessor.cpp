@@ -71,6 +71,7 @@ namespace AZ
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
                 m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
                 [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*device, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
@@ -81,6 +82,7 @@ namespace AZ
                 bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
                 m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
                 [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
@@ -561,6 +563,12 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetTransparencyMode called with an invalid handle");
             probeGrid->SetTransparencyMode(transparencyMode);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetEmissiveMultiplier(const DiffuseProbeGridHandle& probeGrid, float emissiveMultiplier)
+        {
+            AZ_Assert(probeGrid.get(), "SetEmissiveMultiplier called with an invalid handle");
+            probeGrid->SetEmissiveMultiplier(emissiveMultiplier);
         }
 
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)

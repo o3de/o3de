@@ -43,7 +43,7 @@ namespace AZ
                 }
             }
 
-            AZ_CLASS_ALLOCATOR_IMPL(SkeletonProxyGroup, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkeletonProxyGroup, SystemAllocator);
 
             void SkeletonProxyGroup::Reflect(ReflectContext* context)
             {
@@ -69,7 +69,7 @@ namespace AZ
                 }
             }
 
-            AZ_CLASS_ALLOCATOR_IMPL(SkeletonProxyRule, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkeletonProxyRule, SystemAllocator);
 
             size_t SkeletonProxyRule::GetProxyGroupCount() const
             {

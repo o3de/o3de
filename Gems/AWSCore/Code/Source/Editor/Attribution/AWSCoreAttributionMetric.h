@@ -21,7 +21,7 @@ namespace AWSCore
     class AttributionMetric
     {
     public:
-        AZ_TYPE_INFO(MetricsAttribute, "{6483F481-0C18-4171-8B59-A44F2F28EAE5}")
+        AZ_TYPE_INFO(AttributionMetric, "{6483F481-0C18-4171-8B59-A44F2F28EAE5}")
 
         AttributionMetric();
         AttributionMetric(const AZStd::string& timestamp);

@@ -15,6 +15,7 @@
 #include "SelectionGroup.h"
 #include "ObjectManagerEventBus.h"
 
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Component.h>

@@ -57,8 +57,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValues);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);

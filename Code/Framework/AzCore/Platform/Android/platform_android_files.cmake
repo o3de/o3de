@@ -27,6 +27,7 @@ set(FILES
     ../Common/Unimplemented/AzCore/PlatformIncl_Unimplemented.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
+    ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
     ../Common/Unimplemented/AzCore/Debug/StackTracer_Unimplemented.cpp
     ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp
     AzCore/Debug/Trace_Android.cpp
@@ -88,3 +89,12 @@ if (LY_TEST_PROJECT)
         VALUES LY_NO_ASSETS
     )
 endif()
+
+# Disabling -ffast-math for 'IntersectSegment.cpp' file only.
+# It has an implementation of the "Watertight Ray/Triangle Intersection"
+# algorithm, which gets broken by the fast-math optimizations.
+ly_add_source_properties(
+    SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
+    PROPERTY COMPILE_FLAGS
+    VALUES -fno-fast-math
+)

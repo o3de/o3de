@@ -11,15 +11,13 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-
-static constexpr AZStd::string_view ComponentModeChangedUpdaterIdentifier = "o3de.updater.onComponentModeChanged";
-
-static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 
 namespace AzToolsFramework
 {
@@ -57,7 +55,7 @@ namespace AzToolsFramework
             [&](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
             {
                 AZStd::string modeIdentifier = AZStd::string::format("o3de.context.mode.%s", classData->m_name);
-                m_actionManagerInterface->RegisterActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
+                m_actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, modeIdentifier);
                 m_componentModeToActionContextModeMap.emplace(classData->m_typeId, AZStd::move(modeIdentifier));
 
                 return true;
@@ -67,7 +65,7 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::OnActionUpdaterRegistrationHook()
     {
-        m_actionManagerInterface->RegisterActionUpdater(ComponentModeChangedUpdaterIdentifier);
+        m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier);
     }
 
     void ComponentModeActionHandler::OnActionRegistrationHook()
@@ -90,9 +88,10 @@ namespace AzToolsFramework
             actionProperties.m_name = "Done";
             actionProperties.m_description = "Return to normal viewport editing";
             actionProperties.m_category = "Component Modes";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
 
             m_actionManagerInterface->RegisterAction(
-                EditorMainWindowActionContextIdentifier,
+                EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
                 []
@@ -101,6 +100,26 @@ namespace AzToolsFramework
                         &ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
                 }
             );
+
+            // Disable this action if the Entity Picker is enabled while in Component Mode.
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+                    {
+                        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+                        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            );
+
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier, actionIdentifier);
 
             // Only add this to the component modes, not default.
             m_actionManagerInterface->AssignModeToAction("SomeMode", actionIdentifier);
@@ -128,10 +147,10 @@ namespace AzToolsFramework
             m_menuManagerInterface,
             "ComponentModeActionHandler - could not get MenuManagerInterface on ComponentModeActionHandler OnMenuBindingHook.");
 
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 3000);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 3000);
         // Component Mode Actions should be located between these two separators.
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 10000);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EditMenuIdentifier, 10000);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.componentMode.end", 10001);
     }
 
     void ComponentModeActionHandler::ActiveComponentModeChanged(const AZ::Uuid& componentType)
@@ -191,8 +210,8 @@ namespace AzToolsFramework
 
     void ComponentModeActionHandler::ChangeToMode(const AZStd::string& modeIdentifier)
     {
-        m_actionManagerInterface->SetActiveActionContextMode(EditorMainWindowActionContextIdentifier, modeIdentifier);
-        m_actionManagerInterface->TriggerActionUpdater(ComponentModeChangedUpdaterIdentifier);
+        m_actionManagerInterface->SetActiveActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, modeIdentifier);
+        m_actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier);
     }
 
 } // namespace AzToolsFramework

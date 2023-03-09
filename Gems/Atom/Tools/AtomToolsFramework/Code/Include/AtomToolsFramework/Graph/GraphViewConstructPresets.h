@@ -12,6 +12,11 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 #endif
 
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/containers/map.h>
+
 namespace AtomToolsFramework
 {
     //! The implementation of the graph view requires construct presets in order to be able to create node groups and comment blocks.
@@ -19,7 +24,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(GraphViewConstructPresets, "{5A4275ED-994D-403D-8571-7680D11106D4}", GraphCanvas::EditorConstructPresets);
-        AZ_CLASS_ALLOCATOR(GraphViewConstructPresets, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphViewConstructPresets, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         GraphViewConstructPresets() = default;

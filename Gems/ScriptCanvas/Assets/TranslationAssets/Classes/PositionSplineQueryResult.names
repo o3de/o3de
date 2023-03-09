@@ -11,14 +11,17 @@
             "methods": [
                 {
                     "base": "GetsplineAddress",
+                    "context": "Getter",
                     "details": {
-                        "name": "Getspline Address"
+                        "name": "Get Spline Address",
+                        "tooltip": "Get the segment of the spline and the proportion along that segment"
                     },
                     "params": [
                         {
                             "typeid": "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}",
                             "details": {
-                                "name": "Position Spline Query Result"
+                                "name": "Position Spline Query Result",
+                                "tooltip": "The result from querying a position on a spline using a position/point"
                             }
                         }
                     ],
@@ -26,21 +29,25 @@
                         {
                             "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
                             "details": {
-                                "name": "Spline Address"
+                                "name": "Spline Address",
+                                "tooltip": "The segment of the spline and the proportion along that segment"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetdistanceSq",
+                    "context": "Getter",
                     "details": {
-                        "name": "Getdistance Sq"
+                        "name": "Get Distance Squared",
+                        "tooltip": "Get the square of the shortest distance from the query point to the spline"
                     },
                     "params": [
                         {
                             "typeid": "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}",
                             "details": {
-                                "name": "Position Spline Query Result"
+                                "name": "Position Spline Query Result",
+                                "tooltip": "The result from querying a position on a spline using a position/point"
                             }
                         }
                     ],
@@ -48,7 +55,8 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Distance Squared",
+                                "tooltip": "The square of the shortest distance from the query point to the spline"
                             }
                         }
                     ]

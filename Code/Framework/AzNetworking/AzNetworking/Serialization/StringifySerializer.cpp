@@ -136,6 +136,15 @@ namespace AzNetworking
     {
         const AZStd::string keyString = m_prefix + name;
         AZ::CVarFixedString valueString = AZ::ConsoleTypeHelpers::ValueToString(value);
+
+        // Verify that the serialization isn't silently accidentally replacing an existing key with a different value.
+        AZ_Assert(
+            !m_valueMap.contains(keyString) || (m_valueMap[keyString].compare(valueString.c_str()) == 0),
+            "Value map contains '%s' with value '%s', about to be overwritten with '%s'.",
+            keyString.c_str(),
+            m_valueMap[keyString].c_str(),
+            valueString.c_str());
+
         m_valueMap[keyString] = valueString.c_str();
         return true;
     }

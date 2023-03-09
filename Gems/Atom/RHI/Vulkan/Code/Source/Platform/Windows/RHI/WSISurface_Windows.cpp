@@ -9,6 +9,7 @@
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
 #include <vulkan/vulkan.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -25,7 +26,8 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.hinstance = hinstance;
             createInfo.hwnd = reinterpret_cast<HWND>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = instance.GetContext().CreateWin32SurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
+            const VkResult result = instance.GetContext().CreateWin32SurfaceKHR(
+                instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
             AssertSuccess(result);
 
             return ConvertResult(result);

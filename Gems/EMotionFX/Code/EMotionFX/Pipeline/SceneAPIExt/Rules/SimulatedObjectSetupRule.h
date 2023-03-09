@@ -43,7 +43,7 @@ namespace EMotionFX
             {
             public:
                 AZ_RTTI(SimulatedObjectSetupRule, "{7A69FC94-874B-4EF7-8F15-89781953CD3C}", AZ::SceneAPI::DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(SimulatedObjectSetupRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(SimulatedObjectSetupRule, AZ::SystemAllocator)
 
                 SimulatedObjectSetupRule();
                 SimulatedObjectSetupRule(const AZStd::shared_ptr<EMotionFX::SimulatedObjectSetup>& data);

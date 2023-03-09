@@ -19,7 +19,7 @@ def OpenLevel_ContainingTwoEntities():
     Opens the level that contains 2 entities, "EmptyEntity" and "EntityWithPxCollider".
     This test makes sure that both entities exist after opening the level and that:
     - EmptyEntity is at Position: (10, 20, 30)
-    - EntityWithPxCollider has a PhysXCollider component
+    - EntityWithPxCollider has a PhysXMeshCollider component
     """
 
     import os
@@ -27,6 +27,7 @@ def OpenLevel_ContainingTwoEntities():
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     import editor_python_test_tools.hydra_editor_utils as hydra
 
@@ -59,11 +60,11 @@ def OpenLevel_ContainingTwoEntities():
     if not is_at_position:
         Report.info(f'Expected position: {EXPECTED_EMPTY_ENTITY_POS.ToString()}, actual position: {empty_entity_pos.ToString()}')
 
-    # Checks for an entity called "EntityWithPxCollider" and if it has the PhysX Collider component
+    # Checks for an entity called "EntityWithPxCollider" and if it has the PhysX Mesh Collider component
     pxentity = find_entity("EntityWithPxCollider")
     Report.result(Tests.find_pxentity, pxentity.IsValid())
 
-    pxcollider_id = hydra.get_component_type_id("PhysX Collider")
+    pxcollider_id = hydra.get_component_type_id(PHYSX_MESH_COLLIDER)
     hasComponent = azlmbr.editor.EditorComponentAPIBus(azlmbr.bus.Broadcast, 'HasComponentOfType', pxentity, pxcollider_id)
     Report.result(Tests.pxentity_component, hasComponent)
 

@@ -50,7 +50,7 @@ namespace AZ
 
         public:
             AZ_RTTI(LookModificationSettings, "{244F5635-C5CA-412F-AD3D-49D55A771EB1}", LookModificationSettingsInterface, PostProcessBase);
-            AZ_CLASS_ALLOCATOR(LookModificationSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LookModificationSettings, SystemAllocator);
 
             static const uint32_t MaxBlendLuts = 4;
 

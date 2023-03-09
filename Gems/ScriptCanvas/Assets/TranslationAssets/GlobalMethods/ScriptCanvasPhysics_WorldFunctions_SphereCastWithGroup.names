@@ -13,44 +13,49 @@
                     "base": "ScriptCanvasPhysics_WorldFunctions_SphereCastWithGroup",
                     "details": {
                         "name": "Sphere Cast With Group",
-                        "tooltip": "SphereCast"
+                        "tooltip": "Perform a shape cast with sphere geometry, filtered by collision group"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Distance"
+                                "name": "Distance",
+                                "tooltip": "The distance over which to perform the shape cast"
                             }
                         },
                         {
                             "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Pose"
+                                "name": "Pose",
+                                "tooltip": "The position and orientation for the origin of the shape cast"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Direction"
+                                "name": "Direction",
+                                "tooltip": "The direction along which to perform the shape cast"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radius"
+                                "name": "Radius",
+                                "tooltip": "Radius of the sphere geometry for the shape cast"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Collision Group"
+                                "name": "Collision Group",
+                                "tooltip": "Only report objects detected by the shape cast if this collision group would collide with them"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Ignore",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Entity Id to be ignored by the shape cast"
                             }
                         }
                     ],
@@ -58,38 +63,43 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Object Hit"
+                                "name": "Object Hit",
+                                "tooltip": "Whether an object has been hit by the shape cast"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
+                                "name": "Position",
+                                "tooltip": "Position in world space of the hit, if any"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Normal"
+                                "name": "Normal",
+                                "tooltip": "Normal to the hit object's surface at the hit location, if any"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Distance"
+                                "name": "Distance",
+                                "tooltip": "Distance along the cast at which the hit occurs, if any"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Id of the entity hit, if any"
                             }
                         },
                         {
                             "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
                             "details": {
-                                "name": "Surface"
+                                "name": "Surface",
+                                "tooltip": "Material tag for the surface hit, if any" 
                             }
                         }
                     ]

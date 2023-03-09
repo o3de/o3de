@@ -41,7 +41,7 @@ namespace PhysX
         // PhysX::EditorJointRequests
         float GetLinearValue(const AZStd::string& parameterName) override;
         AngleLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair) override;
@@ -53,7 +53,7 @@ namespace PhysX
 
         bool m_angularLimitFlag = false;
         EditorJointLimitPairConfig m_angularLimit;
-
+        JointMotorProperties m_motorConfiguration;
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; ///< Responsible for detecting ComponentMode activation
                                                        ///< and creating a concrete ComponentMode(s).

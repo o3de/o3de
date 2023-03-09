@@ -18,7 +18,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionRangeRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionRangeRule, AZ::SystemAllocator)
 
             MotionRangeRule::MotionRangeRule()
                 : m_startFrame(0)

@@ -16,7 +16,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Android, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Android, AZ::SystemAllocator);
         NativeWindowImpl_Android() = default;
         ~NativeWindowImpl_Android() override = default;
 

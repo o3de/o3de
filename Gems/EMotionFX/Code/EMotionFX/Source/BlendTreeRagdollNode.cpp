@@ -19,8 +19,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollNode::UniqueData, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollNode::UniqueData, AnimGraphAllocator)
 
     BlendTreeRagdollNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -255,7 +255,7 @@ namespace EMotionFX
                     Physics::RagdollNodeState& targetRagdollRootNodeState = outputPoseData->GetRagdollNodeState(ragdollRootNodeIndex.GetValue());
 
                     // Only move along joints parented to the ragdoll root in case the ragdoll root is actually driven by physics (simulated).
-                    if (targetRagdollRootNodeState.m_simulationType == Physics::SimulationType::Dynamic)
+                    if (targetRagdollRootNodeState.m_simulationType == Physics::SimulationType::Simulated)
                     {
                         const Physics::RagdollNodeState& currentRagdollRootNodeState = currentRagdollState[ragdollRootNodeIndex.GetValue()];
 
@@ -284,7 +284,7 @@ namespace EMotionFX
                     Physics::RagdollNodeState& targetRagdollNodeState = outputPoseData->GetRagdollNodeState(ragdollNodeIndex.GetValue());
 
                     // The joint is part of the ragdoll as well as added and selected by this ragdoll node.
-                    targetRagdollNodeState.m_simulationType = Physics::SimulationType::Dynamic;
+                    targetRagdollNodeState.m_simulationType = Physics::SimulationType::Simulated;
 
                     // Go up the chain and find the next joint that is part of the ragdoll (Parent of the ragdoll node).
                     AZ::Outcome<size_t> ragdollParentJointIndex = AZ::Failure();

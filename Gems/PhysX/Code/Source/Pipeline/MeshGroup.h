@@ -10,7 +10,6 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
@@ -20,6 +19,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class SerializeContext;
 
     namespace SceneAPI::Containers
     {
@@ -29,8 +29,6 @@ namespace AZ
 
 namespace PhysX
 {
-    struct FixPhysXMeshGroup;
-
     namespace Pipeline
     {
         class MeshGroup;
@@ -213,7 +211,6 @@ namespace PhysX
             const ConvexDecompositionParams& GetConvexDecompositionParams() const;
 
         protected:
-            static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
             AZ::u32 OnNodeSelectionChanged();
             AZ::u32 OnExportMethodChanged();
@@ -232,10 +229,6 @@ namespace PhysX
             ConvexDecompositionParams m_convexDecompositionParams{};
             AZ::SceneAPI::Containers::RuleContainer m_rules{};
             Physics::MaterialSlots m_physicsMaterialSlots;
-            // O3DE_DEPRECATION_NOTICE(GHI-9840)
-            AZStd::vector<AZStd::string> m_legacyMaterialSlots; // Kept to convert old physics material assets.
-            AZStd::vector<AZStd::string> m_legacyPhysicsMaterials; // Kept to convert old physics material assets.
-            friend FixPhysXMeshGroup;
 
             const AZ::SceneAPI::Containers::SceneGraph* m_graph = nullptr;
         };

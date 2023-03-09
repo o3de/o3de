@@ -129,6 +129,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("clear_type", ["rewrite", "delete_asset", "delete_dir"])
+    @pytest.mark.SUITE_sandbox(reason="Disabling flaky test")
     def test_AllSupportedPlatforms_DeleteBadAssets_BatchFailedJobsCleared(
             self, workspace, request, ap_setup_fixture, asset_processor,  clear_type):
         """

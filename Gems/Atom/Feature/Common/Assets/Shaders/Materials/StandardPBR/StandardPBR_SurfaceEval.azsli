@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_StandardPBR(geoData)
+#define EvaluateSurface EvaluateSurface_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_SurfaceEval.azsli"
@@ -45,7 +45,7 @@ Surface EvaluateSurface_StandardPBR(
     // ------- Emissive -------
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, MaterialSrg::m_emissiveAffectedByAlpha, surface.alpha, o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
     
@@ -79,7 +79,7 @@ Surface EvaluateSurface_StandardPBR(
     return surface;
 }
 
-Surface EvaluateSurface_StandardPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_StandardPBR(
         geoData.positionWS,

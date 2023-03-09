@@ -15,6 +15,8 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    class AdapterBuilder;
+
     //! ComponentAdapter is responsible to listening for signals that affect each component in the Entity Inspector
     class ComponentAdapter
         : public ReflectionAdapter
@@ -39,14 +41,23 @@ namespace AZ::DocumentPropertyEditor
         void RequestRefresh(AzToolsFramework::PropertyModificationRefreshLevel level) override;
 
         //! Sets the component, connects the appropriate Bus Handlers and sets the reflect data for this instance
-        void SetComponent(AZ::Component* componentInstance);
+        virtual void SetComponent(AZ::Component* componentInstance);
 
         //! Trigger a refresh based on messages from the listeners
         void DoRefresh();
 
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
+        //! Creates a node for displaying label information.
+        //! Requests the PrefabAdapterInterface to add a property node and configures its style if an override exist.
+        //! @param adapterBuilder The adapter builder to use for adding property node.
+        //! @param labelText The text string to be displayed in label.
+        //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.
+        void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
+
     protected:
+        AZ::EntityId m_entityId;
+
         AZ::Component* m_componentInstance = nullptr;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;

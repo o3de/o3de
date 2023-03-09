@@ -447,6 +447,20 @@ namespace AZ
                 descriptorSets.emplace_back(srg->GetCompiledData().GetNativeDescriptorSet());
             }
 
+            // add the bindless DescriptorSet if required by the shader
+            const PipelineState& globalPipelineState = static_cast<const PipelineState&>(*dispatchRaysItem.m_globalPipelineState);
+            const PipelineLayout& globalPipelineLayout = static_cast<const PipelineLayout&>(*globalPipelineState.GetPipelineLayout());
+
+            for (uint32_t descriptorSetIndex = 0; descriptorSetIndex < globalPipelineLayout.GetDescriptorSetLayoutCount(); ++descriptorSetIndex)
+            {
+                const auto& srgBitSet = globalPipelineLayout.GetAZSLBindingSlotsOfIndex(descriptorSetIndex);
+                if (srgBitSet[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId])
+                {
+                    descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
+                    break;
+                }
+            }
+
             context.CmdBindDescriptorSets(
                 m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipelineLayout(), 0,
                 aznumeric_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
@@ -1034,7 +1048,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot])
+                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");

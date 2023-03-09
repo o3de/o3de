@@ -70,19 +70,21 @@ namespace LmbrCentral
         EditorBaseShapeComponent::Activate();
         m_boxShape.Activate(GetEntityId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
-            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        const AZ::EntityComponentIdPair entityComponentIdPair(GetEntityId(), GetId());
+        AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
 
         // ComponentMode
-        m_componentModeDelegate.ConnectWithSingleComponentMode<
-            EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
-                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
+        const bool allowAsymmetricalEditing = true;
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorBoxShapeComponent, AzToolsFramework::BoxComponentMode>(
+            entityComponentIdPair, this, allowAsymmetricalEditing);
     }
 
     void EditorBoxShapeComponent::Deactivate()
     {
         m_componentModeDelegate.Disconnect();
 
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         m_boxShape.Deactivate();
@@ -152,7 +154,7 @@ namespace LmbrCentral
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetDimensions()
+    AZ::Vector3 EditorBoxShapeComponent::GetDimensions() const
     {
         return m_boxShape.GetBoxDimensions();
     }
@@ -162,18 +164,28 @@ namespace LmbrCentral
         return m_boxShape.SetBoxDimensions(dimensions);
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentTransform()
+    AZ::Vector3 EditorBoxShapeComponent::GetTranslationOffset() const
     {
-        return AzToolsFramework::TransformNormalizedScale(m_boxShape.GetCurrentTransform());
+        return m_boxShape.GetTranslationOffset();
     }
 
-    AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform()
+    void EditorBoxShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
-        return AZ::Transform::CreateIdentity();
+        m_boxShape.SetTranslationOffset(translationOffset);
     }
 
-    AZ::Vector3 EditorBoxShapeComponent::GetBoxScale()
+    AZ::Transform EditorBoxShapeComponent::GetCurrentLocalTransform() const
     {
-        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetUniformScale() * m_boxShape.GetCurrentNonUniformScale());
+        return AZ::Transform::CreateTranslation(m_boxShape.GetTranslationOffset());
+    }
+
+    AZ::Transform EditorBoxShapeComponent::GetManipulatorSpace() const
+    {
+        return GetWorldTM();
+    }
+
+    AZ::Quaternion EditorBoxShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
     }
 } // namespace LmbrCentral

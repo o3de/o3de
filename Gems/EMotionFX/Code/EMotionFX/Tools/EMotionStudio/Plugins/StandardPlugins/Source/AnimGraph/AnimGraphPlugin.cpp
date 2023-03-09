@@ -84,7 +84,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphEventHandler, EMotionFX::EventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphEventHandler, EMotionFX::EventHandlerAllocator)
 
     AnimGraphPlugin::AnimGraphPlugin()
         : EMStudio::DockWidgetPlugin()

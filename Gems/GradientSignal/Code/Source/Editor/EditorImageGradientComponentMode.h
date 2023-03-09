@@ -25,8 +25,17 @@ namespace GradientSignal
         , private ImageGradientModificationNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorImageGradientComponentMode, "{49957D52-F1C3-4C34-AA84-7661BC418AB2}", EditorBaseComponentMode)
+
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorImageGradientComponentMode() override;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
 
         // EditorBaseComponentMode overrides...
         void Refresh() override;
@@ -50,9 +59,6 @@ namespace GradientSignal
         //! The undo information for the in-progress painting brush stroke.
         AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
         PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
-
-        //! Track whether or not anything has changed while editing. If not, then don't prompt to save the image at the end.
-        bool m_anyValuesChanged = false;
 
         //! The paint brush cluster that manages switching between paint/smooth/eyedropper modes
         AzToolsFramework::PaintBrushSubModeCluster m_subModeCluster;

@@ -48,6 +48,7 @@ ly_add_target(
 # use the PhysXDebug module in Clients and Servers:
 ly_create_alias(NAME PhysXDebug.Clients NAMESPACE Gem TARGETS Gem::PhysXDebug)
 ly_create_alias(NAME PhysXDebug.Servers NAMESPACE Gem TARGETS Gem::PhysXDebug)
+ly_create_alias(NAME PhysXDebug.Unified NAMESPACE Gem TARGETS Gem::PhysXDebug)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

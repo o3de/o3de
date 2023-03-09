@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Subtract",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Subtract"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "RotationYDegrees",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationYDegrees"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "Normalize",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Normalize"
@@ -112,7 +109,6 @@
                 },
                 {
                     "base": "LengthReciprocal",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LengthReciprocal"
@@ -144,7 +140,6 @@
                 },
                 {
                     "base": "CreateFromEulerAngles",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CreateFromEulerAngles"
@@ -188,7 +183,6 @@
                 },
                 {
                     "base": "IsIdentity",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsIdentity"
@@ -226,7 +220,6 @@
                 },
                 {
                     "base": "FromTransform",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromTransform"
@@ -258,7 +251,6 @@
                 },
                 {
                     "base": "Lerp",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Lerp"
@@ -302,7 +294,6 @@
                 },
                 {
                     "base": "RotationZDegrees",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationZDegrees"
@@ -334,7 +325,6 @@
                 },
                 {
                     "base": "ConvertTransformToRotation",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ConvertTransformToRotation"
@@ -366,7 +356,6 @@
                 },
                 {
                     "base": "ShortestArc",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ShortestArc"
@@ -404,7 +393,6 @@
                 },
                 {
                     "base": "RotationXDegrees",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotationXDegrees"
@@ -436,7 +424,6 @@
                 },
                 {
                     "base": "IsZero",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsZero"
@@ -474,7 +461,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -518,7 +504,6 @@
                 },
                 {
                     "base": "Length",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Length"
@@ -550,7 +535,6 @@
                 },
                 {
                     "base": "Conjugate",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Conjugate"
@@ -582,7 +566,6 @@
                 },
                 {
                     "base": "ToAngleDegrees",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToAngleDegrees"
@@ -614,7 +597,6 @@
                 },
                 {
                     "base": "Dot",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Dot"
@@ -652,7 +634,6 @@
                 },
                 {
                     "base": "Negate",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Negate"
@@ -684,7 +665,6 @@
                 },
                 {
                     "base": "Add",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add"
@@ -722,7 +702,6 @@
                 },
                 {
                     "base": "MultiplyByNumber",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByNumber"
@@ -760,7 +739,6 @@
                 },
                 {
                     "base": "Slerp",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Slerp"
@@ -804,7 +782,6 @@
                 },
                 {
                     "base": "InvertFull",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke InvertFull"
@@ -836,7 +813,6 @@
                 },
                 {
                     "base": "FromMatrix4x4",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix4x4"
@@ -868,7 +844,6 @@
                 },
                 {
                     "base": "RotateVector3",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RotateVector3"
@@ -906,7 +881,6 @@
                 },
                 {
                     "base": "FromMatrix3x3",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix3x3"
@@ -938,7 +912,6 @@
                 },
                 {
                     "base": "Squad",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Squad"
@@ -994,7 +967,6 @@
                 },
                 {
                     "base": "FromAxisAngleDegrees",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromAxisAngleDegrees"
@@ -1032,7 +1004,6 @@
                 },
                 {
                     "base": "LengthSquared",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke LengthSquared"
@@ -1064,7 +1035,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -1096,7 +1066,6 @@
                 },
                 {
                     "base": "DivideByNumber",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByNumber"
@@ -1134,7 +1103,6 @@
                 },
                 {
                     "base": "MultiplyByRotation",
-                    "context": "MathQuaternion_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByRotation"

@@ -33,7 +33,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
-            AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator);
 
             SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const ViewType viewType);
             ~SwapChainPass();

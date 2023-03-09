@@ -1,0 +1,96 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 4,
+    "propertyValues": {
+        "blend.enableLayer2": true,
+        "blend.enableLayer3": true,
+        "layer1.baseColor.color": [
+            0.3495536744594574,
+            0.2659952640533447,
+            0.12039368599653244,
+            1.0
+        ],
+        "layer1.baseColor.textureMap": "../../Textures/cc0/bark1_col.jpg",
+        "layer1.emissive.color": [
+            0.8521705865859985,
+            0.029510948807001114,
+            0.029510948807001114,
+            1.0
+        ],
+        "layer1.emissive.intensity": 0.8199999928474426,
+        "layer1.normal.factor": 0.4444443881511688,
+        "layer1.normal.flipY": true,
+        "layer1.normal.textureMap": "../../Textures/cc0/bark1_norm.jpg",
+        "layer1.occlusion.diffuseFactor": 1.6399999856948853,
+        "layer1.occlusion.diffuseTextureMap": "../../Textures/cc0/bark1_disp.jpg",
+        "layer1.parallax.factor": 0.02500000037252903,
+        "layer1.parallax.textureMap": "../../Textures/cc0/bark1_disp.jpg",
+        "layer1.roughness.lowerBound": 0.010100999847054482,
+        "layer1.roughness.textureMap": "../../Textures/cc0/bark1_roughness.jpg",
+        "layer1.specularF0.factor": 0.5099999904632568,
+        "layer1.specularF0.textureMap": "../../Textures/checker8x8_512.png",
+        "layer1.uv.center": [
+            0.75,
+            0.75
+        ],
+        "layer1.uv.offsetU": 0.5,
+        "layer1.uv.offsetV": 0.25,
+        "layer2.baseColor.textureMap": "../../Textures/cc0/Lava004_1K_Color.jpg",
+        "layer2.clearCoat.enable": true,
+        "layer2.clearCoat.influenceMap": "../../Textures/checker8x8_512.png",
+        "layer2.clearCoat.normalMap": "../../Objects/cube/cube_norm.tif",
+        "layer2.clearCoat.normalStrength": 0.5400000214576721,
+        "layer2.clearCoat.roughness": 0.10000000149011612,
+        "layer2.emissive.enable": true,
+        "layer2.emissive.intensity": 2.140000104904175,
+        "layer2.emissive.textureMap": "../../Textures/cc0/Lava004_1K_Emission.jpg",
+        "layer2.normal.flipY": true,
+        "layer2.normal.textureMap": "../../Textures/cc0/Lava004_1K_Normal.jpg",
+        "layer2.occlusion.specularFactor": 2.0,
+        "layer2.occlusion.specularTextureMap": "../../Textures/cc0/Tiles009_1K_Displacement.jpg",
+        "layer2.parallax.factor": 0.01600000075995922,
+        "layer2.parallax.textureMap": "../../Textures/cc0/Lava004_1K_Displacement.jpg",
+        "layer2.roughness.textureMap": "../../Textures/cc0/Lava004_1K_Roughness.jpg",
+        "layer2.uv.center": [
+            0.0,
+            0.0
+        ],
+        "layer2.uv.offsetU": 0.5,
+        "layer2.uv.offsetV": 0.25,
+        "layer3.baseColor.color": [
+            0.6315556764602661,
+            1.0,
+            0.9451438188552856,
+            1.0
+        ],
+        "layer3.baseColor.textureMap": "../../Textures/cc0/PaintedMetal003_1K_Color.jpg",
+        "layer3.clearCoat.influenceMap": "../../Textures/checker8x8_512.png",
+        "layer3.emissive.intensity": -0.9399999976158142,
+        "layer3.metallic.factor": 1.0,
+        "layer3.metallic.textureMap": "../../Textures/cc0/PaintedMetal003_1K_Metalness.jpg",
+        "layer3.normal.textureMap": "../../Textures/cc0/PaintedMetal003_1K_Normal.jpg",
+        "layer3.occlusion.diffuseFactor": 1.0399999618530273,
+        "layer3.occlusion.diffuseTextureMap": "../../Textures/cc0/PaintedMetal003_1K_Displacement.jpg",
+        "layer3.parallax.factor": 0.004999999888241291,
+        "layer3.parallax.textureMap": "../../Textures/cc0/PaintedMetal003_1K_Displacement.jpg",
+        "layer3.roughness.lowerBound": 0.07999999821186066,
+        "layer3.roughness.textureMap": "../../Textures/cc0/PaintedMetal003_1K_Roughness.jpg",
+        "layer3.roughness.upperBound": 0.75,
+        "layer3.specularF0.factor": 0.47474750876426697,
+        "layer3.uv.center": [
+            0.0,
+            0.0
+        ],
+        "layer3.uv.offsetU": 0.11999999731779099,
+        "layer3.uv.rotateDegrees": -57.599998474121094,
+        "parallax.quality": "Medium",
+        "uv.center": [
+            0.10000000149011612,
+            0.20000000298023224
+        ],
+        "uv.offsetU": 0.23000000417232513,
+        "uv.offsetV": -0.23999999463558197,
+        "uv.rotateDegrees": 39.599998474121094,
+        "uv.scale": 1.100000023841858
+    }
+}

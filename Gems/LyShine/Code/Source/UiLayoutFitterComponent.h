@@ -12,9 +12,13 @@
 #include <LyShine/UiComponentTypes.h>
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <UiLayoutHelpers.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! This component resizes its element to fit its content. It uses cell sizing information given to
