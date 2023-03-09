@@ -22,7 +22,7 @@ namespace Audio
     class RingBufferBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(RingBufferBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RingBufferBase, AZ::SystemAllocator);
 
         RingBufferBase()
         {}
@@ -87,7 +87,7 @@ namespace Audio
         : public RingBufferBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(RingBuffer<SampleType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RingBuffer<SampleType>, AZ::SystemAllocator);
 
         static const size_t s_bytesPerSample = sizeof(SampleType);
 

@@ -1,8 +1,6 @@
 {
     "Source": "./MaterialGraphName_Forward.azsl",
 
-    "Definitions": ["OUTPUT_DEPTH=1"],
-
     "DepthStencilState" :
     {
         "Depth" :

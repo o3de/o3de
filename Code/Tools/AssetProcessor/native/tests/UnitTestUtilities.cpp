@@ -166,7 +166,6 @@ namespace UnitTests
     void TraceBusErrorChecker::End(int expectedCount)
     {
         m_expectingFailure = false;
-        EXPECT_EQ(expectedCount, m_suppressedMessages.size());
 
         if (expectedCount != m_suppressedMessages.size())
         {
@@ -174,48 +173,57 @@ namespace UnitTests
             {
                 AZ::Debug::Trace::Instance().Output("", message.c_str());
             }
+
+            EXPECT_EQ(expectedCount, m_suppressedMessages.size());
         }
     }
 
     bool TraceBusErrorChecker::OnPreAssert(
-        [[maybe_unused]] const char* fileName,
-        [[maybe_unused]] int line,
-        [[maybe_unused]] const char* func,
-        [[maybe_unused]] const char* message)
+        const char* fileName,
+        int line,
+        const char* func,
+        const char* message)
     {
-        EXPECT_TRUE(m_expectingFailure) << "Unexpected assert occurred";
-
-        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+        RecordError(fileName, line, func, message);
 
         return m_expectingFailure;
     }
 
     bool TraceBusErrorChecker::OnPreError(
         [[maybe_unused]] const char* window,
-        [[maybe_unused]] const char* fileName,
-        [[maybe_unused]] int line,
-        [[maybe_unused]] const char* func,
-        [[maybe_unused]] const char* message)
+        const char* fileName,
+        int line,
+        const char* func,
+        const char* message)
     {
-        EXPECT_TRUE(m_expectingFailure) << "Unexpected error occurred";
-
-        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+        RecordError(fileName, line, func, message);
 
         return m_expectingFailure;
     }
 
     bool TraceBusErrorChecker::OnPreWarning(
         [[maybe_unused]] const char* window,
-        [[maybe_unused]] const char* fileName,
-        [[maybe_unused]] int line,
-        [[maybe_unused]] const char* func,
-        [[maybe_unused]] const char* message)
+        const char* fileName,
+        int line,
+        const char* func,
+        const char* message)
     {
-        EXPECT_TRUE(m_expectingFailure) << "Unexpected warning occurred";
-
-        m_suppressedMessages.push_back(AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message));
+        RecordError(fileName, line, func, message);
 
         return m_expectingFailure;
+    }
+
+    void TraceBusErrorChecker::RecordError(const char* fileName, int line, const char* func, const char* message)
+    {
+        AZStd::string errorMessage = AZStd::string::format("%s(%d): %s - %s\n", fileName, line, func, message);
+
+        if (!m_expectingFailure)
+        {
+            AZ::Debug::Trace::Instance().Output("", errorMessage.c_str());
+            GTEST_NONFATAL_FAILURE_("Unexpected failure occurred");
+        }
+
+        m_suppressedMessages.push_back(errorMessage);
     }
 
     void MockFileStateCache::RegisterForDeleteEvent(AZ::Event<AssetProcessor::FileStateInfo>::Handler& handler)

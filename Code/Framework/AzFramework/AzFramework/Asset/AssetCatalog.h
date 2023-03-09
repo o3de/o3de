@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -35,7 +34,7 @@ namespace AzFramework
     public:
 
         AZ_TYPE_INFO(AssetCatalog, "{D80BAFE6-0391-4D40-9C76-1E63D2D7C64F}");
-        AZ_CLASS_ALLOCATOR(AssetCatalog, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AssetCatalog, AZ::SystemAllocator)
 
         AssetCatalog();
         ~AssetCatalog() override;

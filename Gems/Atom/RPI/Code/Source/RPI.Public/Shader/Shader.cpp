@@ -102,7 +102,7 @@ namespace AZ
                 assetId.m_guid.ToString<AZStd::string>(uuidString, false, false);
 
                 RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetPhysicalDeviceDescriptor();
+                RHI::PhysicalDeviceDescriptor physicalDeviceDesc = rhiSystem->GetDevice()->GetPhysicalDevice().GetDescriptor();
 
                 AZStd::string configString;
                 if (RHI::BuildOptions::IsDebugBuild)

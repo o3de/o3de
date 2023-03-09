@@ -54,7 +54,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::RHI::PlatformLimitsDescriptor, "{3A7B2BE4-0337-4F59-B4FC-B7E529EBE6C5}");
-            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimitsDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
             static RHI::Ptr<PlatformLimitsDescriptor> Create();
 
@@ -75,7 +75,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::RHI::PlatformLimits, "{48158F25-5044-441C-A2B2-2D3E9255B0C3}");
-            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimits, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::RHI::PlatformLimits, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             Ptr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;

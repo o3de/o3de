@@ -81,7 +81,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        AZ::Crc32());
+                        AZ::Crc32(),
+                        true);
                 }
                 else
                 {
@@ -112,7 +113,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        LuaComponentScriptBusId);
+                        LuaComponentScriptBusId,
+                        true);
                 }
                 else
                 {

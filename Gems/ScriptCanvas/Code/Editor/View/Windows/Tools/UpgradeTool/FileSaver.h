@@ -27,7 +27,7 @@ namespace ScriptCanvasEditor
         class FileSaver
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileSaver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSaver, AZ::SystemAllocator);
 
             FileSaver
                 ( AZStd::function<bool()> onReadOnlyFile

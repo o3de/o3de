@@ -81,8 +81,8 @@ namespace GraphCanvas
         , public CommentNotificationBus::Handler
     {
     public:
-        AZ_TYPE_INFO_LEGACY(CommentNodeFrameGraphicsWidget, "{99343103-C8EF-44D0-BD6C-EF44ACDBD69B}", GeneralNodeFrameGraphicsWidget);
-        AZ_CLASS_ALLOCATOR(CommentNodeFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(CommentNodeFrameGraphicsWidget, "{99343103-C8EF-44D0-BD6C-EF44ACDBD69B}");
+        AZ_CLASS_ALLOCATOR(CommentNodeFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;

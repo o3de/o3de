@@ -69,7 +69,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator)
 
         explicit EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~EntityOutlinerWidget();
@@ -128,9 +128,7 @@ namespace AzToolsFramework
 
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
-        EntityOutlinerContainerProxyModel* m_containerModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
-        AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
 
         void PrepareSelection();
@@ -152,7 +150,6 @@ namespace AzToolsFramework
         QAction* m_actionToDeleteSelection;
         QAction* m_actionToDeleteSelectionAndDescendants;
         QAction* m_actionToRenameSelection;
-        QAction* m_actionToReparentSelection;
         QAction* m_actionToMoveEntityUp;
         QAction* m_actionToMoveEntityDown;
         QAction* m_actionGoToEntitiesInViewport;

@@ -458,7 +458,7 @@ namespace AzToolsFramework
         class AssetDatabaseConnection : public SQLite::SQLiteQueryLogBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetDatabaseConnection, AZ::SystemAllocator);
 
             AssetDatabaseConnection();
             virtual ~AssetDatabaseConnection();

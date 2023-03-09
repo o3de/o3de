@@ -31,7 +31,7 @@ namespace AZ::Render
 
     public:
         AZ_RTTI(SkyAtmospherePass, "{F89F4F6C-360F-485A-9B5B-12C660375BD1}", Base);
-        AZ_CLASS_ALLOCATOR(SkyAtmospherePass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SkyAtmospherePass, SystemAllocator);
         ~SkyAtmospherePass() = default;
 
         static RPI::Ptr<SkyAtmospherePass> CreateWithPassRequest(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id);

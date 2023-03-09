@@ -24,7 +24,7 @@ namespace GraphCanvas
         : public QGraphicsWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasCheckBox, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasCheckBox, AZ::SystemAllocator);
 
         GraphCanvasCheckBox(QGraphicsItem* parent = nullptr);
         ~GraphCanvasCheckBox() = default;        

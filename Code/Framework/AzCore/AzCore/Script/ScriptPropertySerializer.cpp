@@ -9,10 +9,11 @@
 #include <AzCore/Script/ScriptPropertySerializer.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ScriptPropertySerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ScriptPropertySerializer, SystemAllocator);
 
     JsonSerializationResult::Result ScriptPropertySerializer::Load
         ( void* outputValue
@@ -51,7 +52,7 @@ namespace AZ
         storageField.m_data = AZStd::any_cast<void>(&storage);
         storageField.m_typeId = typeId;
         outputVariable->CopyDataFrom(storageField, context.GetSerializeContext());
-        
+
         result.Combine(ContinueLoadingFromJsonObjectField(outputVariable->m_data, typeId, inputValue, "value", context));
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "ScriptPropertySerializer Load finished loading DynamicSerializableField"
@@ -74,7 +75,7 @@ namespace AZ
         auto inputFieldPtr = inputScriptDataPtr->m_data;
         auto defaultScriptDataPtr = reinterpret_cast<const DynamicSerializableField*>(defaultValue);
         auto defaultFieldPtr = defaultScriptDataPtr ? &defaultScriptDataPtr->m_data : nullptr;
- 
+
         if (defaultScriptDataPtr && inputScriptDataPtr->IsEqualTo(*defaultScriptDataPtr, context.GetSerializeContext()))
         {
             return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "ScriptPropertySerializer Store used defaults for DynamicSerializableField");

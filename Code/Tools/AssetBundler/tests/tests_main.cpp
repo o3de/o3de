@@ -24,6 +24,7 @@
 #include <tests/main.h>
 #include <source/utils/applicationManager.h>
 
+#include <QApplication>
 
 extern char g_cachedEngineRoot[AZ_MAX_PATH_LEN];
 
@@ -294,6 +295,7 @@ namespace AssetBundler
 int main(int argc, char* argv[])
 {
     AZ::Debug::Trace::HandleExceptions(true);
+    QApplication app(argc, argv);
     AZ::Test::ApplyGlobalParameters(&argc, argv);
 
     INVOKE_AZ_UNIT_TEST_MAIN();

@@ -21,7 +21,7 @@ namespace AzFramework
         , public XcbEventHandlerBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(XcbNativeWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XcbNativeWindow, AZ::SystemAllocator);
         XcbNativeWindow();
         ~XcbNativeWindow() override;
 

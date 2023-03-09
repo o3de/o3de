@@ -46,10 +46,10 @@ void CommandHierarchyItemCreate::redo()
         {
             // Find a unique name for the new element
             AZStd::string uniqueName;
-            EBUS_EVENT_ID_RESULT(uniqueName,
+            UiCanvasBus::EventResult(
+                uniqueName,
                 m_hierarchy->GetEditorWindow()->GetCanvas(),
-                UiCanvasBus,
-                GetUniqueChildName,
+                &UiCanvasBus::Events::GetUniqueChildName,
                 parentEntityId,
                 UICANVASEDITOR_ELEMENT_NAME_DEFAULT,
                 nullptr);

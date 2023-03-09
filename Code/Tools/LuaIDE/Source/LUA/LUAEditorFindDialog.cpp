@@ -6,8 +6,9 @@
  *
  */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/TickBus.h>
 #include "LUAEditorFindDialog.hxx"
@@ -30,7 +31,7 @@ namespace LUAEditorInternal
     {
     public:
         AZ_RTTI(FindSavedState, "{2B880623-63A9-4B39-B8B9-47609590D7D2}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator);
         FindSavedState()
         {
             m_lastSearchInFilesMode = 0;
@@ -514,8 +515,13 @@ namespace LUAEditor
         {
             AZ_Assert(false, "Fix assets!");
             //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-            //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
-            //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_dFindAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
+            //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+            //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
+            //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+            //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByType,
+            //    m_dFindAllLUAAssetsInfo,
+            //    AZ::ScriptAsset::StaticAssetType(),
+            //    platformFeatureFlags);
         }
 
 
@@ -557,7 +563,11 @@ namespace LUAEditor
                 // successful sync between the QScintilla document and the raw buffer version that we need
                 const char* buffer = nullptr;
                 AZStd::size_t actualSize = 0;
-                EBUS_EVENT(Context_DocumentManagement::Bus, GetDocumentData, (*m_FIFData.m_openViewIter)->m_Info.m_assetId, &buffer, actualSize);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::GetDocumentData,
+                    (*m_FIFData.m_openViewIter)->m_Info.m_assetId,
+                    &buffer,
+                    actualSize);
 
                 /************************************************************************/
                 /* Open files are similar but not identical to closed file processing   */
@@ -781,7 +791,7 @@ namespace LUAEditor
             if (!m_bCancelFindSignal)
             {
                 PostProcessOn();
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::ProcessFindItems, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::ProcessFindItems, this);
             }
             else
             {
@@ -937,16 +947,15 @@ namespace LUAEditor
                 pLUAViewWidget->m_Info.m_bSourceControl_BusyGettingStats ||
                 pLUAViewWidget->m_Info.m_bSourceControl_Ready == false)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite &&
                      pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
             {
                 // check it out for edit
-                EBUS_EVENT(Context_DocumentManagement::Bus,
-                    DocumentCheckOutRequested,
-                    pLUAViewWidget->m_Info.m_assetId);
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
             {
@@ -984,8 +993,13 @@ namespace LUAEditor
         AZ_Assert(false, "Fix assets!");
 
         //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-        //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
-        //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_RIFData.m_dReplaceAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
+        //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+        //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
+        //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+        //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByType,
+        //    m_RIFData.m_dReplaceAllLUAAssetsInfo,
+        //    AZ::ScriptAsset::StaticAssetType(),
+        //    platformFeatureFlags);
 
         m_RIFData.m_OpenView = pLUAEditorMainWindow->GetAllViews();
 
@@ -1147,7 +1161,7 @@ namespace LUAEditor
 
             //split physical path into the components saved by the database
             AZStd::string projectRoot, databaseRoot, databasePath, databaseFile, fileExtension;
-            if (!AzFramework::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
+            if (!AZ::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
             {
                 AZ_Warning("LUAEditorFindDialog", false, AZStd::string::format("<span severity=\"err\">Path is invalid: '%s'</span>", assetName.c_str()).c_str());
                 return;
@@ -1155,16 +1169,22 @@ namespace LUAEditor
 
             //find it in the database
             //AZStd::vector<EditorFramework::EditorAsset> dAssetInfo;
-            //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByName, dAssetInfo, databaseRoot.c_str(), databasePath.c_str(), databaseFile.c_str(), fileExtension.c_str());
+            //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+            //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByName,
+            //    dAssetInfo,
+            //    databaseRoot.c_str(),
+            //    databasePath.c_str(),
+            //    databaseFile.c_str(),
+            //    fileExtension.c_str());
             //if (dAssetInfo.empty())
             //  return;
 
             //request it be opened
-            //EBUS_EVENT_ID(    LUAEditor::ContextID,
-            //EditorFramework::AssetManagementMessages::Bus,
-            // AssetOpenRequested,
-            // dAssetInfo[0].m_databaseAsset.m_assetId,
-            // AZ::ScriptAsset::StaticAssetType());
+            //EditorFramework::AssetManagementMessages::Bus::Event(
+            //    LUAEditor::ContextID,
+            //    &EditorFramework::AssetManagementMessages::Bus::Events::AssetOpenRequested,
+            //    dAssetInfo[0].m_databaseAsset.m_assetId,
+            //    AZ::ScriptAsset::StaticAssetType());
 
             QTimer::singleShot(0, this, &LUAEditorFindDialog::ProcessReplaceItems);
         }
@@ -1259,9 +1279,8 @@ namespace LUAEditor
                  pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
         {
             // check it out for edit
-            EBUS_EVENT(Context_DocumentManagement::Bus,
-                DocumentCheckOutRequested,
-                pLUAViewWidget->m_Info.m_assetId);
+            Context_DocumentManagement::Bus::Broadcast(
+                &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
             return -2;
         }
         else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)

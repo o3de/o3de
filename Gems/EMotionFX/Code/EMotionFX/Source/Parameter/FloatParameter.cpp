@@ -18,8 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FloatParameter, AnimGraphAllocator, 0)
-
+    AZ_CLASS_ALLOCATOR_IMPL(FloatParameter, AnimGraphAllocator);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(FloatParameter, ValueParameter);
 
     void FloatParameter::Reflect(AZ::ReflectContext* context)
     {

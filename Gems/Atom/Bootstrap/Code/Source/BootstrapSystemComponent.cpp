@@ -28,6 +28,7 @@
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -68,7 +69,6 @@ namespace AZ
                     {
                         ec->Class<BootstrapSystemComponent>("Atom RPI", "Atom Renderer")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                     }
@@ -242,6 +242,7 @@ namespace AZ
                 TickBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
+                m_xrVrsTexture = nullptr;
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
@@ -379,6 +380,20 @@ namespace AZ
 
                 AZ::RHI::MultisampleState multisampleState;
 
+                if (xrSystem)
+                {
+                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
+                    if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion) &&
+                        !m_xrVrsTexture)
+                    {
+                        // Need to fill the contents of the Variable shade rating image.
+                        const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
+                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
+
+                        m_xrVrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
+                    }
+                }
+
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
                 {
@@ -386,7 +401,7 @@ namespace AZ
                     if (xrSystem)
                     {
                         // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
-                        // what's being rendered into XR device. XR render pipeline uses low end render pipeline.
+                        // what's being rendered into XR device. XR render pipeline uses multiview render pipeline.
                         AZ::ApplicationTypeQuery appType;
                         ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
                         if (appType.IsGame())
@@ -468,7 +483,7 @@ namespace AZ
                 return true;
             }
 
-            bool BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
+            RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, AZ::RHI::MultisampleState& multisampleState)
             {
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
@@ -492,21 +507,34 @@ namespace AZ
                     renderPipelineDescriptor.m_name =
                         AZStd::string::format("%s_%i", renderPipelineDescriptor.m_name.c_str(), viewportContext->GetId());
 
+                    if (renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount &&
+                        !RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_customSamplePositions)
+                    {
+                        // Disable custom sample positions because they are not supported
+                        AZ_Warning(
+                            "BootstrapSystemComponent",
+                            false,
+                            "Disabling custom sample positions for pipeline %s because they are not supported on this device",
+                            pipelineName.data());
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositions = {};
+                        renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount = 0;
+                    }
                     multisampleState = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
 
                     // Create and add render pipeline to the scene (when not added already)
-                    if (!scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name)))
+                    RPI::RenderPipelinePtr renderPipeline = scene->GetRenderPipeline(AZ::Name(renderPipelineDescriptor.m_name));
+                    if (!renderPipeline)
                     {
-                        RPI::RenderPipelinePtr renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
+                        renderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
                             renderPipelineDescriptor, *viewportContext->GetWindowContext().get(), viewType);
                         scene->AddRenderPipeline(renderPipeline);
                     }
-                    return true;
+                    return renderPipeline;
                 }
                 else
                 {
                     AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
-                    return false;
+                    return nullptr;
                 }
             }
 

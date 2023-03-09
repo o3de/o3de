@@ -29,7 +29,7 @@ class AssetEditorWindow
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(AssetEditorWindow, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetEditorWindow, AZ::SystemAllocator);
 
     explicit AssetEditorWindow(QWidget* parent = nullptr);
     ~AssetEditorWindow() override;

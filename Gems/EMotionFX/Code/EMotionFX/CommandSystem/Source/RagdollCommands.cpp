@@ -26,9 +26,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAddRagdollJoint, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveRagdollJoint, EMotionFX::CommandAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustRagdollJoint, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAddRagdollJoint, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveRagdollJoint, EMotionFX::CommandAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustRagdollJoint, EMotionFX::CommandAllocator)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

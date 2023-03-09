@@ -34,6 +34,8 @@
 
 #include <AssetManager/ProductAsset.h>
 #include <native/AssetManager/SourceAssetReference.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -210,8 +212,14 @@ namespace AssetProcessor
     {
         //this function just adds an removes to a maps to speed up job status, we don't actually write
         //to the database until it either succeeds or fails
-        AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(jobEntry.m_sourceAssetReference);
+        auto sourceUUID = AssetUtilities::GetSourceUuid(jobEntry.m_sourceAssetReference);
         auto legacySourceUUIDs = AssetUtilities::GetLegacySourceUuids(jobEntry.m_sourceAssetReference);
+
+        if (!sourceUUID || !legacySourceUUIDs)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, sourceUUID.GetError().c_str());
+            return;
+        }
 
         if (status == JobStatus::Queued)
         {
@@ -226,7 +234,7 @@ namespace AssetProcessor
             jobInfo.m_status = status;
 
             m_jobKeyToJobRunKeyMap.insert(AZStd::make_pair(jobEntry.m_jobKey.toUtf8().data(), jobEntry.m_jobRunKey));
-            Q_EMIT SourceQueued(sourceUUID, legacySourceUUIDs, jobEntry.m_sourceAssetReference);
+            Q_EMIT SourceQueued(sourceUUID.GetValue(), legacySourceUUIDs.GetValue(), jobEntry.m_sourceAssetReference);
         }
         else
         {
@@ -260,7 +268,7 @@ namespace AssetProcessor
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
-                Q_EMIT SourceFinished(sourceUUID, legacySourceUUIDs);
+                Q_EMIT SourceFinished(sourceUUID.GetValue(), legacySourceUUIDs.GetValue());
                 Q_EMIT JobComplete(jobEntry, status);
 
                 auto found = m_jobKeyToJobRunKeyMap.equal_range(jobEntry.m_jobKey.toUtf8().data());
@@ -350,6 +358,48 @@ namespace AssetProcessor
         }
 
         return response;
+    }
+
+    AssetFingerprintClearResponse AssetProcessorManager::ProcessFingerprintClearRequest(MessageData<AssetFingerprintClearRequest> messageData)
+    {
+        AssetFingerprintClearResponse response;
+        ProcessFingerprintClearRequest(*messageData.m_message, response);
+        return response;
+    }
+
+    void AssetProcessorManager::ProcessFingerprintClearRequest(
+        AssetFingerprintClearRequest& request, AssetFingerprintClearResponse& response)
+    {
+        SourceAssetReference sourceAsset;
+
+        if (QFileInfo(request.m_searchTerm.c_str()).isAbsolute())
+        {
+            sourceAsset = SourceAssetReference(request.m_searchTerm.c_str());
+        }
+        else
+        {
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(request.m_searchTerm.c_str());
+
+            if (absolutePath.isEmpty())
+            {
+                response.m_isSuccess = false;
+                return;
+            }
+
+            sourceAsset = SourceAssetReference(absolutePath.toUtf8().constData());
+        }
+
+        response.m_isSuccess = m_stateData->UpdateFileHashByFileNameAndScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), 0);
+
+        // if setting the file hash failed, still try to clear the job fingerprints.
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
+        if (!m_stateData->GetSourceBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), source))
+        {
+            response.m_isSuccess = false;
+            return;
+        }
+
+        response.m_isSuccess = response.m_isSuccess && m_stateData->SetJobFingerprintsBySourceID(source.m_sourceID, 0);
     }
 
     //! A network request came in asking, for a given input asset, what the status is of any jobs related to that request
@@ -794,7 +844,7 @@ namespace AssetProcessor
             // send a network message when not in batch mode.
             const ScanFolderInfo* scanFolder = m_platformConfig->GetScanFolderByPath(jobEntry.m_sourceAssetReference.ScanFolderPath().c_str());
             AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(source.m_sourceName.c_str()), AZ::OSString(scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileFailed, source.m_sourceGuid);
-            EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+            AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
             MessageInfoBus::Broadcast(&MessageInfoBusTraits::OnAssetFailed, source.m_sourceName);
         }
 
@@ -1173,19 +1223,21 @@ namespace AssetProcessor
 
             //create/update the source record for this job
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            auto scanFolder = m_platformConfig->GetScanFolderByPath(processedAsset.m_entry.m_sourceAssetReference.ScanFolderPath().c_str());
-            if (!scanFolder)
-            {
-                //can't find the scan folder this source came from!?
-                AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to find the scan folder for this source!!!");
-                continue;
-            }
+            auto sourceUuidOutcome = AssetUtilities::GetSourceUuid(processedAsset.m_entry.m_sourceAssetReference);
 
-            if (!m_stateData->GetSourceBySourceNameScanFolderId(processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(), scanFolder->ScanFolderID(), source))
+            if (!m_stateData->GetSourceBySourceNameScanFolderId(
+                    processedAsset.m_entry.m_sourceAssetReference.RelativePath().c_str(),
+                    processedAsset.m_entry.m_sourceAssetReference.ScanFolderId(),
+                    source))
             {
                 //if we didn't find a source, we make a new source
                 //add the new source
                 AddSourceToDatabase(source, processedAsset.m_entry.m_sourceAssetReference);
+            }
+            else if (sourceUuidOutcome && sourceUuidOutcome.GetValue() != source.m_sourceGuid)
+            {
+                // UUID has changed, update catalog and database
+                HandleSourceUuidChange(source, sourceUuidOutcome.GetValue());
             }
 
             //create/update the job
@@ -1307,33 +1359,8 @@ namespace AssetProcessor
             for (const auto& priorProduct : priorProducts)
             {
                 auto productPath = AssetUtilities::ProductPath::FromDatabasePath(priorProduct.m_productName);
-                auto productWrapper = ProductAssetWrapper(priorProduct, productPath);
-
-                AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
-
-                // also compute the legacy ids that used to refer to this asset
-                AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
-
-                AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
-                message.m_assetId = assetId;
-
-                if (legacyAssetId != assetId)
-                {
-                    message.m_legacyAssetIds.push_back(legacyAssetId);
-                }
-
-                for (const auto& legacyUuid :
-                     AssetUtilities::GetLegacySourceUuids(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str())))
-                {
-                    AZ::Data::AssetId legacySourceAssetId(legacyUuid, priorProduct.m_subID);
-
-                    if (legacySourceAssetId != assetId)
-                    {
-                        message.m_legacyAssetIds.push_back(legacySourceAssetId);
-                    }
-                }
-
                 bool shouldDeleteFile = true;
+
                 for (const auto& pair : newProducts)
                 {
                     const auto& currentProduct = pair.first;
@@ -1532,19 +1559,24 @@ namespace AssetProcessor
                     message.m_legacyAssetIds.push_back(legacyAssetId);
                 }
 
-                SourceAssetReference sourceAsset(source.m_scanFolderPK, source.m_sourceName.c_str());
+                const SourceAssetReference& sourceAsset = processedAsset.m_entry.m_sourceAssetReference;
                 AZStd::unordered_set<AZ::Data::AssetId> legacySourceAssetIds; // Keep track of the legacy *asset* Ids to avoid duplicates
-                auto legacySourceUuids = AssetUtilities::GetLegacySourceUuids(sourceAsset);
-                legacySourceAssetIds.reserve(legacySourceUuids.size());
+                auto legacySourceUuidsOutcome = AssetUtilities::GetLegacySourceUuids(sourceAsset);
 
-                for (const auto& legacyUuid : legacySourceUuids)
+                if (legacySourceUuidsOutcome)
                 {
-                    AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
+                    auto legacySourceUuids = legacySourceUuidsOutcome.GetValue();
+                    legacySourceAssetIds.reserve(legacySourceUuids.size());
 
-                    if (legacySourceAssetId != assetId)
+                    for (const auto& legacyUuid : legacySourceUuids)
                     {
-                        legacySourceAssetIds.emplace(legacySourceAssetId);
-                        message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
+                        AZ::Data::AssetId legacySourceAssetId(legacyUuid, newProduct.m_subID);
+
+                        if (legacySourceAssetId != assetId)
+                        {
+                            legacySourceAssetIds.emplace(legacySourceAssetId);
+                            message.m_legacyAssetIds.push_back(AZStd::move(legacySourceAssetId));
+                        }
                     }
                 }
 
@@ -1598,6 +1630,36 @@ namespace AssetProcessor
         // If we rely on the file watcher only, it might fire before the AssetMessage signal has been responded to and the
         // Asset Catalog may not realize that things are dirty by that point.
         QueueIdleCheck();
+    }
+
+    void AssetProcessorManager::HandleSourceUuidChange(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source, AZ::Uuid newUuid)
+    {
+        const AZ::Uuid oldUuid = source.m_sourceGuid;
+
+        // Send a Removed message for each existing product, otherwise they'll just get stuck in the catalog
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer oldProducts;
+        m_stateData->GetProductsBySourceID(source.m_sourceID, oldProducts);
+
+        for (const auto& product : oldProducts)
+        {
+            AzToolsFramework::AssetDatabase::JobDatabaseEntry job;
+            m_stateData->GetJobByJobID(product.m_jobPK, job);
+
+            AZStd::string relativeProductPath = AssetUtilities::StripAssetPlatform(product.m_productName).toUtf8().constData();
+
+            AssetNotificationMessage oldAssetRemovedMessage(
+                relativeProductPath,
+                AzFramework::AssetSystem::AssetNotificationMessage::NotificationType::AssetRemoved,
+                product.m_assetType,
+                job.m_platform);
+            oldAssetRemovedMessage.m_assetId = AZ::Data::AssetId(oldUuid, product.m_subID);
+
+            Q_EMIT AssetMessage(oldAssetRemovedMessage);
+        }
+
+        // Update the database
+        source.m_sourceGuid = newUuid;
+        m_stateData->SetSource(source);
     }
 
     void AssetProcessorManager::WriteProductTableInfo(AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>& pair, AZStd::vector<AZ::u32>& subIds, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer, const AZStd::string& platform)
@@ -1918,7 +1980,7 @@ namespace AssetProcessor
 
                     // Note: legacy asset ids are not needed in the message, they'll be looked up based on the actual id
 
-                    Q_EMIT AssetMessage( message);
+                    Q_EMIT AssetMessage(message);
                 }
 
                 if (wrapper.HasIntermediateProduct())
@@ -1964,17 +2026,11 @@ namespace AssetProcessor
         {
             if (IsInIntermediateAssetsFolder(sourceAsset))
             {
-                auto topLevelSource = AssetUtilities::GetTopLevelSourceForIntermediateAsset(SourceAssetReference(source.m_scanFolderPK, source.m_sourceName.c_str()), m_stateData);
+                auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(sourceAsset, m_stateData);
 
                 if (topLevelSource)
                 {
-                    ScanFolderDatabaseEntry scanfolderForTopLevelSource;
-                    m_stateData->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanfolderForTopLevelSource);
-
-                    AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
-                    fullPath /= topLevelSource->m_sourceName;
-
-                    if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                    if (AZ::IO::SystemFile::Exists(topLevelSource.value().c_str()))
                     {
                         // The top level file for this intermediate exists, treat this as a product deletion in that case which should
                         // regenerate the product
@@ -2127,6 +2183,14 @@ namespace AssetProcessor
             m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), jobsFromLastTime, AZ::Uuid::CreateNull(), QString(), platform);
         }
 
+        // Check for missing common jobs, too. The common platform won't be in the scan folder platform list.
+        m_stateData->GetJobInfoBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(),
+            sourceAsset.ScanFolderId(),
+            jobsFromLastTime,
+            AZ::Uuid::CreateNull(),
+            QString(),
+            QString(AssetBuilderSDK::CommonPlatformName));
+
         // so now we have jobsFromLastTime and jobsThisTime.  Whats in last time that is no longer being emitted now?
         if (jobsFromLastTime.empty())
         {
@@ -2238,7 +2302,8 @@ namespace AssetProcessor
         ++m_numTotalSourcesFound;
 
         AssetProcessor::BuilderInfoList builderInfoList;
-        EBUS_EVENT(AssetProcessor::AssetBuilderInfoBus, GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, sourceAsset.AbsolutePath().c_str(), builderInfoList);
 
         if (builderInfoList.size())
         {
@@ -2353,9 +2418,17 @@ namespace AssetProcessor
                 // we have not seen this source file before
                 m_sourceFileModTimeMap[jobDetails.m_jobEntry.m_sourceFileUUID] = mSecsSinceEpoch;
                 QString sourceFile(jobDetails.m_jobEntry.m_sourceAssetReference.RelativePath().c_str());
-                AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(jobDetails.m_jobEntry.m_sourceAssetReference);
-                AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceFile.toUtf8().constData()), AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged, sourceUUID);
-                EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
+                auto sourceUUIDOutcome = AssetUtilities::GetSourceUuid(jobDetails.m_jobEntry.m_sourceAssetReference);
+
+                if (sourceUUIDOutcome)
+                {
+                    AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(
+                        AZ::OSString(sourceFile.toUtf8().constData()),
+                        AZ::OSString(jobDetails.m_scanFolder->ScanPath().toUtf8().constData()),
+                        AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileChanged,
+                        sourceUUIDOutcome.GetValue());
+                    AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
+                }
             }
         }
 
@@ -2657,6 +2730,9 @@ namespace AssetProcessor
             QTimer::singleShot(250, this, SLOT(ProcessFilesToExamineQueue()));
             return;
         }
+
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+        AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests interface is not available.");
 
         // During unit tests, it can be the case that cache folders are actually in a temp folder structure
         // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
@@ -2993,6 +3069,18 @@ namespace AssetProcessor
                 }
                 else
                 {
+                    AssetProcessor::FileStateInfo fileStateInfo;
+
+                    if (fileStateInterface->GetFileInfo(
+                            sourceAssetReference.AbsolutePath().c_str(), &fileStateInfo) &&
+                        fileStateInfo.m_absolutePath.compare(sourceAssetReference.AbsolutePath().c_str()) != 0)
+                    {
+                        // File on disk has different case compared to the file being processed
+                        // This usually means a file was renamed and a "change" event was fired for both the old and new name
+                        // Ignore this event as its for the old file name
+                        continue;
+                    }
+
                     // log-spam-reduction - the lack of the prior tag (input was deleted) which is rare can infer that the above branch was taken
                     //AZ_TracePrintf(AssetProcessor::DebugChannel, "Input is modified or is overriding something.\n");
                     CheckModifiedSourceFile(sourceAssetReference, scanFolderInfo);
@@ -3094,6 +3182,7 @@ namespace AssetProcessor
         }
 
         QString normalizedFullFile = AssetUtilities::NormalizeFilePath(fullFile);
+
         if (!fromScanner) // the scanner already does exclusion and doesn't need to deal with metafiles.
         {
             if (m_platformConfig->IsFileExcluded(normalizedFullFile))
@@ -3119,8 +3208,20 @@ namespace AssetProcessor
 
         if (!isDelete && IsInIntermediateAssetsFolder(normalizedFullFile) && !m_knownFolders.contains(normalizedFullFile))
         {
+            // Make a special case check for MetadataManager files
+            // An update to one of these types of files needs to cause a re-process of the intermediate file.
+            // Converting a metadata file to the real file normally happens later in the processing but needs to be done
+            // up front for intermediates to avoid bypassing this whole block - which stops processing intermediates before they're recorded in the database.
+            AZ::IO::FixedMaxPath absolutePath(normalizedFullFile.toUtf8().constData());
+
+            if (absolutePath.Extension() == AzToolsFramework::MetadataManager::MetadataFileExtension)
+            {
+                // Use the real file for the check below
+                absolutePath = absolutePath.ReplaceExtension("");
+            }
+
             QString relativePath, scanfolderPath;
-            m_platformConfig->ConvertToRelativePath(normalizedFullFile, relativePath, scanfolderPath);
+            m_platformConfig->ConvertToRelativePath(absolutePath.c_str(), relativePath, scanfolderPath);
 
             auto productName = AssetUtilities::GetIntermediateAssetDatabaseName(relativePath.toUtf8().constData());
 
@@ -3130,6 +3231,30 @@ namespace AssetProcessor
             {
                 // This file is an intermediate asset product but it doesn't exist in the database yet.  This means the job which produced this asset has not completed yet.
                 // Do not process this file yet.  When the job is done it will retrigger processing for this file.
+                return;
+            }
+
+            auto topLevelSource = AssetUtilities::GetTopLevelSourcePathForIntermediateAsset(SourceAssetReference(fullFile),
+                m_stateData);
+
+            if (topLevelSource)
+            {
+                if (!AZ::Interface<IFileStateRequests>::Get()->Exists(topLevelSource.value().c_str()))
+                {
+                    AZ_TracePrintf(
+                        AssetProcessor::ConsoleChannel,
+                        "Top level source '%s' for intermediate asset '%.*s' no longer exists, "
+                        "so this intermediate asset will not be reprocessed.\n",
+                        topLevelSource.value().c_str(),
+                        AZ_STRING_ARG(productName));
+                    return;
+                }
+            }
+            else
+            {
+                // Failed to find top level source for this intermediate asset - don't process this asset, there's a gap or issue in the asset database.
+                // No reason to print anything out here, no warnings or errors because the asset processor does cleanup on intermediate
+                // assets that no longer have a source asset, or the source asset no longer emits them, later in asset processing.
                 return;
             }
         }
@@ -3300,6 +3425,7 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
+            QueueIdleCheck();
             m_initialScanSkippingFeature = false;
             return;
         }
@@ -3909,13 +4035,38 @@ namespace AssetProcessor
         // it bundles the results up in a JobToProcessEntry struct, while it is doing this:
         JobToProcessEntry entry;
 
-        AZ::Uuid sourceUUID = AssetUtilities::GetSourceUuid(sourceAsset);
+        auto sourceUUIDOutcome = AssetUtilities::GetSourceUuid(sourceAsset);
+
+        if (!sourceUUIDOutcome)
+        {
+            auto failureMessage = AZStd::string::format(
+                "CreateJobs failed - %s", sourceUUIDOutcome.GetError().c_str());
+
+            AZ::Uuid builderUuid = builderInfoList.size() > 0 ? builderInfoList[0].m_busId : AZ::Uuid();
+
+            AutoFailJob(
+                failureMessage,
+                failureMessage,
+                JobEntry(
+                    sourceAsset,
+                    builderUuid,
+                    { "all", {} },
+                    QString("CreateJobs_%1").arg(builderUuid.ToFixedString().c_str()),
+                    0,
+                    GenerateNewJobRunKey(),
+                    AZ::Uuid(),
+                    false));
+            return;
+        }
+
+        const AZ::Uuid sourceUUID = sourceUUIDOutcome.GetValue();
 
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
             AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
             m_sourceUUIDToSourceInfoMap[sourceUUID] = sourceAsset; // Don't use insert, there may be an outdated entry from a previously overriden file
         }
+
 
         // insert the new entry into the analysis tracker:
         auto resultInsert = m_remainingJobsForEachSourceFile.insert_key(sourceAsset.AbsolutePath().c_str());
@@ -4067,6 +4218,18 @@ namespace AssetProcessor
                         newJob.m_scanFolder = scanFolder;
                         newJob.m_checkServer = jobDescriptor.m_checkServer;
 
+                        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+                        if (!uuidInterface)
+                        {
+                            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+                            return;
+                        }
+
+                        const bool isEnabledType = uuidInterface->IsGenerationEnabledForFile(sourceAsset.AbsolutePath());
+
+                        newJob.m_sourceUuid = isEnabledType ? sourceUUID : AZ::Uuid{};
+
                         if (m_builderDebugFlag)
                         {
                             newJob.m_jobParam[AZ_CRC_CE("DebugFlag")] = "true";
@@ -4149,7 +4312,7 @@ namespace AssetProcessor
         if (!sourceDependency.m_sourceFileDependencyUUID.IsNull())
         {
             // if the UUID has been provided, we will use that
-            resultDatabaseSourceName = sourceDependency.m_sourceFileDependencyUUID.ToString<QString>();
+            resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
         }
         else if (!sourceDependency.m_sourceFileDependencyPath.empty())
         {
@@ -4780,7 +4943,17 @@ namespace AssetProcessor
             {
                 if (AZ::IO::FileIOBase::GetInstance()->Exists(sourceAsset.AbsolutePath().c_str()))
                 {
-                    uuid = AssetUtilities::GetSourceUuid(sourceAsset);
+                    auto outcome = AssetUtilities::GetSourceUuid(sourceAsset);
+
+                    if (outcome)
+                    {
+                        uuid = outcome.GetValue();
+                    }
+                    else
+                    {
+                        AZ_Error("AssetProcessor", false, "%s", outcome.GetError().c_str());
+                        return {};
+                    }
                 }
                 else
                 {
@@ -4805,11 +4978,19 @@ namespace AssetProcessor
 
     void AssetProcessorManager::AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const SourceAssetReference& sourceAsset)
     {
+        auto outcome = AssetUtilities::GetSourceUuid(sourceAsset);
+
+        if (!outcome)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "%s", outcome.GetError().c_str());
+            return;
+        }
+
         sourceDatabaseEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
         sourceDatabaseEntry.m_sourceName = sourceAsset.RelativePath().c_str();
-        sourceDatabaseEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+        sourceDatabaseEntry.m_sourceGuid = outcome.GetValue();
 
-        if (!m_stateData->SetSource(sourceDatabaseEntry))
+        if (sourceDatabaseEntry.m_sourceGuid.IsNull() || !m_stateData->SetSource(sourceDatabaseEntry))
         {
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to add source to the database!!!");
             return;
@@ -5036,10 +5217,16 @@ namespace AssetProcessor
 
         auto sourceUuid = AssetUtilities::GetSourceUuid(sourceAsset);
 
+        if (!sourceUuid)
+        {
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "%s", sourceUuid.GetError().c_str());
+            return "";
+        }
+
         // QSet is not ordered.
         SourceFilesForFingerprintingContainer knownDependenciesAbsolutePaths;
         // this automatically adds the input file to the list:
-        QueryAbsolutePathDependenciesRecursive(sourceUuid, knownDependenciesAbsolutePaths,
+        QueryAbsolutePathDependenciesRecursive(sourceUuid.GetValue(), knownDependenciesAbsolutePaths,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any);
         AddMetadataFilesForFingerprinting(QString::fromUtf8(sourceAsset.AbsolutePath().c_str()), knownDependenciesAbsolutePaths);
 
@@ -5174,9 +5361,19 @@ namespace AssetProcessor
         m_allowModtimeSkippingFeature = enable;
     }
 
+    bool AssetProcessorManager::GetModtimeSkippingFeatureEnabled() const
+    {
+        return m_allowModtimeSkippingFeature;
+    }
+
     void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
     {
         m_initialScanSkippingFeature = enable;
+    }
+
+    bool AssetProcessorManager::GetInitialScanSkippingFeatureEnabled() const
+    {
+        return m_initialScanSkippingFeature;
     }
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)
@@ -5309,7 +5506,7 @@ namespace AssetProcessor
 
                 if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.toUtf8().constData()))
                 {
-                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData()));
+                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData())).GetValueOr(AZ::Uuid());
                 }
             }
             else

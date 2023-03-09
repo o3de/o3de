@@ -253,23 +253,12 @@ namespace AssetProcessor
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
 
-                // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
                 AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });
-
-                if (!specialization.Contains("release"))
-                {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, platform, specialization, &scratchBuffer);
-                    if (commandLine)
-                    {
-                        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
-                    }
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, platform, specialization, &scratchBuffer);
-                }
 
                 if (commandLine)
                 {

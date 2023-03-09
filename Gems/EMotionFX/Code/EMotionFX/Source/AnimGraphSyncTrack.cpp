@@ -21,7 +21,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSyncTrack, MotionEventAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSyncTrack, MotionEventAllocator);
 
     /**
     * @brief: Advances an iterator +1 or -1, wrapping to the beginning when the

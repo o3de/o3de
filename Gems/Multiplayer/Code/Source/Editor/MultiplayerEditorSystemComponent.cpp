@@ -24,8 +24,10 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -37,7 +39,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <QMenu>
 #include <QAction>
@@ -304,7 +305,7 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i --sv_dedicated_host_onstartup false)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
@@ -313,10 +314,14 @@ namespace Multiplayer
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+        processLaunchInfo.m_tetherLifetime = true;
 
         // Launch the Server
-        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
+        const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs
+            ? AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT
+            : AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE;
+
+        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, communicationType);
 
         if (outProcess)
         {
@@ -410,7 +415,27 @@ namespace Multiplayer
                 editorServerLevelDataPacket.SetLastUpdate(true);
             }
 
-            connection->SendReliablePacket(editorServerLevelDataPacket);
+            // Try to send the packet to the Editor server. Retry if necessary.
+            bool packetSent = false;
+            static constexpr int MaxRetries = 20;
+            int millisecondDelayPerRetry = 10;
+            int numRetries = 0;
+            while (!packetSent && (numRetries < MaxRetries))
+            {
+                packetSent = connection->SendReliablePacket(editorServerLevelDataPacket);
+                if (!packetSent)
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(millisecondDelayPerRetry));
+                    numRetries++;
+
+                    // Keep doubling the time between retries up to 1 second, then clamp it there.
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * 2, 1000);
+
+                    // Force the networking buffers to try and flush before sending the packet again.
+                    AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
+                }
+            }
+            AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
         }
     }
 
@@ -552,7 +577,21 @@ namespace Multiplayer
                     remoteAddress.c_str()) return;
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
+            // Find any existing server launchers before launching a new one.
+            // It's possible for a rogue server launcher to exist if the Editor shutdown unexpectedly while running a previous multiplayer session.
+            // It's also common to open ServerLaunchers by hand for testing, but then to forget to shut it down before starting the editor play mode.
+            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            int existingServers = AzFramework::ProcessUtils::ProcessCount(serverExeFilename);
+            if (existingServers > 0)
+            {
+                AZ_Warning("MultiplayerEditorSystemComponent", false,
+                    "There are already existing servers opened (x%i: %s); please terminate as your Editor may connect to the wrong server! "
+                    "If your intention was to connect to this server instead of automatically launching one from the Editor set editorsv_launch = false.",
+                    existingServers, serverExeFilename.c_str());
+            }
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...\n");
+
             // Launch the editor-server
             if (!LaunchEditorServer())
             {

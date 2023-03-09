@@ -37,8 +37,6 @@ set(FILES
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.h
     Source/TerrainRenderer/Aabb2i.cpp
     Source/TerrainRenderer/Aabb2i.h
-    Source/TerrainRenderer/BindlessImageArrayHandler.cpp
-    Source/TerrainRenderer/BindlessImageArrayHandler.h
     Source/TerrainRenderer/ClipmapBounds.cpp
     Source/TerrainRenderer/ClipmapBounds.h
     Source/TerrainRenderer/Passes/TerrainClipmapComputePass.cpp

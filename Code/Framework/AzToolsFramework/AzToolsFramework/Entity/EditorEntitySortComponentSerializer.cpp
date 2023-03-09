@@ -13,7 +13,7 @@
 
 namespace AzToolsFramework::Components
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonEditorEntitySortComponentSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonEditorEntitySortComponentSerializer, AZ::SystemAllocator);
 
     AZ::JsonSerializationResult::Result JsonEditorEntitySortComponentSerializer::Load(
         void* outputValue,

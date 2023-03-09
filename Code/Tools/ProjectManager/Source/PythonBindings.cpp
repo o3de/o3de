@@ -58,7 +58,7 @@ namespace Platform
 #define Py_To_Int(obj) obj.cast<int>()
 #define Py_To_Int_Optional(dict, key, default_int) dict.contains(key) ? Py_To_Int(dict[key]) : default_int
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
-#define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
+#define QString_To_Py_Path(value) value.isEmpty() ? pybind11::none() : m_pathlib.attr("Path")(value.toStdString())
 
 pybind11::list QStringList_To_Py_List(const QStringList& values)
 {
@@ -335,6 +335,7 @@ namespace O3DE::ProjectManager
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
             m_editProjectProperties = pybind11::module::import("o3de.project_properties");
+            m_projectManagerInterface = pybind11::module::import("o3de.project_manager_interface");
             m_download = pybind11::module::import("o3de.download");
             m_repo = pybind11::module::import("o3de.repo");
             m_pathlib = pybind11::module::import("pathlib");
@@ -842,6 +843,7 @@ namespace O3DE::ProjectManager
                 "project_path"_a = projectPath,
                 "project_name"_a = QString_To_Py_String(projectInfo.m_projectName),
                 "template_path"_a = QString_To_Py_Path(projectTemplatePath),
+                "version"_a = QString_To_Py_String(projectInfo.m_version),
                 "no_register"_a = !registerProject
             );
             if (createProjectResult.cast<int>() == 0)
@@ -1061,6 +1063,60 @@ namespace O3DE::ProjectManager
         return gemInfo;
     }
 
+    ProjectInfo PythonBindings::ProjectInfoFromDict(pybind11::handle projectData, const QString& path)
+    {
+        ProjectInfo projectInfo;
+        projectInfo.m_needsBuild = false;
+
+        if (!path.isEmpty())
+        {
+            projectInfo.m_path = path;
+        }
+        else
+        {
+            projectInfo.m_path = Py_To_String_Optional(projectData, "path", projectInfo.m_path);
+        }
+
+        projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
+        projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
+        projectInfo.m_version = Py_To_String_Optional(projectData, "version", projectInfo.m_version);
+        projectInfo.m_id = Py_To_String_Optional(projectData, "project_id", projectInfo.m_id);
+        projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
+        projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
+        projectInfo.m_requirements = Py_To_String_Optional(projectData, "requirements", projectInfo.m_requirements);
+        projectInfo.m_license = Py_To_String_Optional(projectData, "license", projectInfo.m_license);
+        projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
+        projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
+        if (projectData.contains("user_tags"))
+        {
+            for (auto tag : projectData["user_tags"])
+            {
+                projectInfo.m_userTags.append(Py_To_String(tag));
+            }
+        }
+
+        if (projectData.contains("engine_path"))
+        {
+            // Python looked for an engine path so we don't need to, but be careful
+            // not to add 'None' in case no path was found
+            if (!pybind11::isinstance<pybind11::none>(projectData["engine_path"]))
+            {
+                projectInfo.m_enginePath = Py_To_String(projectData["engine_path"]);
+            }
+        }
+        else
+        {
+            auto enginePathResult = m_manifest.attr("get_project_engine_path")(QString_To_Py_Path(projectInfo.m_path));
+            if (!pybind11::isinstance<pybind11::none>(enginePathResult))
+            {
+                // request a posix path so it looks like what is in o3de_manifest.json
+                projectInfo.m_enginePath = Py_To_String(enginePathResult.attr("as_posix")());
+            }
+        }
+
+        return projectInfo;
+    }
+
     ProjectInfo PythonBindings::ProjectInfoFromPath(pybind11::handle path)
     {
         ProjectInfo projectInfo;
@@ -1072,29 +1128,7 @@ namespace O3DE::ProjectManager
         {
             try
             {
-                projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
-                projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
-                projectInfo.m_id = Py_To_String_Optional(projectData, "project_id", projectInfo.m_id);
-                projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
-                projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
-                projectInfo.m_requirements = Py_To_String_Optional(projectData, "requirements", projectInfo.m_requirements);
-                projectInfo.m_license = Py_To_String_Optional(projectData, "license", projectInfo.m_license);
-                projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
-                projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
-                if (projectData.contains("user_tags"))
-                {
-                    for (auto tag : projectData["user_tags"])
-                    {
-                        projectInfo.m_userTags.append(Py_To_String(tag));
-                    }
-                }
-
-                auto enginePathResult = m_manifest.attr("get_project_engine_path")(path);
-                if (!pybind11::isinstance<pybind11::none>(enginePathResult))
-                {
-                    // request a posix path so it looks like what is in o3de_manifest.json
-                    projectInfo.m_enginePath = Py_To_String(enginePathResult.attr("as_posix")());
-                }
+                projectInfo = ProjectInfoFromDict(projectData, projectInfo.m_path);
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -1110,17 +1144,14 @@ namespace O3DE::ProjectManager
         QVector<ProjectInfo> projects;
 
         bool result = ExecuteWithLock([&] {
-            // external projects
-            for (auto path : m_manifest.attr("get_manifest_projects")())
+            for (auto projectData : m_projectManagerInterface.attr("get_all_project_infos")())
             {
-                projects.push_back(ProjectInfoFromPath(path));
+                if (pybind11::isinstance<pybind11::dict>(projectData))
+                {
+                    projects.push_back(ProjectInfoFromDict(projectData));
+                }
             }
 
-            // projects from the engine
-            for (auto path : m_manifest.attr("get_engine_projects")())
-            {
-                projects.push_back(ProjectInfoFromPath(path));
-            }
         });
 
         if (!result)
@@ -1252,9 +1283,18 @@ namespace O3DE::ProjectManager
                     "new_summary"_a = QString_To_Py_String(projectInfo.m_summary),
                     "new_icon"_a = QString_To_Py_String(projectInfo.m_iconPath),
                     "replace_tags"_a = pybind11::list(pybind11::cast(newTags)),
-                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName)
+                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName),
+                    "new_version"_a = QString_To_Py_String(projectInfo.m_version)
                     );
                 updateProjectSucceeded = (editResult.cast<int>() == 0);
+
+                // use the specific path locally until we have a UX for specifying the engine version 
+                auto userEditResult = m_editProjectProperties.attr("edit_project_props")(
+                    "proj_path"_a = QString_To_Py_Path(projectInfo.m_path),
+                    "new_engine_path"_a = QString_To_Py_Path(projectInfo.m_enginePath),
+                    "user"_a = true
+                    );
+                updateProjectSucceeded &= (userEditResult.cast<int>() == 0);
             });
 
         if (!result.IsSuccess())

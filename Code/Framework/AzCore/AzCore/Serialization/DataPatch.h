@@ -185,7 +185,7 @@ namespace AZ
         * Data Patches have been updated to be human readable.
         * For backwards compatibility the DataPatch type Uuid has been modified and a deprecation converter is used to convert.
         */
-        AZ_CLASS_ALLOCATOR(DataPatch, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DataPatch, SystemAllocator);
         AZ_TYPE_INFO(DataPatch, "{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}")
 
         /**

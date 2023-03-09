@@ -479,7 +479,7 @@ TEST_F(UtilitiesUnitTests, GetFileHashFromStream_SmallFileForced_ReturnsExpected
 class FileWriteThrashTestJob : public AZ::Job
 {
 public:
-    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator);
 
     FileWriteThrashTestJob(bool deleteWhenDone, AZ::JobContext* jobContext, AZ::IO::HandleType fileHandle, AZStd::string_view bufferToWrite)
         : Job(deleteWhenDone, jobContext),

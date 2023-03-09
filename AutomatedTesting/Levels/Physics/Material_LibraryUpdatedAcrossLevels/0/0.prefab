@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -101,17 +97,18 @@
                         ],
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
-                },
-                "Component_[15836496613906916845]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15836496613906916845
                 },
                 "Component_[16597972522349022176]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -129,9 +126,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4355996461495376905,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -206,10 +205,6 @@
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 3552038377029839116
                 },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
-                },
                 "Component_[9432950532896492451]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 9432950532896492451,
@@ -274,17 +269,18 @@
                         ],
                         "Gravity Enabled": false,
                         "Compute Mass": false,
-                        "Inertia tensor": {
-                            "roll": 0.0,
-                            "pitch": 0.0,
-                            "yaw": 0.0,
-                            "scale": 10.0
-                        }
+                        "Inertia tensor": [
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            10.0
+                        ]
                     }
-                },
-                "Component_[15836496613906916845]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15836496613906916845
                 },
                 "Component_[16597972522349022176]": {
                     "$type": "EditorOnlyEntityComponent",
@@ -302,9 +298,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4355996461495376905,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -359,6 +357,10 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 10871399259191966069
                 },
+                "Component_[11531003981497427439]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11531003981497427439
+                },
                 "Component_[12515684864447251759]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 12515684864447251759
@@ -393,10 +395,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 3078346116579265539
                 },
-                "Component_[4904090692018630100]": {
-                    "$type": "SelectionComponent",
-                    "Id": 4904090692018630100
-                },
                 "Component_[7960354929538954982]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 7960354929538954982
@@ -407,9 +405,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -503,10 +503,6 @@
                 "Component_[2029679326492259668]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 2029679326492259668
-                },
-                "Component_[6843859049760163738]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6843859049760163738
                 }
             }
         }

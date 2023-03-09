@@ -22,7 +22,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionSamplingRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionSamplingRule, AZ::SystemAllocator)
 
             float MotionSamplingRule::GetCustomSampleRate() const
             {

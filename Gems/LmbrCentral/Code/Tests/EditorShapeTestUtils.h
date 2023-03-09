@@ -7,26 +7,35 @@
  */
 
 #pragma once
+
+#include <AZTestShared/Utils/Utils.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AZTestShared/Utils/Utils.h>
+#include <AzToolsFramework/ComponentModes/ShapeComponentModeBus.h>
 
 namespace LmbrCentral
 {
-    void DragMouse(
-        const AzFramework::CameraState& cameraState,
-        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
-        const AZ::Vector3& worldStart,
-        const AZ::Vector3& worldEnd,
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
-        AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
+    void EnterComponentMode(AZ::EntityId entityId, const AZ::Uuid& componentType);
 
-    void EnterComponentMode(AZ::Entity* entity, const AZ::Uuid& componentType);
+    void SetComponentSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode subMode);
 
-    void ExpectBoxDimensions(AZ::Entity* entity, const AZ::Vector3& expectedBoxDimensions);
+    void ExpectBoxDimensions(AZ::EntityId entityId, const AZ::Vector3& expectedBoxDimensions);
 
-    void ExpectTranslationOffset(AZ::Entity* entity, const AZ::Vector3& expectedTranslationOffset);
+    void ExpectCapsuleRadius(AZ::EntityId entityId, float expectedRadius);
+
+    void ExpectCapsuleHeight(AZ::EntityId entityId, float expectedHeight);
+
+    void ExpectSphereRadius(AZ::EntityId, float expectedRadius);
+
+    void ExpectTranslationOffset(AZ::EntityId entityId, const AZ::Vector3& expectedTranslationOffset);
+
+    void ExpectSubMode(
+        AZ::EntityComponentIdPair entityComponentIdPair, AzToolsFramework::ShapeComponentModeRequests::SubMode expectedSubMode);
+
+    AzToolsFramework::ViewportInteraction::MouseInteractionResult CtrlScroll(float wheelDelta);
 } // namespace LmbrCentral

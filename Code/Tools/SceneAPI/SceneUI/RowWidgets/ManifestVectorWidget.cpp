@@ -33,7 +33,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestVectorWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestVectorWidget, SystemAllocator);
 
             ManifestVectorWidget::ManifestVectorWidget(SerializeContext* serializeContext, QWidget* parent)
                 : QWidget(parent)

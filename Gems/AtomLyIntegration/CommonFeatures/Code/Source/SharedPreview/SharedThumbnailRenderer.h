@@ -29,7 +29,7 @@ namespace AZ
             , public AzFramework::AssetCatalogEventBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedThumbnailRenderer, AZ::SystemAllocator);
 
             SharedThumbnailRenderer();
             ~SharedThumbnailRenderer();

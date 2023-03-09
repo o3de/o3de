@@ -803,7 +803,7 @@ namespace UnitTest
             MockShapeComponentHandler mockShapeComponentHandler(mockShape->GetId());
             // Create a 2x2 box shape (shapes are inclusive, so that's 3x3 sampling space), so that each pixel in the image directly maps to 1 meter in the box.
             mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(2.0f));
-            mockShapeComponentHandler.m_GetLocalBounds = mockShapeComponentHandler.m_GetEncompassingAabb;
+            mockShapeComponentHandler.m_GetLocalBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
             // Shapes internally just cache the WorldTM, so make sure we've done the same for our test data.
             mockShapeComponentHandler.m_GetTransform = mockShapeTransformHandler.m_GetWorldTMOutput;
 

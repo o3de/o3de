@@ -90,6 +90,7 @@ namespace Benchmark
 
         virtual void internalSetUp(const ::benchmark::State& state)
         {
+            m_allocator = AZStd::make_unique<TestAllocatorType>();
             if (state.thread_index() == 0)
             {
                 m_allocations.resize(state.threads());
@@ -107,6 +108,7 @@ namespace Benchmark
                 m_allocations.clear();
                 m_allocations.shrink_to_fit();
             }
+            m_allocator = nullptr;
         }
 
         AZStd::vector<void*>& GetPerThreadAllocations(size_t threadIndex)
@@ -133,11 +135,11 @@ namespace Benchmark
             internalTearDown(state);
         }
 
-        const TestAllocatorType& GetAllocator() const { return m_allocator; }
-        TestAllocatorType& GetAllocator() { return m_allocator; }
+        const TestAllocatorType& GetAllocator() const { return *m_allocator; }
+        TestAllocatorType& GetAllocator() { return *m_allocator; }
 
     private:
-        TestAllocatorType m_allocator;
+        AZStd::unique_ptr<TestAllocatorType> m_allocator;
         AZStd::vector<AZStd::vector<void*>> m_allocations;
     };
 
@@ -256,7 +258,34 @@ namespace Benchmark
         #pragma pack(pop)
         static_assert(sizeof(AllocatorOperation) == 8);
 
+        void InternalSetUp([[maybe_unused]] const ::benchmark::State& state)
+        {
+            m_allocator = AZStd::make_unique<TestAllocatorType>();
+        }
+
+        void InternalTearDown([[maybe_unused]] const ::benchmark::State& state)
+        {
+            m_allocator = nullptr;
+        }
     public:
+        void SetUp(const ::benchmark::State& state) override
+        {
+            InternalSetUp(state);
+        }
+        void SetUp(::benchmark::State& state) override
+        {
+            InternalSetUp(state);
+        }
+
+        void TearDown(const ::benchmark::State& state) override
+        {
+            InternalTearDown(state);
+        }
+        void TearDown(::benchmark::State& state) override
+        {
+            InternalTearDown(state);
+        }
+
         void Benchmark(benchmark::State& state)
         {
             for ([[maybe_unused]] auto _ : state)
@@ -363,8 +392,8 @@ namespace Benchmark
             }
         }
     private:
-        TestAllocatorType m_allocator;
-        TestAllocatorType& GetAllocator() { return m_allocator; }
+        AZStd::unique_ptr<TestAllocatorType> m_allocator;
+        TestAllocatorType& GetAllocator() { return *m_allocator; }
     };
 
     // For non-threaded ranges, run 100, 400, 1600 amounts
@@ -417,7 +446,7 @@ namespace Benchmark
     BM_REGISTER_ALLOCATOR(RawMallocAllocator, RawMallocAllocator);
     BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
-    
+
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
     // BM_REGISTER_ALLOCATOR(OSAllocator, OSAllocator); // Requires special treatment to initialize since it will be already initialized, maybe creating a different instance?
 

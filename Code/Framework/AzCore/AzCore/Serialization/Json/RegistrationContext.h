@@ -11,7 +11,6 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -23,7 +22,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(JsonRegistrationContext, "{5A763774-CA8B-4245-A897-A03C503DCD60}", ReflectContext);
-        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator);
 
         class SerializerBuilder;
         using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;
@@ -34,7 +33,7 @@ namespace AZ
         const HandledTypesMap& GetRegisteredSerializers() const;
         BaseJsonSerializer* GetSerializerForType(const Uuid& typeId) const;
         BaseJsonSerializer* GetSerializerForSerializerType(const Uuid& typeId) const;
-        
+
         template <typename T>
         SerializerBuilder Serializer()
         {
@@ -52,7 +51,7 @@ namespace AZ
                 return SerializerBuilder(this, m_jsonSerializers.end());
             }
         }
-        
+
         class SerializerBuilder
         {
             friend class JsonRegistrationContext;
@@ -73,7 +72,7 @@ namespace AZ
 
 #if defined(AZ_COMPILER_MSVC)
             // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
-            // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack. 
+            // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack.
             template<template<AZStd::size_t...> class T>
 #else
             template<template<auto...> class T>

@@ -11,14 +11,15 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 
 #include <QtCore/QString>
 
 namespace AZ
 {
     struct ClassDataReflection;
+    class ReflectContext;
 }
 
 class QMimeData;
@@ -31,7 +32,7 @@ namespace AzToolsFramework
         virtual ~EditorAssetMimeData() { }
 
         AZ_RTTI(EditorAssetMimeData, "{844742CD-7D34-4ED0-B798-396A6C0530BF}");
-        AZ_CLASS_ALLOCATOR(EditorAssetMimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAssetMimeData, AZ::SystemAllocator);
 
         EditorAssetMimeData()
         {
@@ -57,7 +58,7 @@ namespace AzToolsFramework
         virtual ~EditorAssetMimeDataContainer() { }
 
         AZ_RTTI(EditorAssetMimeDataContainer, "{BC72D334-EFF9-40F0-B615-48186E01BDD6}");
-        AZ_CLASS_ALLOCATOR(EditorAssetMimeDataContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAssetMimeDataContainer, AZ::SystemAllocator);
 
         AZStd::vector< EditorAssetMimeData > m_assets;
 

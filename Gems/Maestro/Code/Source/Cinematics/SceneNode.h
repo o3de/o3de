@@ -25,7 +25,7 @@ class CAnimSceneNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimSceneNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimSceneNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimSceneNode, "{659BB221-38D3-43C0-BEE4-7EAB49C8CB33}", CAnimNode);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,8 +117,6 @@ private:
     // Cached parameters of node at given time.
     float m_time = 0.0f;
 
-    IMovieSystem* m_pMovie;
-
     CSelectTrack* m_CurrentSelectTrack;
     int m_CurrentSelectTrackKeyNumber;
     IAnimNode* m_pCamNodeOnHoldForInterp;
@@ -133,7 +131,6 @@ private:
     int m_lastCaptureKey;    
     bool m_bLastCapturingEnded;
     int m_captureFrameCount;
-    bool m_sequenceTrackUpConverted = false;
 
     struct InterpolatingCameraStartState
     {
@@ -150,7 +147,7 @@ private:
 
     std::vector<SSoundInfo> m_SoundInfo;
 
-    AZ::TimeMs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeMs;
+    AZ::TimeUs m_simulationTickOverrideBackup = AZ::Time::ZeroTimeUs;
     float m_timeScaleBackup = 1.0f;
 };
 

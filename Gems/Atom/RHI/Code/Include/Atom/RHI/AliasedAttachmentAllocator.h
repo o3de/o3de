@@ -73,7 +73,7 @@ namespace AZ
             static_assert(AZStd::is_base_of<AliasedHeap, Heap>::value, "Type must inherit from RHI::AliasedHeap to be used by the RHI::AliasedAttachmentAllocator.");
             using Base = DeviceObject;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedAttachmentAllocator<Heap>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedAttachmentAllocator<Heap>, AZ::SystemAllocator);
 
             struct Descriptor
                 : public Heap::Descriptor
@@ -250,6 +250,7 @@ namespace AZ
             Internal::NoAllocationAliasedHeap::Descriptor heapAllocator;
             heapAllocator.m_alignment = descriptor.m_alignment;
             heapAllocator.m_budgetInBytes = std::numeric_limits<AZ::u64>::max();
+            m_noAllocationHeap.SetName(AZ::Name("AliasedAttachment_NoAllocationHeap"));
             m_noAllocationHeap.Init(device, heapAllocator);
 
             typename decltype(m_garbageCollector)::Descriptor collectorDescriptor;

@@ -13,12 +13,15 @@
 
 namespace EMotionFX
 {
+    class Vector3Parameter;
+    AZ_TYPE_INFO_SPECIALIZE(Vector3Parameter, "{E647B621-27DA-454E-A14F-45C65E2C7874}");
+
     class Vector3Parameter
         : public RangedValueParameter<AZ::Vector3, Vector3Parameter>
     {
         using BaseType = RangedValueParameter<AZ::Vector3, Vector3Parameter>;
     public:
-        AZ_RTTI(Vector3Parameter, "{E647B621-27DA-454E-A14F-45C65E2C7874}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
         AZ_CLASS_ALLOCATOR_DECL
 
         Vector3Parameter()

@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -58,10 +54,6 @@
                 "Component_[11715519062967203564]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 11715519062967203564
-                },
-                "Component_[12116605035306086849]": {
-                    "$type": "SelectionComponent",
-                    "Id": 12116605035306086849
                 },
                 "Component_[12527068633650846978]": {
                     "$type": "EditorEntityIconComponent",
@@ -79,6 +71,10 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 17968486723623259793
                 },
+                "Component_[18319946024592317322]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 18319946024592317322
+                },
                 "Component_[3582638891871769105]": {
                     "$type": "EditorColliderComponent",
                     "Id": 3582638891871769105,
@@ -90,9 +86,11 @@
                             0.0,
                             0.5
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -159,10 +157,6 @@
             "Id": "Entity_[287124693539]",
             "Name": "SphereRigidBody",
             "Components": {
-                "Component_[11933716127308513926]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11933716127308513926
-                },
                 "Component_[14778399419284274541]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 14778399419284274541
@@ -237,9 +231,11 @@
                             0.0,
                             0.5
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },

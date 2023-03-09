@@ -41,6 +41,10 @@
                 "Path": "Passes/MainPipeline.pass"
             },
             {
+                "Name": "CameraPipeline",
+                "Path": "Passes/CameraPipeline.pass"
+            },
+            {
                 "Name": "MainPipelineRenderToTexture",
                 "Path": "Passes/MainPipelineRenderToTexture.pass"
             },
@@ -131,6 +135,10 @@
             {
                 "Name": "DownsampleMipChainTemplate",
                 "Path": "Passes/DownsampleMipChain.pass"
+            },
+            {
+                "Name": "DownsampleSinglePassLuminanceTemplate",
+                "Path": "Passes/DownsampleSinglePassLuminance.pass"
             },
             {
                 "Name": "DisplayMapperTemplate",
@@ -493,14 +501,6 @@
                 "Path": "Passes/LowEndPipeline.pass"
             },
             {
-                "Name": "LowEndPipelineXRLeftTemplate",
-                "Path": "Passes/LowEndPipelineXRLeft.pass"
-            },
-            {
-                "Name": "LowEndPipelineXRRightTemplate",
-                "Path": "Passes/LowEndPipelineXRRight.pass"
-            },
-            {
                 "Name": "MultiViewForwardPassTemplate",
                 "Path": "Passes/MultiViewForward.pass"
             },
@@ -543,6 +543,10 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "SplashScreenPassTemplate",
+                "Path": "Passes/SplashScreen.pass"
             }
         ]
     }

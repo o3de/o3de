@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -55,10 +51,6 @@
             "Id": "Entity_[279454450788]",
             "Name": "Box",
             "Components": {
-                "Component_[10349274502019720655]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10349274502019720655
-                },
                 "Component_[10909557756965435232]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 10909557756965435232
@@ -88,6 +80,10 @@
                         }
                     ]
                 },
+                "Component_[15669826384274097496]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 15669826384274097496
+                },
                 "Component_[18213634137398041457]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 18213634137398041457,
@@ -106,9 +102,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -135,16 +133,16 @@
                 "Component_[814892852661066937]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 814892852661066937,
-                    "m_name": "ScriptCanvasBox",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{374FA4D5-6167-56A8-BC77-04D5F71C3ED2}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{374FA4D5-6167-56A8-BC77-04D5F71C3ED2}",
+                            "path": "scriptcanvas/scriptcanvasbox.scriptcanvas"
+                        },
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{374FA4D5-6167-56A8-BC77-04D5F71C3ED2}"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{374FA4D5-6167-56A8-BC77-04D5F71C3ED2}",
-                        "path": "scriptcanvas/scriptcanvasbox.scriptcanvas"
                     }
                 }
             }
@@ -173,19 +171,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 16210676658230708095,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
                     "ShapeConfiguration": {
                         "ShapeType": 0
                     }
-                },
-                "Component_[16690187173417031376]": {
-                    "$type": "SelectionComponent",
-                    "Id": 16690187173417031376
                 },
                 "Component_[17183713697901649461]": {
                     "$type": "EditorLockComponent",

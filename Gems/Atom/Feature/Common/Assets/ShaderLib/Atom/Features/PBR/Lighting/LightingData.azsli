@@ -87,7 +87,6 @@ void LightingData::CalculateMultiscatterCompensation(float3 specularF0, bool ena
 void LightingData::FinalizeLighting()
 {
     specularLighting *= specularOcclusion;
-    specularLighting += emissiveLighting;
 
     if(!IsSpecularLightingEnabled())
     {

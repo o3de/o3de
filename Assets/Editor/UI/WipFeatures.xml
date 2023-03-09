@@ -1,6 +1,0 @@
-<features>
- <feature id="10078" displayName="ID_VIEW_AI_LNMEDITOR" visible="1" enabled="0" safeMode="0" params=""/>
- <feature id="33864" displayName="ID_GAME_ENABLEVERYHIGHSPEC" visible="0" enabled="0" safeMode="0" params=""/>
- <feature id="33983" displayName="ID_CONSOLE_SYNC_DATA_TO_THE_CONSOLE" visible="1" enabled="1" safeMode="0" params=""/>
- <feature id="33985" displayName="ID_CONSOLE_AUTOMATICALLYSYNC_DATA" visible="1" enabled="1" safeMode="0" params=""/>
-</features>

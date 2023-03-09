@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Source/EditorPrismaticJointComponent.h>
 #include <Source/PrismaticJointComponent.h>
@@ -55,7 +56,7 @@ namespace PhysX
     void EditorPrismaticJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     void EditorPrismaticJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -178,7 +179,6 @@ namespace PhysX
             return;
         }
 
-        const float size = 1.0f;
         const float alpha = 0.6f;
         const AZ::Color colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, alpha);
         const AZ::Color colorLimitLower = AZ::Color(1.0f, 0.0f, 0.0f, alpha);
@@ -191,6 +191,12 @@ namespace PhysX
         const AZ::EntityId& entityId = GetEntityId();
 
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(worldTransform.GetTranslation(), cameraState);
+
+        const float size = 1.0f * scaleMultiply;
 
         AZ::Transform localTransform;
         EditorJointRequestBus::EventResult(localTransform,

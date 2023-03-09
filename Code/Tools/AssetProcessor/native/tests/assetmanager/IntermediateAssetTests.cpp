@@ -17,47 +17,11 @@ namespace UnitTests
     void IntermediateAssetTests::SetUp()
     {
         AssetManagerTestingBase::SetUp();
-
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     void IntermediateAssetTests::TearDown()
     {
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
         AssetManagerTestingBase::TearDown();
-    }
-
-    // Since AP will redirect any failures to a job log file, we won't see them output by default
-    // This will cause any error/assert to be printed out and mark the test as failed
-    bool IntermediateAssetTests::OnPreAssert(const char* fileName, int line, const char* /*func*/, const char* message)
-    {
-        if (m_expectedErrors > 0)
-        {
-            --m_expectedErrors;
-            return false;
-        }
-
-        UnitTest::ColoredPrintf(UnitTest::COLOR_RED, "Assert: %s\n", message);
-
-        ADD_FAILURE_AT(fileName, line);
-
-        return false;
-    }
-
-    bool IntermediateAssetTests::OnPreError(const char* /*window*/, const char* fileName, int line, const char* /*func*/, const char* message)
-    {
-        if (m_expectedErrors > 0)
-        {
-            --m_expectedErrors;
-            return false;
-        }
-
-        UnitTest::ColoredPrintf(UnitTest::COLOR_RED, "Error: %s\n", message);
-
-        ADD_FAILURE_AT(fileName, line);
-
-        return false;
     }
 
     void IntermediateAssetTests::IncorrectBuilderConfigurationTest(bool commonPlatform, AssetBuilderSDK::ProductOutputFlags flags)
@@ -66,19 +30,19 @@ namespace UnitTests
 
         CreateBuilder("stage1", "*.stage1", "stage2", commonPlatform, flags);
 
-        m_expectedErrors = 1;
-
         QMetaObject::invokeMethod(
             m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
         QCoreApplication::processEvents();
 
         RunFile(1);
+        m_errorChecker.Begin();
         ProcessJob(*m_rc, m_jobDetailsList[0]);
+        m_errorChecker.End(1);
 
         ASSERT_TRUE(m_fileFailed);
     }
 
-    TEST_F(IntermediateAssetTests, FileProcessedAsIntermediateIntoProduct)
+    TEST_F(IntermediateAssetTests, FileProcessedAsIntermediateIntoProduct_NotEnabledType_PathBasedUUID)
     {
         using namespace AssetBuilderSDK;
 
@@ -86,6 +50,67 @@ namespace UnitTests
         CreateBuilder("stage2", "*.stage2","stage3", false, ProductOutputFlags::ProductAsset);
 
         ProcessFileMultiStage(2, true);
+
+        // Verify the UUID is generated based on the Source:Builder:SubId and not some randomly generated one
+        AssetProcessor::BuilderInfoList builders;
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, MakePath("test.stage1", true), builders);
+
+        ASSERT_EQ(builders.size(), 1);
+
+        auto builderUuid = builders[0].m_busId;
+        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str())).GetValueOr(AZ::Uuid());
+        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str())).GetValueOr(AZ::Uuid());
+        auto uuidFormat = AZStd::string::format(
+            AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
+            AZ_STRING_ARG(sourceUuid.ToFixedString()),
+            AZ_STRING_ARG(builderUuid.ToFixedString()),
+            AssetSubId);
+
+        auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
+
+        EXPECT_NE(actualIntermediateUuid, expectedIntermediateUuid);
+    }
+
+    TEST_F(IntermediateAssetTests, FileProcessedAsIntermediateIntoProduct_EnabledType_SourceBasedUUID)
+    {
+        using namespace AssetBuilderSDK;
+
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        ASSERT_TRUE(uuidInterface);
+
+        uuidInterface->EnableGenerationForTypes({ ".stage1" });
+
+        CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
+
+        ProcessFileMultiStage(2, true);
+
+        // Verify the UUID is generated based on the Source:Builder:SubId and not some randomly generated one
+        AssetProcessor::BuilderInfoList builders;
+        AssetProcessor::AssetBuilderInfoBus::Broadcast(
+            &AssetProcessor::AssetBuilderInfoBus::Events::GetMatchingBuildersInfo, MakePath("test.stage1", true), builders);
+
+        ASSERT_EQ(builders.size(), 1);
+
+        auto builderUuid = builders[0].m_busId;
+        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
+        auto actualIntermediateUuid =
+            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+
+        ASSERT_TRUE(sourceUuid);
+        ASSERT_TRUE(actualIntermediateUuid);
+
+        auto uuidFormat = AZStd::string::format(
+            AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
+            AZ_STRING_ARG(sourceUuid.GetValue().ToFixedString()),
+            AZ_STRING_ARG(builderUuid.ToFixedString()),
+            AssetSubId);
+
+        auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
+
+        EXPECT_EQ(actualIntermediateUuid.GetValue(), expectedIntermediateUuid);
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)

@@ -90,7 +90,7 @@ namespace AssetProcessor
             SourceDatabaseEntry sourceEntry;
             sourceEntry.m_sourceName = sourceName;
             sourceEntry.m_scanFolderPK = scanFolderPK;
-            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+            sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
 
             EXPECT_FALSE(sourceEntry.m_sourceGuid.IsNull());
 
@@ -166,6 +166,7 @@ namespace AssetProcessor
             AZStd::shared_ptr<AssetDatabaseConnection> m_dbConn;
             MissingDependencyScanner_Test m_scanner;
             UnitTests::MockPathConversion m_pathConversion;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
             AzToolsFramework::MetadataManager m_metadataManager;
             AssetProcessor::UuidManager m_uuidManager;
             UnitTestUtils::ScopedDir m_scopedDir; // Sets up FileIO instance
@@ -203,7 +204,7 @@ namespace AssetProcessor
         SourceDatabaseEntry sourceEntry;
         sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
         sourceEntry.m_scanFolderPK = sourceAsset.ScanFolderId();
-        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset);
+        sourceEntry.m_sourceGuid = AssetUtilities::GetSourceUuid(sourceAsset).GetValueOr(AZ::Uuid());
         ASSERT_TRUE(m_data->m_dbConn->SetSource(sourceEntry));
 
         JobDatabaseEntry jobEntry;

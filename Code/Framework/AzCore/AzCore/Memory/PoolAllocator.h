@@ -22,11 +22,11 @@ namespace AZ
      * Pool Allocator is NOT thread safe, if you if need a thread safe version
      * use ThreadPool Schema or do the sync yourself.
      */
-    class PoolSchema 
+    class PoolSchema
         : public IAllocator
     {
     public:
-        AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
+        AZ_TYPE_INFO_WITH_NAME_DECL(PoolSchema);
 
         PoolSchema();
         ~PoolSchema();
@@ -123,65 +123,67 @@ namespace AZ
     AZ_THREAD_LOCAL ThreadPoolData* ThreadPoolSchemaHelper<Allocator>::m_threadData = 0;
 }
 
-namespace AZ
+namespace AZ::Internal
 {
     template<class Allocator>
     class PoolAllocation;
-    namespace Internal
+    constexpr const char* PoolAllocatorHelperTemplateId = "{813b4b74-7381-4c62-b475-3f66efbcb615}";
+    template<class Schema>
+    class PoolAllocatorHelper;
+
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_DECL(PoolAllocatorHelper, AZ_TYPE_INFO_CLASS);
+
+    /*!
+    * Template you can use to create your own thread pool allocators, as you can't inherit from ThreadPoolAllocator.
+    * This is the case because we use tread local storage and we need separate "static" instance for each allocator.
+    */
+    template<class Schema>
+    class PoolAllocatorHelper
+        : public SimpleSchemaAllocator<Schema, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
     {
-        /*!
-        * Template you can use to create your own thread pool allocators, as you can't inherit from ThreadPoolAllocator.
-        * This is the case because we use tread local storage and we need separate "static" instance for each allocator.
-        */
-        template<class Schema>
-        class PoolAllocatorHelper
-            : public SimpleSchemaAllocator<Schema, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
+    public:
+        using Base = SimpleSchemaAllocator<Schema, true, false>;
+        using pointer = typename Base::pointer;
+        using size_type = typename Base::size_type;
+        using difference_type = typename Base::difference_type;
+
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+
+        PoolAllocatorHelper()
         {
-        public:
-            using Base = SimpleSchemaAllocator<Schema, true, false>;
-            using pointer = typename Base::pointer;
-            using size_type = typename Base::size_type;
-            using difference_type = typename Base::difference_type;
+            static_cast<Schema*>(this->m_schema)->Create();
+            this->PostCreate();
+        }
 
-            AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base)
+        ~PoolAllocatorHelper() override
+        {
+            this->PreDestroy();
+        }
 
-            PoolAllocatorHelper()
-            {
-                static_cast<Schema*>(this->m_schema)->Create();
-                this->PostCreate();
-            }
+        //////////////////////////////////////////////////////////////////////////
+        // IAllocator
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
+        {
+            (void)ptr;
+            (void)newSize;
+            (void)newAlignment;
+            AZ_Assert(false, "Not supported!");
+            return nullptr;
+        }
 
-            ~PoolAllocatorHelper() override
-            {
-                this->PreDestroy();
-            }
+        //////////////////////////////////////////////////////////////////////////
 
-            AllocatorDebugConfig GetDebugConfig() override
-            {
-                return AllocatorDebugConfig()
-                    .ExcludeFromDebugging(false)
-                    .StackRecordLevels(O3DE_STACK_CAPTURE_DEPTH)
-                    .MarksUnallocatedMemory(false)
-                    .UsesMemoryGuards(false);
-            }
+        PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
+    };
 
-            //////////////////////////////////////////////////////////////////////////
-            // IAllocator
-            pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
-            {
-                (void)ptr;
-                (void)newSize;
-                (void)newAlignment;
-                AZ_Assert(false, "Not supported!");
-                return nullptr;
-            }
+    extern template class PoolAllocatorHelper<PoolSchema>;
+}
 
-            //////////////////////////////////////////////////////////////////////////
-
-            PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
-        };
-    }
-
+namespace AZ
+{
+    // Extern the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template to
+    // to reduce instantations
+    extern template struct AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
     /*!
      * Pool allocator
      * Specialized allocation for extremely fast small object memory allocations.
@@ -193,15 +195,23 @@ namespace AZ
         : public Internal::PoolAllocatorHelper<PoolSchema>
     {
     public:
-        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator);
 
         using Base = Internal::PoolAllocatorHelper<PoolSchema>;
 
-        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base)
+        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base);
+
+        AllocatorDebugConfig GetDebugConfig() override;
     };
 
     template<class Allocator>
     using ThreadPoolBase = Internal::PoolAllocatorHelper<ThreadPoolSchemaHelper<Allocator> >;
+
+    class ThreadPoolAllocator;
+    namespace Internal
+    {
+        extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+    }
 
     /*!
      * Thread safe pool allocator. If you want to create your own thread pool heap,
@@ -211,10 +221,12 @@ namespace AZ
         : public ThreadPoolBase<ThreadPoolAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator);
 
         using Base = ThreadPoolBase<ThreadPoolAllocator>;
 
-        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base)
+        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base);
+
+        AllocatorDebugConfig GetDebugConfig() override;
     };
 } // namespace AZ

@@ -43,7 +43,7 @@ namespace AzToolsFramework::Prefab
         , private EditorEntityInfoNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator);
 
         void RegisterPrefabFocusInterface();
         void UnregisterPrefabFocusInterface();
@@ -65,6 +65,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
+        
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;

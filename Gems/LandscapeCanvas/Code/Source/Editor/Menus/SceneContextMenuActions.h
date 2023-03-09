@@ -16,7 +16,7 @@ namespace LandscapeCanvasEditor
         : public GraphCanvas::ContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(FindSelectedNodesAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindSelectedNodesAction, AZ::SystemAllocator);
 
         FindSelectedNodesAction(QObject* parent);
         virtual ~FindSelectedNodesAction() = default;

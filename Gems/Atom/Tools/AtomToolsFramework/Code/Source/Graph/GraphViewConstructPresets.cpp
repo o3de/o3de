@@ -9,6 +9,8 @@
 #include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 
+#include <AzCore/Serialization/EditContext.h>
+
 namespace AtomToolsFramework
 {
     void GraphViewConstructPresets::Reflect(AZ::ReflectContext* context)
@@ -22,7 +24,6 @@ namespace AtomToolsFramework
             {
                 editContext->Class<GraphViewConstructPresets>("GraphViewConstructPresets", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }

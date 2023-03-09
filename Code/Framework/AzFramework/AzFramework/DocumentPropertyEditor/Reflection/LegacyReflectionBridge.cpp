@@ -254,7 +254,10 @@ namespace AZ::Reflection
                 else if (classElement)
                 {
                     AZStd::string_view elementName = classElement->m_name;
-                    if (!elementName.empty())
+
+                    // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
+                    // serialized paths looking like "token1////token2/token3"
+                    if (!elementName.empty() && classElement->m_editData)
                     {
                         path.append("/");
                         path.append(elementName);
@@ -555,25 +558,29 @@ namespace AZ::Reflection
                 using DocumentPropertyEditor::Nodes::PropertyVisibility;
                 PropertyVisibility visibility = PropertyVisibility::Show;
 
-                AZ::Name handlerName;
+                Name handlerName;
 
-                // This array node is for caching related EnumValue attributes if any are seen
-                Dom::Value enumValueCache = Dom::Value(Dom::Type::Array);
-                const AZ::Name enumValueName = AZ::Name("EnumValue");
+                // This array node is for caching related GenericValue and EnumValueKey attributes if any are seen
+                Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
+                const Name genericValueName = Name("GenericValue");
+                const Name enumValueKeyName = Name("EnumValueKey");
+                const Name genericValueListName = Name("GenericValueList");
+                const Name enumValuesCrcName = Name(static_cast<u32>(Crc32("EnumValues")));
 
-                auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
+                auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
                     }
 
-                    AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
+                    Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If a more specific attribute is already loaded, ignore the new value unless it is an
-                        // EnumValue attribute since those may come in multiples
-                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != enumValueName)
+                        // If an attribute of the same name is already loaded then ignore the new value unless
+                        // it is a GenericValue or EnumValueKey attribute since each represents an individual
+                        // (value, description) pair destined for a combobox and thus multiple are expected
+                        if (visitedAttributes.contains(name) && name != genericValueName && name != enumValueKeyName)
                         {
                             return;
                         }
@@ -587,23 +594,17 @@ namespace AZ::Reflection
                                              .value_or(visibility);
                         }
 
-                        // See if any registered attributes can read this attribute.
+                        // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
-                            [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
                             {
                                 if (attributeValue.IsNull())
                                 {
                                     attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                                 }
                             });
-
-                        // Collect related EnumValue attributes for later
-                        if (name == enumValueName && !attributeValue.IsNull())
-                        {
-                            enumValueCache.ArrayPushBack(attributeValue);
-                        }
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -618,11 +619,29 @@ namespace AZ::Reflection
                             // omit our normal synthetic Handler attribute.
                             if (name == DescriptorAttributes::Handler)
                             {
-                                handlerName = AZ::Name();
+                                handlerName = Name();
                             }
 
-                            if (name == enumValueName)
+                            // Collect related GenericValue attributes so they can be stored together as GenericValueList
+                            if (name == genericValueName)
                             {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                return;
+                            }
+                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
+                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // because such nodes also have internal EnumValueKey attributes that we won't use.
+                            // The cached values will be stored as a GenericValueList attribute.
+                            if (name == enumValueKeyName &&
+                                !visitedAttributes.contains(enumValuesCrcName) &&
+                                !visitedAttributes.contains(genericValueListName))
+                            {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
+                                // in the PropertyEditorSystem.
+                                // This is reasonable since the attribute's value is an enum with an underlying integral
+                                // type which is safely convertible to AZ::u64.
+                                nodeData.m_typeId = AzTypeInfo<u64>::Uuid();
                                 return;
                             }
 
@@ -751,10 +770,10 @@ namespace AZ::Reflection
                     }
                 }
 
-                if (enumValueCache.ArraySize() > 0)
+                if (genericValueCache.ArraySize() > 0)
                 {
                     nodeData.m_cachedAttributes.push_back({
-                        group, DocumentPropertyEditor::Nodes::PropertyEditor::EnumValues.GetName(), enumValueCache });
+                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
                 if (!nodeData.m_labelOverride.empty())

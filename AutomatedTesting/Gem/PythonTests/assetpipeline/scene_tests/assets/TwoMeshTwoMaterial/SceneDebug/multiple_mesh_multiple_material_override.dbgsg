@@ -73,7 +73,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -139,7 +139,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -218,7 +218,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set

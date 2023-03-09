@@ -26,7 +26,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetSelectorButton, AZ::SystemAllocator);
 
         TargetSelectorButton(AZ::Crc32 key, QWidget* pParent = 0);
         virtual ~TargetSelectorButton() = default;
@@ -51,7 +51,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TargetSelectorButtonAction, AZ::SystemAllocator);
 
         TargetSelectorButtonAction(AZ::Crc32 key, QObject* pParent); // create default action
 
