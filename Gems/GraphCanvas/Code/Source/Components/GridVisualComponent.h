@@ -145,9 +145,6 @@ namespace GraphCanvas
 
         AZStd::fixed_vector< QPixmap*, 4> m_levelOfDetails;
 
-        int m_majorXOffset;
-        int m_majorYOffset;
-
         GridVisualComponent& m_gridVisual;
     };
 }

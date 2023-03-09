@@ -29,6 +29,7 @@ set(FILES
     StaticLib/GraphCanvas/GraphCanvasBus.h
     StaticLib/GraphCanvas/Components/EntitySaveDataBus.h
     StaticLib/GraphCanvas/Components/GeometryBus.h
+    StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.cpp
     StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.h
     StaticLib/GraphCanvas/Components/GridBus.h
     StaticLib/GraphCanvas/Components/LayerBus.h
@@ -112,7 +113,7 @@ set(FILES
     StaticLib/GraphCanvas/Types/GraphCanvasGraphData.h
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.cpp
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.h
-    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h    
+    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h
     StaticLib/GraphCanvas/Types/Types.h
     StaticLib/GraphCanvas/Types/QtMetaTypes.h
     StaticLib/GraphCanvas/Widgets/Resources/default_style.json

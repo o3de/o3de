@@ -11,6 +11,8 @@
 #include <AzCore/std/typetraits/underlying_type.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
+#include <QMenu>
+#include <QPointer>
 #include <QStack>
 #include <QString>
 #include <QStyle>
@@ -198,11 +200,11 @@ namespace AzQtComponents
         QStack<QString> m_forwardPaths;
         Config m_config;
         QStringList m_truncatedPaths;
+        QPointer<QMenu> m_contextMenu = nullptr;
         AZ_POP_DISABLE_WARNING
         bool m_pushPathOnLinkActivation = true;
         bool m_editable = false;
         int m_currentPathSize = 0;
-
         QString m_defaultIcon;
         AZ_PUSH_DISABLE_WARNING(
             4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_currentPathIcons': class 'QVector<QIcon>' needs to have
