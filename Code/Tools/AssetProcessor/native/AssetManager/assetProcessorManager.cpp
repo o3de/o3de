@@ -1807,7 +1807,7 @@ namespace AssetProcessor
         // If so, ignore the event.
         if (ShouldIgnorePendingMove(normalizedFilePath.toUtf8().constData(), triggeredByMetadata, source.m_isDelete))
         {
-            AZ_TracePrintf(
+            AZ_Trace(
                 AssetProcessor::DebugChannel,
                 "Ignoring processing of " AZ_STRING_FORMAT " - file is marked as pending move\n",
                 AZ_STRING_ARG(normalizedFilePath));
@@ -5973,14 +5973,14 @@ namespace AssetProcessor
                     auto duration = m_delayProcessMetadataFiles[absolutePath].msecsTo(QDateTime::currentDateTime());
                     if (!HasDelayProcessTimerElapsed(duration))
                     {
-                    // Event 7: Already waiting on file, keep waiting
-                    if (!m_delayProcessMetadataQueued)
-                    {
-                        m_delayProcessMetadataQueued = true;
-                        QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
-                    }
+                        // Event 7: Already waiting on file, keep waiting
+                        if (!m_delayProcessMetadataQueued)
+                        {
+                            m_delayProcessMetadataQueued = true;
+                            QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
+                        }
 
-                    return true;
+                        return true;
                     }
 
                     // Event 5-6: Times up, process the file
@@ -5990,7 +5990,7 @@ namespace AssetProcessor
                 else if ((triggeredByMetadata || !source.m_isDelete) && !CheckMetadataIsAvailable(absolutePath))
                 {
                     // Events 2-3: File not in queue and invalid metadata, add to queue
-                    AZ_TracePrintf(
+                    AZ_Trace(
                         AssetProcessor::DebugChannel,
                         "Source " AZ_STRING_FORMAT " has no metadata file yet, delaying processing to wait for metadata file.\n",
                         AZ_STRING_ARG(absolutePath.Native()));
@@ -5999,8 +5999,8 @@ namespace AssetProcessor
 
                     if (!m_delayProcessMetadataQueued)
                     {
-                    m_delayProcessMetadataQueued = true;
-                    QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
+                        m_delayProcessMetadataQueued = true;
+                        QTimer::singleShot(m_metaCreationDelayMs, this, SLOT(DelayedMetadataFileCheck()));
                     }
 
                     Q_EMIT ProcessingDelayed(normalizedFilePath);
