@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Asset/AssetSerializer.h>
 
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSlots.h>
 
 namespace Physics
@@ -67,6 +68,13 @@ namespace Physics
         // Used for Edit Context.
         // When the physics material asset property doesn't have an asset assigned it
         // will show "(default)" to indicate that the default material will be used.
+        if (auto* materialManager = AZ::Interface<MaterialManager>::Get())
+        {
+            if (AZStd::shared_ptr<Physics::Material> defaultMaterial = materialManager->GetDefaultMaterial())
+            {
+                return defaultMaterial->GetMaterialAsset().GetId();
+            }
+        }
         return {};
     }
 
