@@ -218,17 +218,21 @@ class TestRegisterGem:
         else:
             return json.loads(TEST_GEM_JSON_PAYLOAD)
 
-    @pytest.mark.parametrize("gem_path, expected_manifest_file, dry_run, expected_result", [
-                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), False, 0),
-                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), False, 0),
-                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), False, 0),
-                                 pytest.param(pathlib.PurePath('TestGem/TestSubGem') , pathlib.PurePath('gem.json'), False, 0),
-                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), True, 0),
-                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), True, 0),
-                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), True, 0),
-                                 pytest.param(pathlib.PurePath('TestGem/TestSubGem') , pathlib.PurePath('gem.json'), True, 0),
+    @pytest.mark.parametrize("gem_path, expected_manifest_file, dry_run, force_o3de_manifest_register, expected_result", [
+                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), False, False, 0),
+                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), False, False, 0),
+                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('o3de_manifest.json'), False, True, 0),
+                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), False, False, 0),
+                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('o3de_manifest.json'), False, True, 0),
+                                 pytest.param(pathlib.PurePath('TestGem/TestSubGem') , pathlib.PurePath('gem.json'), False, False, 0),
+                                 pytest.param(pathlib.PurePath('TestGem/TestSubGem') , pathlib.PurePath('o3de_manifest.json'), False, True, 0),
+                                 pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('o3de_manifest.json'), True, False, 0),
+                                 pytest.param(project_path / 'TestGem', pathlib.PurePath('project.json'), True, False, 0),
+                                 pytest.param(engine_path / 'TestGem', pathlib.PurePath('engine.json'), True, False, 0),
+                                 pytest.param(pathlib.PurePath('TestGem/TestSubGem') , pathlib.PurePath('gem.json'), True, False, 0),
                              ])
-    def test_register_gem_auto_detects_manifest_update(self, gem_path, expected_manifest_file, dry_run, expected_result):
+    def test_register_gem_auto_detects_manifest_update(self, gem_path, expected_manifest_file, dry_run,
+     force_o3de_manifest_register, expected_result):
 
         def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
             if manifest_path == pathlib.Path(TestRegisterGem.ancestor_gem_path).resolve() / 'gem.json':
@@ -287,7 +291,8 @@ class TestRegisterGem:
                 patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
                 patch('pathlib.Path.is_dir', return_value=True) as _7,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as _8:
-            result = register.register(gem_path=gem_path, dry_run=dry_run)
+            result = register.register(gem_path=gem_path, dry_run=dry_run,
+                force_register_with_o3de_manifest=force_o3de_manifest_register)
             assert result == expected_result
 
             if expected_manifest_file == pathlib.PurePath('o3de_manifest.json'):

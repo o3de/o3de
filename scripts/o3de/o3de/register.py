@@ -396,23 +396,25 @@ def register_external_subdirectory(json_data: dict,
                                    remove: bool = False,
                                    engine_path: pathlib.Path = None,
                                    project_path: pathlib.Path = None,
-                                   gem_path: pathlib.Path = None) -> int:
+                                   gem_path: pathlib.Path = None,
+                                   force_register_with_o3de_manifest: bool = False) -> int:
     """
     :return An integer return code indicating whether registration or removal of the external subdirectory
     completed successfully
     """
     # If a gem path, project path or engine path has not been supplied auto detect which manifest to register the input path with
     # Start from the parent of the external_subdirectory to catch the case that if it is a gem, it does not register itself
-    if not gem_path and external_subdir_path.parent != external_subdir_path:
-        gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path.parent)
-    elif not project_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
-    elif not engine_path:
-        engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
+    if not force_register_with_o3de_manifest and not gem_path and not project_path and not engine_path:
+        if not gem_path and external_subdir_path.parent != external_subdir_path:
+            gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path.parent)
+        if not gem_path:
+            project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
+        if not project_path:
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None,
-                                     pathlib.Path(gem_path).resolve() if gem_path else None)
+                                     pathlib.Path(engine_path).resolve() if not force_register_with_o3de_manifest and engine_path else None,
+                                     pathlib.Path(project_path).resolve() if not force_register_with_o3de_manifest and project_path else None,
+                                     pathlib.Path(gem_path).resolve() if not force_register_with_o3de_manifest and gem_path else None)
 
 
 def register_gem_path(json_data: dict,
@@ -422,11 +424,12 @@ def register_gem_path(json_data: dict,
                       project_path:  pathlib.Path = None,
                       ancestor_gem_path: pathlib.Path = None,
                       force: bool = False,
-                      dry_run:bool = False) -> int:
+                      dry_run: bool = False,
+                      force_register_with_o3de_manifest: bool = False) -> int:
     # If an ancestor gem_ path, project path or engine path has not been supplied
     # auto detect which manifest to register the input path with
 
-    if not ancestor_gem_path and not project_path and not engine_path:
+    if not force_register_with_o3de_manifest and not ancestor_gem_path and not project_path and not engine_path:
         # Start from the parent of the gem_path to make sure the gem doesn't register itself as an external subdirectory
         if gem_path.parent != gem_path:
             ancestor_gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), gem_path.parent)
@@ -470,10 +473,10 @@ def register_gem_path(json_data: dict,
 
     result = register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None,
-                                     gem_path=pathlib.Path(ancestor_gem_path).resolve() if ancestor_gem_path else None,
-                                     dry_run=dry_run)
+                                     pathlib.Path(engine_path).resolve() if not force_register_with_o3de_manifest and engine_path else None,
+                                     pathlib.Path(project_path).resolve() if not force_register_with_o3de_manifest and project_path else None,
+                                     pathlib.Path(ancestor_gem_path).resolve() if not force_register_with_o3de_manifest and ancestor_gem_path else None,
+                                     dry_run=dry_run,)
 
     if result == 0 and dry_run:
         logger.info(f'Gem path {gem_path} was not registered because the --dry-run option was specified')
@@ -790,7 +793,8 @@ def register(engine_path: pathlib.Path = None,
              external_subdir_gem_path: pathlib.Path = None,
              remove: bool = False,
              force: bool = False,
-             dry_run: bool = False
+             dry_run: bool = False,
+             force_register_with_o3de_manifest: bool = False
              ) -> int:
     """
     Adds/Updates entries to the ~/.o3de/o3de_manifest.json
@@ -849,7 +853,8 @@ def register(engine_path: pathlib.Path = None,
         result = result or register_gem_path(json_data, gem_path, remove,
                                              external_subdir_engine_path, external_subdir_project_path,
                                              external_subdir_gem_path,
-                                             force, dry_run)
+                                             force, dry_run,
+                                             force_register_with_o3de_manifest=force_register_with_o3de_manifest)
 
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
@@ -857,7 +862,8 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
                                                           external_subdir_engine_path, external_subdir_project_path,
-                                                          external_subdir_gem_path)
+                                                          external_subdir_gem_path,
+                                                          force_register_with_o3de_manifest=force_register_with_o3de_manifest)
 
     if isinstance(template_path, pathlib.PurePath):
         if not template_path:
@@ -948,7 +954,8 @@ def _run_register(args: argparse) -> int:
                         external_subdir_gem_path=args.external_subdirectory_gem_path,
                         remove=args.remove,
                         force=args.force,
-                        dry_run=args.dry_run)
+                        dry_run=args.dry_run,
+                        force_register_with_o3de_manifest=args.force_register_with_o3de_manifest)
 
 
 def add_parser_args(parser):
@@ -1025,6 +1032,8 @@ def add_parser_args(parser):
                                             ' the engine-path location')
     external_subdir_path_group.add_argument('-espp', '--external-subdirectory-project-path', type=pathlib.Path)
     external_subdir_path_group.add_argument('-esgp', '--external-subdirectory-gem-path', type=pathlib.Path,  help='If supplied, registers the external subdirectory with the gem.json at the gem-path location')
+    external_subdir_path_group.add_argument('-frwom', '--force-register-with-o3de-manifest', action='store_true', default=False,
+                                            help='When set, forces the registration of the external subdirectory with the ~/.o3de/o3de_manifest.json')
     parser.set_defaults(func=_run_register)
 
 
