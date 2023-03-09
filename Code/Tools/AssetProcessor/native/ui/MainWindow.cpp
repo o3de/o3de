@@ -422,8 +422,6 @@ void MainWindow::Activate()
     ui->productAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->sourceAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->intermediateAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
-    m_intermediateModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
-    m_sourceModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
 
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
@@ -1043,20 +1041,23 @@ void MainWindow::SetupAssetSelectionCaching()
         }
         QModelIndex sourceModelIndex = sourceSelection.indexes()[0];
         AssetProcessor::AssetTreeItem* childItem = static_cast<AssetProcessor::AssetTreeItem*>(sourceModelIndex.internalPointer());
-        m_cachedSourceAssetSelection = childItem->GetData()->m_assetDbName;
+            m_cachedSourceAssetSelection =
+                AssetProcessor::SourceAndScanID(childItem->GetData()->m_assetDbName, childItem->GetData()->m_scanFolderID);
     });
 
     connect(m_sourceModel, &QAbstractItemModel::modelReset, [&]()
     {
-        if (m_cachedSourceAssetSelection.empty())
+            if (m_cachedSourceAssetSelection.first.empty() ||
+                m_cachedSourceAssetSelection.second == AzToolsFramework::AssetDatabase::InvalidEntryId)
         {
             return;
         }
-        QModelIndex goToIndex = m_sourceModel->GetIndexForSource(m_cachedSourceAssetSelection);
+        QModelIndex goToIndex = m_sourceModel->GetIndexForSource(m_cachedSourceAssetSelection.first, m_cachedSourceAssetSelection.second);
         // If the cached selection was deleted or is no longer available, clear the selection.
         if (!goToIndex.isValid())
         {
-            m_cachedSourceAssetSelection.clear();
+            m_cachedSourceAssetSelection.first.clear();
+            m_cachedSourceAssetSelection.second = AzToolsFramework::AssetDatabase::InvalidEntryId;
             ui->ProductAssetsTreeView->selectionModel()->clearSelection();
             // ClearSelection says in the Qt docs that the selectionChange signal will be sent, but that wasn't happening,
             // so force the details panel to refresh.

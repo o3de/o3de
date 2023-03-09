@@ -17,6 +17,7 @@
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
 #include <native/utilities/assetUtils.h>
+#include <native/utilities/IPathConversion.h>
 #include <utilities/UuidManager.h>
 
 namespace AssetProcessor
@@ -256,8 +257,12 @@ namespace AssetProcessor
                     }
                 }
 
-                SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == 1 ? m_intermediateTreeModel : m_sourceTreeModel;
-                QModelIndex goToIndex = treeModel->GetIndexForSource(dependencyDetails.m_sourceName);
+                IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
+                AZ_Assert(pathConversion, "IPathConversion interface is not available");
+
+                SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == pathConversion->GetIntermediateAssetScanFolderId()
+                    ? m_intermediateTreeModel : m_sourceTreeModel;
+                QModelIndex goToIndex = treeModel->GetIndexForSource(dependencyDetails.m_sourceName, dependencyDetails.m_scanFolderPK);
                 if (goToIndex.isValid())
                 {
                     // Qt handles cleanup automatically, setting this as the parent means

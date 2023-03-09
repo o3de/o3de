@@ -97,7 +97,7 @@ namespace AssetProcessor
         SourceAssetTreeModel* treeModel = isIntermediate ? m_intermediateTreeModel : m_sourceTreeModel;
         AssetTreeFilterModel* filterModel = isIntermediate ? m_intermediateFilterModel : m_sourceFilterModel;
 
-        QModelIndex goToIndex = treeModel->GetIndexForSource(sourceAsset.RelativePath().c_str());
+        QModelIndex goToIndex = treeModel->GetIndexForSource(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId());
         // Make sure this index is visible, even if a search is active.
         filterModel->ForceModelIndexVisible(goToIndex);
         QModelIndex filterIndex = filterModel->mapFromSource(goToIndex);

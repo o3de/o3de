@@ -248,7 +248,13 @@ namespace AssetProcessor
                     Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true, AZ::Uuid::CreateNull()));
+                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(
+                    nullptr,
+                    currentFullFolderPath.Native(),
+                    currentPath.c_str(),
+                    true,
+                    AZ::Uuid::CreateNull(),
+                    AzToolsFramework::AssetDatabase::InvalidEntryId));
                 m_productToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // m_productIdToTreeItem is not used for folders, folders don't have product IDs.
 
@@ -261,11 +267,13 @@ namespace AssetProcessor
         }
 
         AZ::Uuid sourceId;
+        AZ::s64 scanFolderID;
         m_sharedDbConnection->QuerySourceByProductID(
             product.m_productID,
             [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
         {
             sourceId = sourceEntry.m_sourceGuid;
+            scanFolderID = sourceEntry.m_scanFolderPK;
             return true;
         });
 
@@ -276,8 +284,8 @@ namespace AssetProcessor
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
-        AZStd::shared_ptr<ProductAssetTreeItemData> productItemData =
-            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, sourceId);
+        AZStd::shared_ptr<ProductAssetTreeItemData> productItemData = ProductAssetTreeItemData::MakeShared(
+            &product, product.m_productName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, sourceId, scanFolderID);
         m_productToTreeItem[product.m_productName] =
             parentItem->CreateChild(productItemData);
         m_productIdToTreeItem[product.m_productID] = m_productToTreeItem[product.m_productName];
