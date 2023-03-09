@@ -71,7 +71,7 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 while gem_name in gem_name_list:
                     gem_name_list.remove(gem_name)
                     removed = True
-                
+ 
                 # Append the renaming gems to the line
                 result_line += ' '.join(gem_name_list)
                 # If the in_gem_list was flipped to false, that means the currently parsed line contained the
@@ -85,7 +85,7 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 t_data.append(line)
 
     if not removed:
-        logger.error(f'Failed to find {gem_name} in {cmake_file}')
+        logger.error(f'Failed to remove {gem_name} from cmake file {cmake_file}')
         return 1
 
     # write the cmake

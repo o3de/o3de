@@ -103,7 +103,7 @@ def disable_gem_in_project(gem_name: str = None,
     ret_val = project_properties.edit_project_props(project_path,
                                                     delete_gem_names=gem_name) or ret_val
 
-    return ret_val 
+    return ret_val
 
 
 def remove_explicit_gem_activation_for_all_paths(gem_root_folders: list,
