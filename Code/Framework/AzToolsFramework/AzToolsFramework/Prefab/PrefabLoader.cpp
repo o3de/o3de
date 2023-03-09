@@ -626,7 +626,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            // Remove 'LinkId' from the lop level template DOM as only nested template DOMs should have 'LinkId' in them.
+            // Remove 'LinkId' from the top level template DOM as only nested template DOMs should have 'LinkId' in them.
             loadedTemplateDomRef.RemoveMember(PrefabDomUtils::LinkIdName);
             return true;
         }

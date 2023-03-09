@@ -52,7 +52,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabUndoComponentPropertyEdit::Undo()
     {
-        [[maybe_unused]] bool isPatchApplicationSuccessful = m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+        m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
     }
 
     void PrefabUndoComponentPropertyEdit::Redo()
@@ -62,7 +62,6 @@ namespace AzToolsFramework::Prefab
 
     void PrefabUndoComponentPropertyEdit::Redo(InstanceOptionalConstReference instance)
     {
-        [[maybe_unused]] bool isPatchApplicationSuccessful =
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
+        m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
     }
 }
