@@ -13,8 +13,29 @@
 
 namespace UnitTest
 {
-    // Fixture that creates a bare-bones app
+    enum TestStableDynamicStructOfArraysRows
+    {
+        TestItemIndex = 0,
+        UInt32Index
+    };
 
+    // Fixture that creates a bare-bones app
+    constexpr size_t TestElementsPerPage = 512;
+    using StructOfArraysTestAllocator = AZStd::allocator;
+
+    struct StableDynamicStructOfArraysTestsTestItem
+    {
+        StableDynamicStructOfArraysTestsTestItem() = default;
+        StableDynamicStructOfArraysTestsTestItem(uint32_t index, float value)
+            : m_index(index)
+            , m_value(value)
+        {
+        }
+        uint32_t m_index = 0;
+        float m_value = 0.0f;
+    };
+
+    using TestArrayType = AZ::StableDynamicStructOfArrays<TestElementsPerPage, StructOfArraysTestAllocator, StableDynamicStructOfArraysTestsTestItem, uint32_t>;
     class StableDynamicStructOfArraysTests
         : public LeakDetectionFixture
     {
@@ -28,33 +49,28 @@ namespace UnitTest
 
         void TearDown() override
         {
-            handles = AZStd::vector<AZ::StableDynamicStructOfArrays<TestItem>::Handle>(); // force memory deallocation.
-            
+            handles = AZStd::vector<TestArrayType::Handle>(); // force memory deallocation.
+
             LeakDetectionFixture::TearDown();
         }
 
-        struct TestItem
-        {
-            TestItem() = default;
-            TestItem(uint32_t value) : index(value) {}
-            uint32_t index = 0;
-        };
+        using TestItem = StableDynamicStructOfArraysTestsTestItem;
 
         static constexpr uint32_t s_testCount = 1000000;
 
-        AZStd::vector<AZ::StableDynamicStructOfArrays<TestItem>::Handle> handles;
+        AZStd::vector<TestArrayType::Handle> handles;
     };
 
     TEST_F(StableDynamicStructOfArraysTests, insert_erase)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.insert({});
-            handle->index = i;
+            TestArrayType::Handle handle = testArray.insert(TestItem{}, {});
+            handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -80,12 +96,12 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, emplace_Free)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -106,7 +122,7 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, ReleaseEmptyPages)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // Test removing items at the end
 
@@ -114,8 +130,8 @@ namespace UnitTest
         TestItem item; // test lvalue insert
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            item.index = i;
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.insert(item);
+            item.m_index = i;
+            TestArrayType::Handle handle = testArray.insert(item, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -160,7 +176,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -186,14 +202,14 @@ namespace UnitTest
     {
         constexpr size_t pageSize = 64;
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem, pageSize> testArray;
+        AZ::StableDynamicStructOfArrays<pageSize, StructOfArraysTestAllocator, TestItem, uint32_t> testArray;
 
         // fill with 10 pages of items
         TestItem item; // test lvalue insert
         for (uint32_t i = 0; i < pageSize * 10; ++i)
         {
-            item.index = i;
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.insert(item);
+            item.m_index = i;
+            StableDynamicStructOfArrays<pageSize, StructOfArraysTestAllocator, TestItem, uint32_t>::Handle handle = testArray.insert(item, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -213,8 +229,8 @@ namespace UnitTest
             // iterate past the hole in search of the next available page
             {
                 TestItem replacementItem;
-                replacementItem.index = 0;
-                StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.insert(replacementItem);
+                replacementItem.m_index = 0;
+                StableDynamicStructOfArrays<pageSize, StructOfArraysTestAllocator, TestItem, uint32_t>::Handle handle = testArray.insert(replacementItem, 0);
                 handles.at(0) = AZStd::move(handle);
             }
         };
@@ -230,7 +246,7 @@ namespace UnitTest
         testArray.GetMetrics();
 
         // Test insert
-        handles.push_back(testArray.emplace(item));
+        handles.push_back(testArray.emplace(item, 0));
         markFirstPageAsEmpty();
 
         // Test defragment
@@ -246,14 +262,14 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, DefragmentHandle)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
         StableDynamicStructOfArraysMetrics metrics;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            StableDynamicStructOfArrays<TestElementsPerPage, StructOfArraysTestAllocator, TestItem, uint32_t>::Handle handle = testArray.emplace(TestItem {i, static_cast<float>(i)} , i);
+            handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -286,14 +302,16 @@ namespace UnitTest
         size_t pageCount3 = metrics.m_elementsPerPage.size();
         EXPECT_LT(pageCount3, pageCount2);
 
-        // The the defragmented handles should still have valid weak handles
-        for (StableDynamicStructOfArrays<TestItem>::Handle& handle : handles)
+        // The the defragmented handles should still have valid weak handles, as long as they are made after the defragmentation
+        for (TestArrayType::Handle& handle : handles)
         {
             if (handle.IsValid())
             {
-                StableDynamicStructOfArraysWeakHandle<TestItem> weakHandle = handle.GetWeakHandle();
+                TestArrayType::WeakHandle weakHandle = handle.GetWeakHandle();
                 // The weak handle should be referring to the same data as the owning handle
-                EXPECT_EQ(handle->index, weakHandle->index);
+                EXPECT_EQ(
+                    handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index,
+                    weakHandle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index);
             }
         }
 
@@ -303,13 +321,13 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, Iterator)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -317,9 +335,9 @@ namespace UnitTest
         size_t index = 0;
         bool success = true;
 
-        for (TestItem& item : testArray)
+        for (auto& item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             ++index;
         }
 
@@ -334,9 +352,9 @@ namespace UnitTest
 
         // now the iterator should hit every other item (starting at 1 since 0 was freed).
         index = 1;
-        for (TestItem& item : testArray)
+        for (auto& item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -350,9 +368,9 @@ namespace UnitTest
         // now the iterator should hit every other item after s_testCount / 2.
         success = true;
         index = s_testCount / 2 + 1;
-        for (TestItem& item : testArray)
+        for (auto& item : testArray)
         {
-            success = success && (item.index == index);
+            success = success && (item.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -362,12 +380,12 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, ConstIterator)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
+            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
             handles.push_back(AZStd::move(handle));
         }
 
@@ -377,7 +395,7 @@ namespace UnitTest
 
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             ++index;
         }
 
@@ -394,7 +412,7 @@ namespace UnitTest
         index = 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -410,7 +428,7 @@ namespace UnitTest
         index = s_testCount / 2 + 1;
         for (auto it = testArray.cbegin(); it != testArray.cend(); ++it)
         {
-            success = success && (it->index == index);
+            success = success && (it.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index == index);
             index += 2;
         }
         EXPECT_TRUE(success);
@@ -420,13 +438,13 @@ namespace UnitTest
     TEST_F(StableDynamicStructOfArraysTests, PageIterator)
     {
         using namespace AZ;
-        AZ::StableDynamicStructOfArrays<TestItem> testArray;
+        TestArrayType testArray;
 
         // Fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            StableDynamicStructOfArrays<TestItem>::Handle handle = testArray.emplace(i);
-            handle->index = i;
+            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->m_index = i;
             handles.push_back(AZStd::move(handle));
         }
 
@@ -440,8 +458,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>();
+                success = success && (item->m_index == index);
                 ++index;
             }
         }
@@ -461,8 +479,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>();
+                success = success && (item->m_index == index);
                 index += 2;
             }
         }
@@ -484,8 +502,8 @@ namespace UnitTest
         {
             for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
             {
-                TestItem& item = *iterator;
-                success = success && (item.index == index);
+                TestItem* item = iterator.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>();
+                success = success && (item->m_index == index);
                 index += 2;
             }
         }
@@ -566,101 +584,30 @@ namespace UnitTest
         private:
             int m_value = 0;
         };
-
-        class TestItemImplementation2
-            : public TestItemInterface
+        using OwnerTestArrayType = AZ::StableDynamicStructOfArrays<TestElementsPerPage, StructOfArraysTestAllocator, StableDynamicStructOfArraysOwner::TestItemImplementation, uint32_t>;
+    
+        OwnerTestArrayType::Handle AcquireItem(int value)
         {
-        public:
-            AZ_RTTI(TestItemImplementation2, "{F9B94C63-88C2-459C-B752-5963D263C97D}", TestItemInterface);
-
-            TestItemImplementation2(int value)
-                : m_value(value)
-            {
-            }
-
-            virtual ~TestItemImplementation2()
-            {
-            }
-
-            void SetValue(int value) override
-            {
-                m_value = value;
-            }
-
-            int GetValue() const override
-            {
-                return m_value;
-            }
-
-        private:
-            int m_value = 0;
-        };
-
-        class TestItemImplementationUnrelated
-        {
-        public:
-            AZ_RTTI(TestItemImplementationUnrelated, "{C583B659-E187-4355-82F9-310A97D4E35B}");
-
-            TestItemImplementationUnrelated(int value)
-                : m_value(value)
-            {
-            }
-
-            virtual ~TestItemImplementationUnrelated()
-            {
-            }
-
-            void SetValue(int value)
-            {
-                m_value = value;
-            }
-
-            int GetValue() const
-            {
-                return m_value;
-            }
-
-        private:
-            int m_value = 0;
-        };
-
-        AZ::StableDynamicStructOfArraysHandle<TestItemImplementation> AcquireItem(uint32_t value)
-        {
-            return m_testArray.emplace(value);
+            // Note: we only truly get emplace behavior when every row of the StructOfArrays has data that can be constructed with exactly 1 argument,
+            // and the number of arguments passed into emplace matches 1:1 with the number of underlying rows in the StructOfArrays
+            return m_testArray.emplace( value , value);
         }
 
-        void ReleaseItem(AZ::StableDynamicStructOfArraysHandle<TestItemInterface>& interfaceHandle)
-        {
-            AZ::StableDynamicStructOfArraysHandle<TestItemImplementation> temp(AZStd::move(interfaceHandle));
-            ReleaseItem(temp);
-        }
-
-        void ReleaseItem(AZ::StableDynamicStructOfArraysHandle<TestItemImplementation>& handle)
+        void ReleaseItem(OwnerTestArrayType::Handle& handle)
         {
             m_testArray.erase(handle);
         }
 
-    private:
-        AZ::StableDynamicStructOfArrays<TestItemImplementation> m_testArray;
+    public:
+        OwnerTestArrayType m_testArray;
     };
 
-    using SoATestItemInterfaceHandle = AZ::StableDynamicStructOfArraysHandle<StableDynamicStructOfArraysOwner::TestItemInterface>;
-    using SoATestItemHandle = AZ::StableDynamicStructOfArraysHandle<StableDynamicStructOfArraysOwner::TestItemImplementation>;
-    using SoATestItemWeakHandle = AZ::StableDynamicStructOfArraysWeakHandle<StableDynamicStructOfArraysOwner::TestItemImplementation>;
-    using SoATestItemHandleSibling = AZ::StableDynamicStructOfArraysHandle<StableDynamicStructOfArraysOwner::TestItemImplementation2>;
-    using SoATestItemHandleUnrelated = AZ::StableDynamicStructOfArraysHandle<StableDynamicStructOfArraysOwner::TestItemImplementationUnrelated>;
-
     // This class runs several scenarios around transferring ownership from one handle to another
-    template<typename SourceTestItemType, typename DestinationTestItemType>
+    template<typename SourceTestItemType>
     class SoAMoveTests
     {
-        using SourceHandle = AZ::StableDynamicStructOfArraysHandle<SourceTestItemType>;
-        using DestinationHandle = AZ::StableDynamicStructOfArraysHandle<DestinationTestItemType>;
+        using SourceHandle = StableDynamicStructOfArraysOwner::OwnerTestArrayType::Handle;
     public:
-        SoAMoveTests() 
-        { 
-            AZ_Assert(SourceTestItemType::RTTI_IsContainType(DestinationTestItemType::RTTI_Type()) || DestinationTestItemType::RTTI_IsContainType(SourceTestItemType::RTTI_Type()), "These tests expect the transfer of ownership from one handle to the other will succeed, and should only be called with compatible types.");
-        }
 
         void MoveValidSourceToNullDestination_ExpectMoveToSucceed()
         {
@@ -668,7 +615,7 @@ namespace UnitTest
                 StableDynamicStructOfArraysOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = AZStd::move(source);
+                SourceHandle destination = AZStd::move(source);
 
                 // Source handle should be invalid after move, destination handle should be valid
                 EXPECT_EQ(source.IsValid(), false);
@@ -677,11 +624,11 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                EXPECT_EQ(destination->GetValue(), 123);
+                EXPECT_EQ(destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination->SetValue(789);
-                EXPECT_EQ(destination->GetValue(), 789);
+                destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->SetValue(789);
+                EXPECT_EQ(destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), 789);
 
                 // One item was constructed, none destructed, one modified
                 EXPECT_EQ(StableDynamicStructOfArraysHandleTests::s_testItemsConstructed, 1);
@@ -697,7 +644,7 @@ namespace UnitTest
                 StableDynamicStructOfArraysOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Source handle should be invalid after move, destination handle should be valid
@@ -707,11 +654,11 @@ namespace UnitTest
                 EXPECT_EQ(destination.IsNull(), false);
 
                 // The destination handle should have the value that came from the source handle
-                EXPECT_EQ(destination->GetValue(), 123);
+                EXPECT_EQ(destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), 123);
 
                 // The destination handle should be pointing to real data that can be modified
-                destination->SetValue(789);
-                EXPECT_EQ(destination->GetValue(), 789);
+                destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->SetValue(789);
+                EXPECT_EQ(destination.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), 789);
 
                 // Two items were constructed, one destructed, one modified
                 EXPECT_EQ(StableDynamicStructOfArraysHandleTests::s_testItemsConstructed, 2);
@@ -727,7 +674,7 @@ namespace UnitTest
                 StableDynamicStructOfArraysOwner owner;
                 
                 SourceHandle source;
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Both handles should be invalid after move
@@ -749,7 +696,7 @@ namespace UnitTest
                 StableDynamicStructOfArraysOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Attempting to release the invalid source handle should be a no-op
@@ -774,7 +721,7 @@ namespace UnitTest
                 StableDynamicStructOfArraysOwner owner;
 
                 SourceHandle source = owner.AcquireItem(123);
-                DestinationHandle destination = owner.AcquireItem(456);
+                SourceHandle destination = owner.AcquireItem(456);
                 destination = AZStd::move(source);
 
                 // Attempting to release the invalid source handle should be a no-op
@@ -798,7 +745,7 @@ namespace UnitTest
             {
                 StableDynamicStructOfArraysOwner owner;
                 {
-                    DestinationHandle destination = owner.AcquireItem(456);
+                    SourceHandle destination = owner.AcquireItem(456);
                     {
                         SourceHandle source = owner.AcquireItem(123);
                         destination = AZStd::move(source);
@@ -821,201 +768,65 @@ namespace UnitTest
     // Move TestItem->TestItem
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidSoATestItemHandleToNullSoATestItemHandle_SourceTestItemMovedToDestination)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidSoATestItemHandleToValidSoATestItemHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromNullSoATestItemHandleToValidSoATestItemHandle_DestinationTestItemReleased)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByOwner_FromValidSoATestItemHandleToValidSoATestItemHandle_DestinationTestItemReleased)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidSoATestItemHandleToValidSoATestItemHandle_DestinationTestItemReleased)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidSoATestItemHandleToValidSoATestItemHandle_DestinationTestItemReleased)
     {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move TestItem->Interface
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidSoATestItemHandleToNullInterfaceHandle_SourceTestItemMovedToDestination)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidSoATestItemHandleToValidInterfaceHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromNullSoATestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByOwner_FromValidSoATestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidSoATestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidSoATestItemHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move Interface->TestItem
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidInterfaceHandleToNullSoATestItemHandle_SourceTestItemMovedToDestination)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidInterfaceHandleToValidSoATestItemHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromNullInterfaceHandleToValidSoATestItemHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByOwner_FromValidInterfaceHandleToValidSoATestItemHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidInterfaceHandleToValidSoATestItemHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidInterfaceHandleToValidSoATestItemHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
-        moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
-    }
-
-    // Move Interface->Interface
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidInterfaceHandleToNullInterfaceHandle_SourceTestItemMovedToDestination)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToNullDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleasedThenSourceTestItemMoved)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveValidSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_FromNullInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveNullSourceToValidDestination_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByOwner_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByOwner_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
-        moveTest.MoveHandleAndReleaseByCallingFreeDirectlyOnHandle_ExpectMoveToSucceed();
-    }
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleAndReleaseByLettingHandleGoOutOfScope_FromValidInterfaceHandleToValidInterfaceHandle_DestinationTestItemReleased)
-    {
-        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemInterface, StableDynamicStructOfArraysOwner::TestItemInterface> moveTest;
+        SoAMoveTests<StableDynamicStructOfArraysOwner::TestItemImplementation> moveTest;
         moveTest.MoveHandleAndReleaseByLettingHandleGoOutOfScope_ExpectMoveToSucceed();
     }
 
     TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandle_SelfAssignment_DoesNotModifyHandle)
     {
         StableDynamicStructOfArraysOwner owner;
-        SoATestItemHandle handle = owner.AcquireItem(1);
+        StableDynamicStructOfArraysOwner::OwnerTestArrayType::Handle handle = owner.AcquireItem(1);
         int testValue = 12;
-        handle->SetValue(testValue);
+        handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->SetValue(testValue);
 
         // Self assignment should not invalidate the handle
         handle = AZStd::move(handle);
         EXPECT_TRUE(handle.IsValid());
         EXPECT_FALSE(handle.IsNull());
-        EXPECT_EQ(handle->GetValue(), testValue);
+        EXPECT_EQ(handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), testValue);
     }
-
+    
     TEST_F(StableDynamicStructOfArraysHandleTests, WeakHandle_GetDataFromOwner_CanAccessData)
     {
         StableDynamicStructOfArraysOwner owner;
-        SoATestItemHandle handle = owner.AcquireItem(1);
-        SoATestItemWeakHandle weakHandle = handle.GetWeakHandle();
+        StableDynamicStructOfArraysOwner::OwnerTestArrayType::Handle handle = owner.AcquireItem(1);
+        StableDynamicStructOfArraysOwner::OwnerTestArrayType::WeakHandle weakHandle = handle.GetWeakHandle();
 
         int testValue = 12;
-        weakHandle->SetValue(testValue);
-        EXPECT_EQ(handle->GetValue(), testValue);
-        EXPECT_EQ(weakHandle->GetValue(), testValue);
-        EXPECT_EQ((*weakHandle).GetValue(), testValue);
+        weakHandle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->SetValue(testValue);
+        EXPECT_EQ(handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), testValue);
+        EXPECT_EQ(weakHandle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>()->GetValue(), testValue);
+        EXPECT_EQ(AZStd::get<TestStableDynamicStructOfArraysRows::TestItemIndex>(*weakHandle)->GetValue(), testValue);
     }
-
-    //
-    // Invalid cases
-    //
-
-    TEST_F(StableDynamicStructOfArraysHandleTests, MoveHandleBetweenDifferentTypes_FromInterfaceToASiblingHandle_AssertsAndLeavesBothHandlesInvalid)
-    {
-        {
-            StableDynamicStructOfArraysOwner owner;
-
-            // The the underlying type that the interface handle refers to is a TestItemImplementation
-            SoATestItemInterfaceHandle interfaceHandle = owner.AcquireItem(1);
-
-            AZ_TEST_START_ASSERTTEST;
-            // The interface handle is referring to a TestItemImplementation, so you should not be able to move it to a handle to a TestItemImplementation2
-            SoATestItemHandleSibling testItemHandle2FromInterface = AZStd::move(interfaceHandle);
-            AZ_TEST_STOP_ASSERTTEST(1);
-            EXPECT_FALSE(interfaceHandle.IsValid());
-            EXPECT_TRUE(interfaceHandle.IsNull());
-            EXPECT_FALSE(testItemHandle2FromInterface.IsValid());
-            EXPECT_TRUE(testItemHandle2FromInterface.IsNull());
-        }
-        EXPECT_EQ(s_testItemsConstructed, s_testItemsDestructed);
-    }
-
 
 }

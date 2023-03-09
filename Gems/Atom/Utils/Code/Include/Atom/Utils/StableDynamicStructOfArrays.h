@@ -19,10 +19,10 @@ namespace AZ
     /// forward declarations
     struct StableDynamicStructOfArraysMetrics;
 
-    template<typename ValueType>
+    template<typename... value_types>
     class StableDynamicStructOfArraysWeakHandle;
-
-    template<typename ValueType>
+    
+    template<typename... value_types>
     class StableDynamicStructOfArraysHandle;
 
     /**
@@ -36,13 +36,14 @@ namespace AZ
     *   It will always place new items at the front-most slot of the first array with available space.
     * DefragmentHandle() can be called to reorganize data to reduce the amount of empty slots.
     **/
-    template<typename T, size_t ElementsPerPage = 512, class Allocator = AZStd::allocator>
+
+    // The template paramaterization is a little different than StableDynamicArray. The ElementsPerPage and Allocator
+    // come first, and do not have default arguments, so that it is explicit which arguments are part of the parameter pack (...)
+    // https://en.cppreference.com/w/cpp/language/parameter_pack
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class StableDynamicStructOfArrays
     {
-        static_assert(!(ElementsPerPage % 64) && ElementsPerPage > 0, "PageSize must be a multiple of 64.");
-        static constexpr size_t PageSize = ElementsPerPage * sizeof(T);
-
-        using value_type = T;
+        static_assert(!(ElementsPerPage % 64) && ElementsPerPage > 0, "ElementsPerPage must be a multiple of 64.");
 
         class iterator;
         class const_iterator;
@@ -50,7 +51,7 @@ namespace AZ
 
         friend iterator;
         friend const_iterator;
-        friend StableDynamicStructOfArraysHandle<T>;
+        friend StableDynamicStructOfArraysHandle<value_types...>;
 
         typedef Allocator allocator_type;
 
@@ -58,19 +59,22 @@ namespace AZ
 
     public:
 
-        using Handle = StableDynamicStructOfArraysHandle<T>;
-        using WeakHandle = StableDynamicStructOfArraysWeakHandle<T>;
+        using Handle = StableDynamicStructOfArraysHandle<value_types...>;
+        using WeakHandle = StableDynamicStructOfArraysWeakHandle<value_types...>;
+        using ItemTupleType = AZStd::tuple<value_types*...>;
 
         StableDynamicStructOfArrays() = default;
         explicit StableDynamicStructOfArrays(allocator_type allocator);
         ~StableDynamicStructOfArrays();
 
         /// Reserves and constructs an item of type T and returns a handle to it.
-        Handle insert(const value_type& value);
+        Handle insert(const value_types&... value);
         /// Reserves and constructs an item of type T and returns a handle to it.
-        Handle insert(value_type&& value);
+        Handle insert(value_types&&... value);
 
-        /// Reserves and constructs an item of type T with provided args and returns a handle to it.
+        /// Reserves and copies an item of type T with provided args and returns a handle to it.
+        /// Note: we only truly get emplace behavior when every row of the StructOfArrays has data that can be constructed with exactly 1
+        /// argument, and the number of arguments passed into emplace matches 1:1 with the number of underlying rows in the StructOfArrays
         template<class ... Args>
         Handle emplace(Args&& ... args);
 
@@ -92,7 +96,7 @@ namespace AZ
         /* 
         * If the memory associated with this handle can be moved to a more compact spot, it will be.
         * This will change the pointer inside the handle, so should only be called when no other system
-        * is holding on to a direct pointer to the same memory.
+        * is holding on to a direct pointer to the same memory, such as a WeakHandle
         */
         void DefragmentHandle(Handle& handle);
 
@@ -131,13 +135,13 @@ namespace AZ
     };
 
     /// Private class used by StableDynamicStructOfArrays to manage the arrays of data.
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    struct StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>::Page
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    struct StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Page
     {
-        static constexpr size_t InvalidPage = std::numeric_limits<size_t>::max();
+        static constexpr size_t InvalidPage = AZStd::numeric_limits<size_t>::max();
         static constexpr uint64_t FullBits = 0xFFFFFFFFFFFFFFFFull;
         static constexpr size_t NumUint64_t = ElementsPerPage / 64;
-
+        using ItemTupleType = AZStd::tuple<value_types *...>;
         Page();
         ~Page() = default;
 
@@ -145,7 +149,7 @@ namespace AZ
         size_t Reserve();
 
         /// Free the given index so it can be reserved again.
-        void Free(T* item);
+        void Free(ItemTupleType items);
 
         /// True if this page is completely full
         bool IsFull() const;
@@ -153,42 +157,47 @@ namespace AZ
         /// True if this page is completely empty
         bool IsEmpty() const;
 
+        AZStd::tuple<value_types *...> GetItems(size_t index);
+
         /**
         * Gets a specific item from the Page
         * Note: may return empty slots.
         */
-        T* GetItem(size_t index);
+        template<size_t RowIndex>
+        AZStd::tuple_element_t<RowIndex, AZStd::tuple<value_types...>>* GetItem(size_t index);
 
         /// Gets the number of items allocated on this page.
         size_t GetItemCount() const;
 
         size_t m_bitStartIndex = 0; ///< Index of the first uint64_t that might have space.
         Page* m_nextPage = nullptr; ///< pointer to the next page.
-        StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>* m_container; ///< pointer to the container this page was allocated from.
+        StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>*
+            m_container; ///< pointer to the container this page was allocated from.
         size_t m_pageIndex = 0; ///< used for comparing pages when items are freed so the earlier page in the list can be cached.
         size_t m_itemCount = 0; ///< the number of items in the page.
         AZStd::array<uint64_t, NumUint64_t> m_bits; ///< Bits representing free slots in the array. Free slots are 1, occupied slots are 0.
-        AZStd::aligned_storage_t<PageSize, alignof(T)> m_data; ///< aligned storage for all the actual data.
+
+        using PageTupleType = AZStd::tuple<AZStd::aligned_storage_t<ElementsPerPage * sizeof(value_types), alignof(value_types)>...>;
+        PageTupleType m_data; ///< aligned storage for all the actual data.
     };
 
     /// Forward iterator for StableDynamicStructOfArrays
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>::iterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::iterator
     {
         using this_type = iterator;
         using container_type = StableDynamicStructOfArrays;
 
     public:
         using iterator_category = AZStd::forward_iterator_tag;
-        using value_type = T;
-        using reference = T&;
-        using pointer = T*;
 
         iterator() = default;
         explicit iterator(Page* firstPage);
 
-        reference operator*() const;
-        pointer operator->() const;
+        // TODO: is this operator needed?
+        const this_type& operator*() const;
+        template <size_t RowIndex>
+        auto* GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -204,50 +213,46 @@ namespace AZ
         Page* m_page = nullptr; ///< Pointer to the current page being iterrated through
         size_t m_bitGroupIndex = 0; ///< The index of the current bit group in the m_page
         uint64_t m_remainingBitsInBitGroup = 0; ///< This starts out equivalent to the bits from the current bit group, but trailing 1s are changed to 0s as the iterator increments
-        T* m_item = nullptr; ///< The pointer to the current item
+        size_t m_itemIndex = AZStd::numeric_limits<size_t>::max(); ///< The index to the current item
 
     };
 
     /// Forward const iterator for StableDynamicStructOfArrays
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>::const_iterator
-        : public StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>::iterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::const_iterator
+        : public StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::iterator
     {
         using this_type = const_iterator;
         using base_type = iterator;
 
     public:
-        using reference = const T & ;
-        using pointer = const T * ;
 
         const_iterator() = default;
         explicit const_iterator(Page* firstPage);
 
-        reference operator*() const;
-        pointer operator->() const;
+        template<size_t RowIndex>
+        auto* GetItem() const;
 
         this_type& operator++();
         this_type operator++(int);
     };
 
     /// Forward iterator for an individual page in StableDynamicStructOfArrays
-    template<typename T, size_t ElementsPerPage, class Allocator>
-    class StableDynamicStructOfArrays<T, ElementsPerPage, Allocator>::pageIterator
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    class StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::pageIterator
     {
         using this_type = pageIterator;
         using container_type = StableDynamicStructOfArrays;
 
     public:
         using iterator_category = AZStd::forward_iterator_tag;
-        using value_type = T;
-        using reference = T &;
-        using pointer = T *;
 
         pageIterator() = default;
         explicit pageIterator(Page* page);
 
-        reference operator*() const;
-        pointer operator->() const;
+        const this_type& operator*() const;
+        template<size_t RowIndex>
+        auto* GetItem() const;
 
         bool operator==(const this_type& rhs) const;
         bool operator!=(const this_type& rhs) const;
@@ -263,7 +268,7 @@ namespace AZ
         Page* m_page = nullptr; ///< Pointer to the current page being iterrated through
         size_t m_bitGroupIndex = 0; ///< The index of the current bit group in the m_page
         uint64_t m_remainingBitsInBitGroup = 0; ///< This starts out equivalent to the bits from the current bit group, but trailing 1s are changed to 0s as the iterator increments
-        T* m_item = nullptr; ///< The pointer to the current item
+        size_t m_itemIndex = AZStd::numeric_limits<size_t>::max(); ///< The index to the current item
 
     };
 
@@ -273,7 +278,7 @@ namespace AZ
     * in cases where it is known that the owning handle has not gone out of scope. This could potentially be augmented in the future
     * to have a salt/generationId that could be used to determine if it is a dangling reference.
     */
-    template<typename ValueType>
+    template<typename... value_types>
     class StableDynamicStructOfArraysWeakHandle
     {
     public:
@@ -285,15 +290,17 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        ValueType& operator*() const;
-        ValueType* operator->() const;
+        AZStd::tuple<value_types*...>& operator*();
+
+        template <size_t RowIndex>
+        auto* GetItem() const;
         
     private:
-        StableDynamicStructOfArraysWeakHandle(ValueType* data);
+        StableDynamicStructOfArraysWeakHandle(const AZStd::tuple<value_types*...>& data);
 
-        ValueType* m_data = nullptr;
+        AZStd::tuple<value_types*...> m_data;
 
-        template<typename T>
+        template<typename... value_types>
         friend class StableDynamicStructOfArraysHandle;
     };
 
@@ -302,14 +309,11 @@ namespace AZ
     * quickly marked as free later. Since there is no ref counting, copy is not allowed, only move. When
     * a handle is used to free it's associated data it is marked as invalid.
     */
-    template<typename ValueType>
+    template <typename... value_types>
     class StableDynamicStructOfArraysHandle
     {
-        template<typename T, size_t ElementsPerPage, class Allocator>
+        template<size_t ElementsPerPage, class Allocator, typename... value_types>
         friend class StableDynamicStructOfArrays;
-
-        template<typename OtherType>
-        friend class StableDynamicStructOfArraysHandle;
     public:
 
         /// Default constructor creates an invalid handle.
@@ -317,20 +321,12 @@ namespace AZ
 
         /// Move Constructor
         StableDynamicStructOfArraysHandle(StableDynamicStructOfArraysHandle&& other);
-
-        /// Move constructor that allows converting between handles of different types, as long as they are part of the same inheritance chain
-        template<typename OtherType>
-        StableDynamicStructOfArraysHandle<ValueType>(StableDynamicStructOfArraysHandle<OtherType>&& other);
         
         /// Destructor will also destroy its underlying data and free it from the StableDynamicStructOfArrays
         ~StableDynamicStructOfArraysHandle();
 
         /// Move Assignment
         StableDynamicStructOfArraysHandle& operator=(StableDynamicStructOfArraysHandle&& other);
-
-        /// Move assignment that allows converting between handles of different types, as long as they are part of the same inheritance chain
-        template<typename OtherType>
-        StableDynamicStructOfArraysHandle<ValueType>& operator=(StableDynamicStructOfArraysHandle<OtherType>&& other);
 
         /// Destroy the underlying data and free it from the StableDynamicStructOfArrays. Marks the handle as invalid.
         void Free();
@@ -341,26 +337,27 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
-        ValueType& operator*() const;
-        ValueType* operator->() const;
+        AZStd::tuple<value_types*...>& operator*();
+
+        /// Returns a pointer to the item in the row specified by RowIndex
+        template <size_t RowIndex>
+        auto* GetItem() const;
 
         /// Returns a non-owning weak handle to the data
-        StableDynamicStructOfArraysWeakHandle<ValueType> GetWeakHandle() const;
-
+        StableDynamicStructOfArraysWeakHandle<value_types...> GetWeakHandle() const;
     private:
-
         template<typename PageType>
-        StableDynamicStructOfArraysHandle(ValueType* data, PageType* page);
+        StableDynamicStructOfArraysHandle(AZStd::tuple<value_types *...> data, PageType* page);
 
         StableDynamicStructOfArraysHandle(const StableDynamicStructOfArraysHandle&) = delete;
 
         void Invalidate();
 
-        using HandleDestructor = void(*)(void*);
-        HandleDestructor m_destructorCallback = nullptr; ///< Called for valid handles on delete so the underlying data can be removed from the StableDynamicStructOfArrays
-
-        ValueType* m_data = nullptr; ///< The actual data this handle points to in the StableDynamicStructOfArraysHandle.
+        using HandleDestructor = void (*)(void*);
+        /// Called for valid handles on delete so the underlying data can be removed from the StableDynamicArray
+        HandleDestructor m_destructorCallback = nullptr; 
         void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        AZStd::tuple<value_types *...> m_data;
     };
     
     /// Used for returning information about the internal state of the StableDynamicStructOfArrays.
