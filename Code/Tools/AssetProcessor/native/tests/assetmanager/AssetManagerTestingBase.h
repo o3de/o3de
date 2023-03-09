@@ -73,6 +73,27 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
+    // Exposes protected data to automated tests.
+    class TestingRCController
+        : public AssetProcessor::RCController
+    {
+    public:
+        TestingRCController() = default;
+        explicit TestingRCController(int minJobs, int maxJobs, QObject* parent = 0)
+            : AssetProcessor::RCController(minJobs, maxJobs, parent)
+        {
+
+        }
+
+        // There are many queues in the asset processing process.
+        // This allows automated tests to examine the RCQueueSortModel, and compare
+        // to the other queues, to make sure the state of these systems matches what's expected.
+        AssetProcessor::RCQueueSortModel& GetRCQueueSortModel()
+        {
+            return m_RCQueueSortModel;
+        }
+    };
+
     class AssetManagerTestingBase : public ::UnitTest::LeakDetectionFixture
     {
     public:
@@ -86,6 +107,7 @@ namespace UnitTests
     protected:
         void RunFile(int expectedJobCount, int expectedFileCount = 1, int dependencyFileCount = 0);
         void ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails);
+        void WaitForNextJobToProcess(UnitTests::JobSignalReceiver& receiver);
 
         AZStd::string MakePath(const char* filename, bool intermediate);
 
@@ -114,6 +136,8 @@ namespace UnitTests
             bool createJobCommonPlatform,
             AssetBuilderSDK::ProductOutputFlags outputFlags,
             bool outputExtraFile = false);
+
+        void SetCatalogToUpdateOnJobCompletion();
 
         const char* GetJobProcessFailText();
 
@@ -147,7 +171,7 @@ namespace UnitTests
         AZ::Entity* m_jobManagerEntity{};
         AZ::ComponentDescriptor* m_descriptor{};
 
-        AZStd::unique_ptr<AssetProcessor::RCController> m_rc;
+        AZStd::unique_ptr<TestingRCController> m_rc;
 
         AZStd::vector<AssetProcessor::JobDetails> m_jobDetailsList;
 
