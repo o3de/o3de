@@ -56,7 +56,7 @@ namespace GraphModel
     class Graph : public AZStd::enable_shared_from_this<Graph>
     {
     public:
-        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Graph, AZ::SystemAllocator);
         AZ_RTTI(Graph, "{CBF5DC3C-A0A7-45F5-A207-06433A9A10C5}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -156,7 +156,6 @@ namespace GraphModel
         //! Reset any data that was cached for this graph
         void ClearCachedData();
 
-    protected:
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
 

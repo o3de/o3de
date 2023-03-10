@@ -194,9 +194,11 @@ namespace AssetProcessor
         //! Controls whether or not we are allowed to skip analysis on a file when the source files modtimes have not changed
         //! and neither have any builders.
         void SetEnableModtimeSkippingFeature(bool enable);
+        bool GetModtimeSkippingFeatureEnabled() const;
 
         //! Controls whether or not startup analysis is enabled or not.
         void SetInitialScanSkippingFeature(bool enable);
+        bool GetInitialScanSkippingFeatureEnabled() const;
 
         //! Query logging will log every asset database query.
         void SetQueryLogging(bool enableLogging);
@@ -292,6 +294,7 @@ namespace AssetProcessor
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
+        void HandleSourceUuidChange(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source, AZ::Uuid newUuid);
 
         void AssetFailed(JobEntry jobEntry);
         void AssetCancelled(JobEntry jobEntry);

@@ -57,7 +57,7 @@ namespace ProjectSettingsTool
     class PropertyFuncValLineEditHandler
         : public AzToolsFramework::PropertyHandler <AZStd::string, PropertyFuncValLineEditCtrl>
     {
-        AZ_CLASS_ALLOCATOR(PropertyFuncValLineEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFuncValLineEditHandler, AZ::SystemAllocator);
 
     public:
         PropertyFuncValLineEditHandler(ValidationHandler* valHdlr);

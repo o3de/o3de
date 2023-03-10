@@ -16,19 +16,22 @@
 
 // Qt
 #include <QAction>
-#include <QMenu>
-#include <QMimeData>
 #include <QCompleter>
-#include <QScrollBar>
-#include <QMessageBox>
-#include <QStyledItemDelegate>
 #include <QDropEvent>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QScrollBar>
+#include <QStyledItemDelegate>
 
 // AzToolsFramework
+#include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
 // AzQtComponents
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
@@ -40,7 +43,6 @@
 #include <CryCommon/Maestro/Types/SequenceType.h>
 
 // Editor
-#include "StringDlg.h"
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
 #include "Objects/SelectionGroup.h"
@@ -1200,10 +1202,10 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddConsoleVariable)
             {
-                StringDlg dlg(tr("Console Variable Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Console Variable Name"), QString());
+                if (!stringValue.isEmpty())
                 {
-                    QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
+                    QString name = groupNode->GetAvailableNodeNameStartingWith(stringValue);
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Console (CVar) Node");
                     groupNode->CreateSubNode(name, AnimNodeType::CVar);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
@@ -1211,10 +1213,10 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddScriptVariable)
             {
-                StringDlg dlg(tr("Script Variable Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Script Variable Name"), QString());
+                if (!stringValue.isEmpty())
                 {
-                    QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
+                    QString name = groupNode->GetAvailableNodeNameStartingWith(stringValue);
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Script Variable Node");
                     groupNode->CreateSubNode(name, AnimNodeType::ScriptVar);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
@@ -1222,11 +1224,11 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddEvent)
             {
-                StringDlg dlg(tr("Track Event Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Track Event Name"), QString());
+                if (!stringValue.isEmpty())
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Event Node");
-                    groupNode->CreateSubNode(dlg.GetString(), AnimNodeType::Event);
+                    groupNode->CreateSubNode(stringValue, AnimNodeType::Event);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
                 }
             }
@@ -1304,69 +1306,72 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             CTrackViewAnimNode* animNode2 = static_cast<CTrackViewAnimNode*>(pNode);
             QString oldName = QString::fromUtf8(animNode2->GetName().c_str());
 
-            StringDlg dlg(tr("Rename Node"));
-            dlg.SetString(oldName);
+            AzQtComponents::InputDialog inputDialog(this);
+            inputDialog.setWindowTitle(tr("Rename Node"));
+            inputDialog.setTextValue(oldName);
+            inputDialog.setLabelText("");
+            inputDialog.SetRegularExpressionValidator("[a-zA-Z0-9_\\-\\_]*");
+
+            // Max name length is 512 for a sequence
+            constexpr int MaxNameLength = 512;
+            inputDialog.SetMaxLength(MaxNameLength);
 
             // add check for duplicate entity names if this is bound to an Object node
-            if (animNode2->IsBoundToEditorObjects())
+            bool checkForDuplicateName = animNode2->IsBoundToEditorObjects();
+
+            bool retryRename = false;
+            QString newName;
+            do
             {
-                dlg.SetCheckCallback([this](QString newName) -> bool
+                const auto ret = inputDialog.exec();
+
+                if (ret == QDialog::Accepted)
                 {
-                    bool nameExists = false;
-                    const auto nameUtf8 = newName.toUtf8();
-                    const AZStd::string name(nameUtf8.constData(), nameUtf8.length());
-                    AZ::ComponentApplicationBus::Broadcast(
-                        &AZ::ComponentApplicationRequests::EnumerateEntities,
-                        [&name, nameExists] (const AZ::Entity* entity) mutable
+                    QString name = inputDialog.textValue();
+
+                    // Bail out early if user is trying to rename to the same name, can treat as a no-op
+                    if (name == oldName)
                     {
-                        const auto entityId = entity->GetId();
-
-                        bool editorEntity = false;
-                        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                            editorEntity, &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity, entityId);
-
-                        if (!editorEntity)
-                        {
-                            return;
-                        }
-
-                        AZStd::string entityName;
-                        AZ::ComponentApplicationBus::BroadcastResult(
-                            entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, entityId);
-
-                        if (entityName == name)
-                        {
-                            nameExists = true;
-                        }
-                    });
-
-                    if (nameExists)
-                    {
-                        QMessageBox::warning(this, tr("Entity already exists"), QString(tr("Entity named '%1' already exists.\n\nPlease choose another unique name.")).arg(newName));
-                        return false;
+                        return;
                     }
-                    // Max name length is 512 when creating a new sequence, match that here for rename.
-                    // It would be nice to make this a restriction at input but I didnt see a way to do that with StringDlg and this is
-                    // very unlikely to happen in normal usage.
-                    const int maxLenth = 512;
-                    if (newName.length() > maxLenth)
-                    {
-                        QMessageBox::warning(
-                            this,
-                            tr("New entity name is too long"), 
-                            QString(tr("New entity name is over the maximum of %1.\n\nPlease reduce the length.")).arg(maxLenth)
-                        );
-                        return false;
-                    }
-                    return true;
-                });
-            }
 
-            if (dlg.exec() == QDialog::Accepted)
+                    if (checkForDuplicateName)
+                    {
+                        AzToolsFramework::EntitySearchFilter filter;
+                        const auto nameUtf8 = name.toUtf8();
+                        const AZStd::string searchName(nameUtf8.constData(), nameUtf8.length());
+                        filter.m_names.push_back(searchName);
+
+                        AzToolsFramework::EntityIdList matchingEntities;
+                        AzToolsFramework::EditorEntitySearchBus::BroadcastResult(matchingEntities, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);
+
+                        if (!matchingEntities.empty())
+                        {
+                            QMessageBox::warning(this, tr("Entity already exists"), QString(tr("Entity named '%1' already exists.\n\nPlease choose another unique name.")).arg(name));
+
+                            retryRename = true;
+                        }
+                        else
+                        {
+                            newName = name;
+                            retryRename = false;
+                        }
+                    }
+                    else
+                    {
+                        newName = name;
+                    }
+                }
+                else
+                {
+                    retryRename = false;
+                }
+            } while (retryRename);
+
+            if (!newName.isEmpty())
             {
                 const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
-                QString name = dlg.GetString();
-                sequenceManager->RenameNode(animNode2, name.toUtf8().data());
+                sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
                 UpdateNodeRecord(record);
             }
         }
@@ -1759,15 +1764,9 @@ void CTrackViewNodesCtrl::EditEvents()
 void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
 {
     // Change Group of the node.
-    StringDlg dlg(tr("Enter Folder Name"));
-    if (dlg.exec() == QDialog::Accepted)
+    QString name = QInputDialog::getText(this, tr("Enter Folder Name"), QString());
+    if (!name.isEmpty())
     {
-        QString name = dlg.GetString();
-        if (name.isEmpty())
-        {
-            return;
-        }
-
         CUndo undo("Create folder");
         if (!groupNode->CreateSubNode(name, AnimNodeType::Group))
         {

@@ -10,11 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -35,6 +35,7 @@ AZ_DECLARE_BUDGET(PrefabSystem);
 namespace AZ
 {
     class Entity;
+    class SerializeContext;
 } // namespace AZ
 
 namespace AzToolsFramework
@@ -53,6 +54,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler
         {
         public:
 
@@ -78,6 +80,10 @@ namespace AzToolsFramework
 
             // SystemTickBus...
             void OnSystemTick() override;
+
+            // AssetBrowserSourceActionNotificationBus...
+            void OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
+            void OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation

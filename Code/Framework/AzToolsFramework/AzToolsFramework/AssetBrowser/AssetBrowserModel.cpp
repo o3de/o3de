@@ -12,6 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -280,7 +281,7 @@ namespace AzToolsFramework
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
                             toPath = item->GetFullPath() + "/" + filename.c_str() + "/*";
                         }
-                        MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                     }
                     return true;
                 }
@@ -344,13 +345,13 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries)
+        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries)
         {
             for (const auto& index : indexes)
             {
                 if (index.isValid())
                 {
-                    AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                    const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     entries.push_back(item);
                 }
             }
@@ -440,7 +441,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty() || !m_customNewlyCreatedAssetPathsToCreatorBusIds.empty())
+                if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty())
                 {
                     // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
                     AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
@@ -477,16 +478,11 @@ namespace AzToolsFramework
                 if (index.isValid())
                 {
                     emit RequestOpenItemForEditing(index);
-                    emit RequestThumbnailviewUpdate();
                 }
                 else
                 {
                     m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
                 }
-            }
-            else
-            {
-                m_customNewlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
             }
         }
 
@@ -556,28 +552,6 @@ namespace AzToolsFramework
                         if (GetEntryIndex(entry, index))
                         {
                             emit RequestOpenItemForEditing(index);
-                            emit RequestThumbnailviewUpdate();
-                        }
-                    });
-            }
-            else if (m_customNewlyCreatedAssetPathsToCreatorBusIds.contains(fullpath))
-            {
-                if (m_customNewlyCreatedAssetPathsToCreatorBusIds[fullpath] != AZ::Crc32())
-                {
-                    m_assetEntriesToCreatorBusIds[entry] = m_customNewlyCreatedAssetPathsToCreatorBusIds[fullpath];
-                }
-
-                m_customNewlyCreatedAssetPathsToCreatorBusIds.erase(fullpath);
-
-                QTimer::singleShot(
-                    0,
-                    this,
-                    [this, entry]()
-                    {
-                        QModelIndex index;
-                        if (GetEntryIndex(entry, index))
-                        {
-                            emit RequestThumbnailviewUpdate();
                         }
                     });
             }

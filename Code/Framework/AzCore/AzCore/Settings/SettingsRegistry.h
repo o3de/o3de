@@ -19,6 +19,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Outcome/Outcome.h>
 
 namespace AZ
 {
@@ -379,8 +380,8 @@ namespace AZ
         //! @param anchorKey The key where the content of the settings file will be anchored.
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return True if the registry file was successfully merged, otherwise false.
-        virtual bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
+        //! @return An AZ::Success if the registry file was successfully merged, or AZ::Failure with an error message.
+        virtual AZ::Outcome<void, AZStd::string> MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) = 0;
         //! Loads all settings files in a folder and merges them into the registry.
         //!     With the specializations "a" and "b" and platform "c" the files would be loaded in the order:

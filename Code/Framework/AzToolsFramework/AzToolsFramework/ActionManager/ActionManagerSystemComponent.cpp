@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <QApplication>
 
 namespace AzToolsFramework
 {
@@ -26,7 +27,10 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::Init()
     {
-        if (IsNewActionManagerEnabled())
+        // The ActionManagerSystemComponent could be created in a tooling context
+        // where a QGuiApplication does not exist such as the SerializeContextTools
+        auto qAppInstance = QApplication::instance();
+        if (IsNewActionManagerEnabled() && qAppInstance != nullptr)
         {
             m_defaultParentObject = new QWidget();
 

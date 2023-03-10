@@ -56,6 +56,7 @@ protected:
     };
 
     std::vector<ObjName> m_objs;
+    std::vector<int> m_objsSourceIndex;
     CTrackViewDialog* m_tvDlg;
 
     int m_numSeqs;

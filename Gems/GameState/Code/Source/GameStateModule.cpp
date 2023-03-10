@@ -18,7 +18,7 @@ namespace GameState
     {
     public:
         AZ_RTTI(GameStateModule, "{33EF4B1E-388F-4F05-B73A-6560FE0CF4E3}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GameStateModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStateModule, AZ::SystemAllocator);
 
         GameStateModule()
             : AZ::Module()

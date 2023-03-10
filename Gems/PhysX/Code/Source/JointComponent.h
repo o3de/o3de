@@ -28,7 +28,7 @@ namespace PhysX
     class JointComponentConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(JointComponentConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JointComponentConfiguration, AZ::SystemAllocator);
         AZ_TYPE_INFO(JointComponentConfiguration, "{1454F33F-AA6E-424B-A70C-9E463FBDEA19}");
         static void Reflect(AZ::ReflectContext* context);
 

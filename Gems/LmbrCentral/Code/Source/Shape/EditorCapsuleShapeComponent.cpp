@@ -82,7 +82,7 @@ namespace LmbrCentral
 
         GenerateVertices();
 
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorCapsuleShapeComponent, AzToolsFramework::CapsuleComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
     }
@@ -119,7 +119,7 @@ namespace LmbrCentral
             {
                 DrawShape(
                     debugDisplay,
-                    ShapeDrawParams{ m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    ShapeDrawParams{ m_capsuleShape.GetCapsuleConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_capsuleShapeMesh,
                     m_capsuleShape.GetTranslationOffset());
             },

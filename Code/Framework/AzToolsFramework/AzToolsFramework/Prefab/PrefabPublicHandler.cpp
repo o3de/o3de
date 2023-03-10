@@ -262,9 +262,8 @@ namespace AzToolsFramework
                 // Helper function to create a link between a nested instance and the newly created instance
                 auto createLinkForNestedInstance = [&](Instance& nestedInstance)
                 {
-                    EntityOptionalReference nestedInstanceContainerEntity = nestedInstance.GetContainerEntity();
                     AZ_Assert(
-                        nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
+                        nestedInstance.GetContainerEntity(), "Invalid container entity found for the nested instance used in prefab creation.");
 
                     PrefabDom previousPatch;
 
@@ -1586,7 +1585,20 @@ namespace AzToolsFramework
                 AZStd::vector<const AZ::Entity*> detachedEntitiesToUpdate;
                 detachedEntitiesToUpdate.push_back(&containerEntity);
 
-                // Detach nested instances and add them to the parent instance
+                // Detach entities and add them to the parent instance.
+                detachedInstance->DetachEntities(
+                    [&detachedEntitiesToUpdate, &parentInstance](AZStd::unique_ptr<AZ::Entity> entityPtr)
+                    {
+                        AZ::Entity* detachedEntity = entityPtr.release();
+                        [[maybe_unused]] const bool entityAdded = parentInstance.AddEntity(*detachedEntity);
+                        AZ_Assert(entityAdded, "Add target Instance's entity to its parent Instance failed.");
+
+                        detachedEntitiesToUpdate.push_back(detachedEntity);
+                    });
+
+                // Detach nested instances and add them to the parent instance.
+                // This step needs to happen after detaching entities to make sure the parent entity reference inside nested instance
+                // is up to date since its parent entity is also moved to a new owning instance.
                 detachedInstance->DetachNestedInstances(
                     [&](AZStd::unique_ptr<Instance> detachedNestedInstance)
                     {
@@ -1605,20 +1617,12 @@ namespace AzToolsFramework
                         m_instanceToTemplateInterface->GeneratePatch(
                             reparentPatch, nestedInstanceTemplateDom, nestedInstanceDomUnderNewParent);
 
-                        CreateLink(nestedInstanceUnderNewParent, parentTemplateId, undoBatch.GetUndoBatch(), AZStd::move(reparentPatch), true);
+                        // Create link and update template with the new instance DOM.
+                        CreateLink(
+                            nestedInstanceUnderNewParent, parentTemplateId, undoBatch.GetUndoBatch(), AZStd::move(reparentPatch), true);
                     });
 
-                // Detach entities and add them to the parent instance, then update entity DOMs in template
-                detachedInstance->DetachEntities(
-                    [&detachedEntitiesToUpdate, &parentInstance](AZStd::unique_ptr<AZ::Entity> entityPtr)
-                    {
-                        AZ::Entity* detachedEntity = entityPtr.release();
-                        [[maybe_unused]] const bool entityAdded = parentInstance.AddEntity(*detachedEntity);
-                        AZ_Assert(entityAdded, "Add target Instance's entity to its parent Instance failed.");
-
-                        detachedEntitiesToUpdate.push_back(detachedEntity);
-                    });
-
+                // Update template with the new entity DOMs.
                 PrefabUndoHelpers::AddEntityDoms(detachedEntitiesToUpdate, parentInstance.GetTemplateId(), undoBatch.GetUndoBatch());
 
                 // Update parent entity of the container entity in template with the new sort order information
@@ -1903,11 +1907,6 @@ namespace AzToolsFramework
 
                 if (!owningInstance.has_value())
                 {
-                    AZ_Assert(
-                        false,
-                        "An error occurred in function EntitiesBelongToSameInstance: "
-                        "Owning instance of entity with id '%llu' couldn't be found",
-                        entityId);
                     return false;
                 }
 

@@ -6,7 +6,7 @@
  *
  */
 
-#include "TestColliderComponent.h"
+#include <TestColliderComponent.h>
 
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
@@ -20,8 +20,8 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <Tests/Viewport/ViewportUiManagerTests.cpp>
 #include <EditorColliderComponent.h>
+#include <EditorRigidBodyComponent.h>
 #include <EditorStaticRigidBodyComponent.h>
 
 namespace UnitTest
@@ -30,11 +30,9 @@ namespace UnitTest
         : public ToolsApplicationFixture<false>
     {
     protected:
-        using EntityPtr = AZ::Entity*;
-
         AZ::ComponentId m_colliderComponentId;
 
-        EntityPtr CreateColliderComponent()
+        AZ::Entity* CreateEntityWithTestColliderComponent()
         {
             AZ::Entity* entity = nullptr;
             AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
@@ -42,7 +40,7 @@ namespace UnitTest
             entity->Deactivate();
 
             // Add placeholder component which implements component mode.
-            auto colliderComponent = entity->CreateComponent<TestColliderComponentMode>();
+            auto colliderComponent = entity->CreateComponent<TestColliderComponent>();
 
             m_colliderComponentId = colliderComponent->GetId();
 
@@ -69,8 +67,8 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelUpShouldSetNextMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
@@ -98,8 +96,8 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, MouseWheelDownShouldSetPreviousMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
@@ -127,8 +125,8 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey1ShouldSetOffsetMode)
     {
         // Given there is a collider component in component mode.
-        CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
@@ -145,9 +143,9 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey2ShouldSetRotationMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
@@ -164,9 +162,9 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKey3ShouldSetSizeMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequests::SubMode subMode = PhysX::ColliderComponentModeRequests::SubMode::NumModes;
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
@@ -183,13 +181,13 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetSphereRadius)
     {
         // Given there is a sphere collider in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         float radius = 5.0f;
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetShapeType(Physics::ShapeType::Sphere);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetSphereRadius(radius);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetShapeType(Physics::ShapeType::Sphere);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetSphereRadius(radius);
 
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
             PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
@@ -198,22 +196,22 @@ namespace UnitTest
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
 
         // The the sphere radius should be reset.
-        radius = colliderEntity->FindComponent<TestColliderComponentMode>()->GetSphereRadius();
+        radius = colliderEntity->FindComponent<TestColliderComponent>()->GetSphereRadius();
         EXPECT_FLOAT_EQ(0.5f, radius);
     }
 
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetCapsuleSize)
     {
         // Given there is a capsule collider in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         float height = 10.0f;
         float radius = 2.5f;
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetShapeType(Physics::ShapeType::Capsule);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetCapsuleHeight(height);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetCapsuleRadius(radius);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetShapeType(Physics::ShapeType::Capsule);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetCapsuleHeight(height);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetCapsuleRadius(radius);
 
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
             PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
@@ -222,42 +220,20 @@ namespace UnitTest
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
 
         // Then the capsule size should be reset.
-        height = colliderEntity->FindComponent<TestColliderComponentMode>()->GetCapsuleHeight();
-        radius = colliderEntity->FindComponent<TestColliderComponentMode>()->GetCapsuleRadius();
+        height = colliderEntity->FindComponent<TestColliderComponent>()->GetCapsuleHeight();
+        radius = colliderEntity->FindComponent<TestColliderComponent>()->GetCapsuleRadius();
         EXPECT_FLOAT_EQ(1.0f, height);
         EXPECT_FLOAT_EQ(0.25f, radius);
     }
 
-    TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetAssetScale)
-    {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
-        AZ::Vector3 assetScale(10.0f, 10.0f, 10.0f);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetShapeType(Physics::ShapeType::PhysicsAsset);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetAssetScale(assetScale);
-
-        AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
-
-        PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
-            PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
-
-        // When the 'R' key is pressed
-        QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
-
-        // Then the asset scale should be reset.
-        assetScale = colliderEntity->FindComponent<TestColliderComponentMode>()->GetAssetScale();
-        EXPECT_THAT(assetScale, IsClose(AZ::Vector3::CreateOne()));
-    }
-
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetOffset)
     {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        // Given there is a collider component in component mode.
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AZ::Vector3 offset(5.0f, 6.0f, 7.0f);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetColliderOffset(offset);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetColliderOffset(offset);
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
             PhysX::ColliderComponentModeRequests::SubMode::Offset);
@@ -266,18 +242,18 @@ namespace UnitTest
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
 
         // Then the collider offset should be reset.
-        offset = colliderEntity->FindComponent<TestColliderComponentMode>()->GetColliderOffset();
+        offset = colliderEntity->FindComponent<TestColliderComponent>()->GetColliderOffset();
         EXPECT_THAT(offset, IsClose(AZ::Vector3::CreateZero()));
     }
 
     TEST_F(PhysXColliderComponentModeTest, PressingKeyRShouldResetRotation)
     {
-        // Given there is a sphere collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
+        // Given there is a collider component in component mode.
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
         AZ::Quaternion rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisZ(), 45.0f);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetColliderRotation(rotation);
+        colliderEntity->FindComponent<TestColliderComponent>()->SetColliderRotation(rotation);
         AzToolsFramework::SelectEntity(colliderEntity->GetId());
-        EnterComponentMode<TestColliderComponentMode>();
+        EnterComponentMode<TestColliderComponent>();
 
         PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
             PhysX::ColliderComponentModeRequests::SubMode::Rotation);
@@ -286,15 +262,15 @@ namespace UnitTest
         QTest::keyPress(&m_editorActions.m_componentModeWidget, Qt::Key_R);
 
         // Then the collider rotation should be reset.
-        rotation = colliderEntity->FindComponent<TestColliderComponentMode>()->GetColliderRotation();
+        rotation = colliderEntity->FindComponent<TestColliderComponent>()->GetColliderRotation();
         EXPECT_THAT(rotation, IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
     TEST_F(PhysXColliderComponentModeTest, ClickingOffsetButtonShouldSetOffsetMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         // Given
         // Check preconditions
@@ -328,8 +304,8 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, ClickingRotationButtonShouldSetRotationMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         // Given
         // Check preconditions
@@ -363,8 +339,8 @@ namespace UnitTest
     TEST_F(PhysXColliderComponentModeTest, ClickingDimensionsButtonShouldSetDimensionsMode)
     {
         // Given there is a collider component in component mode.
-        auto colliderEntity = CreateColliderComponent();
-        EnterComponentMode<TestColliderComponentMode>();
+        auto colliderEntity = CreateEntityWithTestColliderComponent();
+        EnterComponentMode<TestColliderComponent>();
 
         // Given
         // Check preconditions
@@ -393,44 +369,6 @@ namespace UnitTest
         // Then the component mode is set to Offset.
         PhysX::ColliderComponentModeRequestBus::BroadcastResult(subMode, &PhysX::ColliderComponentModeRequests::GetCurrentMode);
         EXPECT_EQ(PhysX::ColliderComponentModeRequests::SubMode::Dimensions, subMode);
-    }
-
-    using PhysXColliderComponentModeManipulatorTest =
-        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<PhysXColliderComponentModeTest>;
-
-    TEST_F(PhysXColliderComponentModeManipulatorTest, AssetScaleManipulatorsScaleInCorrectDirection)
-    {
-        auto colliderEntity = CreateColliderComponent();
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetShapeType(Physics::ShapeType::PhysicsAsset);
-        colliderEntity->FindComponent<TestColliderComponentMode>()->SetAssetScale(AZ::Vector3::CreateOne());
-        EnterComponentMode<TestColliderComponentMode>();
-        PhysX::ColliderComponentModeRequestBus::Broadcast(&PhysX::ColliderComponentModeRequests::SetCurrentMode,
-            PhysX::ColliderComponentModeRequests::SubMode::Dimensions);
-
-        // position the camera so the X axis manipulator will be flipped
-        AzFramework::SetCameraTransform(
-            m_cameraState,
-            AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi), AZ::Vector3(-5.0f, -5.0f, 0.0f)));
-
-        // select a point in world space slightly displaced from the position of the entity in the negative x direction
-        // in order to grab the X manipulator
-        const float x = 0.1f;
-        const float xDelta = 0.1f;
-        const AZ::Vector3 worldStart(-x, 0.0f, 0.0f);
-
-        // position in world space to drag to
-        const AZ::Vector3 worldEnd(-(x + xDelta), 0.0f, 0.0f);
-
-        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
-
-        const auto worldToScreenMultiplier = 1.0f / AzToolsFramework::CalculateScreenToWorldMultiplier(worldStart, m_cameraState);
-        const auto assetScale = colliderEntity->FindComponent<TestColliderComponentMode>()->GetAssetScale();
-        // need quite a large tolerance because using screen co-ordinates limits precision
-        const float tolerance = 0.01f;
-        EXPECT_NEAR(assetScale.GetX(), 1.0f + xDelta * worldToScreenMultiplier, tolerance);
-        EXPECT_NEAR(assetScale.GetY(), 1.0f, tolerance);
-        EXPECT_NEAR(assetScale.GetZ(), 1.0f, tolerance);
     }
 
     class PhysXEditorColliderComponentFixture : public UnitTest::ToolsApplicationFixture<false>
@@ -721,8 +659,8 @@ namespace UnitTest
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         float newSphereRadius = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(
-            newSphereRadius, m_idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::EventResult(
+            newSphereRadius, m_idPair, &PhysX::EditorPrimitiveColliderComponentRequests::GetSphereRadius);
 
         EXPECT_NEAR(newSphereRadius, 0.9f, ManipulatorTolerance);
     }
@@ -764,8 +702,8 @@ namespace UnitTest
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd, AzToolsFramework::DefaultSymmetricalEditingModifier);
 
         float newCapsuleHeight = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(
-            newCapsuleHeight, m_idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::EventResult(
+            newCapsuleHeight, m_idPair, &PhysX::EditorPrimitiveColliderComponentRequests::GetCapsuleHeight);
 
         EXPECT_NEAR(newCapsuleHeight, 1.2f, ManipulatorTolerance);
     }
@@ -807,8 +745,8 @@ namespace UnitTest
         DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
 
         float newCapsuleHeight = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(
-            newCapsuleHeight, m_idPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::EventResult(
+            newCapsuleHeight, m_idPair, &PhysX::EditorPrimitiveColliderComponentRequests::GetCapsuleHeight);
 
         EXPECT_NEAR(newCapsuleHeight, 1.1f, ManipulatorTolerance);
     }
@@ -853,5 +791,135 @@ namespace UnitTest
             newColliderRotation, m_idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
 
         EXPECT_THAT(newColliderRotation, testing::Not(IsCloseTolerance(capsuleRotation, ManipulatorTolerance)));
+    }
+
+    class ColliderPickingFixture : public PhysXEditorColliderComponentManipulatorFixture
+    {
+    public:
+        void SetUpEditorFixtureImpl() override;
+        //! Clicks at a given position and returns the entities that are selected.
+        AzToolsFramework::EntityIdList ClickAndGetSelectedEntities(AzFramework::ScreenPoint screenPoint);
+
+        static inline const float uniformScale = 1.0f;
+        static inline const AZ::Quaternion ShapeRotation = AZ::Quaternion(0, 0, 0, 1);
+        static inline const AZ::Quaternion EntityRotation = AZ::Quaternion(0, 0, 0, 1);
+        static inline const AZ::Vector3 ShapeOffset = AZ::Vector3(0, 0, 0);
+        static inline const AZ::Vector3 EntityTranslation = AZ::Vector3(5.0f, 15.0f, 10.0f);
+    };
+
+    void ColliderPickingFixture::SetUpEditorFixtureImpl()
+    {
+        PhysXEditorColliderComponentManipulatorFixture::SetUpEditorFixtureImpl();
+
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1920, 1080);
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), AZ::Vector3(20.0f, 15.0f, 10.0f)));
+
+        m_actionDispatcher->CameraState(m_cameraState);
+    }
+
+    AzToolsFramework::EntityIdList ColliderPickingFixture::ClickAndGetSelectedEntities(AzFramework::ScreenPoint screenPoint)
+    {
+        // click the entity in the viewport
+        m_actionDispatcher->SetStickySelect(true)
+            ->CameraState(m_cameraState)
+            ->MousePosition(screenPoint)
+            ->MouseLButtonDown()
+            ->MouseLButtonUp();
+
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        return selectedEntities;
+    }
+
+    TEST_F(ColliderPickingFixture, ColliderPickingWithBoxShape)
+    {
+        // Given the setup conditions
+        const AZ::Vector3 boxDimensions(5.0f, 5.0f, 5.0f);
+        SetupCollider(Physics::BoxShapeConfiguration(boxDimensions), ShapeRotation, ShapeOffset);
+        SetupTransform(EntityRotation, EntityTranslation, uniformScale);
+
+        // When a user clicks just outside the collider it should not be selected
+        auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(7.5f, 12.4f, 10.0f), m_cameraState);
+        auto selectedEntities = ClickAndGetSelectedEntities(clickPos1);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(0));
+
+        // Then when a user clicks inside the collider it should be selected
+        auto clickPos2 = AzFramework::WorldToScreen(AZ::Vector3(7.5f, 12.6f, 10.0f), m_cameraState);
+        selectedEntities = ClickAndGetSelectedEntities(clickPos2);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+        EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
+    }
+
+    TEST_F(ColliderPickingFixture, ColliderPickingWithBoxShapeAndRigidBodyComponent)
+    {
+        // Given the setup conditions
+        const AZ::Vector3 boxDimensions(5.0f, 5.0f, 5.0f);
+        SetupTransform(EntityRotation, EntityTranslation, uniformScale);
+
+        // The collider should be selectable with a collider and rigid body component
+        m_entity->Deactivate();
+        m_entity->CreateComponent<PhysX::EditorColliderComponent>(
+            Physics::ColliderConfiguration(), Physics::BoxShapeConfiguration(boxDimensions));
+        m_entity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        m_entity->Activate();
+
+        // When a user clicks just outside the collider it should not be picked
+        auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(7.5f, 12.4f, 10.0f), m_cameraState);
+        auto selectedEntities = ClickAndGetSelectedEntities(clickPos1);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(0));
+
+        // Then when a user clicks inside the collider it should be selected
+        auto clickPos2 = AzFramework::WorldToScreen(AZ::Vector3(7.5f, 12.6f, 10.0f), m_cameraState);
+        selectedEntities = ClickAndGetSelectedEntities(clickPos2);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+        EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
+    }
+
+    TEST_F(ColliderPickingFixture, ColliderPickingWithSphereShape)
+    {
+        // Given the setup conditions
+        SetupCollider(Physics::SphereShapeConfiguration(2.5f), ShapeRotation, ShapeOffset);
+        SetupTransform(EntityRotation, EntityTranslation, uniformScale);
+
+        // When a user clicks just outside the collider it should not be picked
+        auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.4f, 10.0f), m_cameraState);
+        auto selectedEntities = ClickAndGetSelectedEntities(clickPos1);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(0));
+
+        // Then when a user clicks inside the collider it should be selected
+        auto clickPos2 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.6f, 10.0f), m_cameraState);
+        selectedEntities = ClickAndGetSelectedEntities(clickPos2);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+        EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
+    }
+
+    TEST_F(ColliderPickingFixture, ColliderPickingWithCapsuleShape)
+    {
+        // Given the setup conditions
+        SetupCollider(Physics::CapsuleShapeConfiguration(5.0f, 2.5f), ShapeRotation, ShapeOffset);
+        SetupTransform(EntityRotation, EntityTranslation, uniformScale);
+
+        // When a user clicks just outside the collider it should not be picked
+        auto clickPos1 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.4f, 10.0f), m_cameraState);
+        auto selectedEntities = ClickAndGetSelectedEntities(clickPos1);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(0));
+
+        // Then when a user clicks inside the collider it should be selected
+        auto clickPos2 = AzFramework::WorldToScreen(AZ::Vector3(5.0f, 12.6f, 10.0f), m_cameraState);
+        selectedEntities = ClickAndGetSelectedEntities(clickPos2);
+
+        EXPECT_THAT(selectedEntities.size(), testing::Eq(1));
+        EXPECT_THAT(selectedEntities.front(), ::testing::Eq(m_entity->GetId()));
     }
 } // namespace UnitTest

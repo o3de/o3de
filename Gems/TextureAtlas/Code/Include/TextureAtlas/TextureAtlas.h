@@ -9,18 +9,22 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace TextureAtlasNamespace
 {
     //! Struct that represents a slot on a texture atlas
     struct AtlasCoordinates
     {
-        AZ_CLASS_ALLOCATOR(AtlasCoordinates, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtlasCoordinates, AZ::SystemAllocator);
         AZ_TYPE_INFO(AtlasCoordinates, "{FC5D6A60-1056-4F6C-96F7-6A47912F8A35}");
 
     private:
@@ -66,7 +70,7 @@ namespace TextureAtlasNamespace
     class TextureAtlas
     {
     public:
-        AZ_CLASS_ALLOCATOR(TextureAtlas, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureAtlas, AZ::SystemAllocator);
         AZ_TYPE_INFO(TextureAtlas, "{56FF34CF-7C5B-4BBC-9E2B-AFCA1C6C7561}");
 
         virtual ~TextureAtlas() {}

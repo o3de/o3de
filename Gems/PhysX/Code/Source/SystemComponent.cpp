@@ -107,7 +107,6 @@ namespace PhysX
                 editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_enabled,
                     "Enabled", "Enables the PhysX system component.")

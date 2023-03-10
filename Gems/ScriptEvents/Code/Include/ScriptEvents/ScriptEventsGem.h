@@ -25,7 +25,7 @@ namespace ScriptEvents
     {
     public:
         AZ_RTTI(ScriptEventsModule, "{DD54A1FE-2BDF-412C-AAB8-5A6BE01FE524}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptEventsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsModule, AZ::SystemAllocator);
 
         ScriptEventsModule();
         virtual ~ScriptEventsModule()

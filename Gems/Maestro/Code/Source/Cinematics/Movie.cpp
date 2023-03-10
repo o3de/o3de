@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -189,10 +190,10 @@ namespace Internal
     {
         if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
         {
-            const AZ::TimeMs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
-            if (deltatimeOverride != AZ::Time::ZeroTimeMs)
+            const AZ::TimeUs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
+            if (deltatimeOverride != AZ::Time::ZeroTimeUs)
             {
-                deltaTime = AZ::TimeMsToSeconds(deltatimeOverride);
+                deltaTime = AZ::TimeUsToSeconds(deltatimeOverride);
             }
         }
         return deltaTime;
@@ -214,7 +215,7 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
-    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeMs;
+    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeUs;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
     m_cvar_sys_maxTimeStepForMovieSystem = nullptr;
@@ -1500,7 +1501,7 @@ void CMovieSystem::EnableFixedStepForCapture(float step)
     if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
         m_fixedTimeStepBackUp = timeSystem->GetSimulationTickDeltaOverride();
-        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(step));
+        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeUs(step));
     }
 
     if (nullptr == m_cvar_sys_maxTimeStepForMovieSystem)

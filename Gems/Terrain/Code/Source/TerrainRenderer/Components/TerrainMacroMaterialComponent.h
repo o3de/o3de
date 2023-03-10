@@ -30,7 +30,7 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainMacroMaterialConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainMacroMaterialConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainMacroMaterialConfig, "{9DBAFFF0-FD20-4594-8884-E3266D8CCAC8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

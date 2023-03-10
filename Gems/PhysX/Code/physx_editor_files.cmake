@@ -20,6 +20,8 @@ set(FILES
     Source/EditorStaticRigidBodyComponent.h
     Source/EditorColliderComponent.cpp
     Source/EditorColliderComponent.h
+    Source/EditorMeshColliderComponent.cpp
+    Source/EditorMeshColliderComponent.h
     Source/EditorShapeColliderComponent.cpp
     Source/EditorShapeColliderComponent.h
     Source/EditorForceRegionComponent.cpp
@@ -93,6 +95,8 @@ set(FILES
     Editor/ColliderSphereMode.cpp
     Editor/ColliderCapsuleMode.h
     Editor/ColliderCapsuleMode.cpp
+    Editor/ColliderCylinderMode.h
+    Editor/ColliderCylinderMode.cpp
     Editor/ColliderAssetScaleMode.h
     Editor/ColliderAssetScaleMode.cpp
     Editor/DebugDraw.cpp

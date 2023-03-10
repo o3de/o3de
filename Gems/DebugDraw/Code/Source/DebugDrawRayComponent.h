@@ -18,7 +18,7 @@ namespace DebugDraw
     class DebugDrawRayElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawRayElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawRayElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawRayElement, "{BFA68022-208C-4A25-8A33-CF411164F994}");
         static void Reflect(AZ::ReflectContext* context);
 

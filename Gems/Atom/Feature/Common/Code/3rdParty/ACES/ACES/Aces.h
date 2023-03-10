@@ -145,8 +145,7 @@ namespace AZ
             AcesLut,
             Passthrough,
             GammaSRGB,
-            Reinhard,
-            Invalid
+            Reinhard
         );
 
         enum class ShaperPresetType

@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorPostFxLayerCategoriesAsset, "{A18B1B11-4C1E-4C1B-9643-178E8ED27019}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(EditorPostFxLayerCategoriesAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorPostFxLayerCategoriesAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

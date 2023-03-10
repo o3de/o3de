@@ -21,7 +21,7 @@ class CAnimPostFXNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimPostFXNode, "{41FCA8BB-46A8-4F37-87C2-C1D10994854B}", CAnimNode);
 
     //-----------------------------------------------------------------------------

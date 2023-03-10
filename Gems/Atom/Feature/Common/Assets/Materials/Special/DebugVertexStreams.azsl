@@ -102,24 +102,24 @@ PixelOutput MainPS(VSOutput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     PixelOutput OUT;
     
-    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
-    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
+    float3 tangents[UvSetCount] = { tangentWS, tangentWS };
+    float3 bitangents[UvSetCount] = { bitangentWS, bitangentWS };
     
     if(o_bitangentOptions == BitangentOptions::ReconstructBitangent && MaterialSrg::m_uvIndex == 0)
     {
-        bitangents[MaterialSrg::m_uvIndex] = cross(vertexNormal, vertexTangent) * sign(IN.m_tangent.w);
+        bitangents[MaterialSrg::m_uvIndex] = cross(normalWS, tangentWS) * sign(IN.m_tangent.w);
     }
     else if((o_debugVertexStream == DebugVertexStream::Tangents && o_tangentOptions == TangentOptions::UseSurfaceGradient)
     || (o_debugVertexStream == DebugVertexStream::Bitangents && o_bitangentOptions == BitangentOptions::UseSurfaceGradient)
     || MaterialSrg::m_uvIndex > 0)
     {
         const bool isBackface = false;
-        SurfaceGradientNormalMapping_Init(vertexNormal, IN.m_worldPosition, isBackface);
+        SurfaceGradientNormalMapping_Init(normalWS, IN.m_worldPosition, isBackface);
         SurfaceGradientNormalMapping_GenerateTB(IN.m_uv[MaterialSrg::m_uvIndex], tangents[MaterialSrg::m_uvIndex], bitangents[MaterialSrg::m_uvIndex]);
     }
 

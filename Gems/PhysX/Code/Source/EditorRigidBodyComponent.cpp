@@ -12,6 +12,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/EditorRigidBodyComponent.h>
 #include <Source/EditorColliderComponent.h>
+#include <Source/EditorMeshColliderComponent.h>
 #include <Source/EditorShapeColliderComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Source/RigidBodyComponent.h>
@@ -19,6 +20,7 @@
 #include <Editor/KinematicDescriptionDialog.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <System/PhysXSystem.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/PropertyTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyBoolComboBoxCtrl.hxx>
@@ -35,64 +37,68 @@ namespace PhysX
 
             const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
 
-            const AZStd::vector<EditorColliderComponent*> colliders = entity->FindComponents<EditorColliderComponent>();
-            for (const EditorColliderComponent* collider : colliders)
+            for (const EditorColliderComponent* collider : entity->FindComponents<EditorColliderComponent>())
             {
                 const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
-                if (shapeConfigurationProxy.IsAssetConfig() && !shapeConfigurationProxy.m_physicsAsset.m_configuration.m_asset.IsReady())
+                const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
+                if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
                 {
-                    continue;
-                }
-
-                const Physics::ColliderConfiguration colliderConfigurationScaled = collider->GetColliderConfigurationScaled();
-                const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
-
-                if (shapeConfigurationProxy.IsAssetConfig())
-                {
-                    AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                    Utils::CreateShapesFromAsset(
-                        shapeConfigurationProxy.m_physicsAsset.m_configuration,
-                        colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
-
-                    for (const auto& shape : shapes)
+                    const Physics::ColliderConfiguration colliderConfigurationScaled = collider->GetColliderConfigurationScaled();
+                    AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
+                        colliderConfigurationScaled, shapeConfiguration);
+                    AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                    if (shape)
                     {
-                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
                         allShapes.emplace_back(shape);
                     }
                 }
                 else
                 {
-                    const Physics::ShapeConfiguration& shapeConfiguration = shapeConfigurationProxy.GetCurrent();
-                    if (!hasNonUniformScaleComponent && !shapeConfigurationProxy.IsCylinderConfig())
+                    const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
+                    auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
+                        shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
+                    auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
+                    colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
+                    colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
+
+                    if (convexConfig.has_value())
                     {
                         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                            colliderConfigurationScaled, shapeConfiguration);
-                        AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
-                        if (shape)
-                        {
-                            allShapes.emplace_back(shape);
-                        }
-                    }
-                    else
-                    {
-                        auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
-                            shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
-                        auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
-                        colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
-                        colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
-
-                        if (convexConfig.has_value())
-                        {
-                            AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                                colliderConfigurationNoOffset, convexConfig.value());
-                            allShapes.emplace_back(shape);
-                        }
+                            colliderConfigurationNoOffset, convexConfig.value());
+                        allShapes.emplace_back(shape);
                     }
                 }
             }
 
-            const AZStd::vector<EditorShapeColliderComponent*> shapeColliders = entity->FindComponents<EditorShapeColliderComponent>();
-            for (const EditorShapeColliderComponent* shapeCollider : shapeColliders)
+            for (const EditorMeshColliderComponent* collider : entity->FindComponents<EditorMeshColliderComponent>())
+            {
+                const EditorProxyAssetShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
+                if (!shapeConfigurationProxy.m_physicsAsset.m_configuration.m_asset.IsReady())
+                {
+                    continue;
+                }
+
+                const AZ::Vector3& assetScale = shapeConfigurationProxy.m_physicsAsset.m_configuration.m_assetScale;
+                const bool isAssetScaleUniform =
+                    AZ::IsClose(assetScale.GetX(), assetScale.GetY()) && AZ::IsClose(assetScale.GetX(), assetScale.GetZ());
+
+                const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
+                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
+                Utils::CreateShapesFromAsset(
+                    shapeConfigurationProxy.m_physicsAsset.m_configuration,
+                    colliderConfigurationUnscaled,
+                    hasNonUniformScaleComponent || !isAssetScaleUniform,
+                    shapeConfigurationProxy.m_subdivisionLevel,
+                    shapes);
+
+                for (const auto& shape : shapes)
+                {
+                    AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
+                    allShapes.emplace_back(shape);
+                }
+            }
+
+            for (const EditorShapeColliderComponent* shapeCollider : entity->FindComponents<EditorShapeColliderComponent>())
             {
                 const Physics::ColliderConfiguration colliderConfig = shapeCollider->GetColliderConfigurationScaled();
                 const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& shapeConfigs =
@@ -202,7 +208,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                         ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
                         ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Dynamic")
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
                     ->Attribute(
                         AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
                         ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
@@ -341,6 +347,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         Physics::ColliderComponentEventBus::Handler::BusConnect(entityId);
         AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(entityId);
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -378,8 +385,8 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
-        PhysX::EditorColliderValidationRequestBus::Event(
-            entityId, &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+        PhysX::EditorMeshColliderValidationRequestBus::Event(
+            entityId, &PhysX::EditorMeshColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
     }
@@ -394,6 +401,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
+        AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzFramework::BoundsRequestBus::Handler::BusDisconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -411,8 +419,8 @@ namespace PhysX
         CreateEditorWorldRigidBody();
 
         // required in case the kinematic setting has changed
-        PhysX::EditorColliderValidationRequestBus::Event(
-            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+        PhysX::EditorMeshColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorMeshColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -688,5 +696,32 @@ namespace PhysX
         }
 
         return AZ::Aabb::CreateNull();
+    }
+
+    bool EditorRigidBodyComponent::SupportsEditorRayIntersect()
+    {
+        return true;
+    }
+
+    AZ::Aabb EditorRigidBodyComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
+    {
+        return GetWorldBounds();
+    }
+
+    bool EditorRigidBodyComponent::EditorSelectionIntersectRayViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    {
+        AzPhysics::RayCastRequest request;
+        request.m_direction = dir;
+        request.m_distance = distance;
+        request.m_start = src;
+
+        if (auto hit = RayCast(request))
+        {
+            distance = hit.m_distance;
+            return true;
+        }
+
+        return false;
     }
 } // namespace PhysX

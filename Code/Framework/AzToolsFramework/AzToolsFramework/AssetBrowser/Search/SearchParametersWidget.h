@@ -37,7 +37,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(SearchParametersWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SearchParametersWidget, AZ::SystemAllocator);
 
             explicit SearchParametersWidget(QWidget* parent = nullptr);
             ~SearchParametersWidget();

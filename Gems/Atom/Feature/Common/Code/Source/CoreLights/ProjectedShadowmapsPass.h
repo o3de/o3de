@@ -28,7 +28,7 @@ namespace AZ
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator);
             AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
 
             static constexpr uint16_t InvalidIndex = std::numeric_limits<uint16_t>::max();
@@ -73,7 +73,7 @@ namespace AZ
 
             // RPI::Pass overrides...
             void BuildInternal() override;
-            void GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const override;
+            void GetPipelineViewTags(RPI::PipelineViewTags& outTags) const override;
             void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const override;
 
             RHI::Ptr<ShadowmapPass> CreateChild(size_t childIndex);

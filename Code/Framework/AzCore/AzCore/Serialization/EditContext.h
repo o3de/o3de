@@ -115,6 +115,21 @@ namespace AZ
         };
     }
 
+    namespace SerializeInternal
+    {
+        template<class T>
+        struct ElementInfo;
+
+        template<class T, class C>
+        struct ElementInfo<T C::*>
+        {
+            using ElementType = AZStd::RemoveEnumT<T>;
+            using ClassType = C;
+            using Type = T;
+            using ValueType = AZStd::remove_pointer_t<ElementType>;
+        };
+    }
+
     /**
      * EditContext is bound to serialize context. It uses it for data manipulation.
      * It's role is to be an abstract way to generate and describe how a class should
@@ -132,7 +147,7 @@ namespace AZ
         using EnumInfo = EnumBuilder; ///< @deprecated Use EditContext::EnumBuilder
         /// @endcond
 
-        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator);
 
         /**
          * EditContext uses serialize context to interact with data, so serialize context is

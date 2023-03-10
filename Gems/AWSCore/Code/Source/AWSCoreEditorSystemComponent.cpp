@@ -10,13 +10,22 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <AWSCoreEditorSystemComponent.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
 
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QAction>
 #include <QList>
 #include <QString>
+
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+
+#include <Editor/Constants/AWSCoreEditorMenuNames.h>
+#include <Editor/UI/AWSCoreEditorMenu.h>
+#include <QDesktopServices>
+#include <QUrl>
 
 namespace AWSCore
 {
@@ -32,7 +41,6 @@ namespace AWSCore
             {
                 ec->Class<AWSCoreEditorSystemComponent>("AWSCoreEditor", "Adds supporting for working with AWS features in the Editor")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -61,42 +69,78 @@ namespace AWSCore
 
     void AWSCoreEditorSystemComponent::Init()
     {
-        m_awsCoreEditorManager = AZStd::make_unique<AWSCoreEditorManager>();
     }
 
     void AWSCoreEditorSystemComponent::Activate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+
+            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(m_actionManagerInterface, "AWSCoreEditorSystemComponent - could not get ActionManagerInterface");
+
+            m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
+
+            m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+            AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInternalInterface");
+        }
+
+        AWSCoreEditorRequestBus::Handler::BusConnect();
     }
 
     void AWSCoreEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
+
+        AWSCoreEditorRequestBus::Handler::BusDisconnect();
+
+        m_awsCoreEditorMenu.reset();
     }
 
-    void AWSCoreEditorSystemComponent::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    void AWSCoreEditorSystemComponent::OnMenuBarRegistrationHook()
     {
-        QMenuBar* menuBar = mainWindow->menuBar();
-        QList<QAction*> actionList = menuBar->actions();
-        QAction* insertPivot = nullptr;
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
-        {
-            if (QString::compare((*itr)->text(), EDITOR_HELP_MENU_TEXT) == 0)
-            {
-                insertPivot = (*itr);
-                break;
-            }
-        }
+        m_awsCoreEditorMenu = AZStd::make_unique<AWSCoreEditorMenu>();
+    }
 
-        const auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
-        if (insertPivot)
-        {
-            menuBar->insertMenu(insertPivot, menu);
-        }
-        else
-        {
-            menuBar->addMenu(menu);
-            AZ_Warning("AWSCoreEditorSystemComponent", false, "Failed to find Help menu, append cloud services menu to menubar directly.");
-        }
+    void AWSCoreEditorSystemComponent::OnMenuBindingHook()
+    {
+        m_awsCoreEditorMenu->UpdateMenuBinding();
+    }
+
+    void AWSCoreEditorSystemComponent::AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort)
+    {
+        const auto& identifier = actionDetails[IdentIndex];
+        const auto& text = actionDetails[NameIndex];
+        const auto& icon = actionDetails[IconIndex];
+        const auto& url = actionDetails[URLIndex];
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = text;
+        actionProperties.m_iconPath = icon;
+        auto outcome = m_actionManagerInterface->RegisterAction(ActionContext, identifier, actionProperties, [url]()
+            {
+                QDesktopServices::openUrl(QUrl(url));
+            });
+        AZ_Assert(outcome.IsSuccess(), "Failed to register action %s", identifier);
+
+        outcome = m_menuManagerInterface->AddActionToMenu(menuIdentifier, identifier, sort);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add action %s to menu %s", identifier, menuIdentifier.c_str());
+    }
+
+    void AWSCoreEditorSystemComponent::CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[], int sort)
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = menuDetails[NameIndex];
+        auto outcome = m_menuManagerInterface->RegisterMenu(menuDetails[IdentIndex], menuProperties);
+        AZ_Assert(outcome.IsSuccess(), "Failed to register '%s' Menu", menuDetails[IdentIndex]);
+
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuDetails[IdentIndex]);
+        menu->setProperty("noHover", true);
+
+        outcome = m_menuManagerInterface->AddSubMenuToMenu(parentMenuIdentifier, menuDetails[IdentIndex], sort);
+        AZ_Assert(outcome.IsSuccess(), "Failed to add '%s' SubMenu to '%s' Menu", menuDetails[IdentIndex], parentMenuIdentifier.c_str());
+
     }
 } // namespace AWSCore

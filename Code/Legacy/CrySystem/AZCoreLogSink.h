@@ -65,7 +65,7 @@ public:
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well
-            int logLevel = AZ::Debug::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::Debug::bg_traceLogLevel;
+            int logLevel = AZ::Debug::bg_traceLogLevel == static_cast<int>(AZ::Debug::LogLevel::Info) ? 4 : AZ::Debug::bg_traceLogLevel;
 
             gEnv->pConsole->GetCVar("log_WriteToFileVerbosity")->Set(logLevel);
             hasSetCVar = true;

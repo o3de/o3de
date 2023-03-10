@@ -23,23 +23,15 @@ namespace AzToolsFramework
             RadiusManipulatorRequestBus::EventResult(radius, entityComponentIdPair, &RadiusManipulatorRequestBus::Events::GetRadius);
             return radius;
         };
-        auto getRotationOffset = [entityComponentIdPair]()
-        {
-            AZ::Quaternion rotationOffset = AZ::Quaternion::CreateIdentity();
-            ShapeManipulatorRequestBus::EventResult(
-                rotationOffset, entityComponentIdPair, &ShapeManipulatorRequestBus::Events::GetRotationOffset);
-            return rotationOffset;
-        };
         auto setSphereRadius = [entityComponentIdPair](float radius)
         {
             RadiusManipulatorRequestBus::Event(entityComponentIdPair, &RadiusManipulatorRequestBus::Events::SetRadius, radius);
         };
         sphereViewportEdit->InstallGetSphereRadius(AZStd::move(getSphereRadius));
-        sphereViewportEdit->InstallGetRotationOffset(AZStd::move(getRotationOffset));
         sphereViewportEdit->InstallSetSphereRadius(AZStd::move(setSphereRadius));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(SphereComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SphereComponentMode, AZ::SystemAllocator)
 
         void SphereComponentMode::Reflect(AZ::ReflectContext* context)
     {

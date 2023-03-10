@@ -79,6 +79,7 @@ namespace UnitTests
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         m_platformConfig->PopulatePlatformsForScanFolder(platforms);
+        m_platformConfig->ReadMetaDataFromSettingsRegistry();
 
         m_platformConfig->AddScanFolder(
             AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder").c_str(), "folder", "folder", false, true, platforms });
@@ -96,7 +97,7 @@ namespace UnitTests
 
         // Configure our mock builder so APM can find the builder and run CreateJobs
         m_builderInfoHandler.CreateBuilderDesc(
-            "test", AZ::Uuid::CreateRandom().ToString<QString>(),
+            "test", AZ::Uuid::CreateRandom().ToFixedString().c_str(),
             { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) }, {});
         m_builderInfoHandler.BusConnect();
 
@@ -144,7 +145,7 @@ namespace UnitTests
 
         AZ::Utils::WriteFile("unit test file", m_testFilePath);
 
-        m_rc = AZStd::make_unique<AssetProcessor::RCController>(1, 1);
+        m_rc = AZStd::make_unique<TestingRCController>(1, 1);
         m_rc->SetDispatchPaused(false);
 
         QObject::connect(
@@ -226,12 +227,16 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails)
     {
         rcController.JobSubmitted(jobDetails);
+        UnitTests::JobSignalReceiver receiver;
+        WaitForNextJobToProcess(receiver);
+    }
 
-        JobSignalReceiver receiver;
-        QCoreApplication::processEvents(); // Once to get the job started
+    void AssetManagerTestingBase::WaitForNextJobToProcess(UnitTests::JobSignalReceiver &receiver)
+    {
+        QCoreApplication::processEvents(); // RCController::DispatchJobsImpl : Once to get the job started
         receiver.WaitForFinish(); // Wait for the RCJob to signal it has completed working
-        QCoreApplication::processEvents(); // Once more to trigger the JobFinished event
-        QCoreApplication::processEvents(); // Again to trigger the Finished event
+        QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
+        QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event
     }
 
     AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(
@@ -346,6 +351,18 @@ namespace UnitTests
             CreateJobStage(name, createJobCommonPlatform),
             ProcessJobStage(outputExtension, outputFlags, outputExtraFile),
             "fingerprint");
+    }
+
+    void AssetManagerTestingBase::SetCatalogToUpdateOnJobCompletion()
+    {
+        using namespace AssetBuilderSDK;
+        QObject::connect(
+            m_rc.get(),
+            &AssetProcessor::RCController::FileCompiled,
+            [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+            {
+                QMetaObject::invokeMethod(m_rc.get(), "OnAddedToCatalog", Qt::QueuedConnection, Q_ARG(AssetProcessor::JobEntry, entry));
+            });
     }
 
     AZStd::string AssetManagerTestingBase::MakePath(const char* filename, bool intermediate)

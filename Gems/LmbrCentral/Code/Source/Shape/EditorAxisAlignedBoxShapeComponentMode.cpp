@@ -10,7 +10,8 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorAxisAlignedBoxShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_TYPE_INFO_SPECIALIZE(EditorAxisAlignedBoxShapeComponentMode, "{39F7A2E2-5760-452B-A777-BAB76C66AC2E}");
+    AZ_CLASS_ALLOCATOR_IMPL(EditorAxisAlignedBoxShapeComponentMode, AZ::SystemAllocator)
 
     EditorAxisAlignedBoxShapeComponentMode::EditorAxisAlignedBoxShapeComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing)
@@ -25,6 +26,6 @@ namespace LmbrCentral
 
     AZ::Uuid EditorAxisAlignedBoxShapeComponentMode::GetComponentModeType() const
     {
-        return azrtti_typeid<EditorAxisAlignedBoxShapeComponentMode>();
+        return AZ::AzTypeInfo<EditorAxisAlignedBoxShapeComponentMode>::Uuid();
     }
 } // namespace LmbrCentral

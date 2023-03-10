@@ -178,7 +178,7 @@ namespace PhysX
     {
     public:
         AZ_RTTI(TransformForwardTimeInterpolator, "{2517631D-9CF3-4F9C-921C-03FB44DE377C}");
-        AZ_CLASS_ALLOCATOR(TransformForwardTimeInterpolator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TransformForwardTimeInterpolator, AZ::SystemAllocator);
         virtual ~TransformForwardTimeInterpolator() = default;
         void Reset(const AZ::Vector3& position, const AZ::Quaternion& rotation);
         void SetTarget(const AZ::Vector3& position, const AZ::Quaternion& rotation, float fixedDeltaTime);

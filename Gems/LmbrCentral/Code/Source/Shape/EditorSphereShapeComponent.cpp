@@ -92,7 +92,7 @@ namespace LmbrCentral
         AzToolsFramework::RadiusManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
         AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
 
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorSphereShapeComponent, AzToolsFramework::SphereComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
     }
@@ -117,7 +117,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawSphereShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_sphereShape.GetSphereConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_sphereShape.GetSphereConfiguration(), debugDisplay);
             },
             m_sphereShape.GetCurrentTransform());

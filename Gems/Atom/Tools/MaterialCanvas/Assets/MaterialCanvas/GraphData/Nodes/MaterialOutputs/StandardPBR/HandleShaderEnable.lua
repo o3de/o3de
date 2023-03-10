@@ -39,11 +39,15 @@ function Process(context)
         opacityMode = context:GetMaterialPropertyValue_enum("general.opacity_mode")
     end
 
+    local castShadows = true
+    if context:HasMaterialProperty("general.cast_shadows") then
+        castShadows = context:GetMaterialPropertyValue_bool("general.cast_shadows")
+    end
+
     local displacementMap = nil --context:GetMaterialPropertyValue_Image("parallax.textureMap")
     local useDisplacementMap = 0 --context:GetMaterialPropertyValue_bool("parallax.useTexture")
     local parallaxEnabled = displacementMap ~= nil and useDisplacementMap
     local parallaxPdoEnabled = 0 --context:GetMaterialPropertyValue_bool("parallax.pdo")
-    local castShadows = context:GetMaterialPropertyValue_bool("general.cast_shadows")
     
     local depthPass = context:GetShaderByTag("DepthPass")
     local shadowMap = context:GetShaderByTag("Shadowmap")

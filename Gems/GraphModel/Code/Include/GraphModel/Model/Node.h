@@ -59,7 +59,7 @@ namespace GraphModel
         friend class Graph; // Because the Graph needs to set the ID, but no one else should be able to.
 
     public:
-        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator);
         AZ_RTTI(Node, "{274B4495-FDBF-45A9-9BAD-9E90269F2B73}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -196,6 +196,9 @@ namespace GraphModel
         //! This method does nothing if the slot is not extendable.
         virtual SlotPtr AddExtendedSlot(const SlotName& slotName);
 
+        //! Clear any data that was cached for this node
+        void ClearCachedData();
+
     protected:
 
         //! Default implementation will prevent slots from being extended past the
@@ -219,9 +222,6 @@ namespace GraphModel
         //! Node, not when loading a Node from serialize data (in that case Slot creation 
         //! will be handled automatically by PostLoadSetup()).
         void CreateSlotData();
-
-        //! Clear any data that was cached for this node
-        void ClearCachedData();
 
     private:
 

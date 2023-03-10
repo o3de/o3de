@@ -87,6 +87,20 @@ namespace AZ
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
+        //! Retrieves the full path to the project log path from the settings registry
+        //! This path defaults to <project-user-path>/logs, but can be overridden via the --project-log-path option
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full path to the project  path for the current asset platform from the settings registry
+        //! This path is based on <project-cache-path>/<asset-platform>,
+        //! where on Windows <asset-platform> = "pc", Linux  <asset-platform> = linux, etc...
+        //! The list of OS -> asst platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` fuction
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
         //! Retrieves the project name from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used

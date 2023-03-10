@@ -10,13 +10,9 @@
 #include <AWSMetricsSystemComponent.h>
 #include <MetricsManager.h>
 
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AWSMetrics
 {
@@ -64,7 +60,6 @@ namespace AWSMetrics
             {
                 ec->Class<AWSMetricsSystemComponent>("AWSMetrics", "Generate and submit metrics to the metrics analytics pipeline")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -77,7 +72,7 @@ namespace AWSMetrics
                 ->Event(
                     "SubmitMetrics", &AWSMetricsRequestBus::Events::SubmitMetrics,
                     { { { "Metrics Attributes list", "The list of metrics attributes to submit." },
-                        { "Event priority", "Priority of the event. Defaults to 0, which is highest priority." }, 
+                        { "Event priority", "Priority of the event. Defaults to 0, which is highest priority." },
                         { "Event source override", "Event source used to override the default, 'AWSMetricGem'." },
                         { "Buffer metrics", "Whether to buffer metrics and send them in a batch." } } })
                 ->Event("FlushMetrics", &AWSMetricsRequestBus::Events::FlushMetrics)
@@ -206,8 +201,6 @@ namespace AWSMetrics
         AWSMetricsRequestBus::Handler::BusConnect();
 
         m_metricsManager->StartMetrics();
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSMetricsEnabled);
     }
 
     void AWSMetricsSystemComponent::Deactivate()

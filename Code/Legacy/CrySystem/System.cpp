@@ -593,7 +593,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         }
         if (pVSync == NULL && gEnv && gEnv->pConsole)
         {
-            pVSync = gEnv->pConsole->GetCVar("r_Vsync");
+            pVSync = gEnv->pConsole->GetCVar("vsync_interval");
         }
 
         if (pSysMaxFPS && pVSync)

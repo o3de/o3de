@@ -49,7 +49,7 @@ namespace AZ
         public:
             AZ_RTTI(DeferredFogSettings, "{FD822CC5-4E7B-4471-AA7D-1FCDF6CAC979}",
                 AZ::Render::DeferredFogSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(AZ::Render::DeferredFogSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::Render::DeferredFogSettings, SystemAllocator);
 
             DeferredFogSettings(PostProcessFeatureProcessor* featureProcessor);
             DeferredFogSettings();

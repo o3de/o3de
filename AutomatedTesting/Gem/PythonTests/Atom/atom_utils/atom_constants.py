@@ -297,6 +297,30 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def chromatic_aberration(property: str = 'name') -> str:
+        """
+        Chromatic Aberration component properties
+          - 'Enable Chromatic Aberration' Toggle active state of the component (bool) default False
+          - 'Strength' Strength of effect. 0.0 (default) to 1.0 (float)
+          - 'Blend' Factor for additive blending with original image. 0.0 (default) to 1.0 (float)
+          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool) default False
+          - 'Strength Override' Override for Strength factor. 0.0 (default) to 1.0 (float)
+          - 'Blend Override' Override for Blend factor. 0.0 (default) to 1.0 (float)
+        parameter property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Chromatic Aberration',
+            'Enable Chromatic Aberration': 'Controller|Configuration|Enable Chromatic Aberration',
+            'Strength': 'Controller|Configuration|Strength',
+            'Blend': 'Controller|Configuration|Blend',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'Blend Override': 'Controller|Configuration|Overrides|Blend Override',
+        }
+        return properties[property]
+
+    @staticmethod
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
@@ -1324,6 +1348,26 @@ class AtomComponentProperties:
         }
         return properties[property]
 
+    @staticmethod
+    def stars(property: str = 'name') -> str:
+        """
+        Stars component properties
+          - 'Stars Asset' Asset.id of the star asset file (default.star)
+          - 'Exposure' controls how bright the stars are. 0.0 to 32.0 default 1.0 (float)
+          - 'Twinkle rate' how frequently stars twinkle. 0.0 to 10.0 default 0.5 (float)
+          - 'Radius factor' star radius multiplier. 0.0 to 64.0 default 7.0 (float)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Stars',
+            'Stars Asset': 'Controller|Configuration|Stars Asset',
+            'Exposure': 'Controller|Configuration|Exposure',
+            'Twinkle rate': 'Controller|Configuration|Twinkle rate',
+            'Radius factor': 'Controller|Configuration|Radius factor',
+        }
+        return properties[property]
+
 
 class AtomToolsDocumentRequestBusEvents(object):
     """
@@ -1432,3 +1476,43 @@ class EntityPreviewViewportSettingsRequestBusEvents(object):
     GET_ALTERNATE_SKYBOX_ENABLED = "GetAlternateSkyboxEnabled"
     SET_FIELD_OF_VIEW = "SetFieldOfView"
     GET_FIELD_OF_VIEW = "GetFieldOfView"
+
+
+class DynamicNodeManagerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.DynamicNodeManagerRequestBus
+    """
+    LOAD_CONFIG_FILES = "LoadConfigFiles"
+    REGISTER_CONFIG = "RegisterConfig"
+    GET_CONFIG_BY_ID = "GetConfigById"
+    CLEAR = "Clear"
+    CREATE_NODE_BY_ID = "CreateNodeById"
+    CREATE_NODE_BY_NAME = "CreateNodeByName"
+
+
+class GraphDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.GraphDocumentRequestBus
+    """
+    GET_GRAPH = "GetGraph"
+    GET_GRAPH_ID = "GetGraphId"
+    GET_GRAPH_NAME = "GetGraphName"
+    SET_GENERATED_FILE_PATHS = "SetGeneratedFilePaths"
+    GET_GENERATED_FILE_PATHS = "GetGeneratedFilePaths"
+    COMPILE_GRAPH = "CompileGraph"
+    QUEUE_COMPILE_GRAPH = "QueueCompileGraph"
+    IS_COMPILE_GRAPH_QUEUED = "IsCompileGraphQueued"
+
+
+class GraphControllerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.editor.graph.GraphControllerRequestBus
+    """
+    ADD_NODE = "AddNode"
+    REMOVE_NODE = "RemoveNode"
+    WRAP_NODE = "WrapNode"
+    ADD_CONNECTION = "AddConnection"
+    ADD_CONNECTION_BY_SLOT_ID = "AddConnectionBySlotId"
+    ARE_SLOTS_CONNECTED = "AreSlotsConnected"
+    REMOVE_CONNECTION = "RemoveConnection"
+    EXTEND_SLOT = "ExtendSlot"

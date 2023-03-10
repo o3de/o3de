@@ -10,13 +10,14 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <QAction>
 #include <QIcon>
 
 namespace AzToolsFramework
 {
     EditorAction::EditorAction(
-        QWidget* parentWidget,
         AZStd::string contextIdentifier,
         AZStd::string identifier,
         AZStd::string name,
@@ -33,21 +34,19 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
+        , m_triggerBehavior(handler)
+        , m_checkStateCallback(checkStateCallback)
         , m_menuVisibility(menuVisibility)
         , m_toolBarVisibility(toolBarVisibility)
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
-
-        // The action needs to be explicitly added, not just parented on creation, or it won't
-        // show up in widget->actions(), and won't handle some events properly
-        parentWidget->addAction(m_action);
+        m_action = new QAction(m_icon, m_name.c_str(), this);
 
         QObject::connect(
-            m_action, &QAction::triggered, parentWidget,
-            [h = AZStd::move(handler)]()
+            m_action, &QAction::triggered, this,
+            [&]()
             {
-                h();
+                Trigger();
             }
         );
 
@@ -58,24 +57,25 @@ namespace AzToolsFramework
 
             // Trigger it to set the starting value correctly.
             m_action->setChecked(m_checkStateCallback());
-
-            AZStd::function<bool()> callbackCopy = m_checkStateCallback;
-
-            // Trigger the update after the handler is called.
-            QObject::connect(
-                m_action, &QAction::triggered, parentWidget,
-                [u = AZStd::move(callbackCopy), a = m_action]()
-                {
-                    a->setChecked(u());
-                }
-            );
         }
+    }
+
+    EditorAction::~EditorAction()
+    {
+        m_triggerBehavior = nullptr;
+        m_checkStateCallback = nullptr;
+        m_enabledStateCallbacks.clear();
     }
 
     void EditorAction::Initialize()
     {
         s_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(s_actionManagerInterface, "EditorAction - Could not retrieve instance of ActionManagerInterface");
+    }
+
+    const AZStd::string& EditorAction::GetActionIdentifier() const
+    {
+        return m_identifier;
     }
 
     const AZStd::string& EditorAction::GetActionContextIdentifier() const
@@ -150,7 +150,7 @@ namespace AzToolsFramework
         return m_menuVisibility;
     }
 
-    ActionVisibility EditorAction::GetToolBarVisibility() const
+    ActionVisibility EditorAction::GenerateToolBarVisibility() const
     {
         return m_toolBarVisibility;
     }
@@ -164,7 +164,7 @@ namespace AzToolsFramework
     {
         return m_action;
     }
-    
+
     void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
         if (enabledStateCallback)
@@ -274,6 +274,12 @@ namespace AzToolsFramework
             m_modes.empty() ||
             (AZStd::find(m_modes.begin(), m_modes.end(), currentMode) != m_modes.end())
         );
+    }
+
+    void EditorAction::Trigger()
+    {
+        m_triggerBehavior();
+        Update();
     }
 
 } // namespace AzToolsFramework

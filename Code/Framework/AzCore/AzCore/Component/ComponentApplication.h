@@ -19,7 +19,6 @@
 #include <AzCore/Module/ModuleManager.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -34,6 +33,7 @@
 namespace AZ
 {
     class BehaviorContext;
+    class SerializeContext;
     class IConsole;
     class Module;
     class ModuleManager;
@@ -89,7 +89,7 @@ namespace AZ
 
     public:
         AZ_RTTI(ComponentApplication, "{1F3B070F-89F7-4C3D-B5A3-8832D5BC81D7}");
-        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator);
 
         /**
          * Configures the component application.
@@ -99,16 +99,9 @@ namespace AZ
          *       Use the OSAllocator only.
          */
         struct Descriptor
-            : public SerializeContext::IObjectFactory
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
-            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator, 0);
-
-            ///////////////////////////////////////////////
-            // SerializeContext::IObjectFactory
-            void* Create(const char* name) override;
-            void  Destroy(void* data) override;
-            ///////////////////////////////////////////////
+            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);
 
             /// Reflect the descriptor data.
             static void     Reflect(ReflectContext* context, ComponentApplication* app);
@@ -300,9 +293,21 @@ namespace AZ
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
+        void MergeSharedSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
+        void MergeUserSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
+
+        void ReportBadEngineRoot();
 
         /**
          * This is the function that will be called instantly after the memory

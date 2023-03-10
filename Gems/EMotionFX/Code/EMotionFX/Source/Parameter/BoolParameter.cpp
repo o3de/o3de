@@ -18,7 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BoolParameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BoolParameter, AnimGraphAllocator);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(BoolParameter, ValueParameter);
 
     const char* BoolParameter::GetTypeDisplayName() const
     {

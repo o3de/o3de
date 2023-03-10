@@ -231,7 +231,6 @@ def remove_engine_name_to_path(json_data: dict,
     Remove the engine at the specified path if it exist in the o3de manifest
     :param json_data in-memory json view of the o3de_manifest.json data
     :param engine_path path to engine to remove from the manifest data
-
     returns 0 to indicate no issues has occurred with removal
     """
     if engine_path.is_dir() and validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
@@ -243,13 +242,15 @@ def remove_engine_name_to_path(json_data: dict,
             except KeyError:
                 # Attempting to remove a non-existent engine_name is fine
                 pass
-    else:
-        logger.warning(f'Unable to find engine.json file or file is invalid at path {engine_path.as_posix()}')
 
     return 0
 
 
 def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: bool):
+    # This functionality is deprecated and exists to allow older projects
+    # to find newer versions of the engine which no longer require the engine name
+    # exist in "engines_path"
+
     # Add an engine path JSON object which maps the "engine_name" -> "engine_path"
     engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
@@ -263,12 +264,17 @@ def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: b
     engine_name = engine_json_data['engine_name']
     if not force and engine_name in engines_path_json and \
             pathlib.PurePath(engines_path_json[engine_name]) != engine_path:
-        logger.error(
-            f'Attempting to register existing engine "{engine_name}" with a new path of {engine_path.as_posix()}.'
-            f' The current path is {pathlib.Path(engines_path_json[engine_name]).as_posix()}.'
-            f' To force registration of a new engine path, specify the -f/--force option.'
-            f'\nAlternatively the engine can be registered with a different name by changing the "engine_name" field in the engine.json.')
-        return 1
+        logger.info(f'Engine successfully registered.')
+        logger.warning(
+            f'Important notice regarding older projects created with engine version 22.10 or earlier:\n'
+            f'An engine named "{engine_name}" is already registered at "{pathlib.Path(engines_path_json[engine_name]).as_posix()}"\n'
+            f'If you have projects created with engine version 22.10 or earlier, and you want them to use this engine'
+            f' you will need to:\n'
+            f'  1. backup the project\'s existing "cmake/EngineFinder.cmake" file\n'
+            f'  2. copy the "Templates/DefaultProject/Template/cmake/EngineFinder.cmake" from this engine into the project.\n'
+            f' Alternately, to force all older projects that use "{engine_name}" to use this engine path, specify the -f/--force option.')
+        return 0
+
     engines_path_json[engine_name] = engine_path.as_posix()
     return 0
 
@@ -378,6 +384,7 @@ def register_engine_path(json_data: dict,
     if result != 0:
         return result
 
+    # Backwards compatibility to allow older projects to find newer engines
     if remove:
         return remove_engine_name_to_path(json_data, engine_path)
     else:

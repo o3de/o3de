@@ -10,8 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
 namespace AzToolsFramework
 {
     struct IUuidUtil
@@ -22,11 +25,11 @@ namespace AzToolsFramework
         //! Creates a metadata file with a randomly generated UUID.  This will fail if a metadata file with a UUID already exists for this asset.
         //! @param absoluteFilePath Absolute path of the source asset (or metadata file)
         //! @param uuid Uuid to assign
-        virtual bool CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) = 0;
+        virtual AZ::Outcome<void, AZStd::string> CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) = 0;
         //! Creates a metadata file with the assigned UUID.  This will fail if a metadata file with a UUID already exists for this asset.
         //! @param absoluteFilePath Absolute path of the source asset (or metadata file)
         //! @return The generated UUID if successful, a null UUID otherwise.
-        virtual AZ::Uuid CreateSourceUuid(AZ::IO::PathView absoluteFilePath) = 0;
+        virtual AZ::Outcome<AZ::Uuid, AZStd::string> CreateSourceUuid(AZ::IO::PathView absoluteFilePath) = 0;
     };
 
     class UuidUtilComponent
@@ -40,8 +43,8 @@ namespace AzToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) override;
-        AZ::Uuid CreateSourceUuid(AZ::IO::PathView absoluteFilePath) override;
+        AZ::Outcome<void, AZStd::string> CreateSourceUuid(AZ::IO::PathView absoluteFilePath, AZ::Uuid uuid) override;
+        AZ::Outcome<AZ::Uuid, AZStd::string> CreateSourceUuid(AZ::IO::PathView absoluteFilePath) override;
 
         // Inherited via Component
         void Activate() override{}

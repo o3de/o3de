@@ -433,8 +433,14 @@ namespace AZ
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
         {
-            const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
-            passWithDrawListTag->SortDrawList(drawList);
+            // Note: it's possible that the m_passesByDrawList doesn't have a pass for the input tag.
+            // This is because a View can be used for multiple render pipelines.
+            // So it may contains draw list tag which exists in one render pipeline but not others. 
+            auto itr = m_passesByDrawList->find(tag);
+            if (itr != m_passesByDrawList->end())
+            {
+                itr->second->SortDrawList(drawList);
+            }
         }
 
         void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)

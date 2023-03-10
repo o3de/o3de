@@ -116,6 +116,14 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
             //////////////////////////////////////////////////////////////////////////
 
+            //! Sets the provided string as the serialized identifier for the component.
+            //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+            void SetSerializedIdentifier(AZStd::string serializedIdentifier) override;
+
+            //! Gets the serialzied identifier of this component within an entity.
+            //! @return The serialized identifier of this component.
+            AZStd::string GetSerializedIdentifier() const override;
+
             /**
              * Gets the transform interface of the entity that the component
              * belongs to, if the entity has a transform component.
@@ -190,6 +198,7 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
+            AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
         };
 
@@ -280,7 +289,7 @@ namespace AzToolsFramework
              * Specifies that this class should use AZ::SystemAllocator for memory
              * management by default.
              */
-            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator);
 
             AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass*, const ComponentClass*));
             AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass*, ComponentClass*));

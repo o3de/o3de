@@ -106,33 +106,60 @@ namespace EMotionFX
 
 
     // Define the pool allocators
+    class AnimGraphConditionAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph condition allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphConditionAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphConditionAllocator final
         : public AZ::ThreadPoolBase<AnimGraphConditionAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator)
         AZ_TYPE_INFO(AnimGraphConditionAllocator, "{F5406A89-3F11-4791-9F83-6A71D0F8DD81}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphConditionAllocator>;
     };
 
 
+    class AnimGraphObjectDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator)
         AZ_TYPE_INFO(AnimGraphObjectDataAllocator, "{E00ADC25-A311-4003-849E-85C125089C74}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>;
     };
 
 
+    class AnimGraphObjectUniqueDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object unique data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectUniqueDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectUniqueDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator)
             AZ_TYPE_INFO(AnimGraphObjectUniqueDataAllocator, "{C74F51E0-E6B0-4EF8-A3BF-0968CAEF1333}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>;

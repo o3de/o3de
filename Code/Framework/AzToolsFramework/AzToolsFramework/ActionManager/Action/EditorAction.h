@@ -12,7 +12,9 @@
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
+#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#endif
 
 #include <QIcon>
 
@@ -23,11 +25,13 @@ namespace AzToolsFramework
     //! Editor Action class definitions.
     //! Wraps a QAction and provides additional metadata.
     class EditorAction
+        : public QObject
     {
+        Q_OBJECT
+
     public:
         EditorAction() = default;
         EditorAction(
-            QWidget* parentWidget,
             AZStd::string contextIdentifier,
             AZStd::string identifier,
             AZStd::string name,
@@ -39,9 +43,11 @@ namespace AzToolsFramework
             AZStd::function<void()> handler,
             AZStd::function<bool()> checkStateCallback = nullptr
         );
+        virtual ~EditorAction();
 
         static void Initialize();
 
+        const AZStd::string& GetActionIdentifier() const;
         const AZStd::string& GetActionContextIdentifier() const;
 
         const AZStd::string& GetName() const;
@@ -55,7 +61,7 @@ namespace AzToolsFramework
         AZStd::string GetHotKey() const;
         void SetHotKey(const AZStd::string& hotKey);
         ActionVisibility GetMenuVisibility() const;
-        ActionVisibility GetToolBarVisibility() const;
+        ActionVisibility GenerateToolBarVisibility() const;
 
         //! Returns the pointer to the action.
         QAction* GetAction();
@@ -82,6 +88,9 @@ namespace AzToolsFramework
         //! Returns whether the Action is active.
         bool IsActiveInCurrentMode() const;
 
+        //! Trigger the Action's behavior.
+        void Trigger();
+
     private:
         void UpdateIconFromPath();
         void UpdateTooltipText();
@@ -97,6 +106,7 @@ namespace AzToolsFramework
         AZStd::string m_category;
         AZStd::string m_iconPath;
 
+        AZStd::function<void()> m_triggerBehavior = nullptr;
         AZStd::function<bool()> m_checkStateCallback = nullptr;
         AZStd::vector<AZStd::function<bool()>> m_enabledStateCallbacks;
 

@@ -96,5 +96,15 @@ namespace AzToolsFramework
         {
             return AzToolsFramework::IsSelected(GetEntityId());
         }
+
+        void EditorComponentBase::SetSerializedIdentifier(AZStd::string alias)
+        {
+            m_alias = alias;
+        }
+
+        AZStd::string EditorComponentBase::GetSerializedIdentifier() const
+        {
+            return m_alias;
+        }
     }
 } // namespace AzToolsFramework

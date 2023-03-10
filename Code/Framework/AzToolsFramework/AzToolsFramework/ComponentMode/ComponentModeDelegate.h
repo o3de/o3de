@@ -43,7 +43,7 @@ namespace AzToolsFramework
         {
         public:
             /// @cond
-            AZ_CLASS_ALLOCATOR(ComponentModeDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComponentModeDelegate, AZ::SystemAllocator);
             AZ_RTTI(ComponentModeDelegate, "{635B28F0-601A-43D2-A42A-02C4A88CD9C2}");
 
             static void Reflect(AZ::ReflectContext* context);

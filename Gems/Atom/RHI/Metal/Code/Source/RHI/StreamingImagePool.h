@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::StreamingImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{B5AA610C-0EA9-4077-9537-3E5D31646BC4}", Base);
             static RHI::Ptr<StreamingImagePool> Create();
             

@@ -57,6 +57,8 @@ class Surface
     // not apply.
     float opacityAffectsSpecularFactor;
 
+    float opacityAffectsEmissiveFactor; //!< Allows emissive to be attenuated by alpha or not.
+
     //! Surface lighting data
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
     float3 specularF0;          //!< Fresnel f0 spectral value of the surface

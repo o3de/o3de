@@ -24,7 +24,7 @@ namespace ScriptCanvas
 
         struct ScriptTarget final
         {
-            AZ_CLASS_ALLOCATOR(ScriptTarget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptTarget, AZ::SystemAllocator);
             AZ_TYPE_INFO(ScriptTarget, "{338BB8F6-2BF2-4D89-B862-847B7E25A97C}");
             
             bool m_logExecution = false;
@@ -110,7 +110,7 @@ namespace ScriptCanvas
 
         struct Target final
         {
-            AZ_CLASS_ALLOCATOR(Target, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Target, AZ::SystemAllocator);
             AZ_TYPE_INFO(Target, "{5127E021-1020-4B3A-BAA4-CA7174E3D07A}");
             
             // optional, empty means use sender

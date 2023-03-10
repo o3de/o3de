@@ -105,6 +105,11 @@ namespace AssetProcessor
         return m_jobDetails.m_jobEntry;
     }
 
+    bool RCJob::HasMissingSourceDependency() const
+    {
+        return m_jobDetails.m_hasMissingSourceDependency;
+    }
+
     QDateTime RCJob::GetTimeCreated() const
     {
         return m_timeCreated;

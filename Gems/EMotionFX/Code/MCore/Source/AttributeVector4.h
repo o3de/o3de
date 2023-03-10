@@ -25,7 +25,7 @@ namespace MCore
     class MCORE_API AttributeVector4
         : public Attribute
     {
-        AZ_CLASS_ALLOCATOR(AttributeVector4, AttributeAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AttributeVector4, AttributeAllocator)
 
         friend class AttributeFactory;
     public:

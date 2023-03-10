@@ -24,18 +24,6 @@ namespace AzPhysics
             return (flags & property) != 0 ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
         }
 
-        void SetPropertyVisibility(AZ::u16 flags, RigidBodyConfiguration::PropertyVisibility property, bool isVisible)
-        {
-            if (isVisible)
-            {
-                flags |= property;
-            }
-            else
-            {
-                flags &= ~property;
-            }
-        }
-
         bool RigidBodyVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
         {
             if (classElement.GetVersion() <= 1)
@@ -123,7 +111,7 @@ namespace AzPhysics
         "configuration.\n <b>CCD cannot be enabled if the rigid body is Kinematic, set the rigid body as Dynamic "
         "to allow changes to be made.</b>";
 
-    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator);
 
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {

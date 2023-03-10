@@ -1085,10 +1085,9 @@ bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputT
 
     // Wait for the process to finish
     process.waitForFinished();
-    if (!bShowWindow)
-    {
-        OutputText = process.readAllStandardOutput();
-    }
+    
+    OutputText += process.readAllStandardOutput();
+    OutputText += process.readAllStandardError();
 
     return true;
 }

@@ -19,7 +19,7 @@ namespace AZ
             : public RenderPassData
         {
             AZ_RTTI(FullscreenTrianglePassData, "{564738A1-9690-4446-8CC1-615EA2567434}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(FullscreenTrianglePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FullscreenTrianglePassData, SystemAllocator);
 
             FullscreenTrianglePassData() = default;
             virtual ~FullscreenTrianglePassData() = default;

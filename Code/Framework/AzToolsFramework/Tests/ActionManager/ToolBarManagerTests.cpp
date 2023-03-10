@@ -41,7 +41,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToUnregisteredToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
@@ -50,7 +50,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         
@@ -60,7 +60,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionToToolBarTwice)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         
@@ -71,7 +71,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, AddActionsToToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
@@ -86,7 +86,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RemoveActionFromToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         
@@ -106,7 +106,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RemoveActionsFromToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
@@ -123,7 +123,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, RemoveMissingActionsFromToolBar)
     {
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
@@ -139,15 +139,15 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetUnregisteredToolBar)
     {
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_TRUE(toolBar == nullptr);
     }
 
-    TEST_F(ActionManagerFixture, GetToolBar)
+    TEST_F(ActionManagerFixture, GenerateToolBar)
     {
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
         
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_TRUE(toolBar != nullptr);
     }
 
@@ -155,11 +155,11 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
@@ -174,11 +174,11 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
@@ -203,11 +203,11 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
         
         // Register a new action and add it to the ToolBar.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
@@ -232,7 +232,7 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Add a separator to the ToolBar.
@@ -282,7 +282,7 @@ namespace UnitTest
         m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Verify the separator is now in the ToolBar.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         const auto& actions = toolBar->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -297,7 +297,7 @@ namespace UnitTest
         // Combine multiple actions and separators.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
 
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test1", {}, []{});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
 
@@ -310,7 +310,7 @@ namespace UnitTest
         m_toolBarManagerInterface->AddSeparatorToToolBar("o3de.toolbar.test", 10);
 
         // Verify the actions are now in the ToolBar in the expected order.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
         QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
@@ -356,8 +356,12 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, VerifyToolBarInToolBarArea)
     {
+        const char* TestToolBarName = "Test ToolBar";
+
         m_toolBarManagerInterface->RegisterToolBarArea("o3de.toolbararea.test", m_mainWindow, Qt::ToolBarArea::TopToolBarArea);
-        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        AzToolsFramework::ToolBarProperties toolBarProperties;
+        toolBarProperties.m_name = TestToolBarName;
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", toolBarProperties);
 
         // Add the ToolBar to the toolbar area.
         m_toolBarManagerInterface->AddToolBarToToolBarArea("o3de.toolbararea.test", "o3de.toolbar.test", 42);
@@ -366,14 +370,16 @@ namespace UnitTest
         m_toolBarManagerInternalInterface->RefreshToolBarAreas();
 
         // Verify the ToolBar is now in the ToolBar Area.
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
-        EXPECT_EQ(m_mainWindow->toolBarArea(toolBar), Qt::ToolBarArea::TopToolBarArea);
+        auto toolBars = m_mainWindow->findChildren<QToolBar*>("");
+        EXPECT_EQ(toolBars.size(), 1);
+        EXPECT_EQ(toolBars[0]->windowTitle(), TestToolBarName);
+        EXPECT_EQ(m_mainWindow->toolBarArea(toolBars[0]), Qt::ToolBarArea::TopToolBarArea);
     }
 
     TEST_F(ActionManagerFixture, GetSortKeyOfActionInToolBar)
     {
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         // Add the action to the ToolBar.
@@ -397,7 +403,7 @@ namespace UnitTest
     TEST_F(ActionManagerFixture, GetSortKeyOfActionNotInToolBar)
     {
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         // Verify the API fails as the action is registered but was not added to the ToolBar.
@@ -456,14 +462,14 @@ namespace UnitTest
     {
         // Register toolbar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the ToolBar. Have ToolBarVisibility set to HideWhenDisabled.
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
@@ -498,11 +504,11 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the menu. ToolBarVisibility is set to OnlyInActiveMode by default.
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
@@ -537,14 +543,14 @@ namespace UnitTest
     {
         // Register ToolBar, get it and verify it's empty.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
-        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
         // Register a new action and add it to the default mode. Set ToolBarVisibility to AlwaysShow.
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
-        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterActionContext("o3de.context.test", {});
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, "o3de.action.test");
 

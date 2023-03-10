@@ -28,7 +28,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(NullSelector, "{25C8D8CB-98B3-4A15-8A49-7668A587C613}", SelectorImplementation);
-            AZ_CLASS_ALLOCATOR(NullSelector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullSelector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -58,7 +58,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(BasicSelector, "{4DB9CEB8-F996-4106-A6C9-15034651F494}", SelectorImplementation);
-            AZ_CLASS_ALLOCATOR(BasicSelector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BasicSelector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -89,7 +89,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(DefaultSelector, "{71234315-6975-4A03-8EDF-F5C7E5639781}", SelectorImplementation);
-            AZ_CLASS_ALLOCATOR(DefaultSelector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DefaultSelector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -124,7 +124,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(CompoundSelector, "{09063F80-E4FB-4A43-AF09-DA55D2E6B261}", SelectorImplementation);
-            AZ_CLASS_ALLOCATOR(CompoundSelector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompoundSelector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -157,7 +157,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(NestedSelector, "{5D728275-A59C-4A22-9B28-FCECF169EF31}", SelectorImplementation);
-            AZ_CLASS_ALLOCATOR(NestedSelector, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NestedSelector, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

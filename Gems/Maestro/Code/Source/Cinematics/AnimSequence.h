@@ -24,7 +24,7 @@ class CAnimSequence
     : public IAnimSequence
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimSequence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CAnimSequence, AZ::SystemAllocator)
     AZ_RTTI(CAnimSequence, "{5127191A-0E7C-4C6F-9AF2-E5544F07BF22}", IAnimSequence);
 
     CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType = kSequenceTypeDefault);

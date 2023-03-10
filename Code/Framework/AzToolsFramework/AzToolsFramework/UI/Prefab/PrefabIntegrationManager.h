@@ -27,8 +27,9 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
-    class HotKeyManagerInterface;
     class ContainerEntityInterface;
+    class HotKeyManagerInterface;
+    class MenuManagerInterface;
     class ReadOnlyEntityPublicInterface;
     class ToolBarManagerInterface;
 
@@ -51,7 +52,7 @@ namespace AzToolsFramework
             , private ActionManagerRegistrationNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator);
 
             PrefabIntegrationManager();
             ~PrefabIntegrationManager();
@@ -87,11 +88,14 @@ namespace AzToolsFramework
             void OnActionUpdaterRegistrationHook() override;
             void OnActionRegistrationHook() override;
             void OnWidgetActionRegistrationHook() override;
+            void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
 
         private:
             // PrefabPublicNotificationBus overrides ...
             void OnRootPrefabInstanceLoaded() override;
+            void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
+            void OnPrefabInstancePropagationEnd() override;
 
             // Handles the UI for prefab save operations.
             PrefabSaveHandler m_prefabSaveHandler;
@@ -107,6 +111,12 @@ namespace AzToolsFramework
 
             // Ensures entities owned by procedural prefab instances are marked as read-only correctly.
             ProceduralPrefabReadOnlyHandler m_proceduralPrefabReadOnlyHandler;
+
+            // Helper functions
+            bool CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanDetachPrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanInstantiatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
+            bool CanSaveUnsavedPrefabChangedInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities);
 
             // Context menu item handlers
             void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
@@ -150,6 +160,7 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
 
             ActionManagerInterface* m_actionManagerInterface = nullptr;
+            MenuManagerInterface* m_menuManagerInterface = nullptr;
             HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
             PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
