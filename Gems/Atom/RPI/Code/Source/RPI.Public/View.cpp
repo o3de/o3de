@@ -28,9 +28,6 @@
 #include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #endif
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ
 {
     namespace RPI
@@ -623,6 +620,3 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
-
-#pragma optimize("", on)
-#pragma inline_depth()

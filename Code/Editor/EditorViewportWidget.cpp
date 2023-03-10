@@ -110,9 +110,6 @@ void StartFixedCursorMode(QObject* viewport);
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT 8.0f
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -2526,8 +2523,5 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
-
-#pragma optimize("", on)
-#pragma inline_depth()
 
 #include <moc_EditorViewportWidget.cpp>

@@ -21,9 +21,6 @@
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AtomToolsFramework
 {
     AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
@@ -453,7 +450,3 @@ namespace AtomToolsFramework
         return m_camera.Transform() * AZ::Transform::CreateFromMatrix3x3(AZ::Matrix3x3::CreateRotationY(m_targetRoll));
     }
 } // namespace AtomToolsFramework
-
-
-#pragma optimize("", on)
-#pragma inline_depth()
