@@ -19,6 +19,11 @@
 #include <ProjectTemplateInfo.h>
 #include <GemRepo/GemRepoInfo.h>
 
+#if !defined(Q_MOC_RUN)
+#include <QHash>
+#endif
+
+
 namespace O3DE::ProjectManager
 {
     //! Interface used to interact with the o3de cli python functions
