@@ -46,10 +46,8 @@ real3 ApplyTextureBlend(real3 color, real3 blendColor, real factor, TextureBlend
         // [GFX TODO][ATOM-3237] See if we can avoid these extra color space conversions...
         // To get blend behavior that mimics photoshop, convert to sRGB
         //Acessg -> srgb
-        real3 blendColorSRGB = AcesCg_To_LinearSrgb(blendColor);
-        blendColorSRGB = LinearSrgb_To_Srgb(blendColorSRGB);
-        real3 colorSRGB = AcesCg_To_LinearSrgb(color);
-        colorSRGB = LinearSrgb_To_Srgb(colorSRGB);
+        real3 blendColorSRGB = TransformColorAcesToSRGB(blendColor);
+        real3 colorSRGB = TransformColorAcesToSRGB(color);
                  
         real3 finalColor = colorSRGB;
 
@@ -63,8 +61,7 @@ real3 ApplyTextureBlend(real3 color, real3 blendColor, real factor, TextureBlend
         }
         
         // Convert back to ACEScg
-        finalColor = Srgb_To_LinearSrgb(finalColor);
-        finalColor = LinearSrgb_To_AcesCg(finalColor);
+        finalColor = TransformColorSRGBToAces(finalColor);
 
         // Apply factor
         finalColor = lerp(color, finalColor, factor);
