@@ -10,8 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
 namespace AzToolsFramework
 {
     struct IUuidUtil

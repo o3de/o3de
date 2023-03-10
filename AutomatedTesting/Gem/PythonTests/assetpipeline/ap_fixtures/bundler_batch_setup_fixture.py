@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.usefixtures("config_backup")
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
-def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_processor, timeout) -> Any:
+def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_processor) -> Any:
 
     def get_all_platforms() -> list[str]:
         """Helper: This function generates a list of all platforms to be built for testing Asset Bundler."""
@@ -50,7 +50,7 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
             platforms = [platform.strip() for platform in platforms.split(",")]
         else:
             # No commandline argument provided, default to mac and pc
-            platforms = ["pc", "mac"]
+            platforms = ["pc", "mac", "linux"]
         return platforms
 
     def setup_temp_workspace() -> None:
@@ -252,7 +252,7 @@ def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_proc
         def platform_file_name(file_name: str, platform: str) -> str:
             """Converts the standard [file_name] to a platform specific file name"""
             split = file_name.split(".", 1)
-            platform_name = ASSET_PROCESSOR_PLATFORM_MAP.get(platform)
+            platform_name = platform if platform in ASSET_PROCESSOR_PLATFORM_MAP.values() else ASSET_PROCESSOR_PLATFORM_MAP.get(platform)
             if not platform_name:
                 logger.warning(f"platform {platform} not recognized. File name could not be generated")
                 return file_name

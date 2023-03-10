@@ -1,0 +1,12 @@
+{
+    "Shader": "RgaShader.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "EnableAnalysis": "true",
+            "Options": {
+                "o_test_option": "true"
+            }
+        }
+    ]
+}

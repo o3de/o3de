@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
@@ -36,6 +35,7 @@ AZ_DECLARE_BUDGET(PrefabSystem);
 namespace AZ
 {
     class Entity;
+    class SerializeContext;
 } // namespace AZ
 
 namespace AzToolsFramework

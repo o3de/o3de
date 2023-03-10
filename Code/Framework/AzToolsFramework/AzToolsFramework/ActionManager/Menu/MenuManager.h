@@ -66,8 +66,10 @@ namespace AzToolsFramework
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
+        MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const override;
+        MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const override;
 
-        // MenuManagerInterface overrides ...
+        // MenuManagerInternalInterface overrides ...
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) override;

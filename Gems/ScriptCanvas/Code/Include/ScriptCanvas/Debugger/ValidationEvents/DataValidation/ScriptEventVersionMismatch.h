@@ -28,10 +28,9 @@ namespace ScriptCanvas
         AZ_CLASS_ALLOCATOR(ScriptEventVersionMismatch, AZ::SystemAllocator);
         AZ_RTTI(ScriptEventVersionMismatch, "{4968A689-B45A-40B6-BB3C-B1D35557D692}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
         
-        ScriptEventVersionMismatch(AZ::u32 nodeVersion, const ScriptEvents::ScriptEvent& definition, AZ::EntityId nodeId)
+        ScriptEventVersionMismatch([[maybe_unused]] AZ::u32 nodeVersion, const ScriptEvents::ScriptEvent& definition, AZ::EntityId nodeId)
             : ValidationEvent(ValidationSeverity::Error)
             , m_definition(definition)
-            , m_nodeVersion(nodeVersion)
             , m_nodeId(nodeId)
         {
             SetDescription("The Script Event asset this node uses has changed. This node is no longer valid. You can fix this by deleting this node, re-adding it and reconnecting it.");
@@ -84,7 +83,6 @@ namespace ScriptCanvas
     private:
     
         ScriptEvents::ScriptEvent m_definition;
-        AZ::u32 m_nodeVersion;
         AZ::EntityId m_nodeId;
     };
 }

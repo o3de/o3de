@@ -205,7 +205,7 @@ namespace SliceFavorites
 
         ////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-        void AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
+        void AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
         void NotifyRegisterViews() override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -243,7 +243,7 @@ namespace SliceFavorites
 
         void GetSelectedIndicesFromMimeData(QList<FavoriteData*>& results, const QByteArray& buffer) const;
 
-        const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* GetSliceProductFromBrowserEntry(AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const;
+        const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* GetSliceProductFromBrowserEntry(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const;
         bool IsSliceAssetType(const AZ::Data::AssetType& type) const;
 
         bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;

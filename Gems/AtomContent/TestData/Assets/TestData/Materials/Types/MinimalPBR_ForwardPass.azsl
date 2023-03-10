@@ -60,8 +60,8 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     // ------- Surface -------
 
@@ -69,8 +69,8 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
-    surface.normal = vertexNormal;
-    surface.vertexNormal = vertexNormal;
+    surface.normal = normalWS;
+    surface.vertexNormal = normalWS;
     surface.roughnessLinear = MinimalPBRSrg::m_roughness;
     surface.CalculateRoughnessA();
 

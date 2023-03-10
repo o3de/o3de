@@ -195,8 +195,6 @@ namespace ScriptCanvasEditor
         void ReleaseComponent(const ScriptCanvas::VariableId& variableId);
         void ResetPool();
 
-        bool m_manipulatingSelection;
-
         AZStd::unordered_map< ScriptCanvas::VariableId, VariablePropertiesComponent* > m_usedElements;
         AZStd::vector< VariablePropertiesComponent* > m_unusedPool;
 

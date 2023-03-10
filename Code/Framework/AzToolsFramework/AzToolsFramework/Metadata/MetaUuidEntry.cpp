@@ -8,6 +8,8 @@
 
 #include <AzToolsFramework/Metadata/MetaUuidEntry.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AzToolsFramework
 {
     void AzToolsFramework::MetaUuidEntry::Reflect(AZ::ReflectContext* context)

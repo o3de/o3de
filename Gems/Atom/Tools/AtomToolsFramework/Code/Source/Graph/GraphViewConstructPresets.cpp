@@ -9,6 +9,8 @@
 #include <AtomToolsFramework/Graph/GraphViewConstructPresets.h>
 #include <GraphCanvas/Components/Nodes/Comment/CommentBus.h>
 
+#include <AzCore/Serialization/EditContext.h>
+
 namespace AtomToolsFramework
 {
     void GraphViewConstructPresets::Reflect(AZ::ReflectContext* context)
