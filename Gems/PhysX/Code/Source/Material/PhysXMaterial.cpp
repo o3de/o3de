@@ -14,8 +14,6 @@
 #include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
-#pragma optimize("", off)
-
 namespace PhysX
 {
     static CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
@@ -411,5 +409,3 @@ namespace PhysX
         OnAssetReady(asset);
     }
 } // namespace PhysX
-
-#pragma optimize("", on)
