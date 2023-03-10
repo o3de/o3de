@@ -1111,6 +1111,9 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Enable processing of Physics and AI."))
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
+    am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
+        .SetStatusTip(tr("Move Player and Camera Separately"))
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSyncPlayerUpdate);
 
     // Physics actions
     am->AddAction(ID_PHYSICS_GETPHYSICSSTATE, tr("Get Physics State"))

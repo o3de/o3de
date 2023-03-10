@@ -382,6 +382,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
 #endif
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
+    ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
 
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
@@ -2994,6 +2995,19 @@ void CCryEditApp::OnSwitchPhysicsUpdate(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
     action->setChecked(!m_bIsExportingLegacyData && GetIEditor()->GetGameEngine()->GetSimulationMode());
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CCryEditApp::OnSyncPlayer()
+{
+    GetIEditor()->GetGameEngine()->SyncPlayerPosition(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CCryEditApp::OnSyncPlayerUpdate(QAction* action)
+{
+    Q_ASSERT(action->isCheckable());
+    action->setChecked(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
 }
 
 void CCryEditApp::OnUpdateNonGameMode(QAction* action)

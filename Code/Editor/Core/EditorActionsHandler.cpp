@@ -919,6 +919,33 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 
+    // Move Player and Camera Separately
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.movePlayerAndCameraSeparately";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Move Player and Camera Separately";
+        actionProperties.m_description = "Move Player and Camera Separately.";
+        actionProperties.m_category = "Game";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                GetIEditor()->GetGameEngine()->SyncPlayerPosition(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
+            },
+            []
+            {
+                return !GetIEditor()->GetGameEngine()->IsSyncPlayerPosition();
+            }
+        );
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
     // Stop All Sounds
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.audio.stopAllSounds";

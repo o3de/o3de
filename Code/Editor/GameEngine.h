@@ -92,7 +92,12 @@ public:
     void SetLevelCreated(bool bJustCreated) { m_bJustCreated = bJustCreated; }
     //! Query ISystem interface.
     ISystem* GetSystem() { return m_pISystem; };
-    
+    //! Set player position in game.
+    //! @param bEyePos If set then given position is position of player eyes.
+    void SetPlayerViewMatrix(const Matrix34& tm, bool bEyePos = true);
+    //! When set, player in game will be every frame synchronized with editor camera.
+    void SyncPlayerPosition(bool bEnable);
+    bool IsSyncPlayerPosition() const { return m_bSyncPlayerPosition; };
     //! Set game's current Mod name.
     void SetCurrentMOD(const char* sMod);
     //! Returns game's current Mod name.
@@ -128,10 +133,12 @@ private:
     bool m_bLevelLoaded;
     bool m_bInGameMode;
     bool m_bSimulationMode;
+    bool m_bSyncPlayerPosition;
     bool m_bJustCreated;
     bool m_bIgnoreUpdates;
     ISystem* m_pISystem;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
     AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
     enum EPendingGameMode
