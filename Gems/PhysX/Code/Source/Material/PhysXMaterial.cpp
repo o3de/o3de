@@ -14,6 +14,8 @@
 #include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
+#pragma optimize("", off)
+
 namespace PhysX
 {
     static CombineMode FromPxCombineMode(physx::PxCombineMode::Enum pxMode)
@@ -332,7 +334,7 @@ namespace PhysX
         else
         {
             m_pxMaterial->setDamping(0.0f);
-            m_pxMaterial->setRestitution(m_restitution); // Restores restitution value when Compliant Contancts was disabled
+            m_pxMaterial->setRestitution(m_restitution); // Restores restitution value when Compliant Contact Modde is disabled
         }
 #endif
     }
@@ -409,3 +411,5 @@ namespace PhysX
         OnAssetReady(asset);
     }
 } // namespace PhysX
+
+#pragma optimize("", on)
