@@ -59,7 +59,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::DebugDraw.Static
+                AZ::AtomCore
+                Gem::Atom_RPI.Public
+                Gem::Atom_Bootstrap.Headers
+                Legacy::CryCommon
                 AZ::AzToolsFramework
     )
 

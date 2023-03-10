@@ -13,6 +13,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <QMenu>
 #include <QToolBar>
 #include <QToolButton>
@@ -32,7 +34,7 @@ namespace AzToolsFramework
     {
         m_toolBarItems[sortKey].emplace_back();
     }
-    
+
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));

@@ -12,19 +12,20 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AtomCore/std/containers/vector_set.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
         //! Collects the set of all possible shaders that a material could use at runtime,
         //! along with configuration that indicates how each shader should be used.
-        //! Each shader item may be reconfigured at runtime, but items cannot be added 
-        //! or removed (this restriction helps simplify overall material system code, 
+        //! Each shader item may be reconfigured at runtime, but items cannot be added
+        //! or removed (this restriction helps simplify overall material system code,
         //! especially around material functors).
         class ShaderCollection
         {

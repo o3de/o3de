@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_Eye(geoData)
+#define EvaluateSurface EvaluateSurface_Eye
 #endif
 
 #include <Atom/Features/MatrixUtility.azsli>
@@ -149,7 +149,7 @@ Surface EvaluateSurface_Eye(
     return surface;
 }
 
-Surface EvaluateSurface_Eye(PixelGeometryData geoData)
+Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_Eye(
         geoData.positionWS,

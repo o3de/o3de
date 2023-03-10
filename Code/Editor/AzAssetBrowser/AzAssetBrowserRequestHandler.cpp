@@ -34,6 +34,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
@@ -409,7 +410,7 @@ void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string full
     }
 }
 
-void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
+void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
 {
     using namespace AzToolsFramework::AssetBrowser;
 
@@ -428,12 +429,18 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();
     }
 
-    if (!treeView && !tableView)
+    AssetBrowserThumbnailView* thumbnailView = qobject_cast<AssetBrowserThumbnailView*>(caller);
+    if (thumbnailView)
+    {
+        calledFromAssetBrowser |= thumbnailView->GetIsAssetBrowserMainView();
+    }
+
+    if (!treeView && !tableView && !thumbnailView)
     {
         return;
     }
 
-    AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
+    const AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
     if (!entry)
     {
         return;
@@ -460,7 +467,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     // the fall through to the next case is intentional here.
     case AssetBrowserEntry::AssetEntryType::Source:
     {
-        AZ::Uuid sourceID = azrtti_cast<SourceAssetBrowserEntry*>(entry)->GetSourceUuid();
+        AZ::Uuid sourceID = azrtti_cast<const SourceAssetBrowserEntry*>(entry)->GetSourceUuid();
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
@@ -580,7 +587,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Rename option
                 QAction* action = menu->addAction(
                     QObject::tr("Rename asset"),
-                    [treeView, tableView]()
+                    [treeView, tableView, thumbnailView]()
                     {
                         if (treeView)
                         {
@@ -589,6 +596,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         else if (tableView)
                         {
                             tableView->RenameEntry();
+                        }
+                        else if (thumbnailView)
+                        {
+                            thumbnailView->RenameEntry();
                         }
                     });
                 action->setShortcut(Qt::Key_F2);
@@ -601,7 +612,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             // Add Delete option
             QAction* action = menu->addAction(
                 QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
-                [treeView, tableView]()
+                [treeView, tableView, thumbnailView]()
                 {
                     if (treeView)
                     {
@@ -611,14 +622,18 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     {
                         tableView->DeleteEntries();
                     }
+                    else if (thumbnailView)
+                    {
+                        thumbnailView->DeleteEntries();
+                    }
                 });
             action->setShortcut(QKeySequence::Delete);
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
             // Add Duplicate option
             action = menu->addAction(
-                QObject::tr("Duplicate asset"),
-                [treeView, tableView]()
+                QObject::tr("Duplicate asset%1").arg(numOfEntries > 1 ? "s" : ""),
+                [treeView, tableView, thumbnailView]()
                 {
                     if (treeView)
                     {
@@ -628,6 +643,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     {
                         tableView->DuplicateEntries();
                     }
+                    else if (thumbnailView)
+                    {
+                        thumbnailView->DuplicateEntries();
+                    }
                 });
             action->setShortcut(QKeySequence("Ctrl+D"));
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -635,7 +654,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             // Add Move to option
             menu->addAction(
                 QObject::tr("Move to"),
-                [treeView, tableView]()
+                [treeView, tableView, thumbnailView]()
                 {
                     if (treeView)
                     {
@@ -644,6 +663,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     else if (tableView)
                     {
                         tableView->MoveEntries();
+                    }
+                    else if (thumbnailView)
+                    {
+                        thumbnailView->MoveEntries();
                     }
                 });
         }
@@ -662,7 +685,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Rename option
                 QAction* action = menu->addAction(
                     QObject::tr("Rename Folder"),
-                    [treeView, tableView]()
+                    [treeView, tableView, thumbnailView]()
                     {
                         if (treeView)
                         {
@@ -672,6 +695,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         {
                             tableView->RenameEntry();
                         }
+                        else if (thumbnailView)
+                        {
+                            thumbnailView->RenameEntry();
+                        }
                     });
                 action->setShortcut(Qt::Key_F2);
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -679,7 +706,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Delete option
                 action = menu->addAction(
                     QObject::tr("Delete Folder"),
-                    [treeView, tableView]()
+                    [treeView, tableView, thumbnailView]()
                     {
                         if (treeView)
                         {
@@ -689,6 +716,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         {
                             tableView->DeleteEntries();
                         }
+                        else if (thumbnailView)
+                        {
+                            thumbnailView->DeleteEntries();
+                        }
                     });
                 action->setShortcut(QKeySequence::Delete);
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -696,7 +727,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Move to option
                 menu->addAction(
                     QObject::tr("Move to"),
-                    [treeView, tableView]()
+                    [treeView, tableView, thumbnailView]()
                     {
                         if (treeView)
                         {
@@ -705,6 +736,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         else if (tableView)
                         {
                             tableView->MoveEntries();
+                        }
+                        else if (thumbnailView)
+                        {
+                            thumbnailView->MoveEntries();
                         }
                     });
                 AddCreateMenu(menu, fullFilePath);

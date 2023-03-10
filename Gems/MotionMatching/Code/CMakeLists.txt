@@ -104,7 +104,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME MotionMatching.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            motionmatching_files.cmake
             motionmatching_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE

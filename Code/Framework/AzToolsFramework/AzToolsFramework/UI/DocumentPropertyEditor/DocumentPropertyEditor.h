@@ -101,7 +101,9 @@ namespace AzToolsFramework
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
+        DPERowWidget* GetPriorRowInLayout(size_t domIndex);
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
+        void RemoveChildAt(size_t childIndex, QWidget** newOwner = nullptr);
 
         //! clears and repopulates all children from a given DOM array
         void SetValueFromDom(const AZ::Dom::Value& domArray);
@@ -120,8 +122,6 @@ namespace AzToolsFramework
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
         bool IsExpanded() const;
 
-        const AZ::Dom::Path GetPath() const;
-
         bool HasChildRows() const;
         int GetLevel() const;
 
@@ -132,20 +132,15 @@ namespace AzToolsFramework
         DocumentPropertyEditor* GetDPE() const;
         void AddDomChildWidget(size_t domIndex, QWidget* childWidget);
         void AddColumnWidget(QWidget* columnWidget, size_t domIndex, const AZ::Dom::Value& domValue);
+        void AddRowChild(DPERowWidget* rowWidget, size_t domIndex);
+        void PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex);
 
         AZ::Dom::Path BuildDomPath();
         void SaveExpanderStatesForChildRows(bool isExpanded);
 
-        static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
-
-        QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
-
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
-
-        // This widget's indexed path from the root
-        AZ::Dom::Path m_domPath;
 
         //! widget children in DOM specified order; mix of row and column widgets
         AZStd::deque<QWidget*> m_domOrderedChildren;
@@ -170,15 +165,6 @@ namespace AzToolsFramework
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
         AZStd::optional<bool> m_expandByDefault;
-
-        // a map from the propertyHandler widgets to the propertyHandlers that created them
-        struct HandlerInfo
-        {
-            PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId = nullptr;
-            AZStd::unique_ptr<PropertyHandlerWidgetInterface> hanlderInterface;
-        };
-        AZStd::unordered_map<QWidget*, HandlerInfo> m_widgetToPropertyHandlerInfo;
-        void ReleaseHandler(HandlerInfo& handler);
     };
 
     class DocumentPropertyEditor
@@ -186,6 +172,7 @@ namespace AzToolsFramework
         , public IPropertyEditor
     {
         Q_OBJECT
+        friend class DPERowWidget;
 
     public:
         AZ_CLASS_ALLOCATOR(DocumentPropertyEditor, AZ::SystemAllocator);
@@ -246,6 +233,18 @@ namespace AzToolsFramework
 
         void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
 
+        struct HandlerInfo
+        {
+            PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId = nullptr;
+            PropertyHandlerWidgetInterface* handlerInterface = nullptr;
+
+            bool IsNull()
+            {
+                return !handlerId && !handlerInterface;
+            }
+        };
+        static HandlerInfo GetInfoFromWidget(const QWidget* widget);
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
@@ -253,6 +252,7 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
+        QWidget* GetWidgetAtPath(const AZ::Dom::Path& path);
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
@@ -276,6 +276,10 @@ namespace AzToolsFramework
         AZStd::shared_ptr<AZ::InstancePool<DPERowWidget>> m_rowPool;
         AZStd::shared_ptr<AZ::InstancePool<AzQtComponents::ElidingLabel>> m_labelPool;
 
+        QWidget* CreateWidgetForHandler(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue);
+        static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
+        static void ReleaseHandler(HandlerInfo& handler);
+
         AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
@@ -286,3 +290,5 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::DPERowWidget, "{C457A594-6E19-4674-A617-3CC09CF7E532}");
     AZ_TYPE_INFO_SPECIALIZE(AzQtComponents::ElidingLabel, "{02674C46-1401-4237-97F1-2774A067BF80}");
 } // namespace AZ
+
+Q_DECLARE_METATYPE(AzToolsFramework::DocumentPropertyEditor::HandlerInfo);

@@ -111,8 +111,6 @@ namespace ScriptCanvasEditor
 
         void OnContextMenuRequested(const QPoint& pos);
 
-        bool m_manipulatingSelection;
-
         AZStd::vector< AZStd::unique_ptr<AZ::Entity> > m_propertyHelpers;
 
         ScriptCanvas::ScriptCanvasId  m_scriptCanvasId;

@@ -12,7 +12,9 @@
 #include <MetricsManager.h>
 
 #include <AzCore/IO/FileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -133,9 +135,7 @@ namespace AWSMetrics
 
         constexpr const char metricsSettingsIdentifier[] = "aws_metrics_settings";
 
-        AZStd::string priorAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
-        AZStd::string configFilePath = priorAlias + "\\Gems\\AWSMetrics\\Code\\" + AZ::SettingsRegistryInterface::RegistryFolder;
-        AzFramework::StringFunc::Path::Normalize(configFilePath);
+        auto configFilePath = AZ::IO::FixedMaxPath(AZ::Utils::GetGemPath("AWSMetrics")) / AZ::SettingsRegistryInterface::RegistryFolder;
 
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "AWSMetricsEditorSystemComponent - could not get ActionManagerInterface");
@@ -143,7 +143,7 @@ namespace AWSMetrics
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Metrics Settings";
         auto outcome = actionManagerInterface->RegisterAction(AWSCore::ActionContext, metricsSettingsIdentifier, actionProperties,
-            [configFilePath]()
+            [configFilePath = AZ::IO::Path(configFilePath.String())]()
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });

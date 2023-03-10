@@ -10,6 +10,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <QMainWindow>
 #include <QMenuBar>
 
@@ -19,13 +21,13 @@ namespace AzToolsFramework
         : m_mainWindow(mainWindow)
     {
     }
-    
+
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
         m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
         m_menus[sortKey].push_back(AZStd::move(menuIdentifier));
     }
-    
+
     bool EditorMenuBar::ContainsMenu(const AZStd::string& menuIdentifier) const
     {
         return m_menuToSortKeyMap.contains(menuIdentifier);

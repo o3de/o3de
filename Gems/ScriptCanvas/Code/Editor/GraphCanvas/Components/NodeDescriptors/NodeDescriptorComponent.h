@@ -8,12 +8,16 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace ScriptCanvasEditor
 {
@@ -25,11 +29,11 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_COMPONENT(NodeDescriptorComponent, "{C775A98E-D64E-457F-8ABA-B34CBAD10905}");
-        static void Reflect(AZ::ReflectContext* reflect);        
+        static void Reflect(AZ::ReflectContext* reflect);
 
         NodeDescriptorComponent();
         NodeDescriptorComponent(NodeDescriptorType descriptorType);
-        
+
         ~NodeDescriptorComponent() override = default;
 
         // Component
@@ -50,12 +54,12 @@ namespace ScriptCanvasEditor
         ////
 
     protected:
-         
+
         virtual void OnAddedToGraphCanvasGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& scriptCanvasNodeId);
         virtual AZ::EntityId FindScriptCanvasNodeId() const;
-        
+
     private:
-    
+
         NodeDescriptorType m_nodeDescriptorType;
     };
 }

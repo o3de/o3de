@@ -249,19 +249,19 @@ void CViewportTitleDlg::SetupHelpersButton()
     {
         m_helpersMenu = new QMenu("Helpers State", this);
 
-        auto helperAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Helpers);
-        connect(
-            helperAction, &QAction::triggered, this,
-            [this]
-            {
-                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
-            });
-
         auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
         connect(
             iconAction,
             &QAction::triggered,
             this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto helperAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Helpers);
+        connect(
+            helperAction, &QAction::triggered, this,
             [this]
             {
                 m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
@@ -277,7 +277,18 @@ void CViewportTitleDlg::SetupHelpersButton()
                 m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
             });
 
-        m_helpersAction = new QAction(tr("Helpers"), m_helpersMenu);
+        auto hideHelpersAction =
+            MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::HideHelpers);
+        connect(
+            hideHelpersAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        m_helpersAction = new QAction(tr("Helpers for all entities"), m_helpersMenu);
         m_helpersAction->setCheckable(true);
         connect(
             m_helpersAction, &QAction::triggered, this,
@@ -295,7 +306,7 @@ void CViewportTitleDlg::SetupHelpersButton()
                 iconAction->trigger();
             });
 
-        m_onlySelectedAction = new QAction(tr("Helpers for Selected Entities Only"), m_helpersMenu);
+        m_onlySelectedAction = new QAction(tr("Helpers for selected entities"), m_helpersMenu);
         m_onlySelectedAction->setCheckable(true);
         connect(
              m_onlySelectedAction,
@@ -306,9 +317,22 @@ void CViewportTitleDlg::SetupHelpersButton()
                 onlySelectedAction->trigger();
             });
 
-        m_helpersMenu->addAction(m_helpersAction);
+        m_hideHelpersAction = new QAction(tr("Hide Helpers"), m_helpersMenu);
+        m_hideHelpersAction->setCheckable(true);
+        connect(
+            m_hideHelpersAction,
+            &QAction::triggered,
+            this,
+            [hideHelpersAction]
+            {
+                hideHelpersAction->trigger();
+            });
+
         m_helpersMenu->addAction(m_iconsAction);
+        m_helpersMenu->addSeparator();
+        m_helpersMenu->addAction(m_helpersAction);
         m_helpersMenu->addAction(m_onlySelectedAction);
+        m_helpersMenu->addAction(m_hideHelpersAction);
 
         connect(
             m_helpersMenu, &QMenu::aboutToShow, this,
@@ -317,6 +341,7 @@ void CViewportTitleDlg::SetupHelpersButton()
                 m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
                 m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
                 m_onlySelectedAction->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_hideHelpersAction->setChecked(!AzToolsFramework::HelpersVisible() && !AzToolsFramework::OnlyShowHelpersForSelectedEntities());
             });
 
         m_ui->m_helpers->setCheckable(true);
@@ -1169,6 +1194,7 @@ void CViewportTitleDlg::UpdateOverFlowMenuState()
     void PyToggleHelpers()
     {
         AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+        AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
     }
 
     bool PyIsHelpersShown()

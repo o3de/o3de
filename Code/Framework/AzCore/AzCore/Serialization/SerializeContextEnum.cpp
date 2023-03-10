@@ -34,13 +34,13 @@ namespace AZ
         {
             return this; // we have already removed the class data.
         }
-        AZ_Assert(version != VersionClassDeprecated, "You cannot use %u as the version, it is reserved by the system!", version);
+        AZ_Assert(version != Serialize::VersionClassDeprecated, "You cannot use %u as the version, it is reserved by the system!", version);
         m_classData->second.m_version = version;
         m_classData->second.m_converter = converter;
         return this;
     }
 
-    auto SerializeContext::EnumBuilder::Serializer(IDataSerializerPtr serializer) -> EnumBuilder*
+    auto SerializeContext::EnumBuilder::Serializer(Serialize::IDataSerializerPtr serializer) -> EnumBuilder*
     {
         if (m_context->IsRemovingReflection())
         {
