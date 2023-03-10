@@ -221,8 +221,6 @@ public:
     void OnUpdateUndo(QAction* action);
     void OnSwitchPhysics();
     void OnSwitchPhysicsUpdate(QAction* action);
-    void OnSyncPlayer();
-    void OnSyncPlayerUpdate(QAction* action);
     void OnResourcesReduceworkingset();
     void OnDummyCommand() {};
     void OnFileSave();

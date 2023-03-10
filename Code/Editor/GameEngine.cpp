@@ -244,12 +244,10 @@ AZ_POP_DISABLE_WARNING
     m_bLevelLoaded = false;
     m_bInGameMode = false;
     m_bSimulationMode = false;
-    m_bSyncPlayerPosition = true;
     m_hSystemHandle.reset(nullptr);
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
-    m_playerViewTM.SetIdentity();
     GetIEditor()->RegisterNotifyListener(this);
 }
 
@@ -565,8 +563,6 @@ void CGameEngine::SwitchToInEditor()
     }
     m_pISystem->GetIMovieSystem()->Reset(false, false);
 
-    CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
 
     // Enable accelerators.
@@ -577,13 +573,6 @@ void CGameEngine::SwitchToInEditor()
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
 
     m_bInGameMode = false;
-
-    // Out of game in Editor mode.
-    if (pGameViewport)
-    {
-        pGameViewport->SetViewTM(m_playerViewTM);
-    }
-
 
     GetIEditor()->Notify(eNotify_OnEndGameMode);
 
@@ -724,21 +713,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
     }
 
     AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-}
-
-void CGameEngine::SetPlayerViewMatrix(const Matrix34& tm, [[maybe_unused]] bool bEyePos)
-{
-    m_playerViewTM = tm;
-}
-
-void CGameEngine::SyncPlayerPosition(bool bEnable)
-{
-    m_bSyncPlayerPosition = bEnable;
-
-    if (m_bSyncPlayerPosition)
-    {
-        SetPlayerViewMatrix(m_playerViewTM);
-    }
 }
 
 void CGameEngine::SetCurrentMOD(const char* sMod)

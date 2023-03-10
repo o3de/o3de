@@ -10,6 +10,9 @@
 
 #include <AzCore/std/sort.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzFramework
 {
     void ViewportControllerList::Add(ViewportControllerPtr controller)
@@ -216,3 +219,6 @@ namespace AzFramework
         }
     }
 } //namespace AzFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
