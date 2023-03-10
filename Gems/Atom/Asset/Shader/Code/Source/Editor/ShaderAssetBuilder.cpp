@@ -10,6 +10,7 @@
 
 #include <CommonFiles/Preprocessor.h>
 
+#include <Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
@@ -500,12 +501,11 @@ namespace AZ
 
                     // In addition to the hlsl file, there are other json files that were generated.
                     // Each output file will become a product.
-                    static constexpr AZ::Uuid AzslOutcomeType{ "{6977AEB1-17AD-4992-957B-23BB2E85B18B}" };
                     for (int i = 0; i < subProductsPaths.size(); ++i)
                     {
                         AssetBuilderSDK::JobProduct jobProduct;
                         jobProduct.m_productFileName = subProductsPaths[i];
-                        jobProduct.m_productAssetType = AzslOutcomeType;
+                        jobProduct.m_productAssetType = AZ::RPI::AzslOutcomeAssetType;
                         // uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType
                         jobProduct.m_productSubID = RPI::ShaderAsset::MakeProductAssetSubId(
                                                                 shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,

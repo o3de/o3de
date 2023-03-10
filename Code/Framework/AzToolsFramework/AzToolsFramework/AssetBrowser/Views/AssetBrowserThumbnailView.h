@@ -47,7 +47,7 @@ namespace AzToolsFramework
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
             QString& GetName();
-            void SetIsAssetBrowserMainView();
+            void SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView);
             bool GetIsAssetBrowserMainView();
             void SetThumbnailActiveView(bool isActiveView);
             bool GetThumbnailActiveView();

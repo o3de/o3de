@@ -193,9 +193,16 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
         {
             SetName(ThumbnailViewMainViewName);
+
+            bool isAssetBrowserComponentReady = false;
+            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
+            if (isAssetBrowserComponentReady)
+            {
+                  SetAssetTreeView(treeView);
+            }
         }
 
         bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()
@@ -418,12 +425,7 @@ namespace AzToolsFramework
                     filterCopy->AddFilter(subFilter);
                 }
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
-
-            auto directoryFilter = new EntryTypeFilter();
-            directoryFilter->SetName("Folder");
-            directoryFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
-            filterCopy->AddFilter(FilterConstType(directoryFilter));
+            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
