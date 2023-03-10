@@ -2,7 +2,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 
-namespace AZ::RPI
+namespace AzFramework
 {
     // A list of editor unusuable asset types that are filtered out through a toggle switch in the asset browser 
 
@@ -12,4 +12,4 @@ namespace AZ::RPI
     inline constexpr AZ::Data::AssetType BufferAssetType{ "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}" };
     inline constexpr AZ::Data::AssetType ShaderVariantAssetType{ "{51BED815-36D8-410E-90F0-1FA9FF765FBA}" };
 
-} // namespace AZ::RPI
+} // namespace AzFramework

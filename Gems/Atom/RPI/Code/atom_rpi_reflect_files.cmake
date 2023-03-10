@@ -36,7 +36,6 @@ set(FILES
     Include/Atom/RPI.Reflect/Asset/AssetUtils.inl
     Include/Atom/RPI.Reflect/Asset/AssetReference.h
     Include/Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h
-    Include/Atom/RPI.Reflect/Asset/UnusableAssetTypes.h
     Include/Atom/RPI.Reflect/Image/AttachmentImageAsset.h
     Include/Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h
     Include/Atom/RPI.Reflect/Image/Image.h

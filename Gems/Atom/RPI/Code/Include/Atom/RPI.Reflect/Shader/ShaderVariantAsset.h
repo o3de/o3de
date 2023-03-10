@@ -7,12 +7,14 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/ShaderStageFunction.h>
+
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
+
 #include <AzCore/std/containers/array.h>
 
-#include <Atom/RHI.Reflect/ShaderStageFunction.h>
-#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
-#include <Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
-#include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
+#include <AzFramework/Asset/UnusableAssetTypes.h>
 
 namespace AZ
 {
@@ -28,7 +30,7 @@ namespace AZ
 
         public:
             AZ_CLASS_ALLOCATOR(ShaderVariantAsset , SystemAllocator)
-            AZ_RTTI(ShaderVariantAsset, ShaderVariantAssetType, Data::AssetData);
+            AZ_RTTI(ShaderVariantAsset, AzFramework::ShaderVariantAssetType, Data::AssetData);
 
             static void Reflect(ReflectContext* context);
 

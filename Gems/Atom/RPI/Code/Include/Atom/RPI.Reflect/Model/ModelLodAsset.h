@@ -11,7 +11,6 @@
 #include <Atom/RHI.Reflect/Limits.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
-#include <Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
@@ -21,6 +20,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
+
+#include <AzFramework/Asset/UnusableAssetTypes.h>
 
 namespace AZ
 {
@@ -41,7 +42,7 @@ namespace AZ
             static const char* Extension;
             static const char* Group;
 
-            AZ_RTTI(ModelLodAsset, ModelLodAssetType, Data::AssetData);
+            AZ_RTTI(ModelLodAsset, AzFramework::ModelLodAssetType, Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);

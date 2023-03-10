@@ -68,6 +68,7 @@ set(FILES
     Asset/FileTagAsset.cpp
     Asset/FileTagAsset.h
     Asset/NetworkAssetNotification_private.h
+    Asset/UnusableAssetTypes.h
     Asset/XmlSchemaAsset.cpp
     Asset/XmlSchemaAsset.h
     Asset/Benchmark/BenchmarkAsset.cpp
