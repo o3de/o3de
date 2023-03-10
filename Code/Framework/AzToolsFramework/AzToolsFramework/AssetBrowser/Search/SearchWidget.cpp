@@ -7,10 +7,12 @@
  */
 
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
-#include <C:/o3de/Gems/Atom/RPI/Code/Include/Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
+
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Utils/Utils.h>
+
+#include <AzFramework/Asset/UnusableAssetTypes.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QLineEdit>
@@ -76,8 +78,6 @@ namespace AzToolsFramework
                 return filters;
             }
         }
-
-
 
         SearchWidget::SearchWidget(QWidget* parent)
             : AzQtComponents::FilteredSearchWidget(parent)
@@ -225,11 +225,11 @@ namespace AzToolsFramework
         AZStd::vector<AZ::Data::AssetType> SearchWidget::BuildAssetTypeList()
         {
             AZStd::vector <AZ::Data::AssetType> entries = AZStd::vector<AZ::Data::AssetType>();
-            entries.push_back(AZ::RPI::AzslOutcomeAssetType);
-            entries.push_back(AZ::RPI::BufferAssetType);
-            entries.push_back(AZ::RPI::ImageMipChainAssetType);
-            entries.push_back(AZ::RPI::ModelLodAssetType);
-            entries.push_back(AZ::RPI::ShaderVariantAssetType);
+            entries.push_back(AzFramework::AzslOutcomeAssetType);
+            entries.push_back(AzFramework::BufferAssetType);
+            entries.push_back(AzFramework::ImageMipChainAssetType);
+            entries.push_back(AzFramework::ModelLodAssetType);
+            entries.push_back(AzFramework::ShaderVariantAssetType);
             return entries;
         }
 

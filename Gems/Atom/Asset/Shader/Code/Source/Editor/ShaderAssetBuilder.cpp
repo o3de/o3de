@@ -10,7 +10,6 @@
 
 #include <CommonFiles/Preprocessor.h>
 
-#include <Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
@@ -30,6 +29,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
+#include <AzFramework/Asset/UnusableAssetTypes.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -508,7 +508,7 @@ namespace AZ
                     {
                         AssetBuilderSDK::JobProduct jobProduct;
                         jobProduct.m_productFileName = subProductsPaths[i];
-                        jobProduct.m_productAssetType = AZ::RPI::AzslOutcomeAssetType;
+                        jobProduct.m_productAssetType = AzFramework::AzslOutcomeAssetType;
                         // uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType
                         jobProduct.m_productSubID = RPI::ShaderAsset::MakeProductAssetSubId(
                                                                 shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,
