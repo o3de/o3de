@@ -1348,6 +1348,26 @@ class AtomComponentProperties:
         }
         return properties[property]
 
+    @staticmethod
+    def stars(property: str = 'name') -> str:
+        """
+        Stars component properties
+          - 'Stars Asset' Asset.id of the star asset file (default.star)
+          - 'Exposure' controls how bright the stars are. 0.0 to 32.0 default 1.0 (float)
+          - 'Twinkle rate' how frequently stars twinkle. 0.0 to 10.0 default 0.5 (float)
+          - 'Radius factor' star radius multiplier. 0.0 to 64.0 default 7.0 (float)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Stars',
+            'Stars Asset': 'Controller|Configuration|Stars Asset',
+            'Exposure': 'Controller|Configuration|Exposure',
+            'Twinkle rate': 'Controller|Configuration|Twinkle rate',
+            'Radius factor': 'Controller|Configuration|Radius factor',
+        }
+        return properties[property]
+
 
 class AtomToolsDocumentRequestBusEvents(object):
     """

@@ -710,6 +710,11 @@ namespace AZ::DocumentPropertyEditor
         adapterBuilder->Label(labelText);
     }
 
+    void ReflectionAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
+    {
+        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+    }
+
     Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();
@@ -735,7 +740,7 @@ namespace AZ::DocumentPropertyEditor
             if (changeHandler != nullptr)
             {
                 Dom::Value newValue = (*changeHandler)(valueFromEditor);
-                NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(message.m_messageOrigin / "Value", newValue) });
+                UpdateDomContents({ message.m_messageOrigin, newValue, changeType });
                 NotifyPropertyChanged({ message.m_messageOrigin, newValue, changeType });
             }
         };

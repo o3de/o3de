@@ -293,20 +293,30 @@ namespace O3DE::ProjectManager
             QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent, QObject::tr("Select Project Directory")));
             if (!path.isEmpty())
             {
-                return RegisterProject(path);
+                return RegisterProject(path, parent);
             }
 
             return false;
         }
 
-        bool RegisterProject(const QString& path)
+        bool RegisterProject(const QString& path, QWidget* parent)
         {
-            return PythonBindingsInterface::Get()->AddProject(path);
+            if (auto result = PythonBindingsInterface::Get()->AddProject(path); !result)
+            {
+                DisplayDetailedError("Failed to add project", result, parent);
+                return false;
+            }
+            return true;
         }
 
-        bool UnregisterProject(const QString& path)
+        bool UnregisterProject(const QString& path, QWidget* parent)
         {
-            return PythonBindingsInterface::Get()->RemoveProject(path);
+            if (auto result = PythonBindingsInterface::Get()->RemoveProject(path); !result)
+            {
+                DisplayDetailedError("Failed to unregister project", result, parent);
+                return false;
+            }
+            return true;
         }
 
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent)

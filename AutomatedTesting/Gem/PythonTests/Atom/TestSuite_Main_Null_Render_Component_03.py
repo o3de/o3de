@@ -44,6 +44,9 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_SSAOAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
 
+    class AtomEditorComponents_StarsAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_StarsAdded as test_module
+
     @pytest.mark.test_case_id("C36529666")
     class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded as test_module
