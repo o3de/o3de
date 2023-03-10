@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/SettingsRegistrar.h>
+#include <AzCore/std/containers/map.h>
 
 namespace AZ
 {
@@ -25,7 +26,14 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(DocumentPropertyEditorSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
 
-        using ExpanderStateMap = AZStd::unordered_map<AZStd::string, bool>;
+        struct ExpanderStateMapComparator
+        {
+            AZ_TYPE_INFO(ExpanderStateMapComparator, "{4150A243-FDEA-474C-8EAE-A3423CE4D65D}");
+
+            bool operator()(const AZ::Dom::Path& lhs, const AZ::Dom::Path& rhs);
+        };
+
+        using ExpanderStateMap = AZStd::map<AZ::Dom::Path, bool, ExpanderStateMapComparator>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
         //! Use this constructor when temporary in-memory only storage is desired
@@ -42,7 +50,7 @@ namespace AzToolsFramework
         bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
 
-        bool WereSettingsLoaded() const { return m_wereSettingsLoaded; };
+        bool WereSettingsLoaded() const;
 
         void SetCleanExpanderStateCallback(CleanExpanderStateCallback function);
 
@@ -68,9 +76,7 @@ namespace AzToolsFramework
         bool m_shouldSettingsPersist = false;
 
         SettingsRegistrar m_settingsRegistrar;
-
         AZ::IO::Path m_settingsFilepath;
-
         AZStd::string m_fullSettingsRegistryPath;
         AZStd::string m_settingsRegistryBasePath;
     };

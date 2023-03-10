@@ -549,6 +549,7 @@ namespace AzToolsFramework
                 m_dpe->SetAdapter(m_adapter);
                 m_dpe->setEnabled(true);
 
+                m_dpe->SetReferenceAdapter(m_adapter);
                 m_dpe->SetSavedStateKey(m_savedStateKey, "AssetEditor");
             }
             else

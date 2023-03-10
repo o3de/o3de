@@ -68,7 +68,7 @@ namespace AZ::Dom
     class Path final
     {
     public:
-        AZ_TYPE_INFO(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}")
+        AZ_RTTI(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}");
 
         using ContainerType = AZStd::vector<PathEntry>;
         static constexpr char PathSeparator = '/';
@@ -76,6 +76,8 @@ namespace AZ::Dom
         static constexpr char TildeSequence = '0';
         static constexpr char ForwardSlashSequence = '1';
         static constexpr char EndOfArrayCharacter = '-';
+
+        static void Reflect(AZ::ReflectContext* context);
 
         Path() = default;
         Path(const Path&) = default;

@@ -12,10 +12,10 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-
     class MetaAdapter : public DocumentAdapter
     {
     public:
+        DocumentAdapterPtr GetSourceAdapter() const { return m_sourceAdapter; }
         void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);
 
         virtual Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const = 0;
@@ -39,5 +39,4 @@ namespace AZ::DocumentPropertyEditor
 
         DocumentAdapterPtr m_sourceAdapter;
     };
-
 } // AZ::DocumentPropertyEditor

@@ -12,6 +12,35 @@
 
 namespace AzToolsFramework
 {
+    bool DocumentPropertyEditorSettings::ExpanderStateMapComparator::operator()(const AZ::Dom::Path& lhsPath, const AZ::Dom::Path& rhsPath)
+    {
+        auto ComparePathEntryEqual = [](const AZ::Dom::PathEntry& lhsEntry, const AZ::Dom::PathEntry& rhsEntry)
+        {
+            return lhsEntry == rhsEntry;
+        };
+
+        // Find the PathEntry where the two Path objects differ, if any
+        const auto& lhsPathEntries = lhsPath.GetEntries();
+        const auto& rhsPathEntries = rhsPath.GetEntries();
+        auto [lhsPathIter, rhsPathIter] = AZStd::mismatch(
+            lhsPathEntries.begin(), lhsPathEntries.end(), rhsPathEntries.begin(), rhsPathEntries.end(), ComparePathEntryEqual);
+
+        if (lhsPathIter != lhsPathEntries.end() && rhsPathIter != rhsPathEntries.end())
+        {
+            AZ_Assert(lhsPathIter->IsIndex() && rhsPathIter->IsIndex(),
+                "The DocumentPropertyEditorSettings expander state map only supports index path entries.");
+
+            // If the paths differ then compare the differing PathEntries
+            return lhsPathIter->GetIndex() < rhsPathIter->GetIndex();
+        }
+        else
+        {
+            // If one Path is a prefix of the other, or the paths are identical, then the shorter
+            // Path is the smaller Path
+            return rhsPathEntries.size() > lhsPathEntries.size();
+        }
+    }
+
     DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(
         const AZStd::string& settingsRegistryKey,
         const AZStd::string& propertyEditorName)
@@ -37,8 +66,8 @@ namespace AzToolsFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
-                "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
+            serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)
+                ->Field("ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
         }
     }
 
@@ -104,27 +133,31 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditorSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
     {
-        m_expandedElementStates[rowPath.ToString()] = isExpanded;
+        m_expandedElementStates[rowPath] = isExpanded;
     }
 
     bool DocumentPropertyEditorSettings::GetExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        AZStd::string strPath = rowPath.ToString();
-        if (m_expandedElementStates.contains(strPath))
+        if (m_expandedElementStates.contains(rowPath))
         {
-            return m_expandedElementStates[strPath];
+            return m_expandedElementStates[rowPath];
         }
         return false;
     }
 
     bool DocumentPropertyEditorSettings::HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const
     {
-        return m_expandedElementStates.contains(rowPath.ToString());
+        return m_expandedElementStates.contains(rowPath);
     }
 
     void DocumentPropertyEditorSettings::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        m_expandedElementStates.erase(rowPath.ToString());
+        m_expandedElementStates.erase(rowPath);
+    }
+
+    bool DocumentPropertyEditorSettings::WereSettingsLoaded() const
+    {
+        return m_wereSettingsLoaded;
     }
 
     void DocumentPropertyEditorSettings::SetCleanExpanderStateCallback(CleanExpanderStateCallback function)

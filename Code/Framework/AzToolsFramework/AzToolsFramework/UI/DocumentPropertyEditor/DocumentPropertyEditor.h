@@ -12,6 +12,7 @@
 #include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+#include <AzFramework/DocumentPropertyEditor/MetaAdapter.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
@@ -169,7 +170,7 @@ namespace AzToolsFramework
 
     class DocumentPropertyEditor
         : public QScrollArea
-        , public IPropertyEditor
+        , public AzToolsFramework::IPropertyEditor
     {
         Q_OBJECT
         friend class DPERowWidget;
@@ -245,6 +246,8 @@ namespace AzToolsFramework
         };
         static HandlerInfo GetInfoFromWidget(const QWidget* widget);
 
+        void SetReferenceAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr adapter);
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
@@ -257,11 +260,18 @@ namespace AzToolsFramework
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
+        void HandleReferenceAdapterReset();
+        void HandleReferenceAdapterDomChange(const AZ::Dom::Patch& patch);
+
+        //! Maps a node's path from the source adapter down to the base adapter.
+        AZ::Dom::Path MapToSource(const AZ::Dom::Path& path) const;
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler m_domMessageHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_referenceAdapterResetHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_referenceAdapterChangedHandler;
 
         QVBoxLayout* m_layout = nullptr;
 
@@ -270,6 +280,9 @@ namespace AzToolsFramework
         bool m_spawnDebugView = false;
 
         DPERowWidget* m_rootNode = nullptr;
+
+        // Chain of meta adapters ordered from the DPE source adapter to the one nearest the base adapter
+        AZStd::vector<AZ::DocumentPropertyEditor::MetaAdapter*> m_metaAdapterChain;
 
         // keep pools of frequently used widgets that can be recycled for efficiency without
         // incurring the cost of creating and destroying them

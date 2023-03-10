@@ -9,6 +9,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/DOM/DomPath.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/fixed_string.h>
 
 namespace AZ::Dom
@@ -161,6 +162,15 @@ namespace AZ::Dom
     Path::Path(AZStd::string_view pathString)
     {
         FromString(pathString);
+    }
+
+    void Path::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<Path>()->Version(0);
+        }
     }
 
     Path Path::operator/(const PathEntry& entry) const

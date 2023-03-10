@@ -1316,6 +1316,31 @@ namespace AzToolsFramework
         Clear();
     }
 
+    void DocumentPropertyEditor::SetReferenceAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr referenceAdapter)
+    {
+        m_referenceAdapterResetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
+            [this]()
+            {
+                this->HandleReferenceAdapterReset();
+            });
+        referenceAdapter->ConnectResetHandler(m_referenceAdapterResetHandler);
+
+        m_referenceAdapterChangedHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler(
+            [this](const AZ::Dom::Patch& patch)
+            {
+                this->HandleReferenceAdapterDomChange(patch);
+            });
+        referenceAdapter->ConnectChangedHandler(m_referenceAdapterChangedHandler);
+
+        // Recursively build a vector containing each adapter in the reference adapter's chain
+        auto metaAdapter = azrtti_cast<AZ::DocumentPropertyEditor::MetaAdapter*>(m_adapter.get());
+        while (metaAdapter)
+        {
+            m_metaAdapterChain.push_back(metaAdapter);
+            metaAdapter = azrtti_cast<AZ::DocumentPropertyEditor::MetaAdapter*>(metaAdapter->GetSourceAdapter().get());
+        }
+    }
+
     void DocumentPropertyEditor::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
         if (m_spawnDebugView)
@@ -1397,9 +1422,9 @@ namespace AzToolsFramework
                     const auto& rootValue = m_adapter->GetContents();
                     auto numErased = AZStd::erase_if(
                         storedStates,
-                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
+                        [&rootValue](const AZStd::pair<AZ::Dom::Path, bool>& statePair)
                         {
-                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
+                            return !rootValue.FindChild(statePair.first) ? true : false;
                         });
                     return numErased > 0;
                 });
@@ -1413,7 +1438,7 @@ namespace AzToolsFramework
     {
         if (m_dpeSettings)
         {
-            m_dpeSettings->SetExpanderStateForRow(rowPath, isExpanded);
+            m_dpeSettings->SetExpanderStateForRow(MapToSource(rowPath), isExpanded);
         }
     }
 
@@ -1421,7 +1446,7 @@ namespace AzToolsFramework
     {
         if (m_dpeSettings)
         {
-            return m_dpeSettings->GetExpanderStateForRow(rowPath);
+            return m_dpeSettings->GetExpanderStateForRow(MapToSource(rowPath));
         }
         return false;
     }
@@ -1430,7 +1455,7 @@ namespace AzToolsFramework
     {
         if (m_dpeSettings)
         {
-            return m_dpeSettings->HasSavedExpanderStateForRow(rowPath);
+            return m_dpeSettings->HasSavedExpanderStateForRow(MapToSource(rowPath));
         }
         return false;
     }
@@ -1439,7 +1464,7 @@ namespace AzToolsFramework
     {
         if (m_dpeSettings)
         {
-            return m_dpeSettings->RemoveExpanderStateForRow(rowPath);
+            return m_dpeSettings->RemoveExpanderStateForRow(MapToSource(rowPath));
         }
     }
 
@@ -1620,6 +1645,31 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
         m_handlerPools.push_back(handlerPool);
+    }
+
+    void DocumentPropertyEditor::HandleReferenceAdapterReset()
+    {
+        m_dpeSettings.reset();
+        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>();
+    }
+
+    void DocumentPropertyEditor::HandleReferenceAdapterDomChange(const AZ::Dom::Patch& patch)
+    {
+        for (auto patchOpIter = patch.begin(), endIterator = patch.end(); patchOpIter != endIterator; ++patchOpIter)
+        {
+            // Fixup saved expansion state according to patch type
+        }
+    }
+
+    AZ::Dom::Path DocumentPropertyEditor::MapToSource(const AZ::Dom::Path& path) const
+    {
+        AZ::Dom::Path mappedPath = path;
+        for (auto metaAdapter : m_metaAdapterChain)
+        {
+            mappedPath = metaAdapter->MapToSourcePath(mappedPath);
+        }
+
+        return mappedPath;
     }
 
     DocumentPropertyEditor::HandlerInfo DocumentPropertyEditor::GetInfoFromWidget(const QWidget* widget)
