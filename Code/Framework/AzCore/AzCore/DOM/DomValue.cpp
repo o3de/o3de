@@ -813,26 +813,6 @@ namespace AZ::Dom
         return GetArrayInternal().end();
     }
 
-    Array::ConstReverseIterator Value::ArrayReverseBegin() const
-    {
-        return GetArrayInternal().rbegin();
-    }
-
-    Array::ConstReverseIterator Value::ArrayReverseEnd() const
-    {
-        return GetArrayInternal().rend();
-    }
-
-    Array::ReverseIterator Value::MutableArrayReverseBegin()
-    {
-        return GetArrayInternal().rbegin();
-    }
-
-    Array::Array::ReverseIterator Value::MutableArrayReverseEnd()
-    {
-        return GetArrayInternal().rend();
-    }
-
     Value& Value::ArrayReserve(size_t newCapacity)
     {
         GetArrayInternal().reserve(newCapacity);
