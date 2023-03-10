@@ -30,6 +30,9 @@ namespace AZ
     * is a list of arrays, with some information to track usage within those arrays, some
     * optimization to keep jumping through the list to a minimum, and a forward iterator to traverse
     * the whole container.
+    *   This StructOfArrays version differs from StableDynamicArray in that instead of taking a single type, it
+    * takes a parameter pack of types, where each type is in a different 'row' of the StructOfArrays. This allows the data to be split
+    * into multiple rows, to keep the size of the data in each row smaller for better cache coherencey when iterating.
     *   This container produces better cache locality when iterating on elements (vs a list) and keeps 
     * appending/removing cost low by reusing empty slots. Resizing is also contained to allocating new
     * arrays.
@@ -39,7 +42,8 @@ namespace AZ
 
     // The template paramaterization is a little different than StableDynamicArray. The ElementsPerPage and Allocator
     // come first, and do not have default arguments, so that it is explicit which arguments are part of the parameter pack (...)
-    // https://en.cppreference.com/w/cpp/language/parameter_pack
+    // see https://en.cppreference.com/w/cpp/language/parameter_pack
+    // "In a primary class template, the template parameter pack must be the final parameter in the template parameter list."
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     class StableDynamicStructOfArrays
     {
@@ -69,14 +73,11 @@ namespace AZ
 
         /// Reserves and constructs an item of type T and returns a handle to it.
         Handle insert(const value_types&... value);
-        /// Reserves and constructs an item of type T and returns a handle to it.
-        Handle insert(value_types&&... value);
 
-        /// Reserves and copies an item of type T with provided args and returns a handle to it.
-        /// Note: we only truly get emplace behavior when every row of the StructOfArrays has data that can be constructed with exactly 1
-        /// argument, and the number of arguments passed into emplace matches 1:1 with the number of underlying rows in the StructOfArrays
-        template<class ... Args>
-        Handle emplace(Args&& ... args);
+        /// Reserves items of type value_types, forwards the provided args to construct the items, and returns a handle to it.
+        /// Can be called with AZStd::forward_as_tuple to collect the arguments for each item into tuples.
+        template<typename... TupleArgs>
+        Handle emplace(TupleArgs&&... args);
 
         /// Destructs and frees the memory associated with a handle, then invalidates the handle.
         void erase(Handle& handle);

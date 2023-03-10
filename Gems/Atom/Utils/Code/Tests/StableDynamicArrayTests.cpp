@@ -545,6 +545,12 @@ namespace UnitTest
                 StableDynamicArrayHandleTests::s_testItemsConstructed++;
             }
 
+            TestItemImplementation(const TestItemImplementation& testItem)
+                : m_value(testItem.m_value)
+            {
+                StableDynamicArrayHandleTests::s_testItemsConstructed++;
+            }
+
             virtual ~TestItemImplementation()
             {
                 StableDynamicArrayHandleTests::s_testItemsDestructed++;

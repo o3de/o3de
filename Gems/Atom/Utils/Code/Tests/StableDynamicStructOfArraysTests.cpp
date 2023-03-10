@@ -69,7 +69,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.insert(TestItem{}, {});
+            TestArrayType::Handle handle = testArray.insert(TestItem{ i, static_cast<float>(i) }, i);
             TestItem& testItem = handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>();
             testItem.m_index = i;
             testItem.m_value = static_cast<float>(i);
@@ -104,7 +104,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            TestArrayType::Handle handle = testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             handles.push_back(AZStd::move(handle));
         }
 
@@ -179,7 +179,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            TestArrayType::Handle handle = testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             handles.push_back(AZStd::move(handle));
         }
 
@@ -249,7 +249,7 @@ namespace UnitTest
         testArray.GetMetrics();
 
         // Test insert
-        handles.push_back(testArray.emplace(item, 0));
+        handles.push_back(testArray.emplace(AZStd::forward_as_tuple(item), AZStd::forward_as_tuple(0)));
         markFirstPageAsEmpty();
 
         // Test defragment
@@ -272,7 +272,7 @@ namespace UnitTest
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
             StableDynamicStructOfArrays<TestElementsPerPage, StructOfArraysTestAllocator, TestItem, uint32_t>::Handle handle =
-                testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+                testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             TestItem& testItem = handle.GetItem<TestStableDynamicStructOfArraysRows::TestItemIndex>();
             testItem.m_index = i;
             testItem.m_value = static_cast<float>(i);
@@ -341,7 +341,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            TestArrayType::Handle handle = testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             handles.push_back(AZStd::move(handle));
         }
 
@@ -405,7 +405,7 @@ namespace UnitTest
         // fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            TestArrayType::Handle handle = testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             handles.push_back(AZStd::move(handle));
         }
 
@@ -469,7 +469,7 @@ namespace UnitTest
         // Fill with items
         for (uint32_t i = 0; i < s_testCount; ++i)
         {
-            TestArrayType::Handle handle = testArray.emplace(TestItem{ i, static_cast<float>(i) }, i);
+            TestArrayType::Handle handle = testArray.emplace(AZStd::forward_as_tuple(i, static_cast<float>(i)), AZStd::forward_as_tuple(i));
             handles.push_back(AZStd::move(handle));
         }
 
@@ -596,6 +596,12 @@ namespace UnitTest
                 StableDynamicStructOfArraysHandleTests::s_testItemsConstructed++;
             }
 
+            TestItemImplementation(const TestItemImplementation& testItem)
+                : m_value(testItem.m_value)
+            {
+                StableDynamicStructOfArraysHandleTests::s_testItemsConstructed++;
+            }
+
             virtual ~TestItemImplementation()
             {
                 StableDynamicStructOfArraysHandleTests::s_testItemsDestructed++;
@@ -619,9 +625,7 @@ namespace UnitTest
     
         OwnerTestArrayType::Handle AcquireItem(int value, int otherValue)
         {
-            // Note: we only truly get emplace behavior when every row of the StructOfArrays has data that can be constructed with exactly 1 argument,
-            // and the number of arguments passed into emplace matches 1:1 with the number of underlying rows in the StructOfArrays
-            return m_testArray.emplace(value, otherValue);
+            return m_testArray.emplace(AZStd::forward_as_tuple(value), AZStd::forward_as_tuple(otherValue));
         }
 
         void ReleaseItem(OwnerTestArrayType::Handle& handle)

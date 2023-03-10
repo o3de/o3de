@@ -53,19 +53,40 @@ namespace AZ
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
     auto StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::insert(const value_types&... values) -> Handle
     {
-        return emplace(values...);
+        return emplace(AZStd::forward_as_tuple(values)...);
     }
 
-    template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    auto StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::insert(value_types&&... values) -> Handle
+    template<class ValueType, class... Args>
+    auto EmplaceElement(ValueType elementPtr, Args&&... elementArgs)
     {
-        return emplace(values...);
+        AZStd::construct_at(elementPtr, AZStd::forward<Args>(elementArgs)...);
+    }
+
+    template<class ValueType, class... Args>
+    auto EmplaceEachElement(ValueType* elementPtr, AZStd::tuple<Args...>& elementArgs)
+    {
+        auto ConstructElement = [elementPtr](auto&&... args)
+        {
+            EmplaceElement(elementPtr, AZStd::forward<decltype(args)>(args)...);
+        };
+        AZStd::apply(ConstructElement, elementArgs);
+    }
+
+    template<class... ValueType, size_t... Indices, class... TupleArgs>
+    auto EmplaceTupleElementsHelper(AZStd::tuple<ValueType*...>& elements, AZStd::index_sequence<Indices...>, TupleArgs&&... tupleArgs)
+    {
+        (EmplaceEachElement(AZStd::get<Indices>(elements), tupleArgs), ...);
+    }
+
+    template<class... ValueTypes, class... TupleArgs>
+    auto EmplaceTupleElements(AZStd::tuple<ValueTypes*...>& elements, TupleArgs&&... tupleArgs)
+    {
+        EmplaceTupleElementsHelper(elements, AZStd::make_index_sequence<sizeof...(TupleArgs)>{}, AZStd::forward<TupleArgs>(tupleArgs)...);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
-    template<typename... Args>
-    auto StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::emplace(
-        Args&&... args)
+    template<typename... TupleArgs>
+    auto StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::emplace(TupleArgs&&... args)
         -> Handle
     { 
         // Try to find a page we can fit this in.
@@ -75,12 +96,7 @@ namespace AZ
             if (pageElementIndex != Page::InvalidPage)
             {
                 ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
-                AZStd::apply([&](value_types* ...dataItems)
-                    {
-                        ((AZStd::construct_at(dataItems, args)), ...);
-                    },
-                    items
-                );
+                EmplaceTupleElements(items, AZStd::forward<TupleArgs>(args)...);
 
                 ++m_itemCount;
                 return Handle(items, m_firstAvailablePage);
@@ -111,12 +127,7 @@ namespace AZ
         size_t pageElementIndex = m_firstAvailablePage->Reserve();
 
         ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
-        AZStd::apply([&](value_types* ...dataItems)
-            {
-                ((AZStd::construct_at(dataItems, args)), ...);
-            },
-            items
-        );
+        EmplaceTupleElements(items, args...);
 
         ++m_itemCount;
         return Handle(items, m_firstAvailablePage);
@@ -204,9 +215,8 @@ namespace AZ
             if (pageItemIndex != Page::InvalidPage)
             {
                 // Found a better page, move the data from the handle to the new page.
-                constexpr auto tupleIndices = AZStd::make_index_sequence<AZStd::tuple_size_v<ItemTupleType>>{};
                 ItemTupleType destinationItems = m_firstAvailablePage->GetItems(pageItemIndex);
-                MoveData(*handle, destinationItems, tupleIndices);
+                MoveData(*handle, destinationItems, AZStd::make_index_sequence<AZStd::tuple_size_v<ItemTupleType>>{});
                 reinterpret_cast<Page*>(handle.m_page)->Free(handle.m_data);
                 handle.m_data = m_firstAvailablePage->GetItems(pageItemIndex);
                 handle.m_page = m_firstAvailablePage;
