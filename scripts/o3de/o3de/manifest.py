@@ -449,7 +449,7 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
             gem_name = gem.gem_json_data['gem_name']
             gem_name_with_specifier = gem_names_with_version_specifiers.get(gem_name,gem_name)
             if gem_name_with_specifier in result or include_dependencies:
-                result[gem_name_with_specifier] = gem.gem_json_data['path'].resolve().as_posix()
+                result[gem_name_with_specifier] = gem.gem_json_data['path'].as_posix()
     else:
         # Likely there is no resolution because gems are missing or wrong version
         # Provide the paths for the gems that are available
