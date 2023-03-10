@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetSerializer.h>
@@ -108,12 +107,6 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
-
-                if (m_materialInstance)
-                {
-                    MaterialAssignmentNotificationBus::Event(
-                        m_materialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-                }
                 return;
             }
 
@@ -121,12 +114,6 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
-
-                if (m_materialInstance)
-                {
-                    MaterialAssignmentNotificationBus::Event(
-                        m_defaultMaterialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-                }
                 return;
             }
 

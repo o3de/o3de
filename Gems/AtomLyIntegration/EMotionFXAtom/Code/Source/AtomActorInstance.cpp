@@ -250,6 +250,14 @@ namespace AZ::Render
         }
     }
 
+    void AtomActorInstance::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+    {
+        if (m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingDirty(*m_meshHandle);
+        }
+    }
+
     void AtomActorInstance::SetModelAsset([[maybe_unused]] Data::Asset<RPI::ModelAsset> modelAsset)
     {
         // Changing model asset is not supported by Atom Actor Instance.

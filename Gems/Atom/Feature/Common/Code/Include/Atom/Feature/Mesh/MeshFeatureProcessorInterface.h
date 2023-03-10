@@ -32,7 +32,26 @@ namespace AZ
         );
 
         class ModelDataInstance;
-        
+
+        //! Mesh feature processor data types for customizing model materials
+        using CustomMaterialLodIndex = AZ::u64;
+
+        //! Pair referring to the lod index and unique id corresponding to the material slot where the material should be applied 
+        using CustomMaterialId = AZStd::pair<CustomMaterialLodIndex, uint32_t>;
+
+        //! Custom material infill containing a material instance that will be substituted for an embedded material on a model and UV mapping reassignments 
+        struct CustomMaterialInfo
+        {
+            Data::Instance<RPI::Material> m_material;
+            RPI::MaterialModelUvOverrideMap m_uvMapping;
+        };
+
+        using CustomMaterialMap = AZStd::unordered_map<CustomMaterialId, CustomMaterialInfo>;
+        static const CustomMaterialLodIndex DefaultCustomMaterialLodIndex = AZStd::numeric_limits<CustomMaterialLodIndex>::max();
+        static const uint32_t DefaultCustomMaterialStableId = AZStd::numeric_limits<uint32_t>::max();
+        static const CustomMaterialId DefaultCustomMaterialId = CustomMaterialId(DefaultCustomMaterialLodIndex, DefaultCustomMaterialStableId);
+        static const CustomMaterialMap DefaultCustomMaterialMap = CustomMaterialMap();
+
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
         {
@@ -45,18 +64,6 @@ namespace AZ
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
         };
-
-        using CustomMaterialLodIndex = AZ::u64;
-        using CustomMaterialId = AZStd::pair<CustomMaterialLodIndex, uint32_t>;
-        struct CustomMaterialInfo
-        {
-            Data::Instance<RPI::Material> m_material;
-            RPI::MaterialModelUvOverrideMap m_uvMapping;
-        };
-        using CustomMaterialMap = AZStd::unordered_map<CustomMaterialId, CustomMaterialInfo>;
-        static const CustomMaterialLodIndex DefaultCustomMaterialLodIndex = AZStd::numeric_limits<CustomMaterialLodIndex>::max();
-        static const CustomMaterialId DefaultCustomMaterialId = CustomMaterialId(DefaultCustomMaterialLodIndex, 0);
-        static const CustomMaterialMap DefaultCustomMaterialMap = CustomMaterialMap();
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
         //! MeshFeatureProcessor
@@ -147,6 +154,8 @@ namespace AZ
             virtual bool GetVisible(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
+            //! Set a flag that the ray tracing data needs to be updated, usually after material changes. 
+            virtual void SetRayTracingDirty(const MeshHandle& meshHandle) = 0;
         };
     } // namespace Render
 } // namespace AZ

@@ -329,8 +329,6 @@ namespace AZ
                 meshDataHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
 
-            meshDataHandle->UpdateMaterialChangeIds();
-
             return meshDataHandle;
         }
 
@@ -427,8 +425,6 @@ namespace AZ
                 {
                     meshHandle->m_customMaterials = materials;
                 }
-
-                meshHandle->UpdateMaterialChangeIds();
 
                 meshHandle->m_objectSrgNeedsUpdate = true;
             }
@@ -685,6 +681,14 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetRayTracingDirty(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->m_needsSetRayTracingData = true;
+            }
+        }
+
         RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
         {
             if (m_flagRegistry == nullptr)
@@ -906,13 +910,10 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
-            MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect();
-
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
             m_drawPacketListsByLod.clear();
             m_customMaterials.clear();
-            m_materialChangeIds.clear();
             m_objectSrgList = {};
             m_model = {};
         }
@@ -939,14 +940,6 @@ namespace AZ
                 RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
                 objectSrg->SetConstant(objectIdIndex, m_objectId.GetIndex());
                 objectIdIndex.AssertValid();
-            }
-
-            for (const auto& customMaterial : m_customMaterials)
-            {
-                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
-                {
-                    MaterialAssignmentNotificationBus::MultiHandler::BusConnect(materialInstance->GetAssetId());
-                }
             }
 
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
@@ -1721,58 +1714,6 @@ namespace AZ
         {
             m_visible = isVisible;
             m_cullable.m_isHidden = !isVisible;
-        }
-
-        void ModelDataInstance::UpdateMaterialChangeIds()
-        {
-            // update the material changeId list with the current material assignments
-            m_materialChangeIds.clear();
-
-            for (const auto& customMaterial : m_customMaterials)
-            {
-                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
-                {
-                    m_materialChangeIds[materialInstance] = materialInstance->GetCurrentChangeId();
-                }
-            }
-        }
-
-        bool ModelDataInstance::CheckForMaterialChanges() const
-        {
-            // check for the same number of materials
-            if (m_materialChangeIds.size() != m_customMaterials.size())
-            {
-                return true;
-            }
-
-            // check for material changes using the changeId
-            for (const auto& customMaterial : m_customMaterials)
-            {
-                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
-                {
-                    MaterialChangeIdMap::const_iterator it = m_materialChangeIds.find(materialInstance);
-                    if (it == m_materialChangeIds.end() || it->second != materialInstance->GetCurrentChangeId())
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        void ModelDataInstance::OnRebuildMaterialInstance()
-        {
-            if (m_visible && m_descriptor.m_isRayTracingEnabled)
-            {
-                if (CheckForMaterialChanges())
-                {
-                    m_needsSetRayTracingData = true;
-
-                    // update the material changeId list with the latest materials
-                    UpdateMaterialChangeIds();
-                }
-            }
         }
 
         CustomMaterialInfo ModelDataInstance::GetCustomMaterialWithFallback(const CustomMaterialId& id) const

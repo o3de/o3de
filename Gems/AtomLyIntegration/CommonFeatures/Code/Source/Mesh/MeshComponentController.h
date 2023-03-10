@@ -150,6 +150,7 @@ namespace AZ
 
             // MaterialComponentNotificationBus::Handler overrides ...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
             //! @param modelAsset The model asset to check.

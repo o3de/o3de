@@ -370,6 +370,14 @@ namespace AZ
             }
         }
 
+        void MeshComponentController::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingDirty(m_meshHandle);
+            }
+        }
+
         bool MeshComponentController::RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset)
         {
             // Is the model asset containing a cloth buffer? If yes, we need to clone the model asset for instancing.

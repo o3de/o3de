@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
@@ -32,7 +31,6 @@ namespace AZ
         class ReflectionProbeFeatureProcessor;
 
         class ModelDataInstance
-            : public MaterialAssignmentNotificationBus::MultiHandler
         {
             friend class MeshFeatureProcessor;
             friend class MeshLoader;
@@ -97,22 +95,12 @@ namespace AZ
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
-            void UpdateMaterialChangeIds();
-            bool CheckForMaterialChanges() const;
-
-            // MaterialAssignmentNotificationBus overrides
-            void OnRebuildMaterialInstance() override;
-
             CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
 
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
             CustomMaterialMap m_customMaterials;
-
-            typedef AZStd::unordered_map<Data::Instance<RPI::Material>, RPI::Material::ChangeId> MaterialChangeIdMap;
-            MaterialChangeIdMap m_materialChangeIds;
-
             MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
 
@@ -143,8 +131,7 @@ namespace AZ
         static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
-        class MeshFeatureProcessor final
-            : public MeshFeatureProcessorInterface
+        class MeshFeatureProcessor final : public MeshFeatureProcessorInterface
         {
         public:
             AZ_CLASS_ALLOCATOR(MeshFeatureProcessor, AZ::SystemAllocator)
@@ -211,6 +198,7 @@ namespace AZ
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
+            void SetRayTracingDirty(const MeshHandle& meshHandle) override;
 
             RHI::Ptr <FlagRegistry> GetShaderOptionFlagRegistry();
 
