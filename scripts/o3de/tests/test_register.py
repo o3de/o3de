@@ -435,9 +435,9 @@ class TestRegisterProject:
             patch('pathlib.Path.is_dir', return_value=True) as _8,\
             patch('o3de.validation.valid_o3de_project_json', return_value=True) as _9, \
             patch('o3de.utils.backup_file', return_value=True) as _10, \
-            patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
+            patch('o3de.manifest.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as _11, \
             patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
-            patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as _12:
+            patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as _12:
 
             result = register.register(project_path=TestRegisterProject.project_path, force=force, dry_run=dry_run)
 

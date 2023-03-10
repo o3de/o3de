@@ -107,9 +107,9 @@ def get_project_engine_incompatible_objects(project_path:pathlib.Path, engine_pa
 
     # verify project -> gem -> engine compatibility
     active_gem_names = project_json_data.get('gem_names',[])
-    enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    enabled_gems_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
-        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+        active_gem_names.extend(manifest.get_enabled_gems(enabled_gems_file))
     active_gem_names = utils.get_gem_names_set(active_gem_names)
 
     # it's much more efficient to get all gem data once than to query them by name one by one
@@ -176,9 +176,9 @@ def get_gem_project_incompatible_objects(gem_path:pathlib.Path,
     # Verify we can resolve all dependencies after adding this new gem
     active_gem_names = engine_json_data.get('gem_names',[])
     active_gem_names.extend(project_json_data.get('gem_names',[]))
-    enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    enabled_gems_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
-        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+        active_gem_names.extend(manifest.get_enabled_gems(enabled_gems_file))
     active_gem_names = utils.get_gem_names_set(active_gem_names)
 
     if not gem_name:

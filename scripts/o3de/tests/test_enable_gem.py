@@ -196,7 +196,7 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
-                patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+                patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
@@ -383,8 +383,8 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_project_gems', side_effect=get_project_gems) as get_project_gems_patch,\
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
-                patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
-                patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
+                patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+                patch('o3de.manifest.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
@@ -513,7 +513,7 @@ class TestEnableGemCommand:
             patch('o3de.manifest.get_project_engine_path', side_effect=get_project_engine_path) as get_project_engine_path_patch,\
             patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
             patch('o3de.manifest.get_all_gems', side_effect=get_all_gems) as get_all_gems_patch,\
-            patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+            patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
             patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
             patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 

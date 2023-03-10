@@ -11,58 +11,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import cmake
-
-
-class TestGetEnabledGems:
-    @pytest.mark.parametrize(
-        "enable_gems_cmake_data, expected_set", [
-            pytest.param("""
-                # Comment
-                set(ENABLED_GEMS foo bar baz)
-            """, set(['foo', 'bar', 'baz'])),
-            pytest.param("""
-                        # Comment
-                        set(ENABLED_GEMS
-                            foo
-                            bar
-                            baz
-                        )
-                    """, set(['foo', 'bar', 'baz'])),
-            pytest.param("""
-                    # Comment
-                    set(ENABLED_GEMS
-                        foo
-                        bar
-                        baz)
-                """, set(['foo', 'bar', 'baz'])),
-            pytest.param("""
-                        # Comment
-                        set(ENABLED_GEMS
-                            foo bar
-                            baz)
-                    """, set(['foo', 'bar', 'baz'])),
-            pytest.param("""
-                        # Comment
-                        set(RANDOM_VARIABLE TestGame, TestProject Test Engine)
-                        set(ENABLED_GEMS HelloWorld IceCream
-                            foo
-                            baz bar
-                            baz baz baz baz baz morebaz lessbaz
-                        )
-                        Random Text
-                    """, set(['HelloWorld', 'IceCream', 'foo', 'bar', 'baz', 'morebaz', 'lessbaz'])),
-        ]
-    )
-    def test_get_enabled_gems(self, enable_gems_cmake_data, expected_set):
-        enabled_gems_set = set()
-        with patch('pathlib.Path.resolve', return_value=pathlib.Path('enabled_gems.cmake')) as pathlib_is_resolve_mock,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_mock,\
-                patch('pathlib.Path.open', return_value=io.StringIO(enable_gems_cmake_data)) as pathlib_open_mock:
-            enabled_gems_set = cmake.get_enabled_gems(pathlib.Path('enabled_gems.cmake'))
-
-        assert enabled_gems_set == expected_set
-
+from o3de import cmake, manifest
 
 class TestRemoveGemDependency:
     @pytest.mark.parametrize(
@@ -146,7 +95,7 @@ class TestRemoveGemDependency:
                 patch('pathlib.Path.open', side_effect=lambda mode: StringBufferIOWrapper()) as pathlib_open_mock:
 
             add_gem_return = cmake.remove_gem_dependency(pathlib.Path('enabled_gems.cmake'), gem_name=gem_name)
-            enabled_gems_set = cmake.get_enabled_gems(pathlib.Path('enabled_gems.cmake'))
+            enabled_gems_set = manifest.get_enabled_gems(pathlib.Path('enabled_gems.cmake'))
 
         assert add_gem_return == expected_return
         assert enabled_gems_set == expected_set
@@ -197,7 +146,7 @@ class TestResolveGemDependencyPaths:
             }, 'gemA;gemA1Path', 0) 
         ]
     )
-    def test_get_enabled_gems(self, engine_gem_names, project_gem_names, all_gems_json_data, expected_gem_paths, expected_result):
+    def test_resolve_gem_dependency_paths(self, engine_gem_names, project_gem_names, all_gems_json_data, expected_gem_paths, expected_result):
         engine_path = pathlib.PurePath('c:/o3de')
         project_path = pathlib.PurePath('c:/o3de')
         resolved_gem_paths = ''
@@ -252,8 +201,8 @@ class TestResolveGemDependencyPaths:
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
-                patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
-                patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
+                patch('o3de.manifest.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) as get_enabled_gem_cmake_patch, \
+                patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch,\
                 patch('pathlib.Path.open', side_effect=lambda mode: StringBufferIOWrapper()) as pathlib_open_mock:
             result = cmake.resolve_gem_dependency_paths(
                                         engine_path=engine_path if engine_gem_names else None, 

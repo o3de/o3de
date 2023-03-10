@@ -326,7 +326,6 @@ namespace O3DE::ProjectManager
             }
 
             // import required modules
-            m_cmake = pybind11::module::import("o3de.cmake");
             m_register = pybind11::module::import("o3de.register");
             m_manifest = pybind11::module::import("o3de.manifest");
             m_engineTemplate = pybind11::module::import("o3de.engine_template");

@@ -11,7 +11,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import cmake, disable_gem, enable_gem
+from o3de import manifest, disable_gem, enable_gem
 
 
 TEST_ENGINE_JSON_PAYLOAD = '''
@@ -217,7 +217,7 @@ class TestDisableGemCommand:
                 patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
                 patch('o3de.cmake.remove_gem_dependency',
                       side_effect=remove_gem_dependency) as remove_gem_dependency_patch, \
-                patch('o3de.cmake.get_enabled_gems',
+                patch('o3de.manifest.get_enabled_gems',
                       side_effect=get_enabled_gems) as get_enabled_gems, \
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
@@ -246,7 +246,7 @@ class TestDisableGemCommand:
 
             if enabled_in_cmake:
                 # The gem name should no longer exist in enabled_gems.cmake 
-                assert expected_gem_name not in cmake.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
+                assert expected_gem_name not in manifest.get_enabled_gems(project_path / "Gem/enabled_gems.cmake")
 
             # The gem name should no longer appear in the "gem_names" field
             project_json = get_project_json_data(project_path=project_path)

@@ -120,7 +120,6 @@ namespace O3DE::ProjectManager
         pybind11::handle m_gemProperties;
         pybind11::handle m_engineTemplate;
         pybind11::handle m_engineProperties;
-        pybind11::handle m_cmake;
         pybind11::handle m_register;
         pybind11::handle m_manifest;
         pybind11::handle m_enableGemProject;

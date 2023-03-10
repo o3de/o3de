@@ -110,6 +110,56 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
 }
 '''
 
+class TestGetEnabledGems:
+    @pytest.mark.parametrize(
+        "enable_gems_cmake_data, expected_set", [
+            pytest.param("""
+                # Comment
+                set(ENABLED_GEMS foo bar baz)
+            """, set(['foo', 'bar', 'baz'])),
+            pytest.param("""
+                        # Comment
+                        set(ENABLED_GEMS
+                            foo
+                            bar
+                            baz
+                        )
+                    """, set(['foo', 'bar', 'baz'])),
+            pytest.param("""
+                    # Comment
+                    set(ENABLED_GEMS
+                        foo
+                        bar
+                        baz)
+                """, set(['foo', 'bar', 'baz'])),
+            pytest.param("""
+                        # Comment
+                        set(ENABLED_GEMS
+                            foo bar
+                            baz)
+                    """, set(['foo', 'bar', 'baz'])),
+            pytest.param("""
+                        # Comment
+                        set(RANDOM_VARIABLE TestGame, TestProject Test Engine)
+                        set(ENABLED_GEMS HelloWorld IceCream
+                            foo
+                            baz bar
+                            baz baz baz baz baz morebaz lessbaz
+                        )
+                        Random Text
+                    """, set(['HelloWorld', 'IceCream', 'foo', 'bar', 'baz', 'morebaz', 'lessbaz'])),
+        ]
+    )
+    def test_get_enabled_gems(self, enable_gems_cmake_data, expected_set):
+        enabled_gems_set = set()
+        with patch('pathlib.Path.resolve', return_value=pathlib.Path('enabled_gems.cmake')) as pathlib_is_resolve_mock,\
+                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_mock,\
+                patch('pathlib.Path.open', return_value=io.StringIO(enable_gems_cmake_data)) as pathlib_open_mock:
+            enabled_gems_set = manifest.get_enabled_gems(pathlib.Path('enabled_gems.cmake'))
+
+        assert enabled_gems_set == expected_set
+
+
 @pytest.mark.parametrize("valid_project_json_paths, valid_gem_json_paths", [
     pytest.param([pathlib.Path('D:/o3de/Templates/DefaultProject/Template/project.json')],
                  [pathlib.Path('D:/o3de/Templates/DefaultGem/Template/gem.json')])
@@ -494,9 +544,9 @@ class TestGetProjectEnabledGems:
                 as get_project_json_data_patch, \
             patch('o3de.manifest.get_project_engine_path', side_effect=get_project_engine_path) \
                 as get_project_engine_path_patch,\
-            patch('o3de.cmake.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) \
+            patch('o3de.manifest.get_enabled_gem_cmake_file', side_effect=get_enabled_gem_cmake_file) \
                 as get_enabled_gem_cmake_file_patch, \
-            patch('o3de.cmake.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch, \
+            patch('o3de.manifest.get_enabled_gems', side_effect=get_enabled_gems) as get_enabled_gems_patch, \
             patch('pathlib.Path.resolve', self.resolve) as resolve_patch, \
             patch('pathlib.Path.is_file', return_value=True) as is_file_patch:
 

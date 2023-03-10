@@ -16,7 +16,7 @@ import pathlib
 from packaging.version import Version
 from collections import deque
 
-from o3de import validation, utils, repo, compatibility, cmake
+from o3de import validation, utils, repo, compatibility
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.manifest')
@@ -301,6 +301,87 @@ def get_engine_templates() -> list:
 def get_project_gems(project_path: pathlib.Path) -> list:
     return get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
 
+def get_enabled_gem_cmake_file(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                platform: str = 'Common') -> pathlib.Path or None:
+    """
+    get the standard cmake file name for a particular type of dependency
+    :param gem_name: name of the gem, resolves gem_path
+    :param gem_path: path of the gem
+    :return: list of gem targets
+    """
+    if not project_name and not project_path:
+        logger.error(f'Must supply either a Project Name or Project Path.')
+        return None
+
+    if project_name and not project_path:
+        project_path = get_registered(project_name=project_name)
+
+    project_path = pathlib.Path(project_path).resolve()
+    enable_gem_filename = "enabled_gems.cmake"
+
+    if platform == 'Common':
+        possible_project_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem' / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code' / enable_gem_filename),
+            pathlib.Path(project_path / 'Code' / enable_gem_filename)
+        ]
+        for possible_project_enable_gem_filename_path in possible_project_enable_gem_filename_paths:
+            if possible_project_enable_gem_filename_path.is_file():
+                return possible_project_enable_gem_filename_path.resolve()
+        return possible_project_enable_gem_filename_paths[0].resolve()
+    else:
+        possible_project_platform_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Code/Platform' / platform / enable_gem_filename)
+        ]
+        for possible_project_platform_enable_gem_filename_path in possible_project_platform_enable_gem_filename_paths:
+            if possible_project_platform_enable_gem_filename_path.is_file():
+                return possible_project_platform_enable_gem_filename_path.resolve()
+        return possible_project_platform_enable_gem_filename_paths[0].resolve()
+
+
+def get_enabled_gems(cmake_file: pathlib.Path) -> set:
+    """
+    Gets a list of enabled gems from the cmake file
+    :param cmake_file: path to the cmake file
+    :return: set of gem targets found
+    """
+    cmake_file = pathlib.Path(cmake_file).resolve()
+
+    if not cmake_file.is_file():
+        logger.error(f'Failed to locate cmake file {cmake_file}')
+        return set()
+
+    enable_gem_start_marker = 'set(ENABLED_GEMS'
+    enable_gem_end_marker = ')'
+
+    gem_target_set = set()
+    with cmake_file.open('r') as s:
+        in_gem_list = False
+        for line in s:
+            line = line.strip()
+            if line.startswith(enable_gem_start_marker):
+                # Set the flag to indicate that we are in the ENABLED_GEMS variable
+                in_gem_list = True
+                # Skip pass the 'set(ENABLED_GEMS' marker just in case their are gems declared on the same line
+                line = line[len(enable_gem_start_marker):]
+            if in_gem_list:
+                # Since we are inside the ENABLED_GEMS variable determine if the line has the end_marker of ')'
+                if line.endswith(enable_gem_end_marker):
+                    # Strip away the line end marker
+                    line = line[:-len(enable_gem_end_marker)]
+                    # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
+                    in_gem_list = False
+                # Split the rest of the line on whitespace just in case there are multiple gems in a line
+                gem_name_list = list(map(lambda gem_name: gem_name.strip('"'), line.split()))
+                gem_target_set.update(gem_name_list)
+
+    return gem_target_set
+
+
+
 def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bool = True) -> dict or None:
     """
     Returns a dictionary of "<gem name with optional specifier>":"<gem path>"
@@ -311,9 +392,9 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
     """
     project_json_data = get_project_json_data(project_path=project_path)
     active_gem_names = project_json_data.get('gem_names',[])
-    enabled_gems_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
+    enabled_gems_file = get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
-        active_gem_names.extend(cmake.get_enabled_gems(enabled_gems_file))
+        active_gem_names.extend(get_enabled_gems(enabled_gems_file))
 
     gem_names_with_optional_gems = utils.get_gem_names_set(active_gem_names, include_optional=True)
     if not gem_names_with_optional_gems:
@@ -874,8 +955,7 @@ def get_most_compatible_object(object_name: str,
                               object_typename: str, 
                               object_validator: callable, 
                               name_key: str, 
-                              objects: list,
-                              gem_json_data_by_name: dict or None) -> pathlib.Path or None:
+                              objects: list) -> pathlib.Path or None:
     """
     Looks for the most compatible object based on object_name which may contain a version specifier.
     Example: o3de>=1.2.3
