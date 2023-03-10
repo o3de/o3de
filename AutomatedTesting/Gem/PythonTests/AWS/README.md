@@ -1,7 +1,7 @@
 # AWS Gem Automation Tests
 
 ## Prerequisites
-1. Build the O3DE Editor and AutomatedTesting.GameLauncher in Profile.
+1. Build the O3DE **Editor** and **AutomatedTesting.GameLauncher** in Profile.
 2. Install the latest version of NodeJs.
 3. AWS CLI is installed and AWS credentials are configured via [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) or [default profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 4. [AWS Cloud Development Kit (CDK)](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install) is installed.
@@ -26,7 +26,7 @@
     * Windows
         ```
             set O3DE_AWS_PROJECT_NAME=AWSAUTO
-            set O3DE_AWS_DEPLOY_REGION=us-east-1
+			set O3DE_AWS_DEPLOY_REGION=us-east-1
             set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
             set COMMIT_ID=HEAD
             set CDK_VERSION=2.68.0 

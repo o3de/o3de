@@ -26,8 +26,7 @@ AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
 logger = logging.getLogger(__name__)
 
 
-def setup(launcher: pytest.fixture,
-          asset_processor: pytest.fixture) -> pytest.fixture:
+def _setup(launcher: pytest.fixture, asset_processor: pytest.fixture) -> pytest.fixture:
     """
     Set up the resource mapping configuration and start the log monitor.
     :param launcher: Client launcher for running the test level.
@@ -168,7 +167,7 @@ class TestAWSMetricsWindows(object):
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
 
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Kinesis analytics application needs to be in the running state before we start the game launcher.
         kinesis_analytics_application_thread.join()
@@ -221,7 +220,7 @@ class TestAWSMetricsWindows(object):
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
 
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Kinesis analytics application needs to be in the running state before we start the game launcher.
         kinesis_analytics_application_thread.join()
@@ -264,7 +263,7 @@ class TestAWSMetricsWindows(object):
         """
         Verify that unauthorized users cannot send metrics events to the AWS backed backend.
         """
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Set invalid AWS credentials.
         launcher.args = ['+LoadLevel', level, '+cl_awsAccessKey', 'AKIAIOSFODNN7EXAMPLE',
