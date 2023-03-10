@@ -80,7 +80,7 @@ namespace AZ::DocumentPropertyEditor
         //! Returns the error information, if any, encountered during the build process.
         const AZStd::string& GetError() const;
         //! Ends the build operation and retrieves the builder result.
-        //! Operations are no longer valid on this builder once this is called.
+        //! Further calls to this builder will be for a new DOM.
         Dom::Value&& FinishAndTakeResult();
 
         template<class PropertyEditorDefinition, class ValueType = AZ::Dom::Value>

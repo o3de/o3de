@@ -147,10 +147,14 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
+    };
 
-        // Container attributes
+    struct Container : NodeWithVisiblityControl
+    {
+        static constexpr auto ParentContainerValueType = TypeIdAttributeDefinition("ParentContainerValueType");
+
         static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
-        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t)>("RemoveNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void()>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 

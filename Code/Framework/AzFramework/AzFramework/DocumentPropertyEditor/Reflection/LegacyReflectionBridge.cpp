@@ -747,19 +747,25 @@ namespace AZ::Reflection
                         nodeData.m_cachedAttributes.push_back(
                             { group, DescriptorAttributes::ParentContainer, Dom::Utils::ValueFromType<void*>(parentContainerInfo) });
 
+                        nodeData.m_cachedAttributes.push_back({
+                            group,
+                            DocumentPropertyEditor::Nodes::Container::ParentContainerValueType.GetName(),
+                              AZ::Dom::Utils::TypeIdToDomValue(parentNode.m_typeId) });
+
                         auto parentContainerInstance =
                             (parentNode.m_parentContainerOverride ? parentNode.m_parentContainerOverride : parentNode.m_instance);
 
-                        nodeData.m_cachedAttributes.push_back({ group,
-                                                                DescriptorAttributes::ParentContainerInstance,
-                                                                Dom::Utils::ValueFromType<void*>(parentContainerInstance) });
+                        nodeData.m_cachedAttributes.push_back({
+                            group,
+                            DescriptorAttributes::ParentContainerInstance,
+                            Dom::Utils::ValueFromType<void*>(parentContainerInstance) });
 
                         if (parentNode.m_containerElementOverride)
                         {
-                            nodeData.m_cachedAttributes.push_back(
-                                { group,
-                                  DescriptorAttributes::ContainerElementOverride,
-                                  Dom::Utils::ValueFromType<void*>(parentNode.m_containerElementOverride) });
+                            nodeData.m_cachedAttributes.push_back({
+                                group,
+                                DescriptorAttributes::ContainerElementOverride,
+                                Dom::Utils::ValueFromType<void*>(parentNode.m_containerElementOverride) });
                         }
 
                         if (nodeData.m_labelOverride.empty())
