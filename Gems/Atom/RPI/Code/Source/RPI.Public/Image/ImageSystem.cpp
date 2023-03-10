@@ -166,6 +166,7 @@ namespace AZ
             Interface<ImageSystemInterface>::Unregister(this);
 
             m_systemImages.clear();
+            m_systemAttachmentImages.clear();
             m_systemStreamingPool = nullptr;
             m_systemAttachmentPool = nullptr;
 
