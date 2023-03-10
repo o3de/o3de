@@ -10,7 +10,6 @@
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AZ::DocumentPropertyEditor

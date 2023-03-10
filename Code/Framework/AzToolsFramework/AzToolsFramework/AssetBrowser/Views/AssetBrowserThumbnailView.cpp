@@ -18,6 +18,8 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 #if !defined(Q_MOC_RUN)
@@ -175,7 +177,7 @@ namespace AzToolsFramework
                   }
             }
         }
- 
+
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const
         {
             return m_thumbnailViewWidget;

@@ -27,6 +27,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -38,7 +39,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <QMenu>
 #include <QAction>
@@ -314,6 +314,7 @@ namespace Multiplayer
         );
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+        processLaunchInfo.m_tetherLifetime = true;
 
         // Launch the Server
         const AzFramework::ProcessCommunicationType communicationType = editorsv_print_server_logs
@@ -576,7 +577,21 @@ namespace Multiplayer
                     remoteAddress.c_str()) return;
             }
 
-            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...")
+            // Find any existing server launchers before launching a new one.
+            // It's possible for a rogue server launcher to exist if the Editor shutdown unexpectedly while running a previous multiplayer session.
+            // It's also common to open ServerLaunchers by hand for testing, but then to forget to shut it down before starting the editor play mode.
+            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            int existingServers = AzFramework::ProcessUtils::ProcessCount(serverExeFilename);
+            if (existingServers > 0)
+            {
+                AZ_Warning("MultiplayerEditorSystemComponent", false,
+                    "There are already existing servers opened (x%i: %s); please terminate as your Editor may connect to the wrong server! "
+                    "If your intention was to connect to this server instead of automatically launching one from the Editor set editorsv_launch = false.",
+                    existingServers, serverExeFilename.c_str());
+            }
+
+            AZ_Printf("MultiplayerEditor", "Editor is listening for the editor-server...\n");
+
             // Launch the editor-server
             if (!LaunchEditorServer())
             {

@@ -13,13 +13,13 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace AZ
 {
     class Capsule;
     class Obb;
+    class ReflectContext;
     class Sphere;
 } // namespace AZ
 
@@ -159,7 +159,7 @@ namespace Physics
                                 ///< and don't need to be kept alive by the caller;
     };
 
-    class PhysicsAssetShapeConfiguration 
+    class PhysicsAssetShapeConfiguration
         : public ShapeConfiguration
     {
     public:
@@ -187,7 +187,7 @@ namespace Physics
         AZ::Vector3 m_nativeShapeScale = AZ::Vector3::CreateOne(); ///< Native shape scale. This will be serialised
     };
 
-    class CookedMeshShapeConfiguration 
+    class CookedMeshShapeConfiguration
         : public ShapeConfiguration
     {
     public:
@@ -200,7 +200,7 @@ namespace Physics
             TriangleMesh = 0,
             Convex
         };
-        
+
         CookedMeshShapeConfiguration() = default;
         CookedMeshShapeConfiguration(const CookedMeshShapeConfiguration&);
         CookedMeshShapeConfiguration& operator=(const CookedMeshShapeConfiguration&);
@@ -213,7 +213,7 @@ namespace Physics
         //! (e.g. in PhysX: result of cookTriangleMesh or cookConvexMesh).
         void SetCookedMeshData(const AZ::u8* cookedData, size_t cookedDataSize, MeshType type);
         const AZStd::vector<AZ::u8>& GetCookedMeshData() const;
-        
+
         MeshType GetMeshType() const;
 
         void* GetCachedNativeMesh();
@@ -225,7 +225,7 @@ namespace Physics
 
         AZStd::vector<AZ::u8> m_cookedData;
         MeshType m_type = MeshType::TriangleMesh;
-        
+
         //! Cached native mesh object (e.g. PxConvexMesh or PxTriangleMesh). This data is not serialized.
         void* m_cachedNativeMesh = nullptr;
     };

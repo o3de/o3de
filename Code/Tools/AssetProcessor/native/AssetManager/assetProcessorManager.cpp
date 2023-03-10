@@ -1334,8 +1334,12 @@ namespace AssetProcessor
                 newLegacySubIDs.push_back(product.m_legacySubIDs);
             }
 
+            // To find the set of products that were either new, or updated, this code starts with the new products, and erases
+            // the prior products that are exactly the same from that list.
+            // Note that because it uses operator==, it includes comparing the hash.  This means that if the file data has changed
+            // it won't count as being the same, and will not remove it from the list.  This results in 'updatedProducts' containing
+            // the list of new products that were EITHER literally new, or, had data that was new/changed.
             auto updatedProducts = newProducts;
-
             if(!updatedProducts.empty())
             {
                 for (const auto& priorProductEntry : priorProducts)
@@ -1344,14 +1348,23 @@ namespace AssetProcessor
                 }
             }
 
-            //now we want to remove any lingering product files from the previous build that no longer exist
-            //so subtract the new products from the prior products, whatever is left over in prior products no longer exists
+            // Remove any lingering product files from the previous build that no longer exist.
+            // Get that set by starting with the set of products from last time, and erasing any that were emitted this time
+            // which leaves just the products that were emitted last time, and not this time.
+            // Note that in this case, only care whether the product represents the same logical asset, not whether its hash
+            // changed or not.   Doing it this way will result in priorProducts containing only those products that were emitted last time
+            // and not this time regardless of what the hash or flags may have changed to (only comparing identifier fields).
             if (!priorProducts.empty())
             {
                 for (const auto& pair : newProducts)
                 {
                     const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& newProductEntry = pair.first;
-                    priorProducts.erase(AZStd::remove(priorProducts.begin(), priorProducts.end(), newProductEntry), priorProducts.end());
+                    auto logicalCompare = [&newProductEntry](const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& other)
+                    {
+                        return other.IsSameLogicalProductAs(newProductEntry);
+                    };
+
+                    priorProducts.erase(AZStd::remove_if(priorProducts.begin(), priorProducts.end(), logicalCompare), priorProducts.end());
                 }
             }
 
@@ -3962,14 +3975,7 @@ namespace AssetProcessor
                         jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
                         jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str());
 
-                    job.m_warnings.push_back(AZStd::string::format(
-                        "No job was found to match the job dependency criteria declared by file %s. (File: %s, JobKey: %s, Platform: %s)\n"
-                        "This may be due to a mismatched job key.\n"
-                        "Job ordering will not be guaranteed and could result in errors or unexpected output.",
-                        job.m_jobEntry.GetAbsoluteSourcePath().toUtf8().constData(),
-                        jobDependencyInternal->m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(),
-                        jobDependencyInternal->m_jobDependency.m_jobKey.c_str(),
-                        jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str()));
+                    job.m_hasMissingSourceDependency = true;
                 }
             }
 

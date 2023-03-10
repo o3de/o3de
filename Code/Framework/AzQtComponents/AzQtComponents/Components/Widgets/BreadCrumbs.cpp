@@ -17,7 +17,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayout
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QResizeEvent>
 #include <QSettings>
 #include <QStackedWidget>
@@ -85,6 +84,7 @@ namespace AzQtComponents
         // This needs to be done because QStackWidget by default expands, regardless
         // of what is inside it.
         m_labelEditStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        m_labelEditStack->setCursor(Qt::IBeamCursor);
 
         // create the label
         m_label = new QLabel();
@@ -430,9 +430,22 @@ namespace AzQtComponents
                     return true;
                 }
                 break;
+            case QEvent::ContextMenu:
+                if (QMenu* menu = m_lineEdit->createStandardContextMenu())
+                {
+                    m_contextMenu = menu;
+                    m_contextMenu->exec(m_lineEdit->cursor().pos());
+                    m_contextMenu = nullptr;
+                    return true;
+                }
+                break;
             case QEvent::FocusOut:
-                cancelEdit();
-                return true;
+                if (!m_contextMenu)
+                {
+                    cancelEdit();
+                    return true;
+                }
+                break;
             case QEvent::KeyPress:
                 if (const auto* keyEvent = static_cast<QKeyEvent*>(ev); keyEvent->key() == Qt::Key_Escape)
                 {

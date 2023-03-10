@@ -17,6 +17,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <QApplication>
 #include <QMessageBox>
 
@@ -105,6 +107,7 @@ namespace AWSCore
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
                 processLaunchInfo.m_commandlineParameters = launchCommand;
                 processLaunchInfo.m_showWindow = false;
+                processLaunchInfo.m_tetherLifetime = true;
                 m_resourceMappingToolWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(
                     AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
 

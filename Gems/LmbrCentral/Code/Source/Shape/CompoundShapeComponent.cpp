@@ -8,10 +8,29 @@
 
 #include "CompoundShapeComponent.h"
 #include <AzCore/Math/Transform.h>
-
+#include <AzCore/Serialization/EditContext.h>
 
 namespace LmbrCentral
 {
+    void CompoundShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CompoundShapeConfiguration>()
+                ->Version(1)
+                ->Field("Child Shape Entities", &CompoundShapeConfiguration::m_childEntities);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CompoundShapeConfiguration>("Configuration", "Compound shape configuration parameters")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CompoundShapeConfiguration::m_childEntities,
+                        "Child Shape Entities", "A list of entities that have shapes on them which when combined, act as the compound shape")
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->ElementAttribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe));
+            }
+        }
+    }
+
     void CompoundShapeComponent::Reflect(AZ::ReflectContext* context)
     {
         CompoundShapeConfiguration::Reflect(context);

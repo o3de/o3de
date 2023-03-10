@@ -414,6 +414,7 @@ set(FILES
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
+    Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
     Memory/nedmalloc.inl
@@ -553,6 +554,7 @@ set(FILES
     Serialization/ObjectStream.h
     Serialization/SerializeContext.cpp
     Serialization/SerializeContext.h
+    Serialization/SerializeContext_fwd.h
     Serialization/SerializeContextEnum.cpp
     Serialization/SerializeContextEnum.inl
     Serialization/DataPatch.h
