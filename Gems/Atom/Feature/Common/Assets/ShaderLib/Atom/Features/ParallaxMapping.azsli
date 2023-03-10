@@ -292,7 +292,7 @@ ParallaxOffset AdvancedParallaxMapping(real depthFactor, real depthOffset, float
     if(o_parallax_shadow && any(dirToLightTS))
     {
         float2 shadowUV = uv + parallaxOffset.xy;
-        real shadowNumSteps = real(round(numSteps * currentStep));
+        real shadowNumSteps = round(real(numSteps) * currentStep);
         real shadowStep = real(1.0 / shadowNumSteps);
         real dirToLightZInverse = 1.0 / dirToLightTS.z;
         real2 shadowDelta = dirToLightTS.xy * depthFactor * dirToLightZInverse * shadowStep;
@@ -302,13 +302,13 @@ ParallaxOffset AdvancedParallaxMapping(real depthFactor, real depthOffset, float
 
         // Raytrace from found parallax-offsetted point to the light. 
         // parallaxShadowAttenuation represents how much the current point is shadowed.
-        for(int i = 0 ; i < shadowNumSteps; i++)
+        for(int i = 0 ; i < (int)shadowNumSteps; i++)
         {
             // light ray is under surface
             if(currentSample < currentStep)
             {
                 rayUnderSurface = true;
-                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * (1 - (i + 1) * shadowStep));
+                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * ((real)(1 - (i + 1)) * shadowStep));
             }
 
             shadowUV += shadowDelta;

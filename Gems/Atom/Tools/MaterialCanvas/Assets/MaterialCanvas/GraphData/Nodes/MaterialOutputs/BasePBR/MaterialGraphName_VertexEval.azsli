@@ -19,24 +19,24 @@
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
-    float3 normal,
-    float4 tangent,
+    real3 normal,
+    real4 tangent,
     float2 uv0,
     float2 uv1)
 {
-    const float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    const float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    const real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
+    const real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
-    const float3 bitangent = cross(normal, (float3)tangent);
+    const real3 bitangent = cross(normal, tangent.xyz);
 
-    float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(normal), real4(tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     const float3 O3DE_MC_POSITION = position;
     const float3 O3DE_MC_NORMAL = normal;
-    const float3 O3DE_MC_TANGENT = tangent;
+    const float3 O3DE_MC_TANGENT = tangent.xyz;
     const float3 O3DE_MC_BITANGENT = bitangent;
-    const float3 O3DE_MC_POSITION_WS = positionWS;
+    const float3 O3DE_MC_POSITION_WS = positionWS.xyz;
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangentWS;
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
@@ -62,8 +62,8 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
 {
     return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
-        IN.normal,
-        IN.tangent,
+        real3(IN.normal),
+        real4(IN.tangent),
         IN.uv0,
         IN.uv1);
 }
