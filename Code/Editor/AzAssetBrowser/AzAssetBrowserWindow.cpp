@@ -295,9 +295,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
-    // !!! Need to set the model on the tree widget first
-    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
-    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -366,7 +363,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
 
-    m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
+    m_ui->m_thumbnailView->SetIsAssetBrowserMainView(m_ui->m_assetBrowserTreeViewWidget);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -497,7 +494,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_toolsMenu->addAction(collapseAllAction);
 
         m_toolsMenu->addSeparator();
-        auto* projectSourceAssets = new QAction(tr("Hide Product Assets"), this);
+        auto* projectSourceAssets = new QAction(tr("Hide Engine Folders"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
         connect(projectSourceAssets, &QAction::triggered, this,
@@ -506,8 +503,22 @@ void AzAssetBrowserWindow::CreateToolsMenu()
                 m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
-
         m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+
+        auto* unusableProductAssets = new QAction(tr("Hide Unusable Product Assets"), this);
+        unusableProductAssets->setCheckable(true);
+        unusableProductAssets->setChecked(true);
+        connect(
+            unusableProductAssets,
+            &QAction::triggered,
+            this,
+            [this, unusableProductAssets]
+            {
+                m_ui->m_searchWidget->ToggleUnusableProductsFilter(unusableProductAssets->isChecked());
+            });
+        m_toolsMenu->addAction(unusableProductAssets);
+        m_ui->m_searchWidget->ToggleUnusableProductsFilter(unusableProductAssets->isChecked());
+
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;

@@ -53,7 +53,7 @@ namespace AzToolsFramework
                 }
             case Qt::ToolTipRole:
                 {
-                    return assetBrowserEntry->data(0).toString();
+                    return assetBrowserEntry->data(11).toString();
                 }
             case static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExpandable):
                 {

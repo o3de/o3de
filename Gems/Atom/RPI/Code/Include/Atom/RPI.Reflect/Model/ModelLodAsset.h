@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
-#include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
-
 #include <Atom/RHI.Reflect/Limits.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Asset/UnusableAssetTypes.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -41,7 +41,7 @@ namespace AZ
             static const char* Extension;
             static const char* Group;
 
-            AZ_RTTI(ModelLodAsset, "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}", Data::AssetData);
+            AZ_RTTI(ModelLodAsset, ModelLodAssetType, Data::AssetData);
             AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
