@@ -33,8 +33,7 @@ void ConstructTBN(real3 vertexNormal, real4 vertexTangent, real4x4 localToWorld,
     // Instead of doing normalization in each shader, do it here.
     real3 unitNormal = normalize(vertexNormal);
     real3 unitTangent = normalize(vertexTangent.xyz);
-    real3 unitBitangent = cross(unitNormal, unitTangent);
-    unitBitangent *= sign(vertexTangent.w);;
+    real3 unitBitangent = cross(unitNormal, unitTangent) * real(sign(vertexTangent.w));
     normalWS = normalize(mul(localToWorldInverseTranspose, unitNormal));
     tangentWS = normalize(mul(localToWorld, real4(unitTangent, 0.0)).xyz);
     bitangentWS = normalize(mul(localToWorld, real4(unitBitangent, 0.0)).xyz);

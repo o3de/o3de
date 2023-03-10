@@ -146,17 +146,17 @@ real3 ClearCoatGGX(real NdotH, real HdotL, real NdotL, real3 normal, real roughn
     return D * G * F * NdotL;
 }
 
-float3 ClearCoatSpecular(const float3 dirToLight, const float3 dirToCamera, const float3 surfaceClearCoatNormal, float surfaceClearCoatFactor, float surfaceClearCoatRoughness, const float3 specular)
+real3 ClearCoatSpecular(const real3 dirToLight, const real3 dirToCamera, const real3 surfaceClearCoatNormal, real surfaceClearCoatFactor, real surfaceClearCoatRoughness, const real3 specular)
 {
-    float3 halfVector = normalize(dirToLight + dirToCamera);
-    float NdotH = saturate(dot(surfaceClearCoatNormal, halfVector));
-    float NdotL = saturate(dot(surfaceClearCoatNormal, dirToLight));
-    float HdotL = saturate(dot(halfVector, dirToLight));
+    real3 halfVector = normalize(dirToLight + dirToCamera);
+    real NdotH = saturate(dot(surfaceClearCoatNormal, halfVector));
+    real NdotL = saturate(dot(surfaceClearCoatNormal, dirToLight));
+    real HdotL = saturate(dot(halfVector, dirToLight));
 
     // HdotV = HdotL due to the definition of half vector
-    float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surfaceClearCoatFactor;
-    float clearCoatRoughness = max(surfaceClearCoatRoughness * surfaceClearCoatRoughness, 0.0005f);
-    float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surfaceClearCoatNormal, clearCoatRoughness, clearCoatF);
+    real3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surfaceClearCoatFactor;
+    real clearCoatRoughness = max(surfaceClearCoatRoughness * surfaceClearCoatRoughness, 0.0005);
+    real3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surfaceClearCoatNormal, clearCoatRoughness, clearCoatF);
 
     return specular * (1.0 - clearCoatF) + clearCoatSpecular;
 }

@@ -43,16 +43,26 @@ real3 GetMultiScatterCompensation(real3 specularF0, real2 brdf, bool enabled)
 }
 
 // returns the UV coordinates for the BRDF texture
-real2 GetBRDFTexCoords(real roughness, real NdotV)
+float2 GetBRDFTexCoords(float roughness, float NdotV)
 {
-    real smoothness = 1.0 - roughness;
-    return real2(saturate(NdotV), smoothness);
+    float smoothness = 1.0 - roughness;
+    return float2(saturate(NdotV), smoothness);
+}
+half2 GetBRDFTexCoords(half roughness, half NdotV)
+{
+    half smoothness = 1.0 - roughness;
+    return half2(saturate(NdotV), smoothness);
 }
 
 // returns the roughess mip for sampling the convolved specular cubemap
-real GetRoughnessMip(real roughness)
+float GetRoughnessMip(float roughness)
 {
-    const real maxRoughnessMip = 5;
+    const float maxRoughnessMip = 5;
+    return roughness * maxRoughnessMip;
+}
+half GetRoughnessMip(half roughness)
+{
+    const half maxRoughnessMip = 5;
     return roughness * maxRoughnessMip;
 }
 

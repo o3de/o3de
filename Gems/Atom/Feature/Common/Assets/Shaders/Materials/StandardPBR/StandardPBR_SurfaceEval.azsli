@@ -61,9 +61,9 @@ Surface EvaluateSurface_StandardPBR(
         if(o_clearCoat_enabled)
         {
             real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
-            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, real2(uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex]), real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
-                               MaterialSrg::m_clearCoatRoughnessMap, real2(uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex]), real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
-                               MaterialSrg::m_clearCoatNormalMap,    real2(uvs[MaterialSrg::m_clearCoatNormalMapUvIndex]), vertexNormal, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
+            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
                                uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);

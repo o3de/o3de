@@ -292,7 +292,7 @@ ParallaxOffset AdvancedParallaxMapping(real depthFactor, real depthOffset, float
     if(o_parallax_shadow && any(dirToLightTS))
     {
         float2 shadowUV = uv + parallaxOffset.xy;
-        int shadowNumSteps = int(round(real(numSteps) * currentStep));
+        real shadowNumSteps = real(round(numSteps * currentStep));
         real shadowStep = real(1.0 / shadowNumSteps);
         real dirToLightZInverse = 1.0 / dirToLightTS.z;
         real2 shadowDelta = dirToLightTS.xy * depthFactor * dirToLightZInverse * shadowStep;
@@ -308,7 +308,7 @@ ParallaxOffset AdvancedParallaxMapping(real depthFactor, real depthOffset, float
             if(currentSample < currentStep)
             {
                 rayUnderSurface = true;
-                partialShadowFactor = max(partialShadowFactor, (real)((currentStep - currentSample) * (1 - real(i + 1) * shadowStep)));
+                partialShadowFactor = max(partialShadowFactor, (currentStep - currentSample) * (1 - (i + 1) * shadowStep));
             }
 
             shadowUV += shadowDelta;

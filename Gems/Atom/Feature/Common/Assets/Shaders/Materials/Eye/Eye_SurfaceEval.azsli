@@ -31,7 +31,7 @@ Surface EvaluateSurface_Eye(
 
     // ------- Iris/Sclera Layer Setup -------
 
-    real3x3 uvMatrix = real3x3(CreateIdentity3x3()); // The eye material type doesn't support UV transforms
+    real3x3 uvMatrix = CreateIdentity3x3(); // The eye material type doesn't support UV transforms
 
     // Use a sigmoid to determine the sclera/iris contribution for each point
     real distFromCenter = length(real2(localPosition.xz));

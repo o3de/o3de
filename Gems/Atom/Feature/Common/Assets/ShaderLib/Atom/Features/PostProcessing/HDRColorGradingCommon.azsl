@@ -153,7 +153,7 @@ float3 ColorGrade(float3 frameColor)
     frameColor = lerp(frameColor, ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation), PassSrg::m_colorAdjustmentWeight);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
-                                        PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
+                                        PassSrg::m_splitToneShadowsColor.xyz, PassSrg::m_splitToneHighlightsColor.xyz);
     frameColor = ColorGradeChannelMixer(frameColor, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,

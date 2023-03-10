@@ -16,6 +16,9 @@
 
 static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 / 255.0, 1);
 
+//In Vulkan not all texture formats can be sampled using linear filtering. This causes validation errors on Android, so we downgrade to 
+//point sample for certain formats that are not supported on Android and switch from linear to point filtering for depth related 
+//textures (since linear filtering for non linear textures is not correct).
 #define AZ_TRAIT_DOWNGRADE_LINEAR_SAMPLE 1
 
 //Assuming unbounded array suport for Android
@@ -29,3 +32,4 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 #define real3x3 half3x3
 #define real3x4 half3x4
 #define real4x4 half4x4
+

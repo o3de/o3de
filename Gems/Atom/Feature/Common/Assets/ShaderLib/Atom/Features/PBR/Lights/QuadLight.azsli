@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 
+#if ENABLE_QUAD_LIGHTS
 enum QuadLightFlag
 {
     None = 0x00,
@@ -272,10 +273,6 @@ void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData
 
 void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 {
-#if !ENABLE_QUAD_LIGHTS
-    return;
-#endif
-
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
@@ -293,3 +290,11 @@ void ApplyQuadLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyQuadLights(Surface surface, inout LightingData lightingData)
+{
+    return;
+}
+#endif

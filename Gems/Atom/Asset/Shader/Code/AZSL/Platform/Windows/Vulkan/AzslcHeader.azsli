@@ -20,7 +20,7 @@ static const float4 s_AzslDebugColor = float4(165.0 / 255.0, 30.0 / 255.0, 36.0 
 //PC supports unbounded array
 #define UNBOUNDED_SIZE
 
-// Full floats for PC
+// Full floats for windows vulkan PC
 #define real float
 #define real2 float2
 #define real3 float3

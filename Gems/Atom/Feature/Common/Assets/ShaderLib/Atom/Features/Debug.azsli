@@ -27,7 +27,7 @@
     static float4 customDebugFloats = float4(0, 0, 0, 0);
 
 #else
-    option bool o_shader_debugging_enabled = false;
+    #define o_shader_debugging_enabled false
 #endif
 
 // Options controlling various aspects of the rendering

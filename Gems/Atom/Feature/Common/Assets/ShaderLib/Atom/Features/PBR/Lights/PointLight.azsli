@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
+#if ENABLE_SPHERE_LIGHTS
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
     const float3 toPoint = targetPos - lightPos;    
@@ -203,10 +204,6 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
-#if !ENABLE_SPHERE_LIGHTS
-    return;
-#endif
-
 #if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
     
@@ -224,3 +221,15 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyPointLights(Surface surface, inout LightingData lightingData)
+{
+    return;
+}
+
+#endif
+
+
+

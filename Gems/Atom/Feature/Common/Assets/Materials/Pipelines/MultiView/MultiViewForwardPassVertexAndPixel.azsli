@@ -8,9 +8,9 @@
 
 #pragma once
 
-#define OUTPUT_DEPTH 0 // Never use custom depth, the VR pipeline is too optimized to support PDO.
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PostProcessing/Tonemap.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // --- Vertex Shader ---
 
@@ -53,6 +53,11 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 #endif
 
     OUT.m_color.rgb = color;
+    OUT.m_color.a = 1.0;
+
+#if OUTPUT_DEPTH
+    OUT.m_depth = IN.position.z;
+#endif
 
     return OUT;
 }

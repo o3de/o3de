@@ -77,7 +77,7 @@ class Surface
     void CalculateRoughnessA();
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
-    void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
+    void SetAlbedoAndSpecularF0(real3 baseColor, real specularF0Factor, real metallic);
 };
 
 // Specular Anti-Aliasing technique from this paper:
@@ -119,14 +119,14 @@ void Surface::CalculateRoughnessA()
 #endif
 }
 
-void Surface::SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor, float newMetallic)
+void Surface::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic)
 {
     baseColor = newBaseColor;
     metallic = newMetallic;
 
-    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    real3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
 
     // Compute albedo and specularF0 based on metalness
-    albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
+    albedo = lerp(baseColor, real3(0.0, 0.0, 0.0), metallic);
     specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
 }
