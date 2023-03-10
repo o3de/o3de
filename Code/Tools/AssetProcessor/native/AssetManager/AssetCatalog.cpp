@@ -18,6 +18,7 @@
 
 #include <QElapsedTimer>
 #include "PathDependencyManager.h"
+#include <utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -1578,6 +1579,16 @@ namespace AssetProcessor
 
     bool AssetCatalog::GetSourceFileInfoFromAssetId(const AZ::Data::AssetId &assetId, SourceAssetReference& sourceAsset)
     {
+        // Try checking the UuidManager, it keeps track of legacy UUIDs
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
+        if (auto result = uuidInterface->FindHighestPriorityFileByUuid(assetId.m_guid); result)
+        {
+            sourceAsset = SourceAssetReference(result.TakeValue());
+            return true;
+        }
+
         // Check the database first
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);

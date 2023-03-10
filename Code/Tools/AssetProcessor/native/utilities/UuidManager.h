@@ -38,6 +38,8 @@ namespace AssetProcessor
         virtual AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetUuidDetails(const SourceAssetReference& sourceAsset) = 0;
         //! Returns the file(s) matching the provided UUID.  If the UUID provided is a legacy UUID there may be multiple matches.
         virtual AZStd::vector<AZ::IO::Path> FindFilesByUuid(AZ::Uuid uuid) = 0;
+        //! Returns the highest priority file matching the provided UUID.
+        virtual AZ::Outcome<AZ::IO::Path> FindHighestPriorityFileByUuid(AZ::Uuid uuid) = 0;
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that changed.
@@ -76,6 +78,7 @@ namespace AssetProcessor
         AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
         AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetUuidDetails(const SourceAssetReference& sourceAsset) override;
         AZStd::vector<AZ::IO::Path> FindFilesByUuid(AZ::Uuid uuid) override;
+        AZ::Outcome<AZ::IO::Path> FindHighestPriorityFileByUuid(AZ::Uuid uuid) override;
         void FileChanged(AZ::IO::PathView file) override;
         void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;

@@ -57,6 +57,69 @@ namespace AssetProcessor
         return AZ::Failure(entry.GetError());
     }
 
+    AZ::Outcome<AZ::IO::Path> UuidManager::FindHighestPriorityFileByUuid(AZ::Uuid uuid)
+    {
+        if (auto sources = FindFilesByUuid(uuid); !sources.empty())
+        {
+            if (sources.size() == 1)
+            {
+                return AZ::Success(sources[0]);
+            }
+            else
+            {
+                // There are multiple files with the same legacy UUID, resolve to the highest priority one (highest priority scanfolder,
+                // oldest creation time)
+
+                // Convert all the paths into SourceAssetReferences which will get the scanfolder ID
+                AZStd::vector<SourceAssetReference> sourceReferences;
+                for (const auto& filePath : sources)
+                {
+                    sourceReferences.emplace_back(filePath);
+                }
+
+                // Sort the list based on scanfolder ID
+                std::stable_sort(
+                    sourceReferences.begin(),
+                    sourceReferences.end(),
+                    [](const SourceAssetReference& left, const SourceAssetReference& right)
+                    {
+                        return left.ScanFolderId() < right.ScanFolderId();
+                    });
+
+                // Get the range of files from the highest priority scanfolder (having the same scanfolder ID)
+                AZ::s64 highestPriorityScanFolder = sourceReferences.front().ScanFolderId();
+
+                AZ::u64 oldestFileTime = AZStd::numeric_limits<AZ::u64>::max();
+                SourceAssetReference* oldestFile{};
+
+                // From the files in the highest priority scanfolder, pick the oldest one
+                for (auto& source : sourceReferences)
+                {
+                    if (source.ScanFolderId() > highestPriorityScanFolder)
+                    {
+                        // Only consider sources from the first, highest priority scanfolder
+                        break;
+                    }
+
+                    auto entryDetails = GetUuidDetails(source);
+
+                    if (entryDetails)
+                    {
+                        if (entryDetails.GetValue().m_millisecondsSinceUnixEpoch <= oldestFileTime)
+                        {
+                            oldestFile = &source;
+                            oldestFileTime = entryDetails.GetValue().m_millisecondsSinceUnixEpoch;
+                        }
+                    }
+                }
+
+                return AZ::Success(oldestFile->AbsolutePath().c_str());
+            }
+        }
+
+        return AZ::Failure();
+    }
+
     AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> UuidManager::GetUuidDetails(const SourceAssetReference& sourceAsset)
     {
         return GetOrCreateUuidEntry(sourceAsset);

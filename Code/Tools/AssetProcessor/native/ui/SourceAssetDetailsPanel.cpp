@@ -17,6 +17,7 @@
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
 #include <native/utilities/assetUtils.h>
+#include <utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -232,6 +233,18 @@ namespace AssetProcessor
                             displayString = dependencyDetails.m_sourceName;
                             return false;
                         });
+
+                    if (displayString.empty())
+                    {
+                        auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
+                        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available");
+
+                        if (auto result = uuidInterface->FindHighestPriorityFileByUuid(sourceFileDependencyEntry.m_dependsOnSource.GetUuid()); result)
+                        {
+                            displayString = SourceAssetReference(result.GetValue()).RelativePath().c_str();
+                            dependencyDetails.m_sourceName = displayString;
+                        }
+                    }
 
                     if (displayString.empty())
                     {

@@ -4847,73 +4847,10 @@ namespace AssetProcessor
         auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
         AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
 
-        if(auto sources = uuidInterface->FindFilesByUuid(sourceUuid); !sources.empty())
+        if (auto foundFile = uuidInterface->FindHighestPriorityFileByUuid(sourceUuid); foundFile)
         {
-            // Do not cache the result in the above map, a file could be moved and retain the same UUID, resulting in incorrect info
-            // The UuidManager will take care of caching.
-            if (sources.size() == 1)
-            {
-                result = SourceAssetReference(sources[0]);
-                return true;
-            }
-            else
-            {
-                // There are multiple files with the same legacy UUID, resolve to the highest priority one (highest priority scanfolder, oldest creation time)
-
-                // Convert all the paths into SourceAssetReferences which will get the scanfolder ID
-                AZStd::vector<SourceAssetReference> sourceReferences;
-                for (const auto& filePath : sources)
-                {
-                    sourceReferences.emplace_back(filePath);
-                }
-
-                // Sort the list based on scanfolder ID
-                AZStd::stable_sort(
-                    sourceReferences.begin(),
-                    sourceReferences.end(),
-                    [](const SourceAssetReference& left, const SourceAssetReference& right)
-                    {
-                        return left.ScanFolderId() < right.ScanFolderId();
-                    });
-
-                // Get the range of files from the highest priority scanfolder (having the same scanfolder ID)
-                AZ::s64 highestPriorityScanFolder = sourceReferences.front().ScanFolderId();
-                //auto highestPriorityFileRange = std::equal_range(
-                //    sourceReferences.begin(),
-                //    sourceReferences.end(),
-                //    sourceReferences.front().ScanFolderId(),
-                //    [](const SourceAssetReference& left, AZ::s64 value)
-                //    {
-                //        return left.ScanFolderId() < value;
-                //    });
-
-                AZ::u64 oldestFileTime = AZStd::numeric_limits<AZ::u64>::max();
-                SourceAssetReference* oldestFile{};
-
-                // From the files in the highest priority scanfolder, pick the oldest one
-                for (auto& source : sourceReferences)
-                {
-                    if (source.ScanFolderId() > highestPriorityScanFolder)
-                    {
-                        // Only consider sources from the first, highest priority scanfolder
-                        break;
-                    }
-
-                    auto entryDetails = uuidInterface->GetUuidDetails(source);
-
-                    if (entryDetails)
-                    {
-                        if (entryDetails.GetValue().m_millisecondsSinceUnixEpoch <= oldestFileTime)
-                        {
-                            oldestFile = &source;
-                            oldestFileTime = entryDetails.GetValue().m_millisecondsSinceUnixEpoch;
-                        }
-                    }
-                }
-
-                result = *oldestFile;
-                return true;
-            }
+            result = SourceAssetReference(foundFile.TakeValue());
+            return true;
         }
 
         // try the database next:
