@@ -47,6 +47,7 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetExcludeFromReflectionCubeMaps, bool(const MeshHandle&));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetVisible, bool(const MeshHandle&));
-        MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));
+        MOCK_METHOD2(SetUseForwardPassIblSpecular, void(const MeshHandle&, bool));
+        MOCK_METHOD1(SetRayTracingDirty, void(const MeshHandle&));
     };
 } // namespace UnitTest
