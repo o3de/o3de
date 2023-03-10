@@ -91,6 +91,9 @@ namespace AZ
          * StableDynamicStructOfArrays can be processsed in parallel by iterating through each range on a 
          * different thread. Since StableDynamicStructOfArrays only uses forward iterators, this would be
          * expensive to create external to this class.
+         *
+         * The iterators themselves operate using the bitmask representing used slots in the page, but
+         * they expose access to any row of a page via GetItem<RowIndex>().
          */
         AZStd::vector<AZStd::pair<pageIterator, pageIterator>> GetParallelRanges();
 
@@ -119,6 +122,9 @@ namespace AZ
         const_iterator cend() const;
 
     private:
+
+        template<class... TupleArgs>
+        Handle EmplaceTupleElements(Page* page, size_t elementIndex, TupleArgs&&... tupleArgs);
 
         /// Adds a page and returns its pointer
         Page* AddPage();
@@ -161,7 +167,7 @@ namespace AZ
         ItemTupleType GetItems(size_t index);
 
         /**
-        * Gets a specific item from the Page
+        * Gets a specific item from a specific row of the Page
         * Note: may return empty slots.
         */
         template<size_t RowIndex>
@@ -195,7 +201,6 @@ namespace AZ
         iterator() = default;
         explicit iterator(Page* firstPage);
 
-        // TODO: is this operator needed?
         const this_type& operator*() const;
         template <size_t RowIndex>
         auto& GetItem() const;

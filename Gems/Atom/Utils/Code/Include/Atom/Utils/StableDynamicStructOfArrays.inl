@@ -57,13 +57,13 @@ namespace AZ
     }
 
     template<class ValueType, class... Args>
-    auto EmplaceElement(ValueType elementPtr, Args&&... elementArgs)
+    static auto EmplaceElement(ValueType elementPtr, Args&&... elementArgs)
     {
         AZStd::construct_at(elementPtr, AZStd::forward<Args>(elementArgs)...);
     }
 
     template<class ValueType, class... Args>
-    auto EmplaceEachElement(ValueType* elementPtr, AZStd::tuple<Args...>& elementArgs)
+    static auto EmplaceEachElement(ValueType* elementPtr, AZStd::tuple<Args...>& elementArgs)
     {
         auto ConstructElement = [elementPtr](auto&&... args)
         {
@@ -72,16 +72,23 @@ namespace AZ
         AZStd::apply(ConstructElement, elementArgs);
     }
 
-    template<class... ValueType, size_t... Indices, class... TupleArgs>
-    auto EmplaceTupleElementsHelper(AZStd::tuple<ValueType*...>& elements, AZStd::index_sequence<Indices...>, TupleArgs&&... tupleArgs)
+    template<class... value_types, size_t... Indices, class... TupleArgs>
+    static auto EmplaceTupleElementsHelper(
+        AZStd::tuple<value_types*...>& elements, AZStd::index_sequence<Indices...>, TupleArgs&&... tupleArgs)
     {
         (EmplaceEachElement(AZStd::get<Indices>(elements), tupleArgs), ...);
     }
 
-    template<class... ValueTypes, class... TupleArgs>
-    auto EmplaceTupleElements(AZStd::tuple<ValueTypes*...>& elements, TupleArgs&&... tupleArgs)
+    template<size_t ElementsPerPage, class Allocator, typename... value_types>
+    template<class... TupleArgs>
+    typename StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::Handle
+        StableDynamicStructOfArrays<ElementsPerPage, Allocator, value_types...>::EmplaceTupleElements(
+            Page* page, size_t pageElementIndex, TupleArgs&&... tupleArgs)
     {
-        EmplaceTupleElementsHelper(elements, AZStd::make_index_sequence<sizeof...(TupleArgs)>{}, AZStd::forward<TupleArgs>(tupleArgs)...);
+        ItemTupleType items = page->GetItems(pageElementIndex);
+        EmplaceTupleElementsHelper(items, AZStd::make_index_sequence<sizeof...(TupleArgs)>{}, AZStd::forward<TupleArgs>(tupleArgs)...);
+        ++m_itemCount;
+        return Handle(items, page);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
@@ -95,11 +102,7 @@ namespace AZ
             size_t pageElementIndex = m_firstAvailablePage->Reserve();
             if (pageElementIndex != Page::InvalidPage)
             {
-                ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
-                EmplaceTupleElements(items, AZStd::forward<TupleArgs>(args)...);
-
-                ++m_itemCount;
-                return Handle(items, m_firstAvailablePage);
+                return EmplaceTupleElements(m_firstAvailablePage, pageElementIndex, AZStd::forward<TupleArgs>(args)...);
             }
             if (!m_firstAvailablePage->m_nextPage)
             {
@@ -126,11 +129,7 @@ namespace AZ
         
         size_t pageElementIndex = m_firstAvailablePage->Reserve();
 
-        ItemTupleType items = m_firstAvailablePage->GetItems(pageElementIndex);
-        EmplaceTupleElements(items, args...);
-
-        ++m_itemCount;
-        return Handle(items, m_firstAvailablePage);
+        return EmplaceTupleElements(m_firstAvailablePage, pageElementIndex, AZStd::forward<TupleArgs>(args)...);
     }
 
     template<size_t ElementsPerPage, class Allocator, typename... value_types>
