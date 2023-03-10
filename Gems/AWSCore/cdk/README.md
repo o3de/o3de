@@ -66,7 +66,7 @@ You may need to perform a one time [CDK bootstrap](https://docs.aws.amazon.com/c
 
 To add additional dependencies, for example other CDK libraries, just add them to your `requirements.txt` or `setup.py` file and rerun the `pip install -r requirements.txt` command.
 
-## Optional Features
+### Optional Features
 
 Optional features are activated by passing [runtime context variables](https://docs.aws.amazon.com/cdk/latest/guide/context.html). To use multiple optional features together provide one key-value pair at a time:
 ```
@@ -93,6 +93,15 @@ $ cdk deploy -c disable_access_log=true --all
 ```
 
 See https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html for more information about server access logging.
+
+## Deploy
+
+This CDK application has two stack, so use
+
+```
+cdk list
+cdk deploy <stackname>
+```
 
 ## Useful commands
 

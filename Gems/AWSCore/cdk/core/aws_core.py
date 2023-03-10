@@ -17,7 +17,7 @@ class AWSCore(Construct):
     """
     Orchestrates setting up the AWS Core Stack(s)
 
-    The recommendation is that the Core stack holds regionless/global resources or resources
+    The recommendation is that the Core stack holds "regionless" or global resources or resources
     that only get deployed in a single region (such as a resource group to group all your resources)
     """
 
@@ -28,7 +28,9 @@ class AWSCore(Construct):
                  feature_name: str,
                  env: Environment) -> None:
         super().__init__(scope, id_)
-        # Expectation is that you will only deploy this stack once and that the stack has regionless resources only
+
+        # Expectation is that you will only deploy this stack once and that the stack has "regionless"
+        # or global resources only.
         stack_name = f'{project_name}-{feature_name}'
 
         # Deploy AWS Metrics Stack

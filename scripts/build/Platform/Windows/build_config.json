@@ -555,7 +555,7 @@
     },
     "COMMAND": "deploy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.183.0"
+      "CDK_VERSION": "2.68.0"
     }
   },
   "awsi_destruction": {
@@ -565,7 +565,7 @@
     },
     "COMMAND": "destroy_cdk_applications.cmd",
     "PARAMETERS": {
-      "CDK_VERSION": "1.183.0"
+      "CDK_VERSION": "2.68.0"
     }
   }
 }

@@ -29,7 +29,7 @@
             set O3DE_AWS_DEPLOY_REGION=us-east-1
             set ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
             set COMMIT_ID=HEAD
-            set CDK_VERSION=2.49.0 
+            set CDK_VERSION=2.68.0 
             set AWS_EC2_METADATA_DISABLED=true
         ```
     * Linux
@@ -38,7 +38,7 @@
             export O3DE_AWS_DEPLOY_REGION=us-east-1
             export ASSUME_ROLE_ARN=arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
             export COMMIT_ID=HEAD
-            export CDK_VERSION=2.49.0
+            export CDK_VERSION=2.68.0
             export AWS_EC2_METADATA_DISABLED=true
         ```
 4. In the same CLI window, Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd.
