@@ -933,7 +933,7 @@ def get_most_compatible_gem(gem_name: str,
 
     matching_paths = deque()
     most_compatible_version = Version('0.0.0')
-    for gem_json_data in gem_json_data_by_name[gem_name]:
+    for gem_json_data in gem_json_data_by_name.get(gem_name, {}):
         if version_specifier:
             candidate_version = gem_json_data.get('version','0.0.0')
             if compatibility.has_compatible_version([gem_name_with_version_specifier], gem_name, candidate_version):

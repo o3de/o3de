@@ -135,6 +135,10 @@ def resolve_gem_dependency_paths(
 
     if project_path:
         project_json_data = manifest.get_project_json_data(project_path=project_path)
+        if not project_json_data:
+            logger.error('Failed to retrieve project json data for the project at '
+                        f'"{project_path}" which is required to resolve gem dependencies.')
+            return 1
         active_gem_names = project_json_data.get('gem_names',[])
         enabled_gems_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
         if enabled_gems_file.is_file():
