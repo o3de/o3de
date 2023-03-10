@@ -8,25 +8,19 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Console/Console.h>
-
-#include <AzFramework/Asset/AssetCatalogBus.h>
-
-#include <AtomCore/std/parallel/concurrency_checker.h>
-
+#include <Atom/Feature/Material/MaterialAssignmentBus.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/TagBitRegistry.h>
-
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <Atom/Feature/Material/MaterialAssignmentBus.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-
+#include <AtomCore/std/parallel/concurrency_checker.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/Console.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ

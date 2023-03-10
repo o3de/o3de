@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Component/ComponentBus.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
 
 namespace AZ
 {

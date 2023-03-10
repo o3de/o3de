@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignmentId.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/Model.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/containers/unordered_map.h>
 

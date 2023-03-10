@@ -6,9 +6,9 @@
  *
  */
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
