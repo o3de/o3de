@@ -360,6 +360,21 @@ def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     return set([gem['name'] if isinstance(gem, dict) and (include_optional or not gem.get('optional', False)) else gem for gem in gems])
 
 
+def contains_object_name(object_name:str, candidates:list) -> bool:
+    """
+    Returns True if any item in the list of candidates contains object_name with or
+    without a version specifier
+    :param object_name: The object name to search for 
+    :param candidates: The list of candidate object names with optional version specifiers 
+    :return: True if a match is found 
+    """
+    for candidate in candidates:
+        candidate_name, _ = get_object_name_and_optional_version_specifier(candidate)
+        if candidate_name == object_name:
+            return True
+    return False
+
+
 def remove_gem_duplicates(gems: list) -> list:
     """
     For working with the 'gem_names' lists in project.json

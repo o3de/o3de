@@ -80,6 +80,7 @@ def disable_gem_in_project(gem_name: str = None,
         return 1
 
     gem_name = gem_name or gem_json_data.get('gem_name','')
+    gem_name_without_specifier, version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
     ret_val = 0
 
     # Remove the gem from the deprecated enabled_gems.cmake file
@@ -87,9 +88,10 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file:
         enabled_gem_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gem_file.is_file():
-        gem_enabled_in_cmake = gem_name in manifest.get_enabled_gems(enabled_gem_file)
-        if gem_enabled_in_cmake:
-            ret_val = cmake.remove_gem_dependency(enabled_gem_file, gem_name)
+        # enabled_gems.cmake does not support gem names with specifiers
+        gem_found_in_cmake = gem_name_without_specifier in manifest.get_enabled_gems(enabled_gem_file)
+        if gem_found_in_cmake:
+            ret_val = cmake.remove_gem_dependency(enabled_gem_file, gem_name_without_specifier)
 
     # Remove the name of the gem from the project.json "gem_names" field 
     project_json_data = manifest.get_project_json_data(project_path=project_path)
@@ -97,7 +99,14 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read project.json content under {project_path}.')
         return 1
     gem_names = project_json_data.get('gem_names',[])
-    if not gem_enabled_in_cmake and not gem_name in gem_names:
+
+    # Remove the gem with the exact match, or any entry with the gem name if 
+    # they don't include a version specifier 
+    gem_found_in_gem_names = gem_name in gem_names or \
+        (not version_specifier and utils.contains_object_name(gem_name_without_specifier, gem_names)) 
+
+    if not gem_found_in_cmake and not gem_found_in_gem_names:
+        # No gems found to remove with this name
         return 1
 
     ret_val = project_properties.edit_project_props(project_path,

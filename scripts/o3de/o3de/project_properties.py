@@ -62,10 +62,9 @@ def _edit_gem_names(proj_json: dict,
         removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
         if 'gem_names' in proj_json:
             def in_list(gem: str or dict, remove_list: list) -> bool:
-                if isinstance(gem, dict):
-                    return gem.get('name', '') in remove_list
-                else:
-                    return gem in remove_list
+                gem_name_with_specifier = gem.get('name', '') if isinstance(gem, dict) else gem
+                gem_name, _ = utils.get_object_name_and_optional_version_specifier(gem_name_with_specifier)
+                return gem_name_with_specifier in remove_list or gem_name in remove_list 
 
             proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not in_list(gem, removal_list)]
 

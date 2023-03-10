@@ -120,24 +120,26 @@ class TestDisableGemCommand:
     def resolve(self):
         return self
 
-    @pytest.mark.parametrize("enable_gem_name, disable_gem_name, test_gem_path, "
+    @pytest.mark.parametrize("enable_gem_name, enable_gem_version, disable_gem_name, test_gem_path, "
                              "project_path, gem_registered_with_project, "
                              "gem_registered_with_engine, enabled_in_cmake, expected_result", [
-        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, True, 0),
-        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
-        pytest.param(None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, False, 0),
-        pytest.param(None, None, pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, True, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
         # when requested to remove by name with no version expect success
-        pytest.param('TestGem', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, True, 0),
+        pytest.param('TestGem', None, 'TestGem', None, pathlib.PurePath('TestProject'), False, False, True, 0),
         # when requested to remove a gem with matching version expect success
-        pytest.param('TestGem==1.0.0', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 0),
-        # when requested to remove a gem that doesn't match, expect failure
-        pytest.param('TestGem==1.0.0', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, 1),
+        pytest.param('TestGem==1.0.0', None, 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 0),
+        # when a gem specifier is included but the gem doesn't match, expect failure
+        pytest.param('TestGem', 'None', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 1),
+        # when a gem name with no specifier is provided, expect any gem with that name is removed 
+        pytest.param('TestGem==1.2.3', '1.2.3', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, 0),
         ]
     )
-    def test_disable_gem_registers_gem_name_with_project_json(self, enable_gem_name, disable_gem_name, test_gem_path, 
-                                                             project_path, gem_registered_with_project,
-                                                             gem_registered_with_engine, enabled_in_cmake, expected_result):
+    def test_disable_gem_registers_gem_name_with_project_json(self, enable_gem_name, enable_gem_version, disable_gem_name, 
+                                                              test_gem_path, project_path, gem_registered_with_project,
+                                                              gem_registered_with_engine, enabled_in_cmake, expected_result):
 
         project_gem_dependencies = []
         default_gem_path = pathlib.PurePath('TestGem')
@@ -175,7 +177,10 @@ class TestDisableGemCommand:
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
                             project_path: pathlib.Path = None) -> dict or None:
-            return self.disable_gem.gem_data
+            gem_json_data = self.disable_gem.gem_data
+            if enable_gem_version:
+                gem_json_data['version'] = enable_gem_version
+            return gem_json_data
 
         def get_engine_json_data(engine_name:str = None, engine_path:pathlib.Path = None):
             return self.disable_gem.engine_data
