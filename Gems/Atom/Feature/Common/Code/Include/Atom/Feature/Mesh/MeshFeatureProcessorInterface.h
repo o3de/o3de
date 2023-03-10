@@ -5,18 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <AzCore/EBus/Event.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzCore/std/functional.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
+#include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
+#include <AzCore/EBus/Event.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/functional.h>
 
 namespace AZ
 {
@@ -45,9 +46,21 @@ namespace AZ
             bool m_excludeFromReflectionCubeMaps = false;
         };
 
-        //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
-        class MeshFeatureProcessorInterface
-            : public RPI::FeatureProcessor
+        using CustomMaterialLodIndex = AZ::u64;
+        using CustomMaterialId = AZStd::pair<CustomMaterialLodIndex, uint32_t>;
+        struct CustomMaterialInfo
+        {
+            Data::Instance<RPI::Material> m_material;
+            RPI::MaterialModelUvOverrideMap m_uvMapping;
+        };
+        using CustomMaterialMap = AZStd::unordered_map<CustomMaterialId, CustomMaterialInfo>;
+        static const CustomMaterialLodIndex DefaultCustomMaterialLodIndex = AZStd::numeric_limits<CustomMaterialLodIndex>::max();
+        static const CustomMaterialId DefaultCustomMaterialId = CustomMaterialId(DefaultCustomMaterialLodIndex, 0);
+        static const CustomMaterialMap DefaultCustomMaterialMap = CustomMaterialMap();
+
+        //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
+        //! MeshFeatureProcessor
+        class MeshFeatureProcessorInterface : public RPI::FeatureProcessor
         {
         public:
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
@@ -58,15 +71,11 @@ namespace AZ
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
 
-            //! Acquires a model with an optional collection of material assignments.
+            //! Acquires a model with an optional collection of custom materials.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
-            virtual MeshHandle AcquireMesh(
-                const MeshHandleDescriptor& descriptor,
-                const MaterialAssignmentMap& materials = {}) = 0;
+            virtual MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials = {}) = 0;
             //! Acquires a model with a single material applied to all its meshes.
-            virtual MeshHandle AcquireMesh(
-                const MeshHandleDescriptor& descriptor,
-                const Data::Instance<RPI::Material>& material) = 0;
+            virtual MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.
@@ -90,13 +99,13 @@ namespace AZ
             virtual const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const = 0;
             //! Queues the object srg for compile.
             virtual void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const = 0;
-            //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
-            //! Note if there is already a material assignment map, this will replace the entire map with just a single material.
-            virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) = 0;
-            //! Sets the MaterialAssignmentMap for a meshHandle.
-            virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) = 0;
-            //! Gets the MaterialAssignmentMap for a meshHandle.
-            virtual const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const = 0;
+            //! Sets the CustomMaterialMap for a meshHandle, using just a single material for the DefaultCustomMaterialId.
+            //! Note if there is already a CustomMaterialMap, this will replace the entire map with just a single material.
+            virtual void SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) = 0;
+            //! Sets the CustomMaterialMap for a meshHandle.
+            virtual void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) = 0;
+            //! Gets the CustomMaterialMap for a meshHandle.
+            virtual const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const = 0;
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
 

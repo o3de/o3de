@@ -239,7 +239,14 @@ namespace AZ::Render
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(*m_meshHandle, materials);
+            AZ::Render::CustomMaterialMap customMaterials;
+            for (const auto& materialAssignment : materials)
+            {
+                customMaterials.emplace(
+                    AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
+                    AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
+            }
+            m_meshFeatureProcessor->SetCustomMaterials(*m_meshHandle, customMaterials);
         }
     }
 
@@ -670,8 +677,15 @@ namespace AZ::Render
             meshDescriptor.m_isAlwaysDynamic = true;
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
 
+            AZ::Render::CustomMaterialMap customMaterials;
+            for (const auto& materialAssignment : materials)
+            {
+                customMaterials.emplace(
+                    AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
+                    AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
+            }
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, customMaterials));
         }
 
         // If render proxies already exist, they will be auto-freed

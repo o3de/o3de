@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
@@ -71,10 +70,10 @@ namespace AZ
                 void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 
                 void OnModelReloaded(Data::Asset<Data::AssetData> asset);
-                ModelReloadedEvent::Handler m_modelReloadedEventHandler { [&](Data::Asset<RPI::ModelAsset> modelAsset)
-                                                                  {
+                ModelReloadedEvent::Handler m_modelReloadedEventHandler{ [&](Data::Asset<RPI::ModelAsset> modelAsset)
+                                                                         {
                                                                              OnModelReloaded(modelAsset);
-                                                                  } };
+                                                                         } };
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 ModelDataInstance* m_parent = nullptr;
@@ -88,8 +87,10 @@ namespace AZ
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor,
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
-            void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
-                    const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
+            void SetIrradianceData(
+                RayTracingFeatureProcessor::SubMesh& subMesh,
+                const Data::Instance<RPI::Material> material,
+                const Data::Instance<RPI::Image> baseColorImage);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
@@ -108,10 +109,12 @@ namespace AZ
             // MaterialAssignmentNotificationBus overrides
             void OnRebuildMaterialInstance() override;
 
+            CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
+
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
             RPI::Cullable m_cullable;
-            MaterialAssignmentMap m_materialAssignments;
+            CustomMaterialMap m_customMaterials;
 
             typedef AZStd::unordered_map<Data::Instance<RPI::Material>, RPI::Material::ChangeId> MaterialChangeIdMap;
             MaterialChangeIdMap m_materialChangeIds;
@@ -176,12 +179,8 @@ namespace AZ
             void OnEndPrepareRender() override;
 
             TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const override;
-            MeshHandle AcquireMesh(
-                const MeshHandleDescriptor& descriptor,
-                const MaterialAssignmentMap& materials = {}) override;
-            MeshHandle AcquireMesh(
-                const MeshHandleDescriptor& descriptor,
-                const Data::Instance<RPI::Material>& material) override;
+            MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials = {}) override;
+            MeshHandle AcquireMesh(const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
@@ -190,9 +189,9 @@ namespace AZ
             const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
-            void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
-            void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
-            const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
+            void SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
+            void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) override;
+            const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,

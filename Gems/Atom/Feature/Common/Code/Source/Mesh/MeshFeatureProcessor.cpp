@@ -307,17 +307,17 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor,
-            const MaterialAssignmentMap& materials)
+            const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials)
         {
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
-            // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
+            // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during
+            // insertion
             MeshHandle meshDataHandle = m_modelData.emplace();
 
             meshDataHandle->m_descriptor = descriptor;
             meshDataHandle->m_scene = GetParentScene();
-            meshDataHandle->m_materialAssignments = materials;
+            meshDataHandle->m_customMaterials = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
@@ -335,12 +335,13 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor,
-            const Data::Instance<RPI::Material>& material)
+            const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material)
         {
-            Render::MaterialAssignmentMap materials;
-            Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
-            defaultMaterial.m_materialInstance = material;
+            Render::CustomMaterialMap materials;
+            if (material)
+            {
+                materials[AZ::Render::DefaultCustomMaterialId] = { material };
+            }
 
             return AcquireMesh(descriptor, materials);
         }
@@ -365,8 +366,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
-                return clone;
+                return AcquireMesh(meshHandle->m_descriptor, meshHandle->m_customMaterials);
             }
             return MeshFeatureProcessor::MeshHandle();
         }
@@ -405,16 +405,14 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
+        void MeshFeatureProcessor::SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
         {
-            Render::MaterialAssignmentMap materials;
-            Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
-            defaultMaterial.m_materialInstance = material;
-
-            return SetMaterialAssignmentMap(meshHandle, materials);
+            Render::CustomMaterialMap materials;
+            materials[AZ::Render::DefaultCustomMaterialId] = { material };
+            return SetCustomMaterials(meshHandle, materials);
         }
 
-        void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials)
+        void MeshFeatureProcessor::SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials)
         {
             if (meshHandle.IsValid())
             {
@@ -422,12 +420,12 @@ namespace AZ
                 {
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
                     meshHandle->DeInit(m_rayTracingFeatureProcessor);
-                    meshHandle->m_materialAssignments = materials;
+                    meshHandle->m_customMaterials = materials;
                     meshHandle->QueueInit(model);
                 }
                 else
                 {
-                    meshHandle->m_materialAssignments = materials;
+                    meshHandle->m_customMaterials = materials;
                 }
 
                 meshHandle->UpdateMaterialChangeIds();
@@ -436,9 +434,9 @@ namespace AZ
             }
         }
 
-        const MaterialAssignmentMap& MeshFeatureProcessor::GetMaterialAssignmentMap(const MeshHandle& meshHandle) const
+        const CustomMaterialMap& MeshFeatureProcessor::GetCustomMaterials(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_materialAssignments : DefaultMaterialAssignmentMap;
+            return meshHandle.IsValid() ? meshHandle->m_customMaterials : DefaultCustomMaterialMap;
         }
 
         void MeshFeatureProcessor::ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler)
@@ -913,7 +911,7 @@ namespace AZ
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
             m_drawPacketListsByLod.clear();
-            m_materialAssignments.clear();
+            m_customMaterials.clear();
             m_materialChangeIds.clear();
             m_objectSrgList = {};
             m_model = {};
@@ -943,10 +941,9 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            for (const auto& materialAssignment : m_materialAssignments)
+            for (const auto& customMaterial : m_customMaterials)
             {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
+                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
                 {
                     MaterialAssignmentNotificationBus::MultiHandler::BusConnect(materialInstance->GetAssetId());
                 }
@@ -978,15 +975,10 @@ namespace AZ
             {
                 const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
 
-                Data::Instance<RPI::Material> material = mesh.m_material;
-
-                // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
-                const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
-                if (materialAssignment.m_materialInstance.get())
-                {
-                    material = materialAssignment.m_materialInstance;
-                }
+                // Determine if there is a custom material specified for this submission
+                const CustomMaterialId customMaterialId(aznumeric_cast<AZ::u64>(modelLodIndex), mesh.m_materialSlotStableId);
+                const auto& customMaterialInfo = GetCustomMaterialWithFallback(customMaterialId);
+                const auto& material = customMaterialInfo.m_material ? customMaterialInfo.m_material : mesh.m_material;
 
                 if (!material)
                 {
@@ -1027,7 +1019,7 @@ namespace AZ
                 }
 
                 // setup the mesh draw packet
-                RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
+                RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, customMaterialInfo.m_uvMapping);
 
                 // set the shader option to select forward pass IBL specular if necessary
                 if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
@@ -1133,14 +1125,9 @@ namespace AZ
                 const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[meshIndex];
 
                 // retrieve the material
-                Data::Instance<RPI::Material> material = mesh.m_material;
-
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
-                const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
-                if (materialAssignment.m_materialInstance.get())
-                {
-                    material = materialAssignment.m_materialInstance;
-                }
+                const CustomMaterialId customMaterialId(rayTracingLod, mesh.m_materialSlotStableId);
+                const auto& customMaterialInfo = GetCustomMaterialWithFallback(customMaterialId);
+                const auto& material = customMaterialInfo.m_material ? customMaterialInfo.m_material : mesh.m_material;
 
                 if (!material)
                 {
@@ -1156,7 +1143,7 @@ namespace AZ
                     nullptr,
                     shaderInputContract,
                     meshIndex,
-                    materialAssignment.m_matModUvOverrides,
+                    customMaterialInfo.m_uvMapping,
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
@@ -1741,10 +1728,9 @@ namespace AZ
             // update the material changeId list with the current material assignments
             m_materialChangeIds.clear();
 
-            for (const auto& materialAssignment : m_materialAssignments)
+            for (const auto& customMaterial : m_customMaterials)
             {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
+                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
                 {
                     m_materialChangeIds[materialInstance] = materialInstance->GetCurrentChangeId();
                 }
@@ -1754,20 +1740,21 @@ namespace AZ
         bool ModelDataInstance::CheckForMaterialChanges() const
         {
             // check for the same number of materials
-            if (m_materialChangeIds.size() != m_materialAssignments.size())
+            if (m_materialChangeIds.size() != m_customMaterials.size())
             {
                 return true;
             }
 
             // check for material changes using the changeId
-            for (const auto& materialAssignment : m_materialAssignments)
+            for (const auto& customMaterial : m_customMaterials)
             {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-
-                MaterialChangeIdMap::const_iterator it = m_materialChangeIds.find(materialInstance);
-                if (it == m_materialChangeIds.end() || it->second != materialInstance->GetCurrentChangeId())
+                if (const AZ::Data::Instance<RPI::Material>& materialInstance = customMaterial.second.m_material)
                 {
-                    return true;
+                    MaterialChangeIdMap::const_iterator it = m_materialChangeIds.find(materialInstance);
+                    if (it == m_materialChangeIds.end() || it->second != materialInstance->GetCurrentChangeId())
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -1786,6 +1773,27 @@ namespace AZ
                     UpdateMaterialChangeIds();
                 }
             }
+        }
+
+        CustomMaterialInfo ModelDataInstance::GetCustomMaterialWithFallback(const CustomMaterialId& id) const
+        {
+            if (auto itr = m_customMaterials.find(id); itr != m_customMaterials.end() && itr->second.m_material)
+            {
+                return itr->second;
+            }
+
+            const CustomMaterialId ignoreLodId(DefaultCustomMaterialLodIndex, id.second);
+            if (auto itr = m_customMaterials.find(ignoreLodId); itr != m_customMaterials.end() && itr->second.m_material)
+            {
+                return itr->second;
+            }
+
+            if (auto itr = m_customMaterials.find(DefaultCustomMaterialId); itr != m_customMaterials.end() && itr->second.m_material)
+            {
+                return itr->second;
+            }
+
+            return CustomMaterialInfo{};
         }
     } // namespace Render
 } // namespace AZ
