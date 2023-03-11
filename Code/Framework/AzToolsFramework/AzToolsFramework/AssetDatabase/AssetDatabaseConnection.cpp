@@ -1442,6 +1442,14 @@ namespace AzToolsFramework
                    m_flags == other.m_flags;//don't compare legacy guid
         }
 
+        bool ProductDatabaseEntry::IsSameLogicalProductAs(const ProductDatabaseEntry& other) const
+        {
+            return m_jobPK == other.m_jobPK &&
+                m_subID == other.m_subID &&
+                m_assetType == other.m_assetType &&
+                AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str());
+        }
+
         AZStd::string ProductDatabaseEntry::ToString() const
         {
             return AZStd::string::format("ProductDatabaseEntry id:%" PRId64 " jobpk: %" PRId64 " subid: %i productname: %s assettype: %s hash: %" PRId64 " flags: %" PRId64,

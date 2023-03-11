@@ -33,7 +33,7 @@ def Menus_ViewMenuOptions_Work():
 
     view_menu_options = [
         ("Viewport", "Go to Position"),
-        ("Viewport", "Center on Selection"),
+        ("Viewport", "Find Selected Entities in Viewport"),
         ("Viewport", "Go to Location"),
         ("Viewport", "Viewport Helpers", "Show Icons"),
         ("Viewport", "Viewport Helpers", "Show Helpers for all entities"),

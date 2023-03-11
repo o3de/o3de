@@ -81,8 +81,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 # Maestro is still used by the CrySystem Level System, CSystem::SystemInit and TrackView
-ly_enable_gems(GEMS Maestro)
-
 
 ################################################################################
 # Tests

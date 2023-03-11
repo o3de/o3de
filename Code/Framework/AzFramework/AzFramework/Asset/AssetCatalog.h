@@ -108,7 +108,7 @@ namespace AzFramework
         /// by the catalog.
         bool IsTrackedAssetType(const char* assetFilename) const;
 
-        /// Helper function that adds all of searchAssetId's dependencies to the depedencySet/List (leaving out ones that are already in the list)
+        /// Helper function that adds all of searchAssetId's dependencies to the dependencySet/List (leaving out ones that are already in the list)
         void AddAssetDependencies(const AZ::Data::AssetId& searchAssetId, AZStd::unordered_set<AZ::Data::AssetId>& assetSet, AZStd::vector<AZ::Data::ProductDependency>& dependencyList, const
                                   AZStd::unordered_set<AZ::Data::AssetId>& exclusionList,
                                   const AZStd::vector<AZStd::string>& wildcardPatternExclusionList,

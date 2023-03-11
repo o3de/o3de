@@ -14,6 +14,7 @@ namespace EditorIdentifiers
 {
     inline constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier = "o3de.updater.onAngleSnappingStateChanged";
     inline constexpr AZStd::string_view ComponentModeChangedUpdaterIdentifier = "o3de.updater.onComponentModeChanged";
+    inline constexpr AZStd::string_view ContainerEntityStatesChangedUpdaterIdentifier = "o3de.updater.onContainerEntityStatesChanged";
     inline constexpr AZStd::string_view DrawHelpersStateChangedUpdaterIdentifier = "o3de.updater.onViewportDrawHelpersStateChanged";
     inline constexpr AZStd::string_view EntityPickingModeChangedUpdaterIdentifier = "o3de.updater.onEntityPickingModeChanged";
     inline constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";

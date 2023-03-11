@@ -268,7 +268,6 @@ namespace AzQtComponents
         {
             m_updateGeomentry = true;
         }
-
         if (!m_elideTimerId)
         {
             // do the elision immediately, but start a timer to make sure we don't elide again too quickly
