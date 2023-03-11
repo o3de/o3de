@@ -88,7 +88,11 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float specularOcclusion = albedo.a;
 
     // reconstruct world space position from the depth at this location in screenspace
-    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // sample blend weight at this location
     float blendWeight = PassSrg::m_blendWeight.Load(IN.m_position.xy, sampleIndex).r;

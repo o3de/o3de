@@ -88,8 +88,14 @@ namespace AZ
                 RayTracingFeatureProcessor* rayTracingFeatureProcessor,
                 TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
-            void SetIrradianceData(RayTracingFeatureProcessor::SubMesh& subMesh,
-                    const Data::Instance<RPI::Material> material, const Data::Instance<RPI::Image> baseColorImage);
+            void SetIrradianceData(
+                RayTracingFeatureProcessor::SubMesh& subMesh,
+                const Data::Instance<RPI::Material> material,
+                const Data::Instance<RPI::Image> baseColorImage);
+            void SetRayTracingReflectionProbeData(
+                TransformServiceFeatureProcessor* transformServiceFeatureProcessor,
+                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+                RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe);
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
@@ -141,6 +147,7 @@ namespace AZ
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
             bool m_needsSetRayTracingData = false;
+            bool m_hasRayTracingReflectionProbe = false;
         };
 
         static constexpr size_t foo = sizeof(ModelDataInstance);

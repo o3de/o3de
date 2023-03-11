@@ -709,12 +709,23 @@ namespace AZ
 
         void MeshFeatureProcessor::UpdateMeshReflectionProbes()
         {
-            // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_modelData)
             {
+                // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
                 if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
+                }
+
+                // update the raytracing reflection probe data if necessary
+                RayTracingFeatureProcessor::Mesh::ReflectionProbe reflectionProbe;
+                bool currentHasRayTracingReflectionProbe = meshInstance.m_hasRayTracingReflectionProbe;
+                meshInstance.SetRayTracingReflectionProbeData(m_transformService, m_reflectionProbeFeatureProcessor, reflectionProbe);
+
+                if (meshInstance.m_hasRayTracingReflectionProbe ||
+                    (currentHasRayTracingReflectionProbe != meshInstance.m_hasRayTracingReflectionProbe))
+                {
+                    m_rayTracingFeatureProcessor->SetMeshReflectionProbe(meshInstance.m_rayTracingUuid, reflectionProbe);
                 }
             }
         }
@@ -1341,10 +1352,18 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
-            AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+            // setup the RayTracing Mesh
+            RayTracingFeatureProcessor::Mesh rayTracingMesh;
+            rayTracingMesh.m_assetId = m_model->GetModelAsset()->GetId();
+            rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+            rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
-            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
+            // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+            SetRayTracingReflectionProbeData(transformServiceFeatureProcessor, reflectionProbeFeatureProcessor, rayTracingMesh.m_reflectionProbe);
+
+            // add the mesh
+            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, rayTracingMesh, subMeshes);
             m_needsSetRayTracingData = false;
         }
 
@@ -1476,6 +1495,34 @@ namespace AZ
             }
 
             subMesh.m_irradianceColor.SetA(opacity);
+        }
+
+        void ModelDataInstance::SetRayTracingReflectionProbeData(
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor,
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+            RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe)
+        {
+            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+
+            // retrieve reflection probes
+            Aabb aabbWS = m_aabb;
+            aabbWS.ApplyTransform(transform);
+
+            ReflectionProbeHandleVector reflectionProbeHandles;
+            reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
+
+            m_hasRayTracingReflectionProbe = !reflectionProbeHandles.empty();
+            if (m_hasRayTracingReflectionProbe)
+            {
+                // take the last handle from the list, which will be the smallest (most influential) probe
+                ReflectionProbeHandle handle = reflectionProbeHandles.back();
+                reflectionProbe.m_modelToWorld = reflectionProbeFeatureProcessor->GetTransform(handle);
+                reflectionProbe.m_outerObbHalfLengths = reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_innerObbHalfLengths = reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_useParallaxCorrection = reflectionProbeFeatureProcessor->GetUseParallaxCorrection(handle);
+                reflectionProbe.m_exposure = reflectionProbeFeatureProcessor->GetRenderExposure(handle);
+                reflectionProbe.m_reflectionProbeCubeMap = reflectionProbeFeatureProcessor->GetCubeMap(handle);
+            }
         }
 
         void ModelDataInstance::RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)

@@ -357,6 +357,10 @@
                 "Path": "Passes/ReflectionScreenSpace.pass"
             },
             {
+                "Name": "ReflectionScreenSpaceRayTracingPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceRayTracing.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceTracePassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceTrace.pass"
             },
@@ -371,6 +375,14 @@
             {
                 "Name": "ReflectionScreenSpaceBlurHorizontalPassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceBlurHorizontal.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceFilterPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceFilter.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceCopyHistoryPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceCopyHistory.pass"
             },
             {
                 "Name": "ReflectionScreenSpaceCompositePassTemplate",
