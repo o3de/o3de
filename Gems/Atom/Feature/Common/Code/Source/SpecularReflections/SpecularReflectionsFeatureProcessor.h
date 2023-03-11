@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 namespace AZ
 {
