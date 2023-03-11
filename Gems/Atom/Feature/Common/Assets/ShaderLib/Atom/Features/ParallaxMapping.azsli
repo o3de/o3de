@@ -424,7 +424,7 @@ PixelDepthOffset CalcPixelDepthOffset(  real depthFactor,
     real scaleZ = length(objectToWorldMatrix[2].xyz);
     worldOffset *= real3(scaleX, scaleY, scaleZ);
 
-    float3 worldOffsetPosition = posWS + float3(worldOffset);
+    real3 worldOffsetPosition = real3(posWS) + worldOffset;
     real4 clipOffsetPosition = mul(viewProjectionMatrix, real4(worldOffsetPosition, 1.0));
 
     PixelDepthOffset pdo;
