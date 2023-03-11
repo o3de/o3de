@@ -269,7 +269,7 @@ void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 #else
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
 {    
-    return;
+    //Not Enabled
 }
 #endif
 

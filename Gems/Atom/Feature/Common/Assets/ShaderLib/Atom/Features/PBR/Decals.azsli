@@ -20,12 +20,9 @@
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
+#if ENABLE_DECALS
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
-#if !ENABLE_DECALS
-    return;    
-#endif
-
 #if ENABLE_LIGHT_CULLING
     tileIterator.LoadAdvance();
     
@@ -112,10 +109,16 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         
         const float decalAttenuation = GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
         const float albedoOpacity = baseMap.a * decal.m_opacity * decalAttenuation;
-        surface.albedo = real3(lerp(surface.albedo, baseMap.rgb, albedoOpacity));      
+        surface.albedo = lerp(surface.albedo, baseMap.rgb, albedoOpacity);      
 
         const float normalOpacity = baseMap.a * decal.m_normalMapOpacity * decalAttenuation;
-        const real3 normalMapWS = GetWorldSpaceNormal(real2(normalMap), real3(decalRot[2]), real3(decalRot[0]), real3(decalRot[1]), 1.0);      
-        surface.normal = real3(normalize(lerp(surface.normal, normalMapWS, normalOpacity)));
+        const float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0);      
+        surface.normal = normalize(lerp(surface.normal, normalMapWS, normalOpacity));
     }
 }
+#else
+void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+{
+    //Not Enabled
+}
+#endif

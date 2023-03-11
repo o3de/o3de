@@ -226,10 +226,6 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
-    return;
+    //Not Enabled
 }
-
 #endif
-
-
-

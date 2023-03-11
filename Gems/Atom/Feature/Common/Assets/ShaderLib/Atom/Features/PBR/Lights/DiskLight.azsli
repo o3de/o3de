@@ -255,7 +255,7 @@ void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
-    return;
+    //Not Enabled
 }
 
 #endif

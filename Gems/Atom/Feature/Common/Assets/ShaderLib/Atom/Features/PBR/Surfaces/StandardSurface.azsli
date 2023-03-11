@@ -85,16 +85,16 @@ class Surface
 void Surface::ApplySpecularAA()
 {
     // Constants for formula below
-    const real screenVariance = 0.25;
-    const real varianceThresh = 0.18;
-
+    const float screenVariance = 0.25;
+    const float varianceThresh = 0.18;
+    
     // Specular Anti-Aliasing
-    real3 dndu = real3(ddx_fine( float3(normal) ));
-    real3 dndv = real3(ddy_fine( float3(normal) ));
-    real variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
-    real kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
-    real filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
-    roughnessA2 = filteredRoughnessA2;
+    float3 dndu = ddx_fine( float3(normal) );
+    float3 dndv = ddy_fine( float3(normal) );
+    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
+    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
+    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
+    roughnessA2 = real(filteredRoughnessA2);
 
     roughnessA = sqrt(roughnessA2);
     roughnessLinear = sqrt(roughnessA);
