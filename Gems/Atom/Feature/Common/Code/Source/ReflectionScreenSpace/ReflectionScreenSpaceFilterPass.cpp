@@ -115,10 +115,6 @@ namespace AZ
 
         void ReflectionScreenSpaceFilterPass::FrameEndInternal()
         {
-            RPI::Scene* scene = m_pipeline->GetScene();
-            SpecularReflectionsFeatureProcessor* specularReflectionsFeatureProcessor = scene->GetFeatureProcessor<SpecularReflectionsFeatureProcessor>();
-            AZ_Assert(specularReflectionsFeatureProcessor, "ReflectionScreenSpaceFilterPass requires the SpecularReflectionsFeatureProcessor");
-
             RPI::Ptr<RPI::PassAttachment> historyAttachment = m_historyAttachmentBinding->GetAttachment();
             historyAttachment->Update();
 
