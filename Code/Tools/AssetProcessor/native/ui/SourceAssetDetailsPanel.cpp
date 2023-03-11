@@ -236,18 +236,6 @@ namespace AssetProcessor
 
                     if (displayString.empty())
                     {
-                        auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
-                        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available");
-
-                        if (auto result = uuidInterface->FindHighestPriorityFileByUuid(sourceFileDependencyEntry.m_dependsOnSource.GetUuid()); result)
-                        {
-                            displayString = SourceAssetReference(result.GetValue()).RelativePath().c_str();
-                            dependencyDetails.m_sourceName = displayString;
-                        }
-                    }
-
-                    if (displayString.empty())
-                    {
                         displayString = sourceFileDependencyEntry.m_dependsOnSource.GetUuid().ToFixedString();
                     }
                 }
