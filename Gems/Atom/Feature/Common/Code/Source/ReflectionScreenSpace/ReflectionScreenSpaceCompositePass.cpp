@@ -11,6 +11,8 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -35,7 +37,7 @@ namespace AZ
             }
 
             RPI::Scene* scene = m_pipeline->GetScene();
-            SpecularReflectionsFeatureProcessor* specularReflectionsFeatureProcessor = scene->GetFeatureProcessor<SpecularReflectionsFeatureProcessor>();
+            SpecularReflectionsFeatureProcessorInterface* specularReflectionsFeatureProcessor = scene->GetFeatureProcessor<SpecularReflectionsFeatureProcessorInterface>();
             AZ_Assert(specularReflectionsFeatureProcessor, "ReflectionScreenSpaceCompositePass requires the SpecularReflectionsFeatureProcessor");
 
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
