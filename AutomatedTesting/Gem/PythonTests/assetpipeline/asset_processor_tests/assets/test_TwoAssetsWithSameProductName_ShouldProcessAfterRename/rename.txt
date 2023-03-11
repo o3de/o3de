@@ -5,12 +5,9 @@
             "name": "a",
             "nodeSelectionList": {
                 "selectedNodes": [
+                    {},
                     "RootNode",
-                    "RootNode.cube",
-                    "RootNode.cube.transform",
-                    "RootNode.cube.custom_properties",
-                    "RootNode.cube.map1",
-                    "RootNode.cube.cube_material"
+                    "RootNode.cube"
                 ]
             },
             "rules": {

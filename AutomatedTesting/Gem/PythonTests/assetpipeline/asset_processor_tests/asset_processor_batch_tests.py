@@ -19,6 +19,9 @@ import shutil
 
 from ly_test_tools.o3de import asset_processor as asset_processor_utils
 import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.file_system as file_system
+
+import assetpipeline.assetpipeline_utils.assetpipeline_constants as CONSTANTS
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -325,8 +328,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         7. Verify that expected product files are in the cache
         """
 
-        def run_ap_debug_skip_atom_output(asset_processor):
-            result, output = asset_processor.batch_process(capture_output=True, extra_params=["--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        def run_ap_skip_atom_output(asset_processor):
+            result, output = asset_processor.batch_process(capture_output=True, skip_atom_output=True)
             # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
             logger.info(f"Asset Processor Output: {pformat(output)}")
             return result, output
@@ -335,24 +338,28 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
 
         # Launching AP, verify it is failing
-        result, output = run_ap_debug_skip_atom_output(asset_processor)
+        result, output = run_ap_skip_atom_output(asset_processor)
         assert result == False, \
             'AssetProcessorBatch should have failed because the generated output products should share the same name.'
 
         # Renaming output files so they won't collide in cache after second processing
-        asset_info_file = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo")
-        data_for_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "rename.txt")
+        asset_info_file = os.path.join(
+            asset_processor.temp_asset_root(),
+            "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo"
+        )
+        data_for_rename = os.path.join(
+            asset_processor.temp_asset_root(),
+            "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "rename.txt"
+        )
 
-        os.remove(asset_info_file)
-        waiter.wait_for(lambda: not os.path.exists(asset_info_file), timeout=5)
-        assert not os.path.exists(asset_info_file), "The assetinfo file was not successfully removed missing."
+        file_system.delete(asset_info_file, True, False)
+        waiter.wait_for(lambda: not os.path.exists(asset_info_file), timeout=CONSTANTS.TIMEOUT_5)
 
         os.rename(data_for_rename, asset_info_file)
-        waiter.wait_for(lambda : os.path.exists(asset_info_file), timeout=5)
-        assert os.path.exists(asset_info_file), "The assetinfo file is missing."
+        waiter.wait_for(lambda: os.path.exists(asset_info_file), timeout=CONSTANTS.TIMEOUT_5)
 
         # Reprocessing files and making sure there are no failed jobs
-        result, output = run_ap_debug_skip_atom_output(asset_processor)
+        result, output = run_ap_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
@@ -378,12 +385,11 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         asset_processor.create_temp_asset_root()
         # Launching AP and making sure that the warning exists
         result, output = asset_processor.batch_process(capture_output=True, extra_params=[
-            '--regset="/O3DE/AssetProcessor/Settings/Server/cacheServerAddress=InvalidAddress"',
-            '--regset="/O3DE/AssetProcessor/Settings/Server/assetCacheServerMode=Server"'
-        ])
+            CONSTANTS.ASSET_CACHE_INVALID_SERVER_ADDRESS, CONSTANTS.ASSET_CACHE_SERVER_MODE])
         assert result, "AssetProcessorBatch failed when it should have had a warning and no failure"
 
-        assert asset_processor_utils.has_invalid_server_address(output, "InvalidAddress"), 'Invalid server address warning not present.'
+        assert asset_processor_utils.has_invalid_server_address(output, CONSTANTS.INVALID_SERVER_ADDRESS), \
+            'Invalid server address warning not present.'
 
 
     @pytest.mark.test_case_id("C1571774")
@@ -487,7 +493,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         AssetProcessor successfully recovers assets from cache when deleted.
 
         Test Steps:
-        1. Create test enviornment with test assets
+        1. Create test environment with test assets
         2. Run Asset Processor and verify it exits cleanly
         3. Make sure cache folder was generated
         4. Delete temp cache assets but leave database behind
