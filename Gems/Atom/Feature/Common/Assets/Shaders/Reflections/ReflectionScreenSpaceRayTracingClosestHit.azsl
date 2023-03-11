@@ -141,7 +141,7 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
 
         float3 diffuse = float3(0.0f, 0.0f, 0.0f);
         float3 specular = float3(0.0f, 0.0f, 0.0f);
-        ApplyDirectLighting(rayTracingLightingData, true, RayTracingGlobalSrg::m_rayTraceFallbackSpecular, diffuse, specular);
+        ApplyDirectLighting(rayTracingLightingData, RayTracingGlobalSrg::m_rayTraceFallbackSpecular, diffuse, specular);
 
         // apply diffuse IBL
         float sceneIblExposure = pow(2.0, SceneSrg::m_iblExposure);
