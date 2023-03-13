@@ -214,6 +214,8 @@ namespace AzToolsFramework
 
             AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
 
+            AZStd::string GetComponentAliasWithInitialization(AZ::Component& component);
+
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
             struct LinkIdMetadata

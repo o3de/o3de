@@ -545,6 +545,16 @@ namespace AzToolsFramework
                 return prefabBuffer.GetString();
             }
 
+            AZStd::string GetComponentAliasWithInitialization(AZ::Component& component)
+            {
+                AZStd::string componentAlias = component.GetSerializedIdentifier();
+                if (componentAlias.empty())
+                {
+                    componentAlias = AZStd::string::format("Component_[%llu]", component.GetId());
+                    component.SetSerializedIdentifier(componentAlias);
+                }
+                return componentAlias;
+            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
