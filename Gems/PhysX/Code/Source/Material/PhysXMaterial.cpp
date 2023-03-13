@@ -271,6 +271,7 @@ namespace PhysX
 
         m_restitution = AZ::GetClamp(restitution, 0.0f, 1.0f);
 
+        // Restitution property in a PxMaterial is reused for spring stiffness when compliant contact mode is enabled.
         if (!IsCompliantContactModeEnabled())
         {
             m_pxMaterial->setRestitution(m_restitution);
@@ -314,7 +315,7 @@ namespace PhysX
     bool Material::IsCompliantContactModeEnabled() const
     {
 #if (PX_PHYSICS_VERSION_MAJOR >= 5)
-        return m_pxMaterial->getFlags() & physx::PxMaterialFlag::eCOMPLIANT_CONTACT;
+        return (m_pxMaterial->getFlags() & physx::PxMaterialFlag::eCOMPLIANT_CONTACT) != 0;
 #else
         return false;
 #endif
