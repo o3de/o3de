@@ -304,11 +304,15 @@ namespace Multiplayer
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
 
+        // If the null rhi is requested, then also automatically set the -NullRenderer flag.
+        const char* nullRendererFlag = (server_rhi == AZ::Name("null")) ? "-NullRenderer" : "";
+
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" --editorsv_port %i --bg_enableNetworkingMetrics %i --sv_dedicated_host_onstartup false)",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --bg_ConnectToAssetProcessor false --rhi "%s" %s --editorsv_port %i --bg_enableNetworkingMetrics %i --sv_dedicated_host_onstartup false)",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
             server_rhi.GetCStr(),
+            nullRendererFlag,
             static_cast<uint16_t>(editorsv_port),
             (bg_enableNetworkingMetrics ? 1 : 0)
         );
