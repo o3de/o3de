@@ -48,6 +48,7 @@ namespace AzToolsFramework
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
 
+            void EnsureItemIsSelected();
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
