@@ -152,7 +152,7 @@ namespace PhysX
 
         if (m_staticTransformAtActivation)
         {
-            AZ_Warning("PhysX Rigid Body Component", false, "It is not valid to have a PhysX Rigid Body Component "
+            AZ_Warning("RigidBodyComponent", false, "It is not valid to have a PhysX Dynamic Rigid Body Component "
                 "when the Transform Component is marked static.  Entity \"%s\" will behave as a static rigid body.",
                 GetEntity()->GetName().c_str());
 

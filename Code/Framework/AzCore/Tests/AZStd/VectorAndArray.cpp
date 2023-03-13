@@ -708,6 +708,44 @@ namespace UnitTest
         // FixedVectorContainerTest-End
     }
 
+    constexpr size_t s_testPoolPageSize = 1024;
+    constexpr size_t s_testPoolMinAllocationSize = 64;
+    constexpr size_t s_testPoolMaxAllocationSize = 256;
+
+    // Define a custom pool allocator
+    class TestVectorPoolAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TestVectorPoolAllocator, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(TestVectorPoolAllocator, "{4645067B-6A6D-4A45-996E-DA10671159E1}");
+
+        TestVectorPoolAllocator()
+            // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
+            : AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>(
+                  s_testPoolPageSize, s_testPoolMinAllocationSize, s_testPoolMaxAllocationSize)
+        {
+        }
+    };
+
+    TEST_F(Arrays, Vector_CustomPoolAllocatorInstance_AllocatesMemory)
+    {
+        // Verify the vector functions with a custom pool allocator instance
+        AZStd::vector<int, AZ::AZStdAlloc<TestVectorPoolAllocator>> poolTestVector;
+        poolTestVector.push_back(1);
+        EXPECT_EQ(poolTestVector.size(), 1);
+        EXPECT_EQ(poolTestVector[0], 1);
+    }
+
+    TEST_F(Arrays, Vector_ExplicitCustomPoolAllocator_AllocatesMemory)
+    {
+        TestVectorPoolAllocator testPoolAllocator;
+        // Verify the vector functions with an explicit custom pool allocator
+        AZStd::vector<int, AZ::AZStdIAllocator> poolTestVector{ AZ::AZStdIAllocator(&testPoolAllocator) };
+        poolTestVector.push_back(1);
+        EXPECT_EQ(poolTestVector.size(), 1);
+        EXPECT_EQ(poolTestVector[0], 1);
+    }
+
     TEST_F(Arrays, FixedVectorSwapSucceeds)
     {
         // Test dealing with fixed_vectors with big sizes.

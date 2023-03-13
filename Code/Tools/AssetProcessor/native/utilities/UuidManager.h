@@ -56,6 +56,7 @@ namespace AssetProcessor
 
         static void Reflect(AZ::ReflectContext* context);
 
+        AZ::u32 m_metaCreationDelayMs;
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
 

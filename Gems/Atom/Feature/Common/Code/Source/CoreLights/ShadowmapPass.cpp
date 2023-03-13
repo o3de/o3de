@@ -97,8 +97,7 @@ namespace AZ
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
 
-            // [GFX TODO][ATOM-2470] stop caring about attachment
-            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOwnedAttachment(Name("ShadowmapImage"));
+            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOutputBinding(0).GetAttachment();
             if (!attachment)
             {
                 AZ_Assert(false, "[ShadowmapPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());

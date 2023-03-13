@@ -9,7 +9,7 @@
 #pragma once
 
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_DepthPass(IN)
+#define EvaluateVertexGeometry EvaluateVertexGeometry_DepthPass
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>

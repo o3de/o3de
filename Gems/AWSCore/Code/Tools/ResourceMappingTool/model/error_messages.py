@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 ERROR_PAGE_TOOL_SETUP_ERROR_TITLE: str = "AWS credentials are missing or invalid"
 
 ERROR_PAGE_TOOL_SETUP_ERROR_MESSAGE: str = \
-    "Use our <a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
+    "Use our <a href=\"https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
     "<span style=\"color:#4A90E2;\">documentation</span></a> to setup your AWS credentials. "
 
 VIEW_EDIT_PAGE_SAVING_FAILED_WITH_INVALID_ROW_ERROR_MESSAGE: str = \

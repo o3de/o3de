@@ -62,6 +62,8 @@ namespace UnitTest
         
         // EditorPrimitiveColliderComponentRequests overrides ...
         void SetShapeType(Physics::ShapeType shapeType) override { m_shapeType = shapeType; }
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override { m_boxDimensions = dimensions; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxDimensions; }
         void SetSphereRadius(float radius) override { m_sphereRadius = radius; }
         float GetSphereRadius() const override { return m_sphereRadius; }
         void SetCapsuleRadius(float radius) override { m_capsuleRadius = radius; }
@@ -81,11 +83,12 @@ namespace UnitTest
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         Physics::ShapeType m_shapeType = Physics::ShapeType::Box;
-        float m_sphereRadius = 0.5f;
-        float m_capsuleHeight = 1.0f;
-        float m_capsuleRadius = 0.25f;
-        float m_cylinderHeight = 1.0f;
-        float m_cylinderRadius = 0.25f;
-        AZ::u8 m_subdivisionCount = 16;
+        AZ::Vector3 m_boxDimensions = Physics::ShapeConstants::DefaultBoxDimensions;
+        float m_sphereRadius = Physics::ShapeConstants::DefaultSphereRadius;
+        float m_capsuleHeight = Physics::ShapeConstants::DefaultCapsuleHeight;
+        float m_capsuleRadius = Physics::ShapeConstants::DefaultCapsuleRadius;
+        float m_cylinderHeight = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_cylinderRadius = Physics::ShapeConstants::DefaultCylinderRadius;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
     };
 } // namespace UnitTest

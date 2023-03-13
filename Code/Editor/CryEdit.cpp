@@ -2053,7 +2053,7 @@ void CCryEditApp::OnDocumentationTutorials()
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
+    QString webLink = tr("https://o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 

@@ -105,7 +105,7 @@ def create_project(project_info: dict, template_path: str):
     pass
 
 
-def get_enabled_gem_names(project_path: str) -> list:
+def get_enabled_gems(project_path: str, include_dependencies: bool = True) -> list:
     """
         Call get_enabled_gem_cmake_file for project_path
 
@@ -115,7 +115,7 @@ def get_enabled_gem_names(project_path: str) -> list:
 
         :return list of strs of enable gems for project.
     """
-    return list()
+    return manifest.get_project_enabled_gems(project_path=project_path, include_dependencies=include_dependencies)
 
 
 def get_project_info(project_path: str) -> dict or None:
