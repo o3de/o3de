@@ -642,7 +642,7 @@ namespace AzFramework
                 // but keeps our world transform unchanged. Do not send any notifications here, because our world
                 // transform has not changed, and with this OnParentChangedBehavior setting the expectation is that
                 // another system will update our transform, and the notification will be triggered then.
-                m_localTM = m_parentTM->GetWorldTM().GetInverse() * m_worldTM;
+                m_localTM = parentWorldTM.GetInverse() * m_worldTM;
             }
         }
     }
