@@ -18,13 +18,6 @@
 
 namespace AZ::Render
 {
-    SkyAtmosphereFeatureProcessor::SkyAtmosphere::~SkyAtmosphere()
-    {
-        m_id.Reset();
-        m_passNeedsUpdate = false;
-        m_enabled = false;
-    }
-
     void SkyAtmosphereFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
