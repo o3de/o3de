@@ -163,14 +163,18 @@ namespace PhysX
 
             m_articulationLinkData.m_colliderConfiguration = colliderConfig;
             m_articulationLinkData.m_shapeConfiguration = shapeConfigProxy.CloneCurrent();
-            m_articulationLinkData.m_entityId = GetEntity()->GetId();
-
-            m_articulationLinkData.m_config = m_config; //!< Generic properties from AzPhysics.
-            m_articulationLinkData.m_physxSpecificConfig = m_physxSpecificConfig; 
-            // m_linkData.m_genericProperties = m_jointConfig;
-            // m_linkData.m_limits;
-            // m_linkData.m_motor;
         }
+
+        m_articulationLinkData.m_entityId = GetEntity()->GetId();
+        m_articulationLinkData.m_relativeTransform = GetEntity()->GetTransform()->GetLocalTM();
+        m_articulationLinkData.m_config = m_config; //!< Generic properties from AzPhysics.
+        m_articulationLinkData.m_config.m_debugName = GetEntity()->GetName();
+        m_articulationLinkData.m_physxSpecificConfig = m_physxSpecificConfig;
+
+        // TODO : Set from the new articulation joint struct
+        m_articulationLinkData.m_genericProperties = m_jointConfig.ToGenericProperties();
+        m_articulationLinkData.m_limits;
+        m_articulationLinkData.m_motor;
     }
 
 } // namespace PhysX

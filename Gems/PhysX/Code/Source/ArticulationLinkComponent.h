@@ -17,6 +17,7 @@
 #include "AzFramework/Physics/Shape.h"
 #include "RigidBody.h"
 #include "PhysX/Joint/Configuration/PhysXJointConfiguration.h"
+#include "PhysX/UserDataTypes.h"
 
 namespace physx
 {
@@ -37,14 +38,14 @@ namespace PhysX
     struct ArticulationLinkData
     {
         AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator, 0);
-        AZ_RTTI(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
+        AZ_TYPE_INFO(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
         virtual ~ArticulationLinkData();
         static void Reflect(AZ::ReflectContext* context);
         void Reset();
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         Physics::ColliderConfiguration m_colliderConfiguration;
         AZ::EntityId m_entityId;
-
+        AZ::Transform m_relativeTransform;
         AzPhysics::RigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration
             m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
@@ -81,12 +82,14 @@ namespace PhysX
         bool IsRootArticulation() const;
         void UpdateArticulationHierarchy();
 
-        // AZ::Component
-        void Activate() override;
-
         void CreateArticulation();
         void CreateChildArticulationLinks(physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData);
 
+        void InitPhysicsTickHandler();
+        void PostPhysicsTick(float fixedDeltaTime);
+
+        // AZ::Component
+        void Activate() override;
         void Deactivate() override;
 
         // AZ::TransformNotificationsBus
@@ -99,7 +102,9 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+        AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler m_activeBodySyncTransformHandler;
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_articulationShapes;
+        AZStd::vector<AZStd::shared_ptr<ActorData>> m_linksActorData; // TODO: Move to AzPhysics::ArticulationLink
     };
 } // namespace PhysX
