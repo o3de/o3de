@@ -315,7 +315,7 @@ namespace PhysX
     bool Material::IsCompliantContactModeEnabled() const
     {
 #if (PX_PHYSICS_VERSION_MAJOR >= 5)
-        return (m_pxMaterial->getFlags() & physx::PxMaterialFlag::eCOMPLIANT_CONTACT) != 0;
+        return m_pxMaterial->getFlags().isSet(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
 #else
         return false;
 #endif
