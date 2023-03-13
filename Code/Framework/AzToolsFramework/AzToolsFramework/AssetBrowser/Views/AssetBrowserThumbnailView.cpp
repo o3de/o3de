@@ -386,7 +386,7 @@ namespace AzToolsFramework
                 this,
                 [this]
                 {
-                    if (!m_assetTreeView->selectionModel()->hasSelection())
+                    if (!m_assetTreeView->selectionModel()->hasSelection() && m_assetTreeView->model()->rowCount())
                     {
                         QModelIndex firstItem = m_assetTreeView->model()->index(0, 0);
                         m_assetTreeView->selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
