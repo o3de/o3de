@@ -46,7 +46,7 @@ namespace PhysX
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_stiffness,
                         "Stiffness",
-                        "Higher stiffness values produce stiffer springs that behave more like a rigid contact.")
+                        "Higher stiffness values produce stiffer springs that behave more like a rigid contact. The higher the mass of the object, the higher the stiffness needs to be to reduce penetration.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &CompliantContactModeConfiguration::ReadOnlyProperties);
             }

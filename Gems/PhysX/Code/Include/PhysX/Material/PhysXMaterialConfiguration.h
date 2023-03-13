@@ -25,7 +25,7 @@ namespace PhysX
 
         bool m_enabled = false;
         float m_damping = 1.0f;
-        float m_stiffness = 1.0f;
+        float m_stiffness = 1e+5f;
 
     private:
         bool ReadOnlyProperties() const;
