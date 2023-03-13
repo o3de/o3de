@@ -1534,7 +1534,7 @@ namespace Multiplayer
             serverRateSeconds
         );
 
-#ifdef AZ_TRAIT_CLIENT
+#if AZ_TRAIT_CLIENT
         if (Camera::ActiveCameraRequestBus::HasHandlers())
         {
             // If there's a camera, update only what's visible
