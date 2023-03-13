@@ -1312,21 +1312,21 @@ class AtomComponentProperties:
     def sky_atmosphere(property: str = 'name') -> str:
         """
         Sky Atmosphere component properties
-          - 'Ground albedo' Additional light from the surface of the ground (Vector3 RGB integer 0-255) default (0,0,0)
+          - 'Ground albedo' Additional light from the surface of the ground (Vector3 float) default (0.0,0.0,0.0)
           - 'Ground radius' Kilometers 0.0 to 100000.0 (float) default 6360.0
           - 'Origin' The origin to use for the atmosphere (int)
           - 'Atmosphere height' Kilometers 0.0 to 10000.0 (float) default 100.0
           - 'Illuminance factor' An additional factor to brighten or darken the overall atmosphere (Vector3 float) default (1.0,1.0,1.0)
           - 'Mie absorption Scale' 0.0 to 1.0 (float) default 0.004
-          - 'Mie absorption' (Vector3 RGB integer 0-255) default (255,255,255)
+          - 'Mie absorption' (Vector3 float) default (1.0,1.0,1.0)
           - 'Mie exponential distribution' Altitude in kilometers at which Mie scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 1.2
           - 'Mie scattering Scale' 0.0 to 1.0 (float) default 0.004
-          - 'Mie scattering' Mie scattering coefficients from aerosole molecules at surface of the planet. (Vector3 RGB integer 0-255) default (255,255,255)
+          - 'Mie scattering' Mie scattering coefficients from aerosole molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
           - 'Ozone Absorption Scale' Ozone molecule absorption scale 0.0 to 1.0 (float) default 0.001881
-          - 'Ozone Absorption' Absorption coefficients from ozone molecules (Vector3 RGB integer 0-255) default (255,255,255)
+          - 'Ozone Absorption' Absorption coefficients from ozone molecules (Vector3 float) default (1.0,1.0,1.0)
           - 'Rayleigh exponential distribution' Altitude in kilometers at which Rayleigh scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 8.0
           - 'Rayleigh scattering Scale' 0.0 to 1.0 (float) default 0.033100f
-          - 'Rayleigh scattering' Raleigh scattering coefficients from air molecules at surface of the planet. (Vector3 RGB integer 0-255) default (255,255,255)
+          - 'Rayleigh scattering' Raleigh scattering coefficients from air molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
           - 'Show sun' display a sun (bool) default True
           - 'Sun color' (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
           - 'Sun falloff factor' 0.0 to 200.0 (float) default 1.0
