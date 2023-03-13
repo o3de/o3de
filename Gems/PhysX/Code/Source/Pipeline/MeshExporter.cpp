@@ -15,8 +15,10 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphChildIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <PhysX/MeshAsset.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -810,6 +812,16 @@ namespace PhysX
                     totalExportData.reserve(selectedNodeCount);
                 }
 
+                // Get the coordinate system conversion rule.
+                AZ::SceneAPI::CoordinateSystemConverter coordSysConverter;
+                AZStd::shared_ptr<AZ::SceneAPI::SceneData::CoordinateSystemRule> coordinateSystemRule =
+                    pxMeshGroup.GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+                if (coordinateSystemRule)
+                {
+                    coordinateSystemRule->UpdateCoordinateSystemConverter();
+                    coordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
+                }
+
                 for (size_t index = 0; index < selectedNodeCount; index++)
                 {
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(sceneNodeSelectionList.GetSelectedNode(index));
@@ -822,7 +834,10 @@ namespace PhysX
 
                     const AZ::SceneAPI::Containers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
 
-                    const AZ::SceneAPI::DataTypes::MatrixType worldTransform = SceneUtil::BuildWorldTransform(graph, nodeIndex);
+                    // CoordinateSystemConverter covers the simple transformations of CoordinateSystemRule and
+                    // DetermineWorldTransform function covers the advanced mode of CoordinateSystemRule.
+                    const AZ::SceneAPI::DataTypes::MatrixType worldTransform = coordSysConverter.ConvertMatrix3x4(
+                        AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, nodeIndex, pxMeshGroup.GetRuleContainerConst()));
 
                     NodeCollisionGeomExportData nodeExportData;
                     nodeExportData.m_nodeName = nodeName.GetName();

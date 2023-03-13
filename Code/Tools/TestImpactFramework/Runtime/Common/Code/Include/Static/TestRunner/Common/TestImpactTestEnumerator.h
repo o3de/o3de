@@ -26,6 +26,7 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, TestEnumeration>;
         using TestJobRunner::TestJobRunner;
+        using NotificationBus = typename TestJobRunner::NotificationBus;
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
@@ -35,17 +36,13 @@ namespace TestImpact
         //! @param jobExceptionPolicy The enumeration job exception policy to be used for this run.
         //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
         //! @param enumeratorTimeout The maximum duration the enumerator may run before forcefully terminating all in-flight enumerations.
-        //! @param clientCallback The optional client callback to be called whenever an enumeration job changes state.
-        //! @param stdContentCallback 
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> Enumerate(
             const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-            AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback);
+            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout);
 
     protected:
         //! Default implementation of payload producer for test enumerators.
@@ -64,9 +61,7 @@ namespace TestImpact
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
-        AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout)
     {
         AZStd::vector<typename TestJobRunner::Job> cachedJobs;
         AZStd::vector<typename TestJobRunner::JobInfo> jobQueue;
@@ -98,7 +93,9 @@ namespace TestImpact
                         // Cache read successfully, this job will not be placed in the job queue
                         cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
 
-                        if (clientCallback.has_value() && (*clientCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+                        AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                        NotificationBus::BroadcastResult(results, &NotificationBus::Events::OnJobComplete, *jobInfo, meta, StdContent{});
+                        if (GetAggregateProcessCallbackResult(results) == ProcessCallbackResult::Abort)
                         {
                             // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
                             AZStd::vector<Job> jobs(cachedJobs);
@@ -144,9 +141,7 @@ namespace TestImpact
             stdOutRouting,
             stdErrRouting,
             enumerationTimeout,
-            enumeratorTimeout,
-            clientCallback,
-            stdContentCallback);
+            enumeratorTimeout);
 
         // We need to add the cached jobs to the completed job list even though they technically weren't executed
         for (auto&& job : cachedJobs)
