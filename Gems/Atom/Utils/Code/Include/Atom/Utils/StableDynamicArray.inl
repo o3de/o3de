@@ -137,9 +137,9 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
-    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> AZStd::vector<AZStd::pair<pageIterator, pageIterator>>
+    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> ParallelRanges
     {
-        AZStd::vector<AZStd::pair<pageIterator, pageIterator>> pageIterators;
+        ParallelRanges pageIterators;
         Page* page = m_firstPage;
         while (page)
         {

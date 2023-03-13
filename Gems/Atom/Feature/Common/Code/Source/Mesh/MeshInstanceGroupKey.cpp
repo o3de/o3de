@@ -12,28 +12,24 @@ namespace AZ
 {
     namespace Render
     {
+        auto MeshInstanceGroupKey::MakeTie() const
+        {
+            return AZStd::tie(m_modelId, m_lodIndex, m_meshIndex, m_materialId, m_forceInstancingOff, m_sortKey);
+        }
+
         bool MeshInstanceGroupKey::operator<(const MeshInstanceGroupKey& rhs) const
         {
-            return AZStd::tie(m_modelId, m_lodIndex, m_meshIndex, m_materialId, m_forceInstancingOff, m_sortKey) <
-                AZStd::tie(
-                       rhs.m_modelId,
-                       rhs.m_lodIndex,
-                       rhs.m_meshIndex,
-                       rhs.m_materialId,
-                       rhs.m_forceInstancingOff,
-                       rhs.m_sortKey);
+            return MakeTie() < rhs.MakeTie();
         }
 
         bool MeshInstanceGroupKey::operator==(const MeshInstanceGroupKey& rhs) const
         {
-            return m_modelId == rhs.m_modelId && m_lodIndex == rhs.m_lodIndex && m_meshIndex == rhs.m_meshIndex &&
-                m_materialId == rhs.m_materialId && m_forceInstancingOff == rhs.m_forceInstancingOff && m_sortKey == rhs.m_sortKey;
+            return MakeTie() == rhs.MakeTie();
         }
 
         bool MeshInstanceGroupKey::operator!=(const MeshInstanceGroupKey& rhs) const
         {
-            return m_modelId != rhs.m_modelId || m_lodIndex != rhs.m_lodIndex || m_meshIndex != rhs.m_meshIndex ||
-                m_materialId != rhs.m_materialId || m_forceInstancingOff != rhs.m_forceInstancingOff || m_sortKey != rhs.m_sortKey;
+            return !operator==(rhs);
         }
     } // namespace Render
 } // namespace AZ

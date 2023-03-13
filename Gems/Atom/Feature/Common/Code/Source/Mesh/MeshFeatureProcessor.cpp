@@ -139,11 +139,11 @@ namespace AZ
             
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
-                console->GetCvarValue("r_enableMeshInstancing", m_enableMeshInstancing);
+                console->GetCvarValue("r_meshInstancingEnabled", m_enableMeshInstancing);
 
                 // push the cvars value so anything in this dll can access it directly.
                 console->PerformCommand(
-                    AZStd::string::format("r_enableMeshInstancing %s", m_enableMeshInstancing ? "true" : "false")
+                    AZStd::string::format("r_meshInstancingEnabled %s", m_enableMeshInstancing ? "true" : "false")
                         .c_str());
             }
         }
@@ -190,7 +190,7 @@ namespace AZ
             AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
             AZStd::vector<Job*> updateCullingJobQueue = CreateUpdateCullingJobQueue();
 
-            if (!r_enableMeshInstancing)
+            if (!r_meshInstancingEnabled)
             {
                 // There's no need for all the init jobs to finish before any of the update culling jobs are run.
                 // Any update culling job can run once it's corresponding init job is done. So instead of separating the jobs
@@ -213,14 +213,14 @@ namespace AZ
 
         void MeshFeatureProcessor::CheckForInstancingCVarChange()
         {
-            if (m_enableMeshInstancing != r_enableMeshInstancing)
+            if (m_enableMeshInstancing != r_meshInstancingEnabled)
             {
                 // DeInit and re-init every object
                 for (auto& modelDataInstance : m_modelData)
                 {
                     modelDataInstance.ReInit(this);
                 }
-                m_enableMeshInstancing = r_enableMeshInstancing;
+                m_enableMeshInstancing = r_meshInstancingEnabled;
             }
         }
 
@@ -232,12 +232,10 @@ namespace AZ
             RPI::Scene* scene = GetParentScene();
             for (const auto& iteratorRange : instanceManagerRanges)
             {
-                auto rangeStart = iteratorRange.first;
-                auto rangeEnd = iteratorRange.second;
-                const auto perInstanceGroupJobLambda = [this, scene, rangeStart, rangeEnd]() -> void
+                const auto perInstanceGroupJobLambda = [this, scene, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: PerInstanceGroupUpdate");
-                    for (auto instanceGroupDataIter = rangeStart; instanceGroupDataIter != rangeEnd;
+                    for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
                          ++instanceGroupDataIter)
                     {
                         RPI::MeshDrawPacket& drawPacket = instanceGroupDataIter->m_drawPacket;
@@ -268,13 +266,11 @@ namespace AZ
             initJobQueue.reserve(iteratorRanges.size());
             for (const auto& iteratorRange : iteratorRanges)
             {
-                auto rangeStart = iteratorRange.first;
-                auto rangeEnd = iteratorRange.second;
-                const auto initJobLambda = [this, rangeStart, rangeEnd]() -> void
+                const auto initJobLambda = [this, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: Init");
 
-                    for (auto meshDataIter = rangeStart; meshDataIter != rangeEnd; ++meshDataIter)
+                    for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
                         {
@@ -303,7 +299,7 @@ namespace AZ
 
                         // If instancing is enabled, the draw packets will be updated by the per-instance group jobs,
                         // so they don't need to be updated here
-                        if (!r_enableMeshInstancing)
+                        if (!r_meshInstancingEnabled)
                         {
                             // [GFX TODO] [ATOM-1357] Currently all of the draw packets have to be checked for material ID changes because
                             // material properties can impact which actual shader is used, which impacts the SRG in the draw packet.
@@ -326,13 +322,11 @@ namespace AZ
             updateCullingJobQueue.reserve(iteratorRanges.size());
             for (const auto& iteratorRange : iteratorRanges)
             {
-                auto rangeStart = iteratorRange.first;
-                auto rangeEnd = iteratorRange.second;
-                const auto updateCullingJobLambda = [this, rangeStart, rangeEnd]() -> void
+                const auto updateCullingJobLambda = [this, iteratorRange]() -> void
                 {
                     AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: Simulate: UpdateCulling");
 
-                    for (auto meshDataIter = rangeStart; meshDataIter != rangeEnd; ++meshDataIter)
+                    for (auto meshDataIter = iteratorRange.m_begin; meshDataIter != iteratorRange.m_end; ++meshDataIter)
                     {
                         if (!meshDataIter->m_model)
                         {
@@ -423,13 +417,13 @@ namespace AZ
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
-            AZ_Error("MeshFeatureProcessor::OnBeginPrepareRender", !(r_enablePerMeshShaderOptionFlags && r_enableMeshInstancing),
-                "r_enablePerMeshShaderOptionFlags and r_enableMeshInstancing are incompatible at this time. r_enablePerMeshShaderOptionFlags results "
+            AZ_Error("MeshFeatureProcessor::OnBeginPrepareRender", !(r_enablePerMeshShaderOptionFlags && r_meshInstancingEnabled),
+                "r_enablePerMeshShaderOptionFlags and r_meshInstancingEnabled are incompatible at this time. r_enablePerMeshShaderOptionFlags results "
                 "in a unique shader permutation for a given object depending on which light types are in range of the object. This isn't known until "
                 "immediately before rendering. Determining whether or not two meshes can be instanced happens when the object is first set up, and we don't "
                 "want to update that instance map every frame, so if instancing is enabled we treat r_enablePerMeshShaderOptionFlags as disabled. "
                 "This can be relaxed for static meshes in the future when we know they won't be moving. ");
-            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags && !r_enableMeshInstancing)
+            if (!r_enablePerMeshShaderOptionFlags && m_enablePerMeshShaderOptionFlags && !r_meshInstancingEnabled)
             {
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& modelHandle : m_modelData)
@@ -459,7 +453,7 @@ namespace AZ
                 }
             }
 
-            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags && !r_enableMeshInstancing;
+            m_enablePerMeshShaderOptionFlags = r_enablePerMeshShaderOptionFlags && !r_meshInstancingEnabled;
 
             if (m_enablePerMeshShaderOptionFlags)
             {
@@ -597,7 +591,7 @@ namespace AZ
             // debug information about the draw packets in an imgui menu. But the ownership model for draw packets is changing.
             // We can no longer assume a meshHandle directly keeps a copy of all of its draw packets.
 
-            return meshHandle.IsValid() && !r_enableMeshInstancing ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+            return meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
@@ -1210,7 +1204,7 @@ namespace AZ
         {
             const size_t modelLodCount = m_model->GetLodCount();
             
-            if (!r_enableMeshInstancing)
+            if (!r_meshInstancingEnabled)
             {
                 m_drawPacketListsByLod.resize(modelLodCount);
             }
@@ -1259,7 +1253,7 @@ namespace AZ
             const size_t meshCount = modelLod.GetMeshes().size();
             MeshInstanceManager& meshInstanceManager = meshFeatureProcessor->GetMeshInstanceManager();
 
-            if (!r_enableMeshInstancing)
+            if (!r_meshInstancingEnabled)
             {
                 RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
                 drawPacketListOut.clear();
@@ -1327,7 +1321,7 @@ namespace AZ
 
                 MeshInstanceManager::InsertResult instanceGroupInsertResult{ MeshInstanceManager::Handle{}, 0 };
 
-                if (r_enableMeshInstancing)
+                if (r_meshInstancingEnabled)
                 {
                     // Get the instance index for referencing the draw packet
                     MeshInstanceGroupKey key{};
@@ -1364,7 +1358,7 @@ namespace AZ
 
                 // If this condition is true, we're dealing with a new, uninitialized draw packet, either because instancing is disabled
                 // or because this was the first object in the instance group. So we need to initialize it
-                if (!r_enableMeshInstancing || instanceGroupInsertResult.m_instanceCount == 1)
+                if (!r_meshInstancingEnabled || instanceGroupInsertResult.m_instanceCount == 1)
                 {
                     // setup the mesh draw packet
                     RPI::MeshDrawPacket drawPacket(
@@ -1390,7 +1384,7 @@ namespace AZ
                     drawPacket.SetSortKey(m_sortKey);
                     drawPacket.Update(*m_scene, false);
 
-                    if (!r_enableMeshInstancing)
+                    if (!r_meshInstancingEnabled)
                     {
                         m_drawPacketListsByLod[modelLodIndex].emplace_back(AZStd::move(drawPacket));
                     }
@@ -1851,7 +1845,7 @@ namespace AZ
             m_sortKey = sortKey;
             if (previousSortKey != m_sortKey)
             {
-                if (!r_enableMeshInstancing)
+                if (!r_meshInstancingEnabled)
                 {
                     for (auto& drawPacketList : m_drawPacketListsByLod)
                     {
@@ -1893,7 +1887,7 @@ namespace AZ
 
         void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
-            AZ_Assert(!r_enableMeshInstancing, "If mesh instancing is enabled, the draw packet update should be going through the MeshInstanceManager.");
+            AZ_Assert(!r_meshInstancingEnabled, "If mesh instancing is enabled, the draw packet update should be going through the MeshInstanceManager.");
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
@@ -1957,7 +1951,7 @@ namespace AZ
                 for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
                 {
                     const RHI::DrawPacket* rhiDrawPacket = nullptr;
-                    if (!r_enableMeshInstancing)
+                    if (!r_meshInstancingEnabled)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
                         rhiDrawPacket = m_drawPacketListsByLod[lodIndex][meshIndex].GetRHIDrawPacket();

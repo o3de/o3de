@@ -16,32 +16,23 @@ namespace AZ::Render
         // It is not safe to have multiple threads Add and/or Remove at the same time
         m_instanceDataConcurrencyChecker.soft_lock();
 
-        WeakHandle handle;
-        uint32_t instanceCount = 0;
-
         typename DataMap::iterator it = m_dataMap.find(key);
         if (it == m_dataMap.end())
         {
-            instanceCount = 1;
-
             // Add the data map entry containing the handle and reference count
             IndexMapEntry entry;
             entry.m_handle = m_instanceGroupData.emplace();
-            entry.m_count = instanceCount;
-            handle = entry.m_handle.GetWeakHandle();
-
-            m_dataMap.emplace(AZStd::make_pair(key, AZStd::move(entry)));
+            entry.m_count = 1;
+            it = m_dataMap.emplace(AZStd::make_pair(key, AZStd::move(entry))).first;
         }
         else
         {
             // Data is already known, update the reference count and return the index
             it->second.m_count++;
-            instanceCount = it->second.m_count;
-            handle = it->second.m_handle.GetWeakHandle();
         }
 
         m_instanceDataConcurrencyChecker.soft_unlock();
-        return MeshInstanceGroupList::InsertResult{ handle, instanceCount };
+        return MeshInstanceGroupList::InsertResult{ it->second.m_handle.GetWeakHandle(), it->second.m_count};
     }
 
     void MeshInstanceGroupList::Remove(const MeshInstanceGroupKey& key)
@@ -74,9 +65,7 @@ namespace AZ::Render
         return static_cast<uint32_t>(m_instanceGroupData.size());
     }
         
-    AZStd::vector<
-        AZStd::pair<StableDynamicArray<MeshInstanceGroupData>::pageIterator, StableDynamicArray<MeshInstanceGroupData>::pageIterator>>
-    MeshInstanceGroupList::GetParallelRanges()
+    auto MeshInstanceGroupList::GetParallelRanges() -> ParallelRanges
     {
         return m_instanceGroupData.GetParallelRanges();
     }

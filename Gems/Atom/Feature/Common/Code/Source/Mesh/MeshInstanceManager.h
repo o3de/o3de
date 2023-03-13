@@ -20,20 +20,30 @@ namespace AZ::Render
     public:
         using Handle = MeshInstanceGroupList::WeakHandle;
         using InsertResult = MeshInstanceGroupList::InsertResult;
+        using ParallelRanges = MeshInstanceGroupList::ParallelRanges;
 
+        //! Increase the ref-count for an instance group if one already exists for the given key, or add a new instance group if it doesn't exist.
+        //! Returns an InsertResult with a weak handle to the data and the ref-count for the instance group after adding this instance.
         MeshInstanceManager::InsertResult AddInstance(MeshInstanceGroupKey meshInstanceGroupData);
 
+        //! Decrease the ref-count for an instance group, and remove it if the ref-count drops to 0.
+        //! The MeshInstanceManager keeps a copy of the MeshInstanceGroupKey alongside the data, so
+        //! removing by handle is just as performance as removing by key.
         void RemoveInstance(MeshInstanceGroupKey meshInstanceGroupData);
 
+        //! Decrease the ref-count for an instance group, and remove it if the ref-count drops to 0.
+        //! The MeshInstanceManager keeps a copy of the MeshInstanceGroupKey alongside the data, so
+        //! removing by handle is just as performance as removing by key.
         void RemoveInstance(Handle handle);
 
+        //! Get the total number of instance groups being managed by the MeshInstanceManager
         uint32_t GetInstanceGroupCount() const;
 
+        //! Constant O(1) access to a MeshInstanceGroup via its handle
         MeshInstanceGroupData& operator[](Handle handle);
 
-        AZStd::vector<
-            AZStd::pair<StableDynamicArray<MeshInstanceGroupData>::pageIterator, StableDynamicArray<MeshInstanceGroupData>::pageIterator>>
-        GetParallelRanges();
+        //! Get begin and end iterators for each page in the MeshInstanceGroup, which can be processed in parallel
+        ParallelRanges GetParallelRanges();
 
     private:
 

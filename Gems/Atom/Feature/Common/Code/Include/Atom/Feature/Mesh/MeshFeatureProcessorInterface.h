@@ -33,7 +33,7 @@ namespace AZ
         
         AZ_CVAR(
             bool,
-            r_enableMeshInstancing,
+            r_meshInstancingEnabled,
             false,
             nullptr,
             AZ::ConsoleFunctorFlags::Null,

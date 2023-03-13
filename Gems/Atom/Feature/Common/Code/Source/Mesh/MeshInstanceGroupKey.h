@@ -32,6 +32,9 @@ namespace AZ
             bool operator==(const MeshInstanceGroupKey& rhs) const;
 
             bool operator!=(const MeshInstanceGroupKey& rhs) const;
+
+        private:
+            auto MakeTie() const;
         };
     } // namespace Render
 } // namespace AZ

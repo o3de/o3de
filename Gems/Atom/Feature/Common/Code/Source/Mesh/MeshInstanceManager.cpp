@@ -49,9 +49,7 @@ namespace AZ
             return m_instanceData[handle];
         }
 
-        AZStd::vector<
-            AZStd::pair<StableDynamicArray<MeshInstanceGroupData>::pageIterator, StableDynamicArray<MeshInstanceGroupData>::pageIterator>>
-        MeshInstanceManager::GetParallelRanges()
+        auto MeshInstanceManager::GetParallelRanges() -> ParallelRanges
         {
             return m_instanceData.GetParallelRanges();
         }

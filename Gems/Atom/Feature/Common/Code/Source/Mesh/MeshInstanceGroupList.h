@@ -51,7 +51,7 @@ namespace AZ::Render
     public:
         using WeakHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
         using OwningHandle = StableDynamicArrayHandle<MeshInstanceGroupData>;
-
+        using ParallelRanges = StableDynamicArray<MeshInstanceGroupData>::ParallelRanges;
         // When adding a new entry, we get back both the index and the count of meshes in the group after inserting
         // The count can be used to determine if this is the first mesh in the group (and thus intialization may be required)
         // As well as to determine if the mesh has reached the threshold at which it can become instanced,
@@ -74,9 +74,7 @@ namespace AZ::Render
         uint32_t GetInstanceGroupCount() const;
 
         // Returns parallel ranges for the underlying instance group data. Each range corresponds to a page of data.
-        AZStd::vector<
-            AZStd::pair<StableDynamicArray<MeshInstanceGroupData>::pageIterator, StableDynamicArray<MeshInstanceGroupData>::pageIterator>>
-        GetParallelRanges();
+        ParallelRanges GetParallelRanges();
 
         // Direct access via handle is thread safe while adding and removing other instance groups
         MeshInstanceGroupData& operator[](WeakHandle handle);
