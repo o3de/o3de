@@ -11,12 +11,12 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
+
 #include <Atom/RHI/StreamingImagePool.h>
 
 #include <AzCore/std/containers/span.h>
-#include <AzCore/Asset/AssetCommon.h>
 
-#include <AzFramework/Asset/UnusableAssetTypes.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
 {
@@ -47,7 +47,7 @@ namespace AZ
             static const char* Extension;
             static const char* Group;
 
-            AZ_RTTI(ImageMipChainAsset, AzFramework::ImageMipChainAssetType, Data::AssetData);
+            AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);

@@ -9,10 +9,9 @@
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Utils/Utils.h>
-
-#include <AzFramework/Asset/UnusableAssetTypes.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QLineEdit>
@@ -224,14 +223,26 @@ namespace AzToolsFramework
 
         AZStd::vector<AZ::Data::AssetType> SearchWidget::BuildAssetTypeList()
         {
-            AZStd::vector <AZ::Data::AssetType> entries = AZStd::vector<AZ::Data::AssetType>();
-            entries.push_back(AzFramework::AzslOutcomeAssetType);
-            entries.push_back(AzFramework::BufferAssetType);
-            entries.push_back(AzFramework::ImageMipChainAssetType);
-            entries.push_back(AzFramework::ModelLodAssetType);
-            entries.push_back(AzFramework::ShaderVariantAssetType);
+            AZStd::vector<AZ::Data::AssetType> entries;
+            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                auto VisitFilteredAssetTypes = [&entries](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+                {
+                    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+                    if (FixedValueString value{}; visitArgs.m_registry.Get(value, visitArgs.m_jsonKeyPath))
+                    {
+                        AZ::Data::AssetType assetType{ AZStd::string_view(value) };
+                        entries.emplace_back(AZStd::move(assetType));
+                    }
+                    return AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                };
+                AZ::SettingsRegistryVisitorUtils::VisitObject(
+                    *settingsRegistry, VisitFilteredAssetTypes, "/O3DE/AssetBrowser/AssetTypeUuidExcludes");
+            }
+
             return entries;
         }
+
 
         void SearchWidget::AddFolderFilter()
         {
