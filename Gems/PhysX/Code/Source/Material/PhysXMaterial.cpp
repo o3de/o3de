@@ -127,7 +127,7 @@ namespace PhysX
         m_density = defaultMaterialConfiguration.m_density;
         m_debugColor = defaultMaterialConfiguration.m_debugColor;
 
-        // OnAssetReady it will set all the properties from the material asset
+        // When OnAssetReady is called, it will set all the properties from the material asset
         AZ::Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
     }
 
@@ -328,12 +328,14 @@ namespace PhysX
         if (enabled)
         {
             m_pxMaterial->setDamping(m_compliantContactModeDamping);
-            m_pxMaterial->setRestitution(-m_compliantContactModeStiffness); // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
+            // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
+            m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
         }
         else
         {
             m_pxMaterial->setDamping(0.0f);
-            m_pxMaterial->setRestitution(m_restitution); // Restores restitution value when Compliant Contact Modde is disabled
+            // Restores restitution value when Compliant Contact Modde is disabled
+            m_pxMaterial->setRestitution(m_restitution);
         }
 #endif
     }
