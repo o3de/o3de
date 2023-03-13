@@ -136,10 +136,11 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         return output;
     }
 
+
     // when outside the atmosphere, this moves worldPosKM to the 
     // start of the atmosphere, unless the entire ray never intersects
-    float distanceToAtmosphere = 0.f;
-    if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphere, worldDir, worldDepthKm))
+    float distanceToAtmosphereKm = 0.f;
+    if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphereKm, worldDir, worldDepthKm))
     {
         // Ray is not intersecting the atmosphere
         output.m_luminance = float4(TransformColor(luminance * exposure, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg), 1.0);
@@ -148,30 +149,33 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
     }
 
     // this factor allows users to make it appear objects are futher away or closer than they really are
-    worldDepthKm = clamp(worldDepthKm * PassSrg::m_constants.m_aerialDepthFactor, 0.0, Atmosphere.TopRadius - Atmosphere.BottomRadius);
+    worldDepthKm *= PassSrg::m_constants.m_aerialDepthFactor;
 
     float transmittance = 0.0;
     if(o_enableFastAerialPerspective)
     {
-        float slice = AerialPerspectiveDepthToSlice(worldDepthKm);
+        float slice = AerialPerspectiveDepthToSlice(worldDepthKm - distanceToAtmosphereKm);
         float weight = 1.0;
-        if(slice < 0.5)
+        if (slice < 0.5 && Atmosphere.TopRadius > SKY_VOLUME_KM_PER_SLICE * SKY_VOLUME_SLICE_COUNT)
         {
+            // Note: if your atmosphere is small but your SKY_VOLUME_KM_PER_SLICE is large
+            // then fading out the nearest slice might remove the aerial perspective entirely
+            // so you may want to make SKY_VOLUME_KM_PER_SLICE smaller, or remove the fade
             weight = saturate(slice * 2.0);
             slice = 0.5;
         }
         float w = sqrt(slice / SKY_VOLUME_SLICE_COUNT);
-        float4 ss = weight * PassSrg::m_skyVolumeLUT.SampleLevel(PassSrg::LinearSampler, float3(Input.m_texCoord, w), 0);
-        transmittance = ss.a;
-        luminance = ss.rgb;
+        float4 singleScattering = weight * PassSrg::m_skyVolumeLUT.SampleLevel(PassSrg::LinearSampler, float3(Input.m_texCoord, w), 0);
+        transmittance = singleScattering.a;
+        luminance += singleScattering.rgb;
     }
     else
     {
         // calculate maxTraceDepth here to avoid modifying shared skycommon 
-        float maxTraceDepth = 9000000.0f; 
+        float maxTraceDepthKm = Atmosphere.TopRadius * 2.0; 
         if (depth > 0.0f)
         {
-            maxTraceDepth = min(length(worldDepthKm) - distanceToAtmosphere, maxTraceDepth);
+            maxTraceDepthKm = min(worldDepthKm - distanceToAtmosphereKm, maxTraceDepthKm);
         }
 
         const bool ground = true; 
@@ -179,7 +183,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
         const bool variableSampleCount = true;
         const bool mieRayPhase = true;
 
-        SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+        SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, worldDepthKm, variableSampleCount, mieRayPhase, maxTraceDepthKm);
         luminance += ss.L;
         transmittance = 1.0 - dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
     }

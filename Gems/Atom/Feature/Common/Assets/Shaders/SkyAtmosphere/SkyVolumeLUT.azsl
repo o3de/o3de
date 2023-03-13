@@ -34,44 +34,49 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     slice *= slice;    // squared distribution
     slice *= SKY_VOLUME_SLICE_COUNT;
 
-    float tMax = AerialPerspectiveSliceToDepth(slice);
+    float froxelDepthKm = AerialPerspectiveSliceToDepth(slice);
 
     // get position relative to planet surface
-    float3 froxelPosition = cameraPlanetPosKm + tMax * worldDir;
+    float3 froxelPosition = cameraPlanetPosKm + froxelDepthKm * worldDir;
 
     // if the froxel is under the ground, make sure to offset it out on the ground.
-    float viewHeight = length(froxelPosition);
-    if (viewHeight <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
+    float froxelHeightKm = length(froxelPosition);
+    if (froxelHeightKm <= (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM))
     {
         // Apply a position offset to make sure no artefact are visible close to the earth boundaries for large voxel.
-        froxelPosition = normalize(froxelPosition) * (Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f);
+        froxelHeightKm = Atmosphere.BottomRadius + PLANET_RADIUS_OFFSET_KM + 0.001f;
+        froxelPosition = normalize(froxelPosition) * froxelHeightKm;
         worldDir = normalize(froxelPosition - cameraPlanetPosKm);
-        tMax = length(froxelPosition - cameraPlanetPosKm);
+        froxelDepthKm = length(froxelPosition - cameraPlanetPosKm);
     }
-    float maxTraceDepth = tMax;
 
-    const float depth = -1.0;
+    float maxTraceDepthKm = froxelDepthKm;
 
     // move ray marching start up to top atmosphere.
-    viewHeight = length(froxelPosition);
-    if (viewHeight >= Atmosphere.TopRadius)
+    float distanceToAtmosphereKm = 0.f;
+    float cameraHeightKm = length(cameraPlanetPosKm);
+    if (cameraHeightKm > Atmosphere.TopRadius)
     {
-        float distanceToAtmosphere = 0.f;
-
-        if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphere, worldDir, depth))
+        const float largeDepth = 9999999.f;
+        if (!MoveToAtmosphere(Atmosphere, cameraPlanetPosKm, distanceToAtmosphereKm, worldDir, largeDepth))
         {
             // ray is not intersecting the atmosphere
             return float4(0.0, 0.0, 0.0, 1.0);
         }
 
-        if (maxTraceDepth < distanceToAtmosphere)
+        // Avoid changing trace depth for small atmospheres 
+        // eventually we should adjust the volume based on the frustum and atmosphere size
+        if (Atmosphere.TopRadius > SKY_VOLUME_KM_PER_SLICE * SKY_VOLUME_SLICE_COUNT)
         {
-            // maxTraceDepth for this voxel is not within earth atmosphere
-            return float4(0.0, 0.0, 0.0, 1.0);
-        }
+            if (maxTraceDepthKm < distanceToAtmosphereKm)
+            {
+                // maxTraceDepth for this voxel is not within earth atmosphere
+                return float4(0.0, 0.0, 0.0, 1.0);
+            }
 
-        // world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly. 
-        maxTraceDepth = max(0.0, maxTraceDepth - distanceToAtmosphere);
+            // world position has been moved to the atmosphere boundary: we need to reduce maxTraceDepth accordingly.
+            maxTraceDepthKm = max(0.0, maxTraceDepthKm - distanceToAtmosphereKm);
+        }
     }
 
     const bool ground = false;
@@ -82,7 +87,7 @@ float4 GetSkyVolumeAtPosition(uint3 position)
     const bool variableSampleCount = true;
     const bool mieRayPhase = true;
     const float2 screenCoords = float2(0,0); // unused
-    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, depth, variableSampleCount, mieRayPhase, maxTraceDepth);
+    SingleScatteringResult ss = IntegrateScatteredLuminance(screenCoords, cameraPlanetPosKm, worldDir, PassSrg::m_constants.m_sunDirection, Atmosphere, ground, sampleCountIni, froxelDepthKm, variableSampleCount, mieRayPhase, maxTraceDepthKm);
 
     const float transmittance = dot(ss.Transmittance, float3(1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f));
     return float4(ss.L, 1.0 - transmittance);
