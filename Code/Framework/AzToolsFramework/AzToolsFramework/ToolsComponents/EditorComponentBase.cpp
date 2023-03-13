@@ -37,6 +37,10 @@ namespace AzToolsFramework
 
         void EditorComponentBase::Init()
         {
+            if (m_alias.empty())
+            {
+                InitSerializedIdentifier();
+            }
         }
 
         void EditorComponentBase::Activate()
@@ -102,9 +106,21 @@ namespace AzToolsFramework
             m_alias = alias;
         }
 
-        AZStd::string EditorComponentBase::GetSerializedIdentifier() const
+        AZStd::string EditorComponentBase::GetSerializedIdentifier()
         {
+            // Initialize if necessary. This is needed because not all derived components are calling their base class Init()
+            if (m_alias.empty())
+            {
+                InitSerializedIdentifier();
+            }
             return m_alias;
+        }
+
+        void EditorComponentBase::InitSerializedIdentifier()
+        {
+            AZ_Assert(m_alias.empty(), "Calling InitSerializedIdentifier when identifier already has a value.");
+            AZ_Assert(GetId() != AZ::InvalidComponentId, "Calling InitSerializedIdentifier when component Id is invalid.");
+            m_alias = AZStd::string::format("Component_[%llu]", GetId());
         }
     }
 } // namespace AzToolsFramework

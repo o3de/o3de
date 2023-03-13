@@ -206,7 +206,9 @@ namespace AZ
         {
             if (component)
             {
-                componentMapOut.emplace(AZStd::string::format("Component_[%llu]", component->GetId()), component);
+                AZStd::string componentAlias = component->GetSerializedIdentifier();
+                AZ_Assert(!componentAlias.empty(), "Component alias is empty.");
+                componentMapOut.emplace(componentAlias, component);
             }
         }
     }

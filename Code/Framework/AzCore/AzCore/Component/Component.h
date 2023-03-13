@@ -127,7 +127,7 @@ namespace AZ
         //! Gets the serialzied identifier of this component within an entity. This will be a non-empty string for components that
         //! inherit from EditorComponentBase. For all others, it'll be empty.
         //! @return The serialized identifier of this component.
-        virtual AZStd::string GetSerializedIdentifier() const;
+        virtual AZStd::string GetSerializedIdentifier();
 
         /**
         * Override to conduct per-component or per-slice validation logic during slice asset processing.

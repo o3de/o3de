@@ -163,7 +163,7 @@ namespace AZ
         }
     }
 
-    AZStd::string Component::GetSerializedIdentifier() const
+    AZStd::string Component::GetSerializedIdentifier()
     {
         return AZStd::string();
     }

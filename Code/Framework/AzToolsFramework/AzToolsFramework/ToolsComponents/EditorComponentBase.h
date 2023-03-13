@@ -120,9 +120,9 @@ namespace AzToolsFramework
             //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
             void SetSerializedIdentifier(AZStd::string serializedIdentifier) override;
 
-            //! Gets the serialzied identifier of this component within an entity.
+            //! Gets the serialzied identifier of this component within an entity, initializing if necessary.
             //! @return The serialized identifier of this component.
-            AZStd::string GetSerializedIdentifier() const override;
+            AZStd::string GetSerializedIdentifier() override;
 
             /**
              * Gets the transform interface of the entity that the component
@@ -198,6 +198,8 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
+            void InitSerializedIdentifier();
+
             AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
         };
