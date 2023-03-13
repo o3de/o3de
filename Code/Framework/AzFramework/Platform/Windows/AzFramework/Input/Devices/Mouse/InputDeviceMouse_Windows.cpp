@@ -441,21 +441,7 @@ namespace AzFramework
         }
 
         // Constrain the cursor to the client (content) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left);  // Converts the top-left point
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
-
-        // Additionally constrain the cursor to the desktop "work area" (i.e. area not including system taskbar)
-        // This way, if the window overlaps the taskbar, the cursor can't move into the taskbar by mistake.
-        RECT workRect;
-        ::SystemParametersInfoW(SPI_GETWORKAREA, 0, &workRect, 0);
-
-        clientRect.left = AZStd::max(clientRect.left, workRect.left);
-        clientRect.right = AZStd::min(clientRect.right, workRect.right);
-        clientRect.top = AZStd::max(clientRect.top, workRect.top);
-        clientRect.bottom = AZStd::min(clientRect.bottom, workRect.bottom);
-
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
         ::ClipCursor(&clientRect);
     }
 
