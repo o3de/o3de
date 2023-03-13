@@ -32,7 +32,9 @@ namespace AZ::Render
 
         // ground 
         AtmosphereOrigin m_originMode = AtmosphereOrigin::GroundAtWorldOrigin;
+        //! ground radius in kilometers
         float m_groundRadius = 6360.0f;
+        //! atmosphere height in kilometers
         float m_atmosphereHeight = 100.0f;
         AZ::Vector3 m_groundAlbedo = AZ::Vector3(0.0f, 0.0f, 0.0f);
         AZ::Vector3 m_luminanceFactor = AZ::Vector3(1.0f, 1.0f, 1.0f);

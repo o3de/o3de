@@ -141,6 +141,12 @@ namespace AZ::Render
                     ;
             }
         }
+
+        if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+        {
+            behaviorContext->Class<EditorSkyAtmosphereComponent>()
+                ->RequestBus("SkyAtmosphereRequestBus");
+        }
     }
 
     EditorSkyAtmosphereComponent::EditorSkyAtmosphereComponent(const SkyAtmosphereComponentConfig& config)

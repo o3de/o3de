@@ -58,5 +58,7 @@ namespace AZ::Render
         virtual AtmosphereId CreateAtmosphere() = 0;
         virtual void ReleaseAtmosphere(AtmosphereId id) = 0;
         virtual void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) = 0;
+        virtual void SetAtmosphereEnabled(AtmosphereId id, bool enabled) = 0;
+        virtual bool GetAtmosphereEnabled(AtmosphereId id) = 0;
     };
 } // namespace AZ::Render
