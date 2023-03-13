@@ -29,7 +29,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
-#include <AzFramework/Asset/UnusableAssetTypes.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -501,11 +500,12 @@ namespace AZ
 
                     // In addition to the hlsl file, there are other json files that were generated.
                     // Each output file will become a product.
+                    static constexpr AZ::Uuid AzslOutcomeType{ "{6977AEB1-17AD-4992-957B-23BB2E85B18B}" };
                     for (int i = 0; i < subProductsPaths.size(); ++i)
                     {
                         AssetBuilderSDK::JobProduct jobProduct;
                         jobProduct.m_productFileName = subProductsPaths[i];
-                        jobProduct.m_productAssetType = AzFramework::AzslOutcomeAssetType;
+                        jobProduct.m_productAssetType = AzslOutcomeType;
                         // uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType
                         jobProduct.m_productSubID = RPI::ShaderAsset::MakeProductAssetSubId(
                                                                 shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,
