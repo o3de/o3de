@@ -466,6 +466,11 @@ namespace AzFramework
         return m_isStatic;
     }
 
+    AZ::OnParentChangedBehavior TransformComponent::GetOnParentChangedBehavior()
+    {
+        return m_onParentChangedBehavior;
+    }
+
     void TransformComponent::SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior)
     {
         m_onParentChangedBehavior = onParentChangedBehavior;

@@ -32,7 +32,7 @@ namespace AZ
     //! Used to control the behavior of an entity's transform when its parent's transform changes at runtime.
     enum class OnParentChangedBehavior : AZ::u8
     {
-        Update, //!< Update this entity's transform based on the parent's new world transform and this entity's local transform.
+        Update, //!< Update this entity's transform based on the parent's new world transform and this entity's local transform (default).
         DoNotUpdate //!< Do not update this entity's world transform when the parent's transform changes.
     };
 
@@ -293,6 +293,12 @@ namespace AZ
         //! A static transform is unmovable and does not respond to requests that would move it.
         virtual void SetIsStaticTransform([[maybe_unused]] bool isStatic) {}
         //! @}
+
+        //! Get the behavior at runtime when this entity's parent's transform changes.
+        virtual OnParentChangedBehavior GetOnParentChangedBehavior()
+        {
+            return OnParentChangedBehavior::Update;
+        }
 
         //! Set the behavior at runtime when this entity's parent's transform changes.
         virtual void SetOnParentChangedBehavior([[maybe_unused]] OnParentChangedBehavior onParentChangedBehavior) {}

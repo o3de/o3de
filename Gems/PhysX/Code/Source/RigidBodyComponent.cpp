@@ -404,6 +404,7 @@ namespace PhysX
         m_interpolator = std::make_unique<TransformForwardTimeInterpolator>();
         m_interpolator->Reset(transform.GetTranslation(), rotation);
 
+        // set the transform to not update when the parent's transform changes, to avoid conflict with physics transform updates
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::DoNotUpdate);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
@@ -418,6 +419,7 @@ namespace PhysX
 
         SetSimulationEnabled(false);
 
+        // set the behavior when the parent's transform changes back to default, since physics is no longer controlling the transform
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::Update);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());

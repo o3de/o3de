@@ -136,7 +136,8 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> GetAllDescendants() override;
         AZStd::vector<AZ::EntityId> GetEntityAndAllDescendants() override;
         bool IsStaticTransform() override;
-        void SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior);
+        AZ::OnParentChangedBehavior GetOnParentChangedBehavior() override;
+        void SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior) override;
 
         //! Methods implementing parent support.
         //! @{
