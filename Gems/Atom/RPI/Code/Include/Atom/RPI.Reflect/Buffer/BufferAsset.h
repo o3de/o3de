@@ -38,7 +38,7 @@ namespace AZ
             static const char* Extension;
             static const char* Group;
 
-            AZ_RTTI(BufferAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
+            AZ_RTTI(BufferAsset, "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", Data::AssetData);
             AZ_CLASS_ALLOCATOR(BufferAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
