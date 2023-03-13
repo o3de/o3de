@@ -800,37 +800,25 @@ namespace AZ
         void MaterialComponentController::QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId)
         {
             m_materialsWithDirtyProperties.emplace(materialAssignmentId);
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::QueueMaterialsCreatedNotification()
         {
             m_queuedMaterialsCreatedNotification = true;
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::QueueMaterialsUpdatedNotification()
         {
             m_queuedMaterialsUpdatedNotification = true;
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::QueueLoadMaterials()
         {
             m_queuedLoadMaterials = true;
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::ConvertAssetsForSerialization()

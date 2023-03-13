@@ -380,5 +380,18 @@ namespace AZ
 
             return AZ::RPI::MaterialPropertyValue::FromAny(value);
         }
+
+        AZ::Render::CustomMaterialMap ConvertToCustomMaterialMap(const AZ::Render::MaterialAssignmentMap& materials)
+        {
+            AZ::Render::CustomMaterialMap customMaterials;
+            customMaterials.reserve(materials.size());
+            for (const auto& materialAssignment : materials)
+            {
+                customMaterials.emplace(
+                    AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
+                    AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
+            }
+            return customMaterials;
+        }
     } // namespace Render
 } // namespace AZ

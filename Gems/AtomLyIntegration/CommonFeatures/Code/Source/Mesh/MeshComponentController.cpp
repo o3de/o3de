@@ -359,14 +359,7 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
-                AZ::Render::CustomMaterialMap customMaterials;
-                for (const auto& materialAssignment : materials)
-                {
-                    customMaterials.emplace(
-                        AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
-                        AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
-                }
-                m_meshFeatureProcessor->SetCustomMaterials(m_meshHandle, customMaterials);
+                m_meshFeatureProcessor->SetCustomMaterials(m_meshHandle, ConvertToCustomMaterialMap(materials));
             }
         }
 
@@ -424,14 +417,6 @@ namespace AZ
                 MaterialAssignmentMap materials;
                 MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialMap);
 
-                AZ::Render::CustomMaterialMap customMaterials;
-                for (const auto& materialAssignment : materials)
-                {
-                    customMaterials.emplace(
-                        AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
-                        AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
-                }
-
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 MeshHandleDescriptor meshDescriptor;
                 meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
@@ -440,7 +425,7 @@ namespace AZ
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, customMaterials);
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform =

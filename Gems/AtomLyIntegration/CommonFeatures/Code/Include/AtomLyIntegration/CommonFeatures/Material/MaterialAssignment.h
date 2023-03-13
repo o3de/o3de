@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
@@ -89,5 +90,7 @@ namespace AZ
         AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
             const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value);
 
+        //! Converting material assignment map to a mesh feature processor custom material map
+        AZ::Render::CustomMaterialMap ConvertToCustomMaterialMap(const AZ::Render::MaterialAssignmentMap& materials);
     } // namespace Render
 } // namespace AZ

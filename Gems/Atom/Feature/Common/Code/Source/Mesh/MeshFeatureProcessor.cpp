@@ -1718,22 +1718,14 @@ namespace AZ
 
         CustomMaterialInfo ModelDataInstance::GetCustomMaterialWithFallback(const CustomMaterialId& id) const
         {
-            if (auto itr = m_customMaterials.find(id); itr != m_customMaterials.end() && itr->second.m_material)
-            {
-                return itr->second;
-            }
-
             const CustomMaterialId ignoreLodId(DefaultCustomMaterialLodIndex, id.second);
-            if (auto itr = m_customMaterials.find(ignoreLodId); itr != m_customMaterials.end() && itr->second.m_material)
+            for (const auto& currentId : { id, ignoreLodId, DefaultCustomMaterialId })
             {
-                return itr->second;
+                if (auto itr = m_customMaterials.find(currentId); itr != m_customMaterials.end() && itr->second.m_material)
+                {
+                    return itr->second;
+                }
             }
-
-            if (auto itr = m_customMaterials.find(DefaultCustomMaterialId); itr != m_customMaterials.end() && itr->second.m_material)
-            {
-                return itr->second;
-            }
-
             return CustomMaterialInfo{};
         }
     } // namespace Render
