@@ -363,6 +363,12 @@ namespace AtomToolsFramework
         dialog.setMinimumSize(0, 0);
         dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         dialog.exec();
+
+        OnSettingsDialogClosed();
+    }
+
+    void AtomToolsMainWindow::OnSettingsDialogClosed()
+    {
     }
 
     AZStd::string AtomToolsMainWindow::GetHelpDialogText() const

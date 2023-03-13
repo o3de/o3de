@@ -13,6 +13,8 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 
+#include <AzCore/Interface/Interface.h>
+
 namespace AzToolsFramework
 {
     void ApplicationWatcher::SetShortcutTriggeredFlag()
@@ -54,7 +56,7 @@ namespace AzToolsFramework
         , m_editorActionContext(editorActionContext)
     {
     }
-    
+
     bool ActionContextWidgetWatcher::eventFilter(QObject* watched, QEvent* event)
     {
         switch (event->type())
@@ -88,7 +90,7 @@ namespace AzToolsFramework
             {
                 keyCode += Qt::META;
             }
-            
+
             QKeySequence keySequence(keyCode);
             QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
 
@@ -100,7 +102,7 @@ namespace AzToolsFramework
                 event->accept();
                 return true;
             }
-            
+
             break;
         }
         case QEvent::Shortcut:
@@ -226,7 +228,7 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                actionIdentifier.c_str(), 
+                actionIdentifier.c_str(),
                 contextIdentifier.c_str()
             ));
         }
@@ -272,7 +274,7 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
-                actionIdentifier.c_str(), 
+                actionIdentifier.c_str(),
                 contextIdentifier.c_str()
             ));
         }
@@ -311,7 +313,7 @@ namespace AzToolsFramework
     {
         return m_actions.contains(actionIdentifier);
     }
-    
+
     ActionManagerGetterResult ActionManager::GetActionName(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -415,7 +417,7 @@ namespace AzToolsFramework
                 "Action Manager - Could not set icon path of action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
-        
+
         actionIterator->second->SetIconPath(iconPath);
         return AZ::Success();
     }
@@ -475,7 +477,7 @@ namespace AzToolsFramework
         actionIterator->second->AddEnabledStateCallback(AZStd::move(enabledStateCallback));
         return AZ::Success();
     }
-    
+
     ActionManagerOperationResult ActionManager::UpdateAction(const AZStd::string& actionIdentifier)
     {
         auto actionIterator = m_actions.find(actionIdentifier);
@@ -485,12 +487,12 @@ namespace AzToolsFramework
                 "Action Manager - Could not update action \"%s\" as no action with that identifier was registered.",
                 actionIdentifier.c_str()));
         }
-        
+
         actionIterator->second->Update();
 
         return AZ::Success();
     }
-    
+
     ActionManagerOperationResult ActionManager::RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier)
     {
         if (m_actionUpdaters.contains(actionUpdaterIdentifier))
@@ -516,7 +518,7 @@ namespace AzToolsFramework
                 actionUpdaterIdentifier.c_str()
             ));
         }
-        
+
         if (!m_actions.contains(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(

@@ -98,6 +98,3 @@ o3de_find_ancestor_project_root(project_path project_name "${CMAKE_CURRENT_SOURC
 if (NOT project_name)
     set(project_name ${Name})
 endif()
-
-# Enable the specified list of gems from GEM_FILE or GEMS list for this specific project:
-ly_enable_gems(PROJECT_NAME ${project_name} GEM_FILE enabled_gems.cmake)

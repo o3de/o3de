@@ -61,7 +61,11 @@ namespace AzToolsFramework
         using VisitComponentAdapterContentsCallback = AZStd::function<void(const AZ::Dom::Value&)>;
 
         explicit ComponentEditor(
-            AZ::SerializeContext* context, IPropertyEditorNotify* notifyTarget = nullptr, QWidget* parent = nullptr);
+            AZ::SerializeContext* context,
+            IPropertyEditorNotify* notifyTarget = nullptr,
+            QWidget* parent = nullptr,
+            bool replaceRPE = false,
+            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter = nullptr);
         ~ComponentEditor();
 
         void AddInstance(AZ::Component* componentInstance, AZ::Component* aggregateInstance, AZ::Component* compareInstance);

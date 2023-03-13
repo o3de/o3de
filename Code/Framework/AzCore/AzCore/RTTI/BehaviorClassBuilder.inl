@@ -670,7 +670,7 @@ namespace AZ
                     );
 
             SetClassHasher<T>(behaviorClass);
-            SetClassDefaultAllocator<T>(behaviorClass, typename HasAZClassAllocator<T>::type());
+            SetClassDefaultAllocator<T>(behaviorClass, AZStd::bool_constant<HasAZClassAllocator_v<T>>{});
             SetClassDefaultConstructor<T>(behaviorClass, typename AZStd::conditional< AZStd::is_constructible<T>::value && !AZStd::is_abstract<T>::value, AZStd::true_type, AZStd::false_type>::type());
             SetClassDefaultDestructor<T>(behaviorClass, typename AZStd::is_destructible<T>::type());
             SetClassDefaultCopyConstructor<T>(behaviorClass, typename AZStd::conditional< AZStd::is_copy_constructible<T>::value && !AZStd::is_abstract<T>::value, AZStd::true_type, AZStd::false_type>::type());

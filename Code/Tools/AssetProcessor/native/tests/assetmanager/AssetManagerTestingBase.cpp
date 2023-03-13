@@ -88,6 +88,7 @@ namespace UnitTests
 
         // Create the APM
         m_assetProcessorManager = AZStd::make_unique<TestingAssetProcessorManager>(m_platformConfig.get());
+        m_assetProcessorManager->SetMetaCreationDelay(0);
 
         // Cache the db pointer because the TEST_F generates a subclass which can't access this private member
         m_stateData = m_assetProcessorManager->m_stateData;
@@ -145,7 +146,7 @@ namespace UnitTests
 
         AZ::Utils::WriteFile("unit test file", m_testFilePath);
 
-        m_rc = AZStd::make_unique<AssetProcessor::RCController>(1, 1);
+        m_rc = AZStd::make_unique<TestingRCController>(1, 1);
         m_rc->SetDispatchPaused(false);
 
         QObject::connect(
@@ -207,7 +208,44 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(expectedFileCount);
 
-        QCoreApplication::processEvents();
+        AZStd::atomic_bool delayed = false;
+
+        QObject::connect(
+            m_assetProcessorManager.get(),
+            &AssetProcessor::AssetProcessorManager::ProcessingDelayed,
+            [&delayed](QString filePath)
+            {
+                delayed = true;
+            });
+
+        QObject::connect(
+            m_assetProcessorManager.get(),
+            &AssetProcessor::AssetProcessorManager::ProcessingResumed,
+            [&delayed](QString filePath)
+            {
+                delayed = false;
+            });
+
+        QCoreApplication::processEvents(); // execute CheckSource
+
+        if (delayed)
+        {
+            // Wait for the QTimer to elapse.  This should be a very quick, sub 10ms wait.
+            // Add 5ms just to be sure the required time has elapsed.
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(MetadataProcessingDelayMs + 5));
+
+            ASSERT_TRUE(delayed);
+
+            QCoreApplication::processEvents(); // Process the timer
+
+            // Sometimes the above processEvents runs CheckSource
+            if (delayed)
+            {
+                QCoreApplication::processEvents(); // execute CheckSource again
+            }
+
+            ASSERT_FALSE(delayed);
+        }
 
         m_assetProcessorManager->CheckActiveFiles(0);
         m_assetProcessorManager->CheckFilesToExamine(expectedFileCount + dependencyFileCount);
@@ -227,12 +265,16 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails)
     {
         rcController.JobSubmitted(jobDetails);
+        UnitTests::JobSignalReceiver receiver;
+        WaitForNextJobToProcess(receiver);
+    }
 
-        JobSignalReceiver receiver;
-        QCoreApplication::processEvents(); // Once to get the job started
+    void AssetManagerTestingBase::WaitForNextJobToProcess(UnitTests::JobSignalReceiver &receiver)
+    {
+        QCoreApplication::processEvents(); // RCController::DispatchJobsImpl : Once to get the job started
         receiver.WaitForFinish(); // Wait for the RCJob to signal it has completed working
-        QCoreApplication::processEvents(); // Once more to trigger the JobFinished event
-        QCoreApplication::processEvents(); // Again to trigger the Finished event
+        QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
+        QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event
     }
 
     AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(
@@ -347,6 +389,18 @@ namespace UnitTests
             CreateJobStage(name, createJobCommonPlatform),
             ProcessJobStage(outputExtension, outputFlags, outputExtraFile),
             "fingerprint");
+    }
+
+    void AssetManagerTestingBase::SetCatalogToUpdateOnJobCompletion()
+    {
+        using namespace AssetBuilderSDK;
+        QObject::connect(
+            m_rc.get(),
+            &AssetProcessor::RCController::FileCompiled,
+            [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+            {
+                QMetaObject::invokeMethod(m_rc.get(), "OnAddedToCatalog", Qt::QueuedConnection, Q_ARG(AssetProcessor::JobEntry, entry));
+            });
     }
 
     AZStd::string AssetManagerTestingBase::MakePath(const char* filename, bool intermediate)

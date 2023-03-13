@@ -49,7 +49,7 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowserInteractions::AddContextMenuActions(
         QWidget* caller, QMenu* menu, const AssetBrowserEntryVector& entries)
     {
-        AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
+        const AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
         if (!entry)
         {
             return;

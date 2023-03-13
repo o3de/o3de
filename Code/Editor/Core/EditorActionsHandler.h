@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -41,6 +42,7 @@ class EditorActionsHandler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
+    , private AzToolsFramework::ContainerEntityNotificationBus::Handler
 {
 public:
     void Initialize(MainWindow* mainWindow);
@@ -85,11 +87,13 @@ private:
     void OnGridShowingChanged(bool showing) override;
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
-    void OnOnlyShowHelpersForSelectedEntitiesChanged(bool enabled) override;
 
     // EditorPickModeNotificationBus overrides ...
     void OnEntityPickModeStarted() override;
     void OnEntityPickModeStopped() override;
+
+    // ContainerEntityNotificationBus overrides ...
+    void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open);
 
     // Layouts
     void RefreshLayoutActions();

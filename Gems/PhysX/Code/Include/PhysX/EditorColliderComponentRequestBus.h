@@ -130,6 +130,14 @@ namespace PhysX
         //! @param The collider's shape type.
         virtual void SetShapeType(Physics::ShapeType) = 0;
 
+        //! Set the X/Y/Z dimensions of the box collider.
+        //! @param dimensions The X/Y/Z dimensions of the box collider.
+        virtual void SetBoxDimensions(const AZ::Vector3& dimensions) = 0;
+
+        //! Get the X/Y/Z dimensions of the box collider.
+        //! @return The X/Y/Z dimensions of the box collider.
+        virtual AZ::Vector3 GetBoxDimensions() const = 0;
+
         //! Sets the radius of the sphere collider.
         //! @param radius The radius of the sphere collider.
         virtual void SetSphereRadius(float radius) = 0;

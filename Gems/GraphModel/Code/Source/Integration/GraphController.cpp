@@ -54,6 +54,61 @@ namespace GraphModelIntegration
     // Index of the thumbnail image we embed in our nodes (just after the title header)
     static const int NODE_THUMBNAIL_INDEX = 1;
 
+    // Helpers static function definitions
+    AZStd::string Helpers::GetTitlePaletteOverride(void* nodePtr, const AZ::TypeId& typeId)
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+
+        AZStd::string paletteOverride;
+
+        const AZ::SerializeContext::ClassData* derivedClassData = serializeContext->FindClassData(typeId);
+        if (!derivedClassData)
+        {
+            return paletteOverride;
+        }
+
+        // Use the EnumHierarchy API to retrive a list of TypeIds that this class derives from,
+        // starting with the actual type and going backwards
+        AZStd::vector<AZ::TypeId> typeIds;
+        if (derivedClassData->m_azRtti)
+        {
+            derivedClassData->m_azRtti->EnumHierarchy(&RttiEnumHierarchyHelper, &typeIds);
+        }
+
+        // Look through all the derived TypeIds to see if the TitlePaletteOverride attribute
+        // was set in the EditContext at any level
+        for (auto currentTypeId : typeIds)
+        {
+            auto classData = serializeContext->FindClassData(currentTypeId);
+            if (classData)
+            {
+                if (classData->m_editData)
+                {
+                    const AZ::Edit::ElementData* elementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                    if (elementData)
+                    {
+                        if (auto titlePaletteAttribute = elementData->FindAttribute(Attributes::TitlePaletteOverride))
+                        {
+                            AZ::AttributeReader nameReader(nodePtr, titlePaletteAttribute);
+                            nameReader.Read<AZStd::string>(paletteOverride);
+                        }
+                    }
+                }
+            }
+        }
+
+        return paletteOverride;
+    }
+
+    void Helpers::RttiEnumHierarchyHelper(const AZ::TypeId& typeId, void* userData)
+    {
+        AZStd::vector<AZ::TypeId>* typeIds = reinterpret_cast<AZStd::vector<AZ::TypeId>*>(userData);
+        typeIds->push_back(typeId);
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////////
     // GraphElementMap
 

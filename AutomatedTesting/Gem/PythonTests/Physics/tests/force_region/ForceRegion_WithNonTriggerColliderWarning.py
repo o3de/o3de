@@ -50,6 +50,7 @@ def ForceRegion_WithNonTriggerColliderWarning():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
 
     # 1) Load the empty level
     hydra.open_base_level()
@@ -67,8 +68,8 @@ def ForceRegion_WithNonTriggerColliderWarning():
     Report.info("Starting warning monitoring")
     with Tracer() as section_tracer:
         # 5) Add the PhysX Primitive Collider component
-        test_entity.add_component("PhysX Primitive Collider")
-        Report.result(Tests.add_physx_collider, test_entity.has_component("PhysX Primitive Collider"))
+        test_entity.add_component(PHYSX_PRIMITIVE_COLLIDER)
+        Report.result(Tests.add_physx_collider, test_entity.has_component(PHYSX_PRIMITIVE_COLLIDER))
         general.idle_wait_frames(1)
     Report.info("Ending warning monitoring")
     

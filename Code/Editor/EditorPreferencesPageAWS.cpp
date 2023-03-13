@@ -11,6 +11,7 @@
 
 // AzCore
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 
