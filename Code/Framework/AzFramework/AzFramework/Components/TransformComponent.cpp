@@ -466,6 +466,11 @@ namespace AzFramework
         return m_isStatic;
     }
 
+    void TransformComponent::SetOnParentChangedBehavior(AZ::OnParentChangedBehavior onParentChangedBehavior)
+    {
+        m_onParentChangedBehavior = onParentChangedBehavior;
+    }
+
     void TransformComponent::OnTransformChanged(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM)
     {
         OnTransformChangedImpl(parentLocalTM, parentWorldTM);
@@ -624,10 +629,21 @@ namespace AzFramework
         // Ignore the event until we've already derived our local transform.
         if (m_parentTM)
         {
-            m_worldTM = parentWorldTM * m_localTM;
-            AZ::TransformNotificationBus::Event(
-                m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
-            m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+            if (m_onParentChangedBehavior == AZ::OnParentChangedBehavior::Update)
+            {
+                m_worldTM = parentWorldTM * m_localTM;
+                AZ::TransformNotificationBus::Event(
+                    m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
+                m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+            }
+            else
+            {
+                // Update the local transform to make sure it is consistent with the parent's new transform
+                // but keeps our world transform unchanged. Do not send any notifications here, because our world
+                // transform has not changed, and with this OnParentChangedBehavior setting the expectation is that
+                // another system will update our transform, and the notification will be triggered then.
+                m_localTM = m_parentTM->GetWorldTM().GetInverse() * m_worldTM;
+            }
         }
     }
 
@@ -764,6 +780,7 @@ namespace AzFramework
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
                 ->Event("IsStaticTransform", &AZ::TransformBus::Events::IsStaticTransform)
+                ->Event("SetOnParentChangedBehavior", &AZ::TransformBus::Events::SetOnParentChangedBehavior)
                 ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ;
 

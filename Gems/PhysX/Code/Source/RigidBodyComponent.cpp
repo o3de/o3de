@@ -404,6 +404,8 @@ namespace PhysX
         m_interpolator = std::make_unique<TransformForwardTimeInterpolator>();
         m_interpolator->Reset(transform.GetTranslation(), rotation);
 
+        GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::DoNotUpdate);
+
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
     }
 
@@ -415,6 +417,8 @@ namespace PhysX
         }
 
         SetSimulationEnabled(false);
+
+        GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::Update);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());
     }
