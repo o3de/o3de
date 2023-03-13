@@ -167,8 +167,6 @@ namespace AZ
             // The buffer instances loaded by this ModelLod
             AZStd::vector<Data::Instance<Buffer>> m_buffers;
 
-            uint32_t m_loadedBuffersCount = 0;
-
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;
 

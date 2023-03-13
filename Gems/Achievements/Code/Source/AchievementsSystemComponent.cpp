@@ -9,6 +9,8 @@
 #include <AchievementsSystemComponent.h>
 #include <Achievements/AchievementNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Achievements
 {

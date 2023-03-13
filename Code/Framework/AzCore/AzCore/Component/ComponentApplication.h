@@ -19,7 +19,6 @@
 #include <AzCore/Module/ModuleManager.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -34,6 +33,7 @@
 namespace AZ
 {
     class BehaviorContext;
+    class SerializeContext;
     class IConsole;
     class Module;
     class ModuleManager;
@@ -99,16 +99,9 @@ namespace AZ
          *       Use the OSAllocator only.
          */
         struct Descriptor
-            : public SerializeContext::IObjectFactory
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
             AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);
-
-            ///////////////////////////////////////////////
-            // SerializeContext::IObjectFactory
-            void* Create(const char* name) override;
-            void  Destroy(void* data) override;
-            ///////////////////////////////////////////////
 
             /// Reflect the descriptor data.
             static void     Reflect(ReflectContext* context, ComponentApplication* app);

@@ -10,6 +10,7 @@
 
 #include <sqlite3.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
@@ -1439,6 +1440,14 @@ namespace AzToolsFramework
                    m_hash == other.m_hash &&
                    AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str()) &&
                    m_flags == other.m_flags;//don't compare legacy guid
+        }
+
+        bool ProductDatabaseEntry::IsSameLogicalProductAs(const ProductDatabaseEntry& other) const
+        {
+            return m_jobPK == other.m_jobPK &&
+                m_subID == other.m_subID &&
+                m_assetType == other.m_assetType &&
+                AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str());
         }
 
         AZStd::string ProductDatabaseEntry::ToString() const

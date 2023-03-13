@@ -315,12 +315,11 @@ set(FILES
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessCommon_fwd.h
-    Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
-    Process/ProcessCommon_fwd.h
     Process/ProcessCommunicatorTracePrinter.cpp
     Process/ProcessCommunicatorTracePrinter.h
+    Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

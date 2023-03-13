@@ -6,8 +6,9 @@
  *
  */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/TickBus.h>
 #include "LUAEditorFindDialog.hxx"
@@ -1160,7 +1161,7 @@ namespace LUAEditor
 
             //split physical path into the components saved by the database
             AZStd::string projectRoot, databaseRoot, databasePath, databaseFile, fileExtension;
-            if (!AzFramework::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
+            if (!AZ::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
             {
                 AZ_Warning("LUAEditorFindDialog", false, AZStd::string::format("<span severity=\"err\">Path is invalid: '%s'</span>", assetName.c_str()).c_str());
                 return;

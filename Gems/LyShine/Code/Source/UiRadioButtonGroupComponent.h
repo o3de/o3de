@@ -14,7 +14,10 @@
 #include <LyShine/Bus/UiInitializationBus.h>
 #include <LyShine/UiComponentTypes.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
+namespace AZ
+{
+    class ReflectContext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiRadioButtonGroupComponent

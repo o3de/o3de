@@ -293,6 +293,9 @@ namespace AtomToolsFramework
     //! Collect a set of file paths from all project safe folders matching a wild card
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
 
+    //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders();
+
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted
     //! @param registryKey The path to the registry setting where script categories are registered

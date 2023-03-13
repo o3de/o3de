@@ -38,3 +38,8 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078124")
     class AtomEditorComponents_MeshAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
+
+    # GHI: https://github.com/o3de/o3de/issues/14580
+    @pytest.mark.test_case_id("C32078115")
+    class AtomEditorComponents_GlobalSkylightIBLAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_GlobalSkylightIBLAdded as test_module

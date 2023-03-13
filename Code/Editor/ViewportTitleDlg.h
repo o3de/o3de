@@ -157,6 +157,7 @@ protected:
     QAction* m_helpersAction = nullptr;
     QAction* m_iconsAction = nullptr;
     QAction* m_onlySelectedAction = nullptr;
+    QAction* m_hideHelpersAction = nullptr;
     QAction* m_noInformationAction = nullptr;
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;

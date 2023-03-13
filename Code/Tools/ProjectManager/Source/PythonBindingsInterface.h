@@ -19,6 +19,11 @@
 #include <ProjectTemplateInfo.h>
 #include <GemRepo/GemRepoInfo.h>
 
+#if !defined(Q_MOC_RUN)
+#include <QHash>
+#endif
+
+
 namespace O3DE::ProjectManager
 {
     //! Interface used to interact with the o3de cli python functions
@@ -146,10 +151,14 @@ namespace O3DE::ProjectManager
 
         /**
          * Get a list of all enabled gem names for a given project.
-         * @param[in] projectPath Absolute file path to the project.
-         * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
+         * @param projectPath Absolute file path to the project.
+         * @param includeDependencies Whether to return gem dependencies or only gems listed in project.json
+         *                            and the deprecated enabled_gems.cmake file if it exists
+         * @return A QHash of gem names with optional version specifiers and gem paths of all
+           the enabled gems for a given project or a error message on failure.
          */
-        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const = 0;
+        virtual AZ::Outcome<QHash<QString /*gem name with specifier*/, QString /* gem path */>, AZStd::string> GetEnabledGems(
+            const QString& projectPath, bool includeDependencies = true) const = 0;
 
         /**
          * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
@@ -208,21 +217,21 @@ namespace O3DE::ProjectManager
         /**
          * Adds existing project on disk
          * @param path the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool AddProject(const QString& path) = 0;
+        virtual DetailedOutcome AddProject(const QString& path) = 0;
 
         /**
          * Adds existing project on disk
          * @param path the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool RemoveProject(const QString& path) = 0;
+        virtual DetailedOutcome RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
          * @param projectInfo the info to use to update the project 
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
         virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
 

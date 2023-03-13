@@ -10,8 +10,6 @@
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 
-#include <AzCore/Serialization/SerializeContext.h>
-
 #include <CryCommon/ISystem.h>
 #endif
 
