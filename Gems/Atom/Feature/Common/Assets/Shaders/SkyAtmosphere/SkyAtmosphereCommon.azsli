@@ -13,8 +13,8 @@
 #define USE_CORNETTESHANKS 1 // use Cornette Shanks mie phase function
 #define USE_NON_LINEAR_SKY_LUT 1 // improve precision at sunset angles
 
-#define PLANET_RADIUS_OFFSET_KM 0.01f // offset when starting raycast to avoid artifacts 
-#define SKY_MINIMUM_GROUND_OFFSET_KM 0.05f // prevent the camera from getting too close to the ground to avoid sharp horizon line
+#define PLANET_RADIUS_OFFSET_KM 0.01 // offset when starting raycast to avoid artifacts 
+#define SKY_MINIMUM_GROUND_OFFSET_KM 0.05 // prevent the camera from getting too close to the ground to avoid sharp horizon line
 
 option bool o_enableShadows = false;
 option bool o_enableSun = true;
@@ -25,7 +25,7 @@ option bool o_enableAerialPerspective = true;
 #include <Atom/Features/SrgSemantics.azsli>
 
 #define SKY_VOLUME_SLICE_COUNT 32
-#define SKY_VOLUME_KM_PER_SLICE 4.0f
+#define SKY_VOLUME_KM_PER_SLICE 4.0
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -123,10 +123,10 @@ option enum class OpacityMode
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #endif // ENABLE_ATMOSPHERE_SHADOWS
 
-float fromUnitToSubUvs(float u, float resolution) { return (u + 0.5f / resolution) * (resolution / (resolution + 1.0f)); }
-float fromSubUvsToUnit(float u, float resolution) { return (u - 0.5f / resolution) * (resolution / (resolution - 1.0f)); }
+float fromUnitToSubUvs(float u, float resolution) { return (u + 0.5 / resolution) * (resolution / (resolution + 1.0)); }
+float fromSubUvsToUnit(float u, float resolution) { return (u - 0.5 / resolution) * (resolution / (resolution - 1.0)); }
 
-float AerialPerspectiveDepthToSlice(float depth) { return depth * (1.0f / SKY_VOLUME_KM_PER_SLICE); }
+float AerialPerspectiveDepthToSlice(float depth) { return depth * (1.0 / SKY_VOLUME_KM_PER_SLICE); }
 float AerialPerspectiveSliceToDepth(float slice) { return slice * SKY_VOLUME_KM_PER_SLICE; }
 
 struct AtmosphereParameters
@@ -195,8 +195,8 @@ AtmosphereParameters GetAtmosphereParameters()
 
 void LutTransmittanceParamsToUv(AtmosphereParameters Atmosphere, in float viewHeight, in float viewZenithCosAngle, out float2 uv)
 {
-    float H = sqrt(max(0.0f, Atmosphere.TopRadius * Atmosphere.TopRadius - Atmosphere.BottomRadius * Atmosphere.BottomRadius));
-    float rho = sqrt(max(0.0f, viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius));
+    float H = sqrt(max(0.0, Atmosphere.TopRadius * Atmosphere.TopRadius - Atmosphere.BottomRadius * Atmosphere.BottomRadius));
+    float rho = sqrt(max(0.0, viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius));
 
     float discriminant = viewHeight * viewHeight * (viewZenithCosAngle * viewZenithCosAngle - 1.0) + Atmosphere.TopRadius * Atmosphere.TopRadius;
     float d = max(0.0, (-viewHeight * viewZenithCosAngle + sqrt(discriminant))); // Distance to atmosphere boundary
@@ -222,16 +222,16 @@ float HgPhase(float g, float cosTheta)
 #else
     // Reference implementation (i.e. not schlick approximation). 
     // See http://www.pbr-book.org/3ed-2018/Volume_Scattering/Phase_Functions.html
-    float numer = 1.0f - g * g;
-    float denom = 1.0f + g * g + 2.0f * g * cosTheta;
-    return numer / (4.0f * PI * denom * sqrt(denom));
+    float numer = 1.0 - g * g;
+    float denom = 1.0 + g * g + 2.0 * g * cosTheta;
+    return numer / (4.0 * PI * denom * sqrt(denom));
 #endif
 }
 
 float RayleighPhase(float cosTheta)
 {
-    const float factor = 3.0f / (16.0f * PI);
-    return factor * (1.0f + cosTheta * cosTheta);
+    const float factor = 3.0 / (16.0 * PI);
+    return factor * (1.0 + cosTheta * cosTheta);
 }
 
 float GetAlbedo(float scattering, float extinction)
@@ -281,7 +281,7 @@ MediumSampleRGB SampleMediumRGB(in float3 worldPos, in AtmosphereParameters Atmo
     s.extinctionMie = densityMie * Atmosphere.MieExtinction;
 
     s.scatteringRay = densityRay * Atmosphere.RayleighScattering;
-    s.absorptionRay = 0.0f;
+    s.absorptionRay = 0.0;
     s.extinctionRay = s.scatteringRay + s.absorptionRay;
 
     s.scatteringOzo = 0.0;
@@ -299,14 +299,14 @@ MediumSampleRGB SampleMediumRGB(in float3 worldPos, in AtmosphereParameters Atmo
 void UvToSkyViewLutParams(in AtmosphereParameters Atmosphere, out float viewZenithCosAngle, out float lightViewCosAngle, in float viewHeight, in float2 uv)
 {
     // Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
-    uv = float2(fromSubUvsToUnit(uv.x, 192.0f), fromSubUvsToUnit(uv.y, 108.0f));
+    uv = float2(fromSubUvsToUnit(uv.x, 192.0), fromSubUvsToUnit(uv.y, 108.0));
 
     const float vHorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
     const float cosBeta = vHorizon / viewHeight;
     const float beta = acos(cosBeta);
     const float zenithHorizonAngle = PI - beta;
 
-    if (uv.y < 0.5f)
+    if (uv.y < 0.5)
     {
         float coord = 2.0*uv.y;
         coord = 1.0 - coord;
@@ -343,7 +343,7 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGrou
         coord = sqrt(coord);
 #endif
         coord = 1.0 - coord;
-        uv.y = coord * 0.5f;
+        uv.y = coord * 0.5;
     }
     else
     {
@@ -351,17 +351,17 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool intersectGrou
 #if USE_NON_LINEAR_SKY_LUT
         coord = sqrt(coord);
 #endif
-        uv.y = coord * 0.5f + 0.5f;
+        uv.y = coord * 0.5 + 0.5;
     }
 
     {
-        float coord = -lightViewCosAngle * 0.5f + 0.5f;
+        float coord = -lightViewCosAngle * 0.5 + 0.5;
         coord = sqrt(coord);
         uv.x = coord;
     }
 
     // Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
-    uv = float2(fromUnitToSubUvs(uv.x, 192.0f), fromUnitToSubUvs(uv.y, 108.0f));
+    uv = float2(fromUnitToSubUvs(uv.x, 192.0), fromUnitToSubUvs(uv.y, 108.0));
 }
 
 bool MoveToAtmosphere(in AtmosphereParameters Atmosphere, inout float3 worldPos, inout float distanceToAtmosphere, in float3 worldDir, in float depth)
@@ -376,16 +376,16 @@ bool MoveToAtmosphere(in AtmosphereParameters Atmosphere, inout float3 worldPos,
     float offset;
     if (viewHeight > Atmosphere.TopRadius)
     {
-        distanceToAtmosphere = RaySphereClosestHitWS(float3(0.0f, 0.0f, 0.0f), Atmosphere.TopRadius, worldPos, worldDir);
+        distanceToAtmosphere = RaySphereClosestHitWS(float3(0.0, 0.0, 0.0), Atmosphere.TopRadius, worldPos, worldDir);
         offset = -PLANET_RADIUS_OFFSET_KM;
     }
     else if(viewHeight < Atmosphere.BottomRadius)
     {
-        distanceToAtmosphere = RaySphereClosestHitWS(float3(0.0f, 0.0f, 0.0f), Atmosphere.BottomRadius, worldPos, worldDir);
+        distanceToAtmosphere = RaySphereClosestHitWS(float3(0.0, 0.0, 0.0), Atmosphere.BottomRadius, worldPos, worldDir);
         offset = PLANET_RADIUS_OFFSET_KM;
     }
 
-    if (distanceToAtmosphere < 0.0f || distanceToAtmosphere > depth)
+    if (distanceToAtmosphere < 0.0 || distanceToAtmosphere > depth)
     {
         // ray is not intersecting the atmosphere
         return false;
@@ -406,22 +406,22 @@ struct SingleScatteringResult
 SingleScatteringResult IntegrateScatteredLuminance(
     in float2 pixPos, in float3 worldPos, in float3 worldDir, in float3 sunDir, in AtmosphereParameters Atmosphere,
     in bool ground, in float sampleCountIni, in float depthBufferValue, in bool variablesampleCount,
-    in bool mieRayPhase, in float tMaxMax = 9000000.0f)
+    in bool mieRayPhase, in float tMaxMax = 9000000.0)
 {
     SingleScatteringResult result = (SingleScatteringResult)0;
 
     // Compute next intersection with atmosphere or ground 
-    const float3 earthOrigin = float3(0.0f, 0.0f, 0.0f);
+    const float3 earthOrigin = float3(0.0, 0.0, 0.0);
     float tBottom = RaySphereClosestHitWS(earthOrigin, Atmosphere.BottomRadius, worldPos, worldDir);
     float tTop = RaySphereClosestHitWS(earthOrigin, Atmosphere.TopRadius, worldPos, worldDir);
-    float tMax = 0.0f;
+    float tMax = 0.0;
 
     // this logic assumes the camera is not inside the planet surface
-    if (tBottom < 0.0f)
+    if (tBottom < 0.0)
     {
-        if (tTop < 0.0f)
+        if (tTop < 0.0)
         {
-            tMax = 0.0f; // No intersection with earth nor atmosphere: stop right away  
+            tMax = 0.0; // No intersection with earth nor atmosphere: stop right away  
             return result;
         }
         else
@@ -431,7 +431,7 @@ SingleScatteringResult IntegrateScatteredLuminance(
     }
     else
     {
-        if (tTop > 0.0f)
+        if (tTop > 0.0)
         {
             // when in the sky looking down we hit the bottom and the top
             // but we just want the distance to the bottom
@@ -468,19 +468,19 @@ SingleScatteringResult IntegrateScatteredLuminance(
     const float3 globalL = PassSrg::m_constants.m_luminanceFactor;
 
     // Ray march the atmosphere to integrate optical depth
-    float3 luminance = 0.0f;
+    float3 luminance = 0.0;
     float3 throughput = 1.0;
     float3 opticalDepth = 0.0;
-    float t = 0.0f;
+    float t = 0.0;
     float tPrev = 0.0;
-    const float sampleSegmentT = 0.3f;
-    for (float s = 0.0f; s < sampleCount; s += 1.0f)
+    const float sampleSegmentT = 0.3;
+    for (float s = 0.0; s < sampleCount; s += 1.0)
     {
         if (variablesampleCount)
         {
             // More expenssive but artefact free
             float t0 = (s) / sampleCountFloor;
-            float t1 = (s + 1.0f) / sampleCountFloor;
+            float t1 = (s + 1.0) / sampleCountFloor;
             // Non linear distribution of sample within the range.
             t0 = t0 * t0;
             t1 = t1 * t1;
@@ -530,14 +530,14 @@ SingleScatteringResult IntegrateScatteredLuminance(
 
         // Earth shadow 
         const float tEarth = RaySphereClosestHitWS(earthOrigin + PLANET_RADIUS_OFFSET_KM * upVector, Atmosphere.BottomRadius, samplePos, sunDir);
-        const float earthShadow = tEarth >= 0.0f ? 0.0f : 1.0f;
+        const float earthShadow = tEarth >= 0.0 ? 0.0 : 1.0;
 
-        float shadow = 1.0f;
+        float shadow = 1.0;
 
 #if ENABLE_ATMOSPHERE_SHADOWS
-        if (o_enableShadows && earthShadow == 1.0f && tMax < PassSrg::m_constants.m_sunShadowFarClip)
+        if (o_enableShadows && earthShadow == 1.0 && tMax < PassSrg::m_constants.m_sunShadowFarClip)
         {
-            const float3 shadowWorldPosition = (samplePos + Atmosphere.PlanetOrigin) * 1000.f;
+            const float3 shadowWorldPosition = (samplePos + Atmosphere.PlanetOrigin) * 1000.;
             shadow = DirectionalLightShadow::GetVisibility(
                 ViewSrg::m_shadowIndexDirectionalLight,
                 shadowWorldPosition,
