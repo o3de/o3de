@@ -179,6 +179,13 @@ DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD = {
     'PCF+ESM': 3,
 }
 
+#Origin type for Sky Atmosphere component
+ATMOSPHERE_ORIGIN = {
+    'GroundAtWorldOrigin': 0,
+    'GroundAtLocalOrigin': 1,
+    'PlanetCenterAtLocalOrigin': 2,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -1298,6 +1305,74 @@ class AtomComponentProperties:
             'Length': 'Controller|Configuration|Inner Extents|Length',
             'Width': 'Controller|Configuration|Inner Extents|Width',
             'Baked Cubemap Path': 'Cubemap|Baked Cubemap Path',
+        }
+        return properties[property]
+
+    @staticmethod
+    def sky_atmosphere(property: str = 'name') -> str:
+        """
+        Sky Atmosphere component properties
+          - 'Ground albedo' Additional light from the surface of the ground (Vector3 float) default (0.0,0.0,0.0)
+          - 'Ground radius' Kilometers 0.0 to 100000.0 (float) default 6360.0
+          - 'Origin' The origin to use for the atmosphere (int)
+          - 'Atmosphere height' Kilometers 0.0 to 10000.0 (float) default 100.0
+          - 'Illuminance factor' An additional factor to brighten or darken the overall atmosphere (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie absorption Scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie absorption' (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie exponential distribution' Altitude in kilometers at which Mie scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 1.2
+          - 'Mie scattering Scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie scattering' Mie scattering coefficients from aerosole molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Ozone Absorption Scale' Ozone molecule absorption scale 0.0 to 1.0 (float) default 0.001881
+          - 'Ozone Absorption' Absorption coefficients from ozone molecules (Vector3 float) default (1.0,1.0,1.0)
+          - 'Rayleigh exponential distribution' Altitude in kilometers at which Rayleigh scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 8.0
+          - 'Rayleigh scattering Scale' 0.0 to 1.0 (float) default 0.033100f
+          - 'Rayleigh scattering' Raleigh scattering coefficients from air molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Show sun' display a sun (bool) default True
+          - 'Sun color' (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun falloff factor' 0.0 to 200.0 (float) default 1.0
+          - 'Sun limb color' for adjusting outer edge color of sun. (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun luminance factor' 0.0 to 100000.0 (float) default 0.05
+          - 'Sun orientation' Optional sun entity to use for orientation (EntityId)
+          - 'Sun radius factor' 0.0 to 100.0 (float) default 1.0
+          - 'Enable shadows' (bool) default False
+          - 'Fast sky' (bool) default True
+          - 'Max samples' 1 to 64 (unsigned int) default 14
+          - 'Min samples' 1 to 64 (unsigned int) default 4
+          - 'Near Clip' 0.0 to inf (float) default 0.0
+          - 'Near Fade Distance' 0.0 to inf (float) default 0.0
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Sky Atmosphere',
+            'Ground albedo': 'Controller|Configuration|Planet|Ground albedo',
+            'Ground radius': 'Controller|Configuration|Planet|Ground radius',
+            'Origin': 'Controller|Configuration|Planet|Origin',
+            'Atmosphere height': 'Controller|Configuration|Atmosphere|Atmosphere height',
+            'Illuminance factor': 'Controller|Configuration|Atmosphere|Illuminance factor',
+            'Mie absorption Scale': 'Controller|Configuration|Atmosphere|Mie absorption Scale',
+            'Mie absorption': 'Controller|Configuration|Atmosphere|Mie absorption',
+            'Mie exponential distribution': 'Controller|Configuration|Atmosphere|Mie exponential distribution',
+            'Mie scattering Scale': 'Controller|Configuration|Atmosphere|Mie scattering Scale',
+            'Mie scattering': 'Controller|Configuration|Atmosphere|Mie scattering',
+            'Ozone Absorption Scale': 'Controller|Configuration|Atmosphere|Ozone Absorption Scale',
+            'Ozone Absorption': 'Controller|Configuration|Atmosphere|Ozone Absorption',
+            'Rayleigh exponential distribution': 'Controller|Configuration|Atmosphere|Rayleigh exponential distribution',
+            'Rayleigh scattering Scale': 'Controller|Configuration|Atmosphere|Rayleigh scattering Scale',
+            'Rayleigh scattering': 'Controller|Configuration|Atmosphere|Rayleigh scattering',
+            'Show sun': 'Controller|Configuration|Sun|Show sun',
+            'Sun color': 'Controller|Configuration|Sun|Sun color',
+            'Sun falloff factor': 'Controller|Configuration|Sun|Sun falloff factor',
+            'Sun limb color': 'Controller|Configuration|Sun|Sun limb color',
+            'Sun luminance factor': 'Controller|Configuration|Sun|Sun luminance factor',
+            'Sun orientation': 'Controller|Configuration|Sun|Sun orientation',
+            'Sun radius factor': 'Controller|Configuration|Sun|Sun radius factor',
+            'Enable shadows': 'Controller|Configuration|Advanced|Enable shadows',
+            'Fast sky': 'Controller|Configuration|Advanced|Fast sky',
+            'Max samples': 'Controller|Configuration|Advanced|Max samples',
+            'Min samples': 'Controller|Configuration|Advanced|Min samples',
+            'Near Clip': 'Controller|Configuration|Advanced|Near Clip',
+            'Near Fade Distance': 'Controller|Configuration|Advanced|Near Fade Distance',
         }
         return properties[property]
 

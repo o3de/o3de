@@ -89,12 +89,19 @@ namespace AssetProcessor
 
     struct SourceFileRelocationInfo
     {
-        SourceFileRelocationInfo(AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry, AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products, const AZStd::string& oldRelativePath, const ScanFolderInfo* scanFolder)
-            : m_sourceEntry(AZStd::move(sourceEntry)),
-            m_products(AZStd::move(products)),
-            m_oldRelativePath(oldRelativePath)
+        SourceFileRelocationInfo(
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry,
+            AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products,
+            const AZStd::string& oldRelativePath,
+            const ScanFolderInfo* scanFolder,
+            bool isMetadataEnabledType)
+            : m_sourceEntry(AZStd::move(sourceEntry))
+            , m_products(AZStd::move(products))
+            , m_oldRelativePath(oldRelativePath)
+            , m_isMetadataEnabledType(isMetadataEnabledType)
         {
-            AzFramework::StringFunc::Path::ConstructFull(scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
+            AzFramework::StringFunc::Path::ConstructFull(
+                scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
             m_oldAbsolutePath = AssetUtilities::NormalizeFilePath(m_oldAbsolutePath.c_str()).toUtf8().constData();
         }
 
@@ -118,7 +125,10 @@ namespace AssetProcessor
         AZStd::string m_newAbsolutePath;
         bool m_hasPathDependencies = false;
         SourceFileRelocationStatus m_operationStatus = SourceFileRelocationStatus::None;
-        bool m_isMetaDataFile = false;
+        // If >= 0, this is a metadata file.  This is the index into the
+        // PlatformConfiguration metadata list (use with GetMetaDataFileTypeAt)
+        int m_metadataIndex = SourceFileRelocationInvalidIndex;
+        bool m_isMetadataEnabledType = false; // Indicates if this file uses metadata relocation
         // This is a cached index of the SourceFile in the SourceFileRelocationContainer.
         // This is only used by the metadata file to determine the destination path if needed.
         int m_sourceFileIndex = AssetProcessor::SourceFileRelocationInvalidIndex;

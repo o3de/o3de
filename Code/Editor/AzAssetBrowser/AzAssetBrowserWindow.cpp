@@ -26,6 +26,7 @@
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -260,14 +261,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_middleStackWidget->hide();
         m_ui->m_treeViewButton->hide();
         m_ui->m_thumbnailViewButton->hide();
-        m_ui->m_tableViewButton->hide();
+        m_ui->m_expandedTableViewButton->hide();
         m_ui->m_createButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     }
 
     m_ui->horizontalLayout->setAlignment(m_ui->m_toolsMenuButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_treeViewButton, Qt::AlignTop);
-    m_ui->horizontalLayout->setAlignment(m_ui->m_tableViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_expandedTableViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
@@ -290,12 +291,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     });
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
-    connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
+    connect(m_ui->m_expandedTableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_expandedTableView); });
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
     // !!! Need to set the model on the tree widget first
     m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -630,6 +632,11 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             if (thumbnailWidget)
             {
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+            }
+            auto expandedTableWidget = m_ui->m_expandedTableView->GetExpandedTableViewWidget();
+            if (expandedTableWidget)
+            {
+                expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
             }
         }
     }
