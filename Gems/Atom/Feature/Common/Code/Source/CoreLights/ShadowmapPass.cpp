@@ -171,11 +171,11 @@ namespace AZ
         {
             Base::SetupFrameGraphDependencies(frameGraph);
 
-            // Override the estimated item count to be what the raster pass would report + 1.
-            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()) + 1);
+            // Override the estimated item count set by the base class.
+            frameGraph.SetEstimatedItemCount(GetNumDraws());
         }
 
-        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        uint32_t ShadowmapPass::GetNumDraws() const
         {
             if (m_isStatic && !m_forceRenderNextFrame)
             {
@@ -186,9 +186,19 @@ namespace AZ
                     if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
                     {
                         // Shadow is static and no casters moved since last frame.
-                        return;
+                        return 0;
                     }
                 }
+            }
+            // Report + 1 to make room for the clear draw packet.
+            return static_cast<uint32_t>(m_drawListView.size() + 1);
+        }
+
+        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        {
+            if (GetNumDraws() == 0)
+            {
+                return;
             }
 
             if (m_clearShadowDrawPacket)
