@@ -359,19 +359,21 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
 
     # Ensure all gems from "gem_names" are included in the settings registry 
     # file used to load runtime gems libraries
-    ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
+    if(gem_names)
+        ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
 
-    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
-    list(APPEND subdirs_for_object ${object_gem_reference_dirs})
+        add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
+        list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 
-    # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
-    # field
-    foreach(gem_name_with_version_specifier IN LISTS gem_names)
-        # Remove any version specifier from the gem name e.g. 'atom>=1.2.3' becomes 'atom'
-        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
-        get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
-        list(APPEND subdirs_for_object ${gem_real_external_subdirs})
-    endforeach()
+        # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
+        # field
+        foreach(gem_name_with_version_specifier IN LISTS gem_names)
+            # Remove any version specifier from the gem name e.g. 'atom>=1.2.3' becomes 'atom'
+            o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+            get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
+            list(APPEND subdirs_for_object ${gem_real_external_subdirs})
+        endforeach()
+    endif()
 
     # Append the list of external_subdirectories that come with the object
     if(NOT object_name STREQUAL "")

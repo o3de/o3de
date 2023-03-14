@@ -275,7 +275,7 @@ namespace AtomToolsFramework
         }, {});
 
         makeSeperator("menuView");
-        m_actionPresetEditor = makeAction("menuView", tr("Preset Editor"), [this](){ OpenPresetsEditor(); }, {});
+        m_actionPresetEditor = makeAction("menuView", tr("Presets Editor"), [this](){ OpenPresetsEditor(); }, {});
 
         makeSeperator("menuView");
         m_actionShowEntireGraph = makeAction("menuView", tr("Show Entire Graph"), [this](){
