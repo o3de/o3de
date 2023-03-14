@@ -99,8 +99,10 @@ namespace AZ
             void ReleaseMaterials();
             //! Queue applying property overrides to material instances until tick
             void QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId);
+            //! Queue material instance creation notifications until tick
+            void QueueMaterialsCreatedNotification();
             //! Queue material instance recreation notifications until tick
-            void QueueMaterialUpdateNotification();
+            void QueueMaterialsUpdatedNotification();
             //! Queue material reload so that it only occurs once per tick
             void QueueLoadMaterials();
 
@@ -118,7 +120,8 @@ namespace AZ
             MaterialAssignmentMap m_defaultMaterialMap;
             AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_uniqueMaterialMap;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;
-            bool m_queuedMaterialUpdateNotification = false;
+            bool m_queuedMaterialsCreatedNotification = false;
+            bool m_queuedMaterialsUpdatedNotification = false;
             bool m_queuedLoadMaterials = false;
         };
     } // namespace Render

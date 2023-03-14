@@ -80,6 +80,7 @@ namespace MaterialCanvas
         m_functionDefinitions.clear();
         m_configIdsVisited.clear();
         m_slotValueTable.clear();
+        m_templateNodeCount = 0;
         m_templatePathsForCurrentNode.clear();
         m_templateFileDataVecForCurrentNode.clear();
         m_instructionNodesForCurrentNode.clear();
@@ -154,6 +155,9 @@ namespace MaterialCanvas
                 SetState(State::Failed);
                 return false;
             }
+
+            // Increment the template node counter in case we encounter another template node and need to uniquely identify it.
+            ++m_templateNodeCount;
         }
 
         if (!ReportGeneratedFileStatus())
@@ -292,7 +296,7 @@ namespace MaterialCanvas
             [&](auto& templateFileData)
             {
                 // Substitute all references to the placeholder graph name with one generated from the document name
-                templateFileData.ReplaceSymbol("MaterialGraphName", m_graphName);
+                templateFileData.ReplaceSymbol("MaterialGraphName", GetUniqueGraphName());
 
                 // Inject include files found while traversing the graph into any include file blocks in the template.
                 templateFileData.ReplaceLinesInBlock(
@@ -454,7 +458,7 @@ namespace MaterialCanvas
         AZStd::string templateOutputPath = GetGraphPath();
         AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
-        AZ::StringFunc::Replace(templateOutputPath, "MaterialGraphName", m_graphName.c_str());
+        AZ::StringFunc::Replace(templateOutputPath, "MaterialGraphName", GetUniqueGraphName().c_str());
         return templateOutputPath;
     }
 
@@ -1301,7 +1305,7 @@ namespace MaterialCanvas
         }
 
         // Substitute the material graph name and any other Material Canvas specific tokens
-        AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", m_graphName.c_str());
+        AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", GetUniqueGraphName().c_str());
 
         AZ_TracePrintf_IfTrue(
             "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Saving generated file: %s\n", templateOutputPath.c_str());
@@ -1315,5 +1319,10 @@ namespace MaterialCanvas
         }
 
         return true;
+    }
+
+    AZStd::string MaterialGraphCompiler::GetUniqueGraphName() const
+    {
+        return m_templateNodeCount <= 0 ? m_graphName : AZStd::string::format("%s_%03i", m_graphName.c_str(), m_templateNodeCount);
     }
 } // namespace MaterialCanvas
