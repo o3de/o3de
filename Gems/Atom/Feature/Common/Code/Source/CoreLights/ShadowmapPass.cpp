@@ -220,6 +220,7 @@ namespace AZ
                 // in SubmitDrawItems because it may be called multiple times from different threads.
                 m_forceRenderNextFrame = false;
             }
+            Base::FrameEndInternal();
         }
 
     } // namespace Render
