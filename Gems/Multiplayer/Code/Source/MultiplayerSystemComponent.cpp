@@ -1534,6 +1534,7 @@ namespace Multiplayer
             serverRateSeconds
         );
 
+#if AZ_TRAIT_CLIENT
         if (Camera::ActiveCameraRequestBus::HasHandlers())
         {
             // If there's a camera, update only what's visible
@@ -1598,6 +1599,7 @@ namespace Multiplayer
             }
         }
         else
+#endif // on servers update all net entities
         {
             // If there's no camera, fall back to updating all net entities
             for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))

@@ -133,7 +133,10 @@ namespace AzQtComponents
 
         Qt::TextElideMode m_elideMode;
         QLabel* m_metricsLabel;
+        
+        static constexpr int s_minTimeBetweenUpdates = 200;
         int m_elideTimerId = 0;
+        bool m_elideDeferred = false;
         bool m_updateGeomentry = false;
     };
 

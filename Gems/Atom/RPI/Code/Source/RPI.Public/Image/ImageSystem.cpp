@@ -166,6 +166,7 @@ namespace AZ
             Interface<ImageSystemInterface>::Unregister(this);
 
             m_systemImages.clear();
+            m_systemAttachmentImages.clear();
             m_systemStreamingPool = nullptr;
             m_systemAttachmentPool = nullptr;
 
@@ -207,6 +208,62 @@ namespace AZ
         const Data::Instance<Image>& ImageSystem::GetSystemImage(SystemImage simpleImage) const
         {
             return m_systemImages[static_cast<size_t>(simpleImage)];
+        }
+
+        const Data::Instance<AttachmentImage>& ImageSystem::GetSystemAttachmentImage(RHI::Format format)
+        {
+            {
+                AZStd::shared_lock<AZStd::shared_mutex> lock(m_systemAttachmentImagesUpdateMutex);
+
+                auto it = m_systemAttachmentImages.find(format);
+                if (it != m_systemAttachmentImages.end())
+                {
+                    return it->second;
+                }
+            }
+
+            // Take a full lock while the map is updated.
+            AZStd::lock_guard<AZStd::shared_mutex> lock(m_systemAttachmentImagesUpdateMutex);
+
+            // Double check map in case another thread created an attachment image for this format while this
+            // thread waited on the lock.
+            auto it = m_systemAttachmentImages.find(format);
+            if (it != m_systemAttachmentImages.end())
+            {
+                return it->second;
+            }
+            
+            RHI::ImageBindFlags formatBindFlag = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
+
+            switch (format)
+            {
+            case RHI::Format::D16_UNORM:
+            case RHI::Format::D32_FLOAT:
+                formatBindFlag = RHI::ImageBindFlags::Depth | RHI::ImageBindFlags::ShaderRead;
+                break;
+            case RHI::Format::D16_UNORM_S8_UINT:
+            case RHI::Format::D24_UNORM_S8_UINT:
+            case RHI::Format::D32_FLOAT_S8X24_UINT:
+                formatBindFlag = RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::ShaderRead;
+                break;
+            }
+
+            RHI::ImageDescriptor imageDescriptor;
+            imageDescriptor.m_size = RHI::Size(1, 1, 1);
+            imageDescriptor.m_format = format;
+            imageDescriptor.m_arraySize = 1;
+            imageDescriptor.m_bindFlags = formatBindFlag;
+            imageDescriptor.m_sharedQueueMask = RHI::HardwareQueueClassMask::All;
+
+            RPI::CreateAttachmentImageRequest createImageRequest;
+            createImageRequest.m_imagePool = m_systemAttachmentPool.get();
+            createImageRequest.m_imageDescriptor = imageDescriptor;
+            createImageRequest.m_imageName = "SystemAttachmentImage";
+            createImageRequest.m_isUniqueName = false;
+
+            auto systemAttachmentImage = RPI::AttachmentImage::Create(createImageRequest);
+            m_systemAttachmentImages[format] = systemAttachmentImage;
+            return m_systemAttachmentImages[format];
         }
 
         bool ImageSystem::RegisterAttachmentImage(AttachmentImage* attachmentImage)
