@@ -257,7 +257,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
-    #@pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.test_case_id("C24168802")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
