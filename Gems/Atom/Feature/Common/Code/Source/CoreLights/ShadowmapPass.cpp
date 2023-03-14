@@ -190,7 +190,6 @@ namespace AZ
                     }
                 }
             }
-            m_forceRenderNextFrame = false;
 
             if (m_clearShadowDrawPacket)
             {
@@ -210,6 +209,17 @@ namespace AZ
                 ++offset;
             }
             Base::SubmitDrawItems(context, startIndex, endIndex, offset);
+        }
+
+        void ShadowmapPass::FrameEndInternal()
+        {
+            if (m_clearShadowDrawPacket)
+            {
+                // If m_clearShadowDrawPacket is valid, then this pass would have rendered this frame if
+                // m_forceRenderNextFrame was set to true, so set it to false now. This can't be done safely
+                // in SubmitDrawItems because it may be called multiple times from different threads.
+                m_forceRenderNextFrame = false;
+            }
         }
 
     } // namespace Render
