@@ -132,6 +132,7 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...

@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
 
 namespace AZ
