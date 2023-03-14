@@ -275,11 +275,11 @@ def AtomEditorComponents_SkyAtmosphere_AddedToEntity():
 
         # 11. Set a value for 'Mie absorption Scale' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Mie absorption Scale'), 1.0)
+            AtomComponentProperties.sky_atmosphere('Mie absorption scale'), 1.0)
         Report.result(
             Tests.mie_absorption_scale,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Mie absorption Scale')) == 1.0)
+                AtomComponentProperties.sky_atmosphere('Mie absorption scale')) == 1.0)
 
         # 12. Set a value for 'Mie absorption' property
         sky_atmosphere_component.set_component_property_value(
@@ -299,11 +299,11 @@ def AtomEditorComponents_SkyAtmosphere_AddedToEntity():
 
         # 14. Set a value for 'Mie scattering Scale' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Mie scattering Scale'), 1.0)
+            AtomComponentProperties.sky_atmosphere('Mie scattering scale'), 1.0)
         Report.result(
             Tests.mie_scattering_scale,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Mie scattering Scale')) == 1.0)
+                AtomComponentProperties.sky_atmosphere('Mie scattering scale')) == 1.0)
 
         # 15. Set a value for 'Mie scattering' property
         sky_atmosphere_component.set_component_property_value(
@@ -315,19 +315,19 @@ def AtomEditorComponents_SkyAtmosphere_AddedToEntity():
 
         # 16. Set a value for 'Ozone Absorption Scale' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Ozone Absorption Scale'), 1.0)
+            AtomComponentProperties.sky_atmosphere('Ozone absorption scale'), 1.0)
         Report.result(
             Tests.ozone_absorption_scale,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Ozone Absorption Scale')) == 1.0)
+                AtomComponentProperties.sky_atmosphere('Ozone absorption scale')) == 1.0)
 
         # 17. Set a value for 'Ozone Absorption' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Ozone Absorption'), Vector3(0.5,0.5,0.0))
+            AtomComponentProperties.sky_atmosphere('Ozone absorption'), Vector3(0.5,0.5,0.0))
         Report.result(
             Tests.ozone_absorption,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Ozone Absorption')) == Vector3(0.5,0.5,0.0))
+                AtomComponentProperties.sky_atmosphere('Ozone absorption')) == Vector3(0.5,0.5,0.0))
 
         # 18. Set a value for 'Rayleigh exponential distribution' property
         sky_atmosphere_component.set_component_property_value(
@@ -339,11 +339,11 @@ def AtomEditorComponents_SkyAtmosphere_AddedToEntity():
 
         # 19. Set a value for 'Rayleigh scattering Scale' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Rayleigh scattering Scale'), 1.0)
+            AtomComponentProperties.sky_atmosphere('Rayleigh scattering scale'), 1.0)
         Report.result(
             Tests.rayleigh_scattering_scale,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Rayleigh scattering Scale')) == 1.0)
+                AtomComponentProperties.sky_atmosphere('Rayleigh scattering scale')) == 1.0)
 
         # 20. Set a value for 'Rayleigh scattering' property
         sky_atmosphere_component.set_component_property_value(
@@ -465,19 +465,19 @@ def AtomEditorComponents_SkyAtmosphere_AddedToEntity():
 
         # 32. Set a value for 'Near Clip' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Near Clip'), 10.0)
+            AtomComponentProperties.sky_atmosphere('Near clip'), 10.0)
         Report.result(
             Tests.near_clip,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Near Clip')) == 10.0)
+                AtomComponentProperties.sky_atmosphere('Near clip')) == 10.0)
 
         # 33. Set a value for 'Near Fade Distance' property
         sky_atmosphere_component.set_component_property_value(
-            AtomComponentProperties.sky_atmosphere('Near Fade Distance'), 20.0)
+            AtomComponentProperties.sky_atmosphere('Near fade distance'), 20.0)
         Report.result(
             Tests.near_fade_distance,
             sky_atmosphere_component.get_component_property_value(
-                AtomComponentProperties.sky_atmosphere('Near Fade Distance')) == 20.0)
+                AtomComponentProperties.sky_atmosphere('Near fade distance')) == 20.0)
 
         # 34. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
