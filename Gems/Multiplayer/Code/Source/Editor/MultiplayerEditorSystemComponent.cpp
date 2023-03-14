@@ -305,19 +305,26 @@ namespace Multiplayer
         }
 
         processLaunchInfo.m_processExecutableString = serverPath.String();
-        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>
+
         {
-            AZStd::string::format(R"(--project_path "%s")", AZ::Utils::GetProjectPath().c_str()),
-            "--bg_ConnectToAssetProcessor false",
-            "--editorsv_isDedicated true",
-            "--sv_dedicated_host_onstartup false",
-            AZStd::string::format("--editorsv_port %i", static_cast<uint16_t>(editorsv_port)),
-            AZStd::string::format("--bg_enableNetworkingMetrics %i", (bg_enableNetworkingMetrics ? 1 : 0)),
-            "--rhi",
-            server_rhi.GetStringView(),
+            AZStd::vector<AZStd::string> commandLineParameters = {
+                AZStd::string::format(R"(--project_path="%s")", AZ::Utils::GetProjectPath().c_str()),
+                "--bg_ConnectToAssetProcessor=false",
+                "--editorsv_isDedicated=true",
+                "--sv_dedicated_host_onstartup=false",
+                AZStd::string::format("--editorsv_port=%i", static_cast<uint16_t>(editorsv_port)),
+                AZStd::string::format("--bg_enableNetworkingMetrics=%i", (bg_enableNetworkingMetrics ? 1 : 0)),
+                AZStd::string::format("--rhi=%s", server_rhi.GetCStr())
+            };
+
             // If the null rhi is requested, then also automatically set the -NullRenderer flag.
-            (server_rhi == AZ::Name("null")) ? "-NullRenderer" : ""
-        };
+            if (server_rhi == AZ::Name("null"))
+            {
+                commandLineParameters.emplace_back("-NullRenderer");
+            }
+
+            processLaunchInfo.m_commandlineParameters = AZStd::move(commandLineParameters);
+        }
 
         processLaunchInfo.m_showWindow = !editorsv_hidden;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
