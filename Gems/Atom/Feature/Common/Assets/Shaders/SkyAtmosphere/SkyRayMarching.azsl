@@ -71,7 +71,7 @@ RayMarchPixelOutputStruct RayMarchingPS(VSOutput Input, in uint sampleIndex : SV
 
     // re-construct the world space coords
     float2 screenCoords = Input.m_position.xy;
-    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
+    float depth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, Input.m_texCoord).r;
 
     float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
     float4 projectedPos = float4(ndcPos, depth, 1.0f);
