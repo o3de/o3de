@@ -50,7 +50,7 @@ real3 TransformColor(in real3 color, ColorSpaceId fromColorSpace, ColorSpaceId t
     {
         return color;
     }
-        
+
     if (fromColorSpace == ColorSpaceId::LinearSRGB && toColorSpace == ColorSpaceId::ACEScg)
     {
         color = LinearSrgb_To_AcesCg(color);

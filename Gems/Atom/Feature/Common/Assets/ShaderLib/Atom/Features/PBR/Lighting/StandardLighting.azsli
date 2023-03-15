@@ -32,7 +32,7 @@ real3 GetDiffuseLighting(Surface surface, LightingData lightingData, real3 light
         real HdotV = saturate(dot(normalize(dirToLight + lightingData.dirToCamera), lightingData.dirToCamera));
         diffuse *= 1.0 - (FresnelSchlick(HdotV, 0.04) * surface.clearCoat.factor);
     }
- #endif
+#endif
     
     diffuse *= lightIntensity;
     return diffuse;
