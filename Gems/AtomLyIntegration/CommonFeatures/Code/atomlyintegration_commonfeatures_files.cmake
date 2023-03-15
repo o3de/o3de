@@ -143,6 +143,12 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeComponent.cpp
     Source/ReflectionProbe/ReflectionProbeComponentController.h
     Source/ReflectionProbe/ReflectionProbeComponentController.cpp
+    Source/SpecularReflections/SpecularReflectionsComponent.h
+    Source/SpecularReflections/SpecularReflectionsComponent.cpp
+    Source/SpecularReflections/SpecularReflectionsComponentConfig.h
+    Source/SpecularReflections/SpecularReflectionsComponentConfig.cpp
+    Source/SpecularReflections/SpecularReflectionsComponentController.h
+    Source/SpecularReflections/SpecularReflectionsComponentController.cpp
     Source/SkyAtmosphere/SkyAtmosphereComponentConfig.cpp
     Source/SkyAtmosphere/SkyAtmosphereComponentController.cpp
     Source/SkyAtmosphere/SkyAtmosphereComponentController.h
