@@ -298,7 +298,3 @@ class EditorTestAutomation(EditorTestSuite):
     @pytest.mark.xfail(reason="GHI #9582: Test periodically fails")
     class ForceRegion_WorldSpaceForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
-
-    @pytest.mark.xfail(reason="GHI #9566: Test periodically fails")
-    class ForceRegion_PointForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
