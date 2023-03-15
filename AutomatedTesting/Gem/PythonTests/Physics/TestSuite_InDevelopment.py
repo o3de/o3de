@@ -279,10 +279,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
 
-    @pytest.mark.skip(reason="GHI #9364: Test Periodically Fails")
-    class ForceRegion_LinearDampingForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
-
     @pytest.mark.xfail(
         reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
