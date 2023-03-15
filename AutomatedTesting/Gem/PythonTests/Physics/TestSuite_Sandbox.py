@@ -126,9 +126,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether(EditorBatchedTest):
         from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
 
-    class ForceRegion_MultipleForcesInSameComponentCombineForces(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_MultipleForcesInSameComponentCombineForces as test_module
-
     class ScriptCanvas_TriggerEvents(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # needs to be updated to log for unexpected lines
