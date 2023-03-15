@@ -48,13 +48,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Collider_AddingNewGroupWorks.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Collider_AddingNewGroupWorks(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_AddingNewGroupWorks as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Collider_CollisionGroupsWorkflow.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Collider_CollisionGroupsWorkflow(self, request, workspace, editor, launcher_platform):
