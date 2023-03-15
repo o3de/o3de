@@ -75,9 +75,13 @@ namespace AZ
             // RHI::Pass overrides...
             void BuildInternal() override;
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void FrameEndInternal() override;
 
             // RPI::RasterPass overrides...
             void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const override;
+
+            // Gets the number of expected draws, taking into account if this shadow is static.
+            uint32_t GetNumDraws() const;
 
             RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
             RHI::DrawItemProperties m_clearShadowDrawItemProperties;
