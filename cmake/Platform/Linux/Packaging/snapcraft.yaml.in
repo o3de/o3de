@@ -42,11 +42,6 @@ parts:
      - pkg-config
      - libc-dev
      - libstdc++-12-dev
-     
-     #- libhogweed6
-     #- libssl3
-     #- libffi7
-     #- libnettle8
 
   patch-o3de:
     plugin: nil
@@ -60,6 +55,7 @@ parts:
       find $SNAPCRAFT_STAGE/usr/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {})':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
       find $SNAPCRAFT_STAGE/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
       find $SNAPCRAFT_STAGE/lib32/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      cp $SNAPCRAFT_STAGE/${CPACK_PACKAGE_VERSION}/cmake/Platform/Linux/Packaging/libc.so $SNAPCRAFT_STAGE/usr/lib/x86_64-linux-gnu/libc.so
 
 apps:
   o3de:

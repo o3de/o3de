@@ -22,10 +22,22 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
+            -L/snap/o3de/x1/usr/bin/../lib/gcc/x86_64-linux-gnu/12/
+            -L/snap/core22/current/lib/x86_64-linux-gnu
+            -L/snap/core22/current/usr/lib/x86_64-linux-gnu
+            -L$ENV{SNAP}/lib/x86_64-linux-gnu
+            -L$ENV{SNAP}/lib32/x86_64-linux-gnu
+            -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
         LINK_EXE
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
+            -L/snap/o3de/x1/usr/bin/../lib/gcc/x86_64-linux-gnu/12/
+            -L/snap/core22/current/lib/x86_64-linux-gnu
+            -L/snap/core22/current/usr/lib/x86_64-linux-gnu
+            -L$ENV{SNAP}/lib/x86_64-linux-gnu
+            -L$ENV{SNAP}/lib32/x86_64-linux-gnu
+            -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
     )
 
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
