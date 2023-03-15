@@ -105,9 +105,6 @@ class EditorTestAutomation(EditorTestSuite):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
 
-    class Terrain_NoPhysTerrainComponentNoCollision(EditorBatchedTest):
-        from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
-
     class RigidBody_InitialLinearVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
 

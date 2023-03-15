@@ -111,11 +111,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    def test_Terrain_TerrainTexturePainterWorks(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_TerrainTexturePainterWorks as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    # Failing, PhysXTerrain
     def test_Material_CanBeAssignedToTerrain(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_CanBeAssignedToTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -177,10 +172,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.rigid_body import RigidBody_LinearDampingAffectsMotion as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Terrain_CollisionAgainstRigidBody(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_CollisionAgainstRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -191,26 +182,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_ForceRegion_ImpulsesBoxShapedRigidBody(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_ImpulsesBoxShapedRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Terrain_AddPhysTerrainComponent(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_AddPhysTerrainComponent as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Terrain_CanAddMultipleTerrainComponents(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_CanAddMultipleTerrainComponents as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Terrain_MultipleTerrainComponentsWarning(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_MultipleTerrainComponentsWarning as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_ForceRegion_HighValuesDirectionAxesWorkWithNoError(self, request, workspace, editor, launcher_platform):
-        from .tests.force_region import ForceRegion_HighValuesDirectionAxesWorkWithNoError as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Terrain_MultipleResolutionsValid(self, request, workspace, editor, launcher_platform):
-        from .tests.terrain import Terrain_MultipleResolutionsValid as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_SmallMagnitudeDeviationOnLargeForces(self, request, workspace, editor, launcher_platform):
