@@ -124,10 +124,13 @@ namespace UnitTests
             bool hasExtraFile = false);
 
         AssetBuilderSDK::CreateJobFunction CreateJobStage(
-            const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath = "");
+            const AZStd::string& name, bool commonPlatform, const AzToolsFramework::AssetDatabase::PathOrUuid& sourceDependency = {});
 
         AssetBuilderSDK::ProcessJobFunction ProcessJobStage(
-            const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile);
+            const AZStd::string& outputExtension,
+            AssetBuilderSDK::ProductOutputFlags flags,
+            bool outputExtraFile,
+            AZ::Data::AssetId productDependency = {});
 
         void CreateBuilder(
             const char* name,

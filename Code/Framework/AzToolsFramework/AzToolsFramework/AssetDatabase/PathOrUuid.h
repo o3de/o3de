@@ -30,6 +30,7 @@ namespace AzToolsFramework::AssetDatabase
         const AZStd::string& ToString() const;
 
         bool operator==(const PathOrUuid& rhs) const;
+        explicit operator bool() const;
 
     private:
         AZ::Uuid m_uuid;
