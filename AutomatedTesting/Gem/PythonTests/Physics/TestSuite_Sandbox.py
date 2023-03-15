@@ -167,9 +167,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_ZeroSplineForceDoesNothing(EditorBatchedTest):
         from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
 
-    class ForceRegion_PositionOffset(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_PositionOffset as test_module
-
     class Ragdoll_LevelSwitchDoesNotCrash(EditorBatchedTest):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
 
