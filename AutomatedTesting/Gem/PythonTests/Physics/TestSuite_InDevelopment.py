@@ -180,10 +180,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.collider import Collider_PxMeshErrorIfNoMesh as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_ForceRegion_ImpulsesBoxShapedRigidBody(self, request, workspace, editor, launcher_platform):
-        from .tests.force_region import ForceRegion_ImpulsesBoxShapedRigidBody as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_ForceRegion_SmallMagnitudeDeviationOnLargeForces(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_SmallMagnitudeDeviationOnLargeForces as test_module
         self._run_test(request, workspace, editor, test_module)
