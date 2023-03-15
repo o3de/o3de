@@ -53,9 +53,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
 
-    class ForceRegion_LocalSpaceForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_LocalSpaceForceOnRigidBodies as test_module
-
     class Collider_SameCollisionGroupDiffLayersCollide(EditorBatchedTest):
         from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
 
