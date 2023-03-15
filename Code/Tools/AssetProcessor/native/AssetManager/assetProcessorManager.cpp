@@ -1479,6 +1479,9 @@ namespace AssetProcessor
                 }
             }
 
+            auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
             //set the new products
             for (size_t productIdx = 0; productIdx < newProducts.size(); ++productIdx)
             {
@@ -1524,8 +1527,14 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
                 dependencyContainer.reserve(dependencySet.size());
 
-                for(const auto& entry : dependencySet)
+                for(auto& entry : dependencySet)
                 {
+                    // Attempt to update legacy UUID references to canonical UUIDs if possible
+                    if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_dependencySourceGuid); canonicalUuid)
+                    {
+                        entry.m_dependencySourceGuid = canonicalUuid.value();
+                    }
+
                     dependencyContainer.push_back(entry);
                 }
 
@@ -4344,12 +4353,9 @@ namespace AssetProcessor
             AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available.");
 
             // Try to get the canonical UUID for the file in case this is a legacy UUID
-            if (auto foundFile = uuidInterface->FindHighestPriorityFileByUuid(sourceDependency.m_sourceFileDependencyUUID); foundFile)
+            if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(sourceDependency.m_sourceFileDependencyUUID); canonicalUuid)
             {
-                if (auto canonicalUuid = uuidInterface->GetUuid(SourceAssetReference(foundFile.GetValue())); canonicalUuid)
-                {
-                    sourceDependency.m_sourceFileDependencyUUID = canonicalUuid.GetValue();
-                }
+                sourceDependency.m_sourceFileDependencyUUID = canonicalUuid.value();
             }
 
             resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
@@ -4862,7 +4868,7 @@ namespace AssetProcessor
 
         if (auto foundFile = uuidInterface->FindHighestPriorityFileByUuid(sourceUuid); foundFile)
         {
-            result = SourceAssetReference(foundFile.TakeValue());
+            result = SourceAssetReference(foundFile.value());
             return true;
         }
 

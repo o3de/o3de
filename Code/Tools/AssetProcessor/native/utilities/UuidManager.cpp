@@ -57,13 +57,13 @@ namespace AssetProcessor
         return AZ::Failure(entry.GetError());
     }
 
-    AZ::Outcome<AZ::IO::Path> UuidManager::FindHighestPriorityFileByUuid(AZ::Uuid uuid)
+    AZStd::optional<AZ::IO::Path> UuidManager::FindHighestPriorityFileByUuid(AZ::Uuid uuid)
     {
         if (auto sources = FindFilesByUuid(uuid); !sources.empty())
         {
             if (sources.size() == 1)
             {
-                return AZ::Success(sources[0]);
+                return sources[0];
             }
             else
             {
@@ -113,11 +113,24 @@ namespace AssetProcessor
                     }
                 }
 
-                return AZ::Success(oldestFile->AbsolutePath().c_str());
+                return oldestFile->AbsolutePath().c_str();
             }
         }
 
-        return AZ::Failure();
+        return AZStd::nullopt;
+    }
+
+    AZStd::optional<AZ::Uuid> UuidManager::GetCanonicalUuid(AZ::Uuid legacyUuid)
+    {
+        if (auto result = FindHighestPriorityFileByUuid(legacyUuid); result)
+        {
+            if (auto details = GetUuidDetails(SourceAssetReference(result.value())); details)
+            {
+                return details.GetValue().m_uuid;
+            }
+        }
+
+        return AZStd::nullopt;
     }
 
     AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> UuidManager::GetUuidDetails(const SourceAssetReference& sourceAsset)
@@ -130,11 +143,15 @@ namespace AssetProcessor
         AZStd::scoped_lock scopeLock(m_uuidMutex);
         auto itr = m_existingUuids.find(uuid);
 
+        // First check if the UUID matches a canonical UUID.
+        // These always have highest priority.
         if (itr != m_existingUuids.end())
         {
             return { itr->second };
         }
 
+        // UUID doesn't match a canonical UUID, see if there are any matching legacy UUIDs.
+        // In this case there could be multiple files with the same legacy UUID, so return all of them.
         auto range = m_existingLegacyUuids.equal_range(uuid);
         AZStd::vector<AZ::IO::Path> foundFiles;
 
