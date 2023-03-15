@@ -21,7 +21,15 @@
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "DontCare"
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
                     }
                 }
             ],
