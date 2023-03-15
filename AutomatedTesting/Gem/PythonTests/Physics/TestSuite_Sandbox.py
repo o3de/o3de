@@ -193,9 +193,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Joints_BallLeadFollowerCollide(EditorBatchedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
 
-    class ForceRegion_SphereShapedForce(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_SphereShapedForce as test_module
-
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
