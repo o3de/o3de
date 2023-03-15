@@ -211,9 +211,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
-    class ForceRegion_ParentChildForcesCombineForces(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
-
     class ScriptCanvas_ShapeCast(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
