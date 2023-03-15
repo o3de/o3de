@@ -21,7 +21,11 @@ namespace ${SanitizedCppName}
         , protected ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}SystemComponent, "${SysCompClassId}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(${SanitizedCppName}SystemComponent)
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(${SanitizedCppName}SystemComponent);
+        AZ_COMPONENT_BASE_DECL();
+        AZ_CLASS_ALLOCATOR_DECL
 
         static void Reflect(AZ::ReflectContext* context);
 

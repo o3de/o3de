@@ -284,6 +284,58 @@ namespace AZ
         return aznew DescriptorType; \
     }
 
+    //! Declares the functions needed to make the component work with the Component Descriptor system
+    //! Does not provide any definitions, nor added AZ_CLASS_ALLOCATOR for the type
+    #define AZ_COMPONENT_BASE_DECL()                                                                                     \
+    template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
+    template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
+    template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
+    template<class Comp, class Void> friend class AZ::HasComponentRequiredServices;                                                     \
+    template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
+    static AZ::ComponentDescriptor* CreateDescriptor();
+
+    #define AZ_COMPONENT_BASE_IMPL_0(_ComponentClass, _Inline, _TemplateParamsParen) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsParen \
+    _Inline AZ::ComponentDescriptor* _ComponentClass AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsParen ::CreateDescriptor() \
+    { \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
+    }
+
+    //! Implements the CreateDescriptor function
+    //! If the Component Class is a template, the variadic arguments
+    //! are AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_AUTO placeholder parameters
+    //! that can be used to create an out of line definition
+    #define AZ_COMPONENT_BASE_IMPL(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass,, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
+
+    //! Implements the CreateDescriptor function with the `inline` keyword in front of the function signature
+    //! This is suitable for adding an implementation to an .inl or header file
+    #define AZ_COMPONENT_BASE_IMPL_INLINE(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass, \
+            inline, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
+
     /**
      * Declares a descriptor class.
      * Unless you are implementing very advanced internal functionality, we recommend using
@@ -294,7 +346,7 @@ namespace AZ
      */
     #define AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)         \
     friend class AZ::ComponentDescriptorDefault<_ComponentClass>;           \
-    typedef AZ::ComponentDescriptorDefault<_ComponentClass> DescriptorType;
+    using DescriptorType = AZ::ComponentDescriptorDefault<_ComponentClass>;
 
     /**
      * Declares a component with the default settings.

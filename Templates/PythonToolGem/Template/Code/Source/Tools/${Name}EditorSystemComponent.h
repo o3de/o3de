@@ -21,7 +21,12 @@ namespace ${SanitizedCppName}
         , public AZ::Component
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(${SanitizedCppName}EditorSystemComponent)
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(${SanitizedCppName}EditorSystemComponent);
+        AZ_COMPONENT_BASE_DECL();
+        AZ_CLASS_ALLOCATOR_DECL
+
         static void Reflect(AZ::ReflectContext* context);
 
         ${SanitizedCppName}EditorSystemComponent();
@@ -34,7 +39,7 @@ namespace ${SanitizedCppName}
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
     };
 } // namespace ${SanitizedCppName}

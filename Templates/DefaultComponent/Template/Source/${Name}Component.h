@@ -25,7 +25,11 @@ namespace ${GemName}
         , public ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT(${GemName}::${SanitizedCppName}Component, "{${Random_Uuid}}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(${SanitizedCppName}Component)
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(${SanitizedCppName}Component);
+        AZ_COMPONENT_BASE_DECL();
+        AZ_CLASS_ALLOCATOR_DECL
 
         /*
         * Reflects component data into the reflection contexts, including the serialization, edit, and behavior contexts.
