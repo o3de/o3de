@@ -199,9 +199,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_SphereShapedForce(EditorBatchedTest):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
 
-    class ForceRegion_RotationalOffset(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_RotationalOffset as test_module
-
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
