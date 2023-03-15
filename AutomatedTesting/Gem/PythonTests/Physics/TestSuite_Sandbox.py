@@ -77,9 +77,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ShapeCollider_CylinderShapeCollides(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
-    class Collider_BoxShapeEditing(EditorBatchedTest):
-        from .tests.collider import Collider_BoxShapeEditing as test_module
-
     class Collider_SphereShapeEditing(EditorBatchedTest):
         from .tests.collider import Collider_SphereShapeEditing as test_module
 
