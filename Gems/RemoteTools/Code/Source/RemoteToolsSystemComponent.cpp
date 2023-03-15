@@ -376,9 +376,14 @@ namespace RemoteTools
             RemoteToolsMessageBuffer encodingBuffer;
             encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
             tmPacket.SetMessageBuffer(encodingBuffer);
-            outSize -= bufferSize;
 
-            networkInterface->SendReliablePacket(connectionId, tmPacket);
+            if (!networkInterface->SendReliablePacket(connectionId, tmPacket))
+            {
+                AZ_Error("RemoteToolsSystemComponent", false, "SendReliablePacket failed with remaining bytes %zu of %zu.\n", outSize, totalSize);
+                break;
+            }
+
+            outSize -= bufferSize;
         }
 
     }
