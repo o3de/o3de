@@ -134,6 +134,9 @@ namespace AZ
                 // parent mesh
                 Mesh* m_mesh = nullptr;
 
+            private:
+                friend RayTracingFeatureProcessor;
+
                 // index of this mesh in the subMesh list, also applies to the MeshInfo and MaterialInfo entries
                 uint32_t m_globalIndex = InvalidIndex;
 
@@ -150,19 +153,36 @@ namespace AZ
                 // assetId of the model
                 AZ::Data::AssetId m_assetId = AZ::Data::AssetId{};
 
-                // indices of subMeshes in the subMesh list
-                IndexVector m_subMeshIndices;
-
-                // mesh transform
+                // transform
                 AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
-                // mesh non-uniform scale
+                // non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
+
+                // reflection probe
+                struct ReflectionProbe
+                {
+                    AZ::Transform m_modelToWorld;
+                    AZ::Vector3   m_outerObbHalfLengths;
+                    AZ::Vector3   m_innerObbHalfLengths;
+                    bool          m_useParallaxCorrection = false;
+                    float         m_exposure = 0.0f;
+
+                    Data::Instance<RPI::Image> m_reflectionProbeCubeMap;
+                };
+
+                ReflectionProbe m_reflectionProbe;
+
+            private:
+                friend RayTracingFeatureProcessor;
+
+                // indices of subMeshes in the subMesh list
+                IndexVector m_subMeshIndices;
             };
 
             //! Adds ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale);
+            void AddMesh(const AZ::Uuid& uuid, const Mesh& rayTracingMesh, const SubMeshVector& subMeshes);
 
             //! Removes ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
@@ -171,6 +191,9 @@ namespace AZ
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
             void SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale);
+
+            //! Sets the reflection probe for a mesh
+            void SetMeshReflectionProbe(const AZ::Uuid& uuid, const Mesh::ReflectionProbe& reflectionProbe);
 
             //! Retrieves the map of all subMeshes in the scene
             const SubMeshVector& GetSubMeshes() const { return m_subMeshes; }
@@ -304,7 +327,25 @@ namespace AZ
                 AZStd::array<float, 3> m_emissiveColor; // float3
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
                 uint32_t m_textureStartIndex = 0;
-                float m_padding0;
+
+                // reflection probe data, must match the structure in ReflectionProbeData.azlsi
+                struct ReflectionProbeData
+                {
+                    AZStd::array<float, 12> m_modelToWorld;        // float3x4
+                    AZStd::array<float, 12> m_modelToWorldInverse; // float3x4
+                    AZStd::array<float, 3>  m_outerObbHalfLengths; // float3
+                    AZStd::array<float, 3>  m_innerObbHalfLengths; // float3
+                    float m_padding0 = 0.0f;
+                    uint32_t m_useReflectionProbe = 0;
+                    uint32_t m_useParallaxCorrection = 0;
+                    float m_exposure = 0.0f;
+                };
+
+                ReflectionProbeData m_reflectionProbeData;
+                uint32_t m_reflectionProbeCubeMapIndex = InvalidIndex;
+               
+                float m_padding1 = 0.0f;
+                float m_padding2 = 0.0f;
             };
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
