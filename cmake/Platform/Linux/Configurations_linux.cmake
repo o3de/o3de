@@ -6,60 +6,117 @@
 #
 #
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+        include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
 
-    ly_append_configurations_options(
-        DEFINES
-            LINUX
-            __linux__
-            LINUX64
-        COMPILATION
-            -msse4.1
-        LINK_NON_STATIC
-            -Wl,--no-undefined
-            -fpie
-            -Wl,-z,relro,-z,now
-            -Wl,-z,noexecstack
-        LINK_EXE
-            -fpie
-            -Wl,-z,relro,-z,now
-            -Wl,-z,noexecstack
-    )
+        ly_append_configurations_options(
+            DEFINES
+                LINUX
+                __linux__
+                LINUX64
+            COMPILATION
+                -msse4.1
+            LINK_NON_STATIC
+                -Wl,--no-undefined
+                -fpie
+                -Wl,-z,relro,-z,now
+                -Wl,-z,noexecstack
+            LINK_EXE
+                -fpie
+                -Wl,-z,relro,-z,now
+                -Wl,-z,noexecstack
+        )
 
-    ly_set(CMAKE_CXX_EXTENSIONS OFF)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        ly_set(CMAKE_CXX_EXTENSIONS OFF)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
-    include(cmake/Platform/Common/GCC/Configurations_gcc.cmake)
+        include(cmake/Platform/Common/GCC/Configurations_gcc.cmake)
 
-    if(LY_GCC_BUILD_FOR_GCOV)
-        set(LY_GCC_GCOV_LFLAGS "-lgcov")
+        if(LY_GCC_BUILD_FOR_GCOV)
+            set(LY_GCC_GCOV_LFLAGS "-lgcov")
+        endif()
+        if(LY_GCC_BUILD_FOR_GPROF)
+            set(LY_GCC_GPROF_LFLAGS "-pg")
+        endif()
+
+        ly_append_configurations_options(
+            DEFINES
+                LINUX
+                __linux__
+                LINUX64
+            COMPILATION
+                -msse4.1
+            LINK_NON_STATIC
+                ${LY_GCC_GCOV_LFLAGS}
+                ${LY_GCC_GPROF_LFLAGS}
+                -Wl,--no-undefined
+                -lpthread
+        )
+        ly_set(CMAKE_CXX_EXTENSIONS OFF)
+    else()
+        message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
     endif()
-    if(LY_GCC_BUILD_FOR_GPROF)
-        set(LY_GCC_GPROF_LFLAGS "-pg")
+
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+        include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+
+        ly_append_configurations_options(
+            DEFINES
+                LINUX
+                __linux__
+                LINUX64
+            COMPILATION
+                -ffp-contract=off
+            LINK_NON_STATIC
+                -Wl,--no-undefined
+                -fpie
+                -Wl,-z,relro,-z,now
+                -Wl,-z,noexecstack
+            LINK_EXE
+                -fpie
+                -Wl,-z,relro,-z,now
+                -Wl,-z,noexecstack
+        )
+
+        ly_set(CMAKE_CXX_EXTENSIONS OFF)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+        include(cmake/Platform/Common/GCC/Configurations_gcc.cmake)
+
+        if(LY_GCC_BUILD_FOR_GCOV)
+            set(LY_GCC_GCOV_LFLAGS "-lgcov")
+        endif()
+        if(LY_GCC_BUILD_FOR_GPROF)
+            set(LY_GCC_GPROF_LFLAGS "-pg")
+        endif()
+
+        ly_append_configurations_options(
+            DEFINES
+                LINUX
+                __linux__
+                LINUX64
+            COMPILATION
+                -ffp-contract=off
+            LINK_NON_STATIC
+                ${LY_GCC_GCOV_LFLAGS}
+                ${LY_GCC_GPROF_LFLAGS}
+                -Wl,--no-undefined
+                -lpthread
+        )
+        ly_set(CMAKE_CXX_EXTENSIONS OFF)
+
+    else()
+        message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
     endif()
-
-    ly_append_configurations_options(
-        DEFINES
-            LINUX
-            __linux__
-            LINUX64
-        COMPILATION
-            -msse4.1
-        LINK_NON_STATIC
-            ${LY_GCC_GCOV_LFLAGS}
-            ${LY_GCC_GPROF_LFLAGS}
-            -Wl,--no-undefined
-            -lpthread
-    )
-    ly_set(CMAKE_CXX_EXTENSIONS OFF)
-
 else()
-
-    message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
-
+    message(FATAL_ERROR "Unsupport linux architecture ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
+
 
 ly_set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 ly_set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
