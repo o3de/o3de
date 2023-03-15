@@ -11,12 +11,12 @@
 #include <RHI/BufferMemoryView.h>
 #include <RHI/MemorySubAllocator.h>
 
+//#define USE_DX12MA
+
 namespace AZ
 {
     namespace DX12
     {
-        class Device;
-
         class BufferMemoryAllocator
         {
         public:
@@ -43,12 +43,14 @@ namespace AZ
             void DeAllocateUnique(const BufferMemoryView& memoryView);
 
             Descriptor m_descriptor;
+#ifndef USE_DX12MA
             MemoryPageAllocator m_pageAllocator;
             bool m_usePageAllocator = true;
 
             AZStd::mutex m_subAllocatorMutex;
             MemoryFreeListSubAllocator m_subAllocator;
             size_t m_subAllocationAlignment = Alignment::Buffer;
+#endif
         };
     }
 }
