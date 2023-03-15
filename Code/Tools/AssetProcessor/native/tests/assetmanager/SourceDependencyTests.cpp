@@ -35,9 +35,9 @@ namespace UnitTests
         QCoreApplication::processEvents();
     }
 
-    TEST_F(SourceDependencyTests, ExistingSourceDependency_OnCatalogStartup_LegacyUuidsUpgraded)
+    TEST_F(SourceDependencyTests, ExistingSourceAndProductDependency_OnCatalogStartup_LegacyUuidsUpgraded)
     {
-        // Test that a Source dependency between two files where both UUIDs are legacy UUIDs and are both upgraded during catalog setup
+        // Test that source and product dependencies using legacy UUIDs are upgraded during catalog setup
         using namespace AssetProcessor;
         using namespace AzToolsFramework::AssetDatabase;
 
@@ -56,6 +56,7 @@ namespace UnitTests
         ASSERT_TRUE(testBUuids);
 
         // Inject a source dependency into the db using legacy UUIDs on both ends
+        // A depends on -> B
         auto builderId = AZ::Uuid::CreateRandom();
         SourceFileDependencyEntry dep{ builderId,
                                        *testAUuids.GetValue().begin(),
@@ -66,19 +67,35 @@ namespace UnitTests
 
         ASSERT_TRUE(m_stateData->SetSourceFileDependency(dep));
 
+        ProductDatabaseEntryContainer products;
+        EXPECT_TRUE(m_stateData->GetProductsBySourceNameScanFolderID(testA.RelativePath().c_str(), testA.ScanFolderId(), products));
+        ASSERT_EQ(products.size(), 1);
+
+        // Inject a product dependency with B's legacy UUID.  A depends on -> B
+        ProductDependencyDatabaseEntry productDep{ products[0].m_productID, *testBUuids.GetValue().begin(), 0, {}, "pc", 1 };
+        EXPECT_TRUE(m_stateData->SetProductDependency(productDep));
+
         // Run the catalog startup which handles the updating
         auto catalog = AZStd::make_unique<AssetCatalog>(nullptr, m_platformConfig.get());
         catalog->BuildRegistry();
 
-        // Check that the db entry has been updated
+        // Check that the source dependency db entry has been updated
         auto testAUuid = m_uuidInterface->GetUuid(testA).GetValue();
+        auto testBUuid = m_uuidInterface->GetUuid(testB).GetValue();
 
         SourceFileDependencyEntryContainer updatedEntry;
         EXPECT_TRUE(m_stateData->GetSourceFileDependenciesByBuilderGUIDAndSource(builderId, testAUuid, SourceFileDependencyEntry::DEP_Any, updatedEntry));
 
         ASSERT_EQ(updatedEntry.size(), 1);
-        EXPECT_STREQ(updatedEntry[0].m_dependsOnSource.ToString().c_str(), m_uuidInterface->GetUuid(testB).GetValue().ToFixedString(false, false).c_str());
+        EXPECT_STREQ(updatedEntry[0].m_dependsOnSource.ToString().c_str(), testBUuid.ToFixedString(false, false).c_str());
         EXPECT_STREQ(updatedEntry[0].m_sourceGuid.ToFixedString().c_str(), testAUuid.ToFixedString().c_str());
+
+        // Check that the product dependency db entry has been updated
+        ProductDependencyDatabaseEntryContainer productDependencies;
+        EXPECT_TRUE(m_stateData->GetProductDependencies(productDependencies));
+        ASSERT_EQ(productDependencies.size(), 1);
+
+        EXPECT_STREQ(productDependencies[0].m_dependencySourceGuid.ToFixedString().c_str(), testBUuid.ToFixedString().c_str());
     }
 
     TEST_F(SourceDependencyTests, NewlyCreatedSourceAndProductDependency_UpgradedBeforeSaving)
