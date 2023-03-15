@@ -80,9 +80,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Collider_SphereShapeEditing(EditorBatchedTest):
         from .tests.collider import Collider_SphereShapeEditing as test_module
 
-    class Collider_CapsuleShapeEditing(EditorBatchedTest):
-        from .tests.collider import Collider_CapsuleShapeEditing as test_module
-
     class Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
 
