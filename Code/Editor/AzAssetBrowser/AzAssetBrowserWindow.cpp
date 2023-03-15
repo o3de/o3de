@@ -295,6 +295,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    
+    // !!! Need to set the model on the tree widget first
+    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     // !!! Need to set the model on the tree widget first
     m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
