@@ -16,9 +16,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
-#include <Atom/Feature/Material/MaterialAssignmentId.h>
-
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h> 
 #include <Atom/Feature/LookupTable/LookupTableAsset.h>
@@ -120,7 +117,6 @@ namespace AZ
             UseTextureFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
             Transform2DFunctor::Reflect(context);
-            MaterialAssignment::Reflect(context);
             MeshFeatureProcessor::Reflect(context);
             ImageBasedLightFeatureProcessor::Reflect(context);
             AcesDisplayMapperFeatureProcessor::Reflect(context);

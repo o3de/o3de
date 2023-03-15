@@ -175,8 +175,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -191,10 +190,7 @@ namespace TestImpact
             testFailurePolicy,
             targetOutputCapture,
             testTargetTimeout,
-            globalTimeout,
-            callback,
-            AZStd::nullopt
-            );
+            globalTimeout);
     }
 
     TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage> NativeTestEngine::InstrumentedRun(
@@ -204,8 +200,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -220,9 +215,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
 
             if(const auto integrityErrors = GenerateIntegrityErrorString(result);
                 !integrityErrors.empty())

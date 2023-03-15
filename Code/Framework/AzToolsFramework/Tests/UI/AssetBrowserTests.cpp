@@ -240,6 +240,29 @@ namespace UnitTest
             }
         );
 
+        ON_CALL(*m_fileIOMock, Open(::testing::_, ::testing::_, ::testing::_))
+            .WillByDefault(
+                [&](auto filePath, auto, AZ::IO::HandleType& handle)
+                {
+                    handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Close(::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/)
+                {
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Size(testing::An<AZ::IO::HandleType>(), ::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/, auto& size)
+                {
+                    size = 0;
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
         using namespace testing;
 
         // a function that "resolves" a path by just copying it from the input to the output

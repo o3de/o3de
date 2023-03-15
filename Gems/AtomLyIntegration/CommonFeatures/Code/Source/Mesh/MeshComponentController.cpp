@@ -359,7 +359,15 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, materials);
+                m_meshFeatureProcessor->SetCustomMaterials(m_meshHandle, ConvertToCustomMaterialMap(materials));
+            }
+        }
+
+        void MeshComponentController::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingDirty(m_meshHandle);
             }
         }
 
@@ -417,7 +425,7 @@ namespace AZ
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform =

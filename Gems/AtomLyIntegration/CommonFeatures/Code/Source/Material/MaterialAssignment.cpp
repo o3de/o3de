@@ -6,9 +6,8 @@
  *
  */
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
-#include <Atom/Feature/Material/MaterialAssignmentBus.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -108,12 +107,6 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
-
-                if (m_materialInstance)
-                {
-                    MaterialAssignmentNotificationBus::Event(
-                        m_materialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-                }
                 return;
             }
 
@@ -121,12 +114,6 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
-
-                if (m_materialInstance)
-                {
-                    MaterialAssignmentNotificationBus::Event(
-                        m_defaultMaterialAsset.GetId(), &MaterialAssignmentNotifications::OnRebuildMaterialInstance);
-                }
                 return;
             }
 
@@ -392,6 +379,19 @@ namespace AZ
             }
 
             return AZ::RPI::MaterialPropertyValue::FromAny(value);
+        }
+
+        AZ::Render::CustomMaterialMap ConvertToCustomMaterialMap(const AZ::Render::MaterialAssignmentMap& materials)
+        {
+            AZ::Render::CustomMaterialMap customMaterials;
+            customMaterials.reserve(materials.size());
+            for (const auto& materialAssignment : materials)
+            {
+                customMaterials.emplace(
+                    AZ::Render::CustomMaterialId{ materialAssignment.first.m_lodIndex, materialAssignment.first.m_materialSlotStableId },
+                    AZ::Render::CustomMaterialInfo{ materialAssignment.second.m_materialInstance, materialAssignment.second.m_matModUvOverrides });
+            }
+            return customMaterials;
         }
     } // namespace Render
 } // namespace AZ

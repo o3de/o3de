@@ -59,6 +59,8 @@ set(FILES
     Source/ImageBasedLights/ImageBasedLightComponentConfig.cpp
     Source/ImageBasedLights/ImageBasedLightComponentController.cpp
     Source/ImageBasedLights/ImageBasedLightComponentController.h
+    Source/Material/MaterialAssignment.cpp
+    Source/Material/MaterialAssignmentId.cpp
     Source/Material/MaterialComponent.cpp
     Source/Material/MaterialComponent.h
     Source/Material/MaterialComponentConfig.cpp
