@@ -565,7 +565,7 @@ namespace RemoteTools
         }
 
         // Check if there are any active connections, if not stop the outbox thread
-        bool hasActiveConnection = false;
+        [[maybe_unused]] bool hasActiveConnection = false;
         for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
         {
             hasActiveConnection =
