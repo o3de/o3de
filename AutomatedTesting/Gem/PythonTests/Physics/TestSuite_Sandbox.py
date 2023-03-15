@@ -105,9 +105,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_KinematicModeWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
 
-    class ForceRegion_SimpleDragForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
-
     class RigidBody_MomentOfInertiaManualSetting(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
 
