@@ -284,10 +284,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
-    @pytest.mark.skip(reason="GHI #9365: Test periodically fails")
-    class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
-
     @pytest.mark.xfail(reason="GHI #9565: Test periodically fails")
     class RigidBody_ComputeInertiaWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
