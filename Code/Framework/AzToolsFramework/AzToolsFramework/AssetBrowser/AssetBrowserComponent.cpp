@@ -268,6 +268,16 @@ namespace AzToolsFramework
                     return SourceFileDetails("Icons/AssetBrowser/UICanvas.svg");
                 }
 
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".pxmesh"))
+                {
+                    return SourceFileDetails("Icons/Components/PhysXMeshCollider.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".procprefab"))
+                {
+                    return SourceFileDetails("Icons/Components/Box.svg");
+                }
+
                 static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr" };
 
                 for (unsigned int sourceImageFormatIndex = 0, numSources = AZ_ARRAY_SIZE(sourceFormats); sourceImageFormatIndex < numSources; ++sourceImageFormatIndex)
