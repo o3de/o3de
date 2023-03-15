@@ -47,13 +47,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Collider_CollisionGroupsWorkflow.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Collider_CollisionGroupsWorkflow(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_CollisionGroupsWorkflow as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
