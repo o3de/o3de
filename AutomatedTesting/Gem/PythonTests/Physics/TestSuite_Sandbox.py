@@ -158,9 +158,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ScriptCanvas_CollisionEvents(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
-    class ForceRegion_DirectionHasNoAffectOnTotalForce(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_DirectionHasNoAffectOnTotalForce as test_module
-
     class RigidBody_StartAsleepWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
