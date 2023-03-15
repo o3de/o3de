@@ -2089,8 +2089,6 @@ void EditorViewportWidget::OnStartPlayInEditor()
 
 void EditorViewportWidget::OnStopPlayInEditor()
 {
-    PopViewGroupForDefaultContext();
-
     m_playInEditorState = PlayInEditorState::Stopping;
 }
 
