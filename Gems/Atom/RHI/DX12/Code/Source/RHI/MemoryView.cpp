@@ -31,6 +31,14 @@ namespace AZ
         {
         }
 
+        MemoryView::MemoryView(D3D12MA::Allocation* allocation, RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType)
+            : m_memoryAllocation(MemoryAllocation(memory, offset, size, alignment))
+            , m_viewType(viewType)
+            , m_dx12maAllocation(allocation)
+        {
+            Construct();
+        }
+
         bool MemoryView::IsValid() const
         {
             return m_memoryAllocation.m_memory != nullptr;
@@ -39,6 +47,11 @@ namespace AZ
         Memory* MemoryView::GetMemory() const
         {
             return m_memoryAllocation.m_memory.get();
+        }
+
+        D3D12MA::Allocation* MemoryView::GetDx12maAllocation() const
+        {
+            return m_dx12maAllocation;
         }
 
         size_t MemoryView::GetOffset() const
@@ -65,7 +78,7 @@ namespace AZ
                 readRange.Begin = m_memoryAllocation.m_offset;
                 readRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
             }
-            m_memoryAllocation.m_memory->Map(0, &readRange, reinterpret_cast<void**>(&cpuAddress));
+            m_memoryAllocation.m_memory->Map(0, m_dx12maAllocation?&readRange:nullptr, reinterpret_cast<void**>(&cpuAddress));
 
             // Make sure we return null if the map operation failed.
             if (cpuAddress)
@@ -83,7 +96,7 @@ namespace AZ
                 writeRange.Begin = m_memoryAllocation.m_offset;
                 writeRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
             }
-            m_memoryAllocation.m_memory->Unmap(0, &writeRange);
+            m_memoryAllocation.m_memory->Unmap(0, m_dx12maAllocation?&writeRange:nullptr);
         }
 
         GpuVirtualAddress MemoryView::GetGpuAddress() const

@@ -20,6 +20,8 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
 
+#include <dx12ma/D3D12MemAlloc.h>
+
 namespace AZ
 {
     namespace DX12
@@ -886,6 +888,12 @@ namespace AZ
 
         RHI::ResultCode Device::BeginFrameInternal()
         {
+            static uint32_t frameIndex = 0;
+            if (m_dx12MemAlloc)
+            {
+                m_dx12MemAlloc->SetCurrentFrameIndex(++frameIndex);
+            }
+
             m_commandQueueContext.Begin();
             return RHI::ResultCode::Success;
         }

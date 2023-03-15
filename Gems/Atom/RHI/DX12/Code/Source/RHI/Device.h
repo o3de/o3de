@@ -27,6 +27,10 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
+#include <dx12ma/D3D12MemAlloc.h>
+AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
+AZ_DX12_REFCOUNTED(D3D12MA::Allocation);
+
 namespace AZ
 {
     namespace RHI
@@ -68,6 +72,11 @@ namespace AZ
             void GetPlacedImageAllocationInfo(
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
+
+            MemoryView CreateDx12maBuffer(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_HEAP_TYPE heapType);
 
             MemoryView CreateBufferCommitted(
                 const RHI::BufferDescriptor& bufferDescriptor,
@@ -175,13 +184,16 @@ namespace AZ
 
             void InitDeviceRemovalHandle();
 
+            RHI::ResultCode InitDx12maAllocator();
             void InitFeatures();
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
+            RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
 
             ReleaseQueue m_releaseQueue;
+            Dx12maReleaseQueue m_dx12maReleaseQueue;
 
             PipelineLayoutCache m_pipelineLayoutCache;
 

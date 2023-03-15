@@ -18,11 +18,44 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Memory/AllocatorInstance.h>
 
 namespace AZ
 {
     namespace DX12
     {
+        namespace
+        {
+            constexpr D3D12MA::ALLOCATOR_FLAGS s_dx12maAllocatorFlags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+            D3D12MA::ALLOCATION_CALLBACKS s_AllocationCallbacks = {};
+
+            constexpr uintptr_t s_Dx12maAllocationPrivateData = 0x1200A110C;
+
+            // utility functions to forward cpu mem allocations to o3de memory systems
+            static void* Dx12maAllocate(size_t size, size_t alignment, void* privateData)
+            {
+                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_Dx12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory allocation");
+                void* memory = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(size, alignment);
+                return memory;
+            }
+
+            static void Dx12maFree(void* memory, void* privateData)
+            {
+                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_Dx12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory deallocation");
+                if(memory)
+                {
+                    AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(memory);
+                }
+            }
+
+            static void Dx12maRelease(D3D12MA::Allocation& allocation)
+            {
+                allocation.GetResource()->Release();
+                allocation.Release();
+            }
+        }
+
         namespace Platform
         {
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
@@ -48,6 +81,12 @@ namespace AZ
                 return resultCode;
             }
 
+            resultCode = InitDx12maAllocator();
+            if (resultCode != RHI::ResultCode::Success)
+            {
+                return resultCode;
+            }
+
             InitFeatures();
 
             return RHI::ResultCode::Success;
@@ -61,6 +100,11 @@ namespace AZ
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
                 releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
                 m_releaseQueue.Init(releaseQueueDescriptor);
+
+                Dx12maReleaseQueue::Descriptor dx12maReleaseQueueDescriptor;
+                dx12maReleaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
+                dx12maReleaseQueueDescriptor.m_collectFunction = &Dx12maRelease;
+                m_dx12maReleaseQueue.Init(dx12maReleaseQueueDescriptor);
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
@@ -120,13 +164,38 @@ namespace AZ
             m_descriptorContext = nullptr;
 
             m_releaseQueue.Shutdown();
+            m_dx12maReleaseQueue.Shutdown();
 
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
+            m_dx12MemAlloc = nullptr;
 
             ShutdownSubPlatform();
 
             m_dx12Device = nullptr;
+        }
+
+        RHI::ResultCode Device::InitDx12maAllocator()
+        {
+            // Create DX12MA allocator
+            D3D12MA::ALLOCATOR_DESC desc = {};
+            desc.Flags = s_dx12maAllocatorFlags;
+            desc.pDevice = m_dx12Device.get();
+            desc.pAdapter = m_dxgiAdapter.get();
+
+            s_AllocationCallbacks.pAllocate = &Dx12maAllocate;
+            s_AllocationCallbacks.pFree = &Dx12maFree;
+            s_AllocationCallbacks.pPrivateData = reinterpret_cast<void*>(s_Dx12maAllocationPrivateData);
+            desc.pAllocationCallbacks = &s_AllocationCallbacks;
+
+            D3D12MA::Allocator* dx12MemAlloc = nullptr;
+            if (HRESULT result = D3D12MA::CreateAllocator(&desc, &dx12MemAlloc); !AssertSuccess(result))
+            {
+                AZ_Error("Device", false, "Failed to initialize the D3D12MemoryAllocator.");
+                return ConvertResult(result);
+            }
+            m_dx12MemAlloc = dx12MemAlloc;
+            return RHI::ResultCode::Success;
         }
 
         void Device::InitFeatures()
@@ -255,12 +324,14 @@ namespace AZ
             m_stagingMemoryAllocator.GarbageCollect();
 
             m_releaseQueue.Collect();
+            m_dx12maReleaseQueue.Collect();
         }
 
         void Device::WaitForIdleInternal()
         {
             m_commandQueueContext.WaitForIdle();
             m_releaseQueue.Collect(true);
+            m_dx12maReleaseQueue.Collect(true);
         }
 
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
@@ -350,6 +421,7 @@ namespace AZ
         void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
         {
             m_releaseQueue.Notify(notifyFunction);
+            m_dx12maReleaseQueue.Notify(notifyFunction);
         }
 
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -440,6 +512,38 @@ namespace AZ
 
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
         }
+
+        MemoryView Device::CreateDx12maBuffer(
+            const RHI::BufferDescriptor& bufferDescriptor,
+            D3D12_RESOURCE_STATES initialState,
+            D3D12_HEAP_TYPE heapType)
+        {
+            D3D12_RESOURCE_DESC resourceDesc;
+            ConvertBufferDescriptor(bufferDescriptor, resourceDesc);
+
+#ifdef AZ_DX12_DXR_SUPPORT
+            if (initialState == D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE)
+            {
+                resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+            }
+#endif
+
+            D3D12MA::ALLOCATION_DESC allocDesc = {};
+            allocDesc.HeapType = heapType;
+
+            D3D12MA::Allocation* allocation = nullptr;
+            Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+            AssertSuccess(m_dx12MemAlloc->CreateResource(
+                &allocDesc,
+                &resourceDesc,
+                initialState,
+                NULL,
+                &allocation,
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+
+            return MemoryView(allocation, resource.Get(), 0, allocation->GetSize(), allocation->GetAlignment(), MemoryViewType::Buffer);
+        }
+
 
         MemoryView Device::CreateBufferCommitted(
             const RHI::BufferDescriptor& bufferDescriptor,
@@ -614,8 +718,16 @@ namespace AZ
 
         void Device::QueueForRelease(const MemoryView& memoryView)
         {
-            m_releaseQueue.QueueForCollect(memoryView.GetMemory());
+            if (auto* dx12maAllocation = memoryView.GetDx12maAllocation())
+            {
+                m_dx12maReleaseQueue.QueueForCollect(dx12maAllocation);
+            }
+            else
+            {
+                m_releaseQueue.QueueForCollect(memoryView.GetMemory());
+            }
         }
+
 
         MemoryView Device::AcquireStagingMemory(size_t size, size_t alignment)
         {

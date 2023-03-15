@@ -24,6 +24,7 @@ namespace AZ
         {
             m_descriptor = descriptor;
 
+#ifndef USE_DX12MA
             // Buffers that can be attachments can independently transition state, which precludes them from
             // being sub-allocated from the same ID3D12Resource.  
             // [GFX-TODO][ATOM-6230] Investigate performance of InputAssembly buffers with the page allocator
@@ -59,24 +60,29 @@ namespace AZ
                 pageAllocatorDescriptor.m_inactivePageCycles = 1;
                 m_subAllocator.Init(pageAllocatorDescriptor, m_pageAllocator);
             }
+#endif
         }
 
         void BufferMemoryAllocator::Shutdown()
         {
+#ifndef USE_DX12MA
             if (m_usePageAllocator)
             {
                 m_subAllocator.Shutdown();
                 m_pageAllocator.Shutdown();
             }
+#endif
         }
 
         void BufferMemoryAllocator::GarbageCollect()
         {
+#ifndef USE_DX12MA
             m_subAllocatorMutex.lock();
             m_subAllocator.GarbageCollect();
             m_subAllocatorMutex.unlock();
 
             m_pageAllocator.Collect();
+#endif
         }
 
         BufferMemoryView BufferMemoryAllocator::Allocate(size_t sizeInBytes, size_t overrideSubAllocAlignment)
@@ -85,6 +91,7 @@ namespace AZ
             
             BufferMemoryView bufferMemoryView;
 
+#ifndef USE_DX12MA
             // First attempt to sub-allocate a buffer from the sub-allocator.
             if (m_usePageAllocator)
             {
@@ -119,17 +126,23 @@ namespace AZ
             }
             else
             {
+#else
+                AZ_UNUSED(overrideSubAllocAlignment);
+#endif
                 RHI::BufferDescriptor bufferDescriptor;
                 bufferDescriptor.m_byteCount = azlossy_caster(sizeInBytes);
                 bufferDescriptor.m_bindFlags = m_descriptor.m_bindFlags;
                 bufferMemoryView = AllocateUnique(bufferDescriptor);
+#ifndef USE_DX12MA
             }
+#endif
 
             return bufferMemoryView;
         }
 
         void BufferMemoryAllocator::DeAllocate(const BufferMemoryView& memoryView)
         {
+#ifndef USE_DX12MA
             switch (memoryView.GetType())
             {
             case BufferMemoryType::SubAllocated:
@@ -144,25 +157,29 @@ namespace AZ
                 break;
 
             case BufferMemoryType::Unique:
+#endif
                 DeAllocateUnique(memoryView);
+#ifndef USE_DX12MA
                 break;
             }
+#endif
         }
 
         float BufferMemoryAllocator::ComputeFragmentation() const
         {
+#ifndef USE_DX12MA
             if (m_usePageAllocator)
             {
                 return m_subAllocator.ComputeFragmentation();
             }
-
+#endif
             return 0.f;
         }
 
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
-
+#ifndef USE_DX12MA
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::CommittedBuffer);
 
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
@@ -170,7 +187,7 @@ namespace AZ
             {
                 return BufferMemoryView();
             }
-
+#endif
             D3D12_RESOURCE_STATES initialResourceState = ConvertInitialResourceState(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
             if (RHI::CheckBitsAny(m_descriptor.m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
@@ -179,13 +196,22 @@ namespace AZ
 
             const D3D12_HEAP_TYPE heapType = ConvertHeapType(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
 
+#ifdef USE_DX12MA
+            MemoryView memoryView = m_descriptor.m_device->CreateDx12maBuffer(bufferDescriptor, initialResourceState, heapType);
+#else
             MemoryView memoryView = m_descriptor.m_device->CreateBufferCommitted(bufferDescriptor, initialResourceState, heapType);
+#endif
             if (memoryView.IsValid())
             {
+                const size_t sizeInBytes = memoryView.GetSize();
+
                 // Add the resident usage now that everything succeeded.
-                heapMemoryUsage.m_totalResidentInBytes += alignedSize;
-                heapMemoryUsage.m_usedResidentInBytes += alignedSize;
-                heapMemoryUsage.m_uniqueAllocationBytes += alignedSize;
+#ifdef USE_DX12MA
+                RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+#endif
+                heapMemoryUsage.m_totalResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_usedResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_uniqueAllocationBytes += sizeInBytes;
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
