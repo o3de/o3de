@@ -249,8 +249,8 @@ namespace PhysX
             PxArticulationJointReducedCoordinate* inboundJoint = thisLink->getInboundJoint();
             // TODO: Set the values for joints from thisLinkData
             inboundJoint->setJointType(PxArticulationJointType::eFIX);
-            inboundJoint->setParentPose(parentLink->getGlobalPose());
-            inboundJoint->setChildPose(thisLinkTransform);
+            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_relativeTransform));
+            inboundJoint->setChildPose(PxTransform(PxIdentity));
         }
 
         if (physicsShape)
