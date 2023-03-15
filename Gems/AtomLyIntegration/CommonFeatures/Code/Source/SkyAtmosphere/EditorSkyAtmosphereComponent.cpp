@@ -70,7 +70,7 @@ namespace AZ::Render
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyAtmosphereComponentConfig::m_luminanceFactor, "Illuminance factor", "An additional factor to brighten or darken the overall atmosphere")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScatteringScale, "Rayleigh scattering Scale", "Raleigh scattering scale")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_rayleighScatteringScale, "Rayleigh scattering scale", "Raleigh scattering scale")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_rayleighScattering, "Rayleigh scattering", "Raleigh scattering coefficients from air molecules at surface of the planet")
@@ -84,7 +84,7 @@ namespace AZ::Render
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieScattering, "Mie scattering", "Mie scattering coefficients from aerosole molecules at surface of the planet")
 
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieAbsorptionScale, "Mie absorption Scale", "Mie absorption scale")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SkyAtmosphereComponentConfig::m_mieAbsorptionScale, "Mie absorption scale", "Mie absorption scale")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.00f)
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &SkyAtmosphereComponentConfig::m_mieAbsorption, "Mie absorption", "Mie absorption coefficients from aerosole molecules at surface of the planet")

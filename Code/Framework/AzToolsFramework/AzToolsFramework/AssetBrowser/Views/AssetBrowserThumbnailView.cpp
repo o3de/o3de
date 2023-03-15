@@ -24,6 +24,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
+#include <QTimer>
 #endif
 
 namespace AzToolsFramework
@@ -380,6 +381,21 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserThumbnailView::EnsureItemIsSelected()
+        {
+            QTimer::singleShot(
+                0,
+                this,
+                [this]
+                {
+                    if (!m_assetTreeView->selectionModel()->hasSelection() && m_assetTreeView->model()->rowCount())
+                    {
+                        QModelIndex firstItem = m_assetTreeView->model()->index(0, 0);
+                        m_assetTreeView->selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
+                    }
+                });
+        }
+
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()
         {
             if (!m_assetTreeView)
@@ -428,6 +444,8 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+
+            EnsureItemIsSelected();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

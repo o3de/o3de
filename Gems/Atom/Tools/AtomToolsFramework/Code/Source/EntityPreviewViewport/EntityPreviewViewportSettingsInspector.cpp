@@ -164,6 +164,7 @@ namespace AtomToolsFramework
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, AZ::Render::ModelPreset());
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -180,6 +181,7 @@ namespace AtomToolsFramework
         m_modelPresetDialog->setMinimumSize(0, 0);
         m_modelPresetDialog->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         m_modelPresetDialog->exec();
+        OnViewportSettingsChanged();
     }
 
     void EntityPreviewViewportSettingsInspector::SaveModelPreset()
@@ -196,6 +198,7 @@ namespace AtomToolsFramework
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -241,6 +244,7 @@ namespace AtomToolsFramework
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, AZ::Render::LightingPreset());
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -257,6 +261,7 @@ namespace AtomToolsFramework
         m_lightingPresetDialog->setMinimumSize(0, 0);
         m_lightingPresetDialog->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         m_lightingPresetDialog->exec();
+        OnViewportSettingsChanged();
     }
 
     void EntityPreviewViewportSettingsInspector::SaveLightingPreset()
@@ -273,6 +278,7 @@ namespace AtomToolsFramework
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
             EntityPreviewViewportSettingsRequestBus::Event(
                 m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -317,7 +323,7 @@ namespace AtomToolsFramework
     void EntityPreviewViewportSettingsInspector::OnViewportSettingsChanged()
     {
         LoadSettings();
-        RefreshAll();
+        RebuildAll();
     }
 
     void EntityPreviewViewportSettingsInspector::OnModelPresetAdded(const AZStd::string& path)
