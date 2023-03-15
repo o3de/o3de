@@ -129,9 +129,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_SplineForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_SplineForceOnRigidBodies as test_module
 
-    class Collider_ColliderPositionOffset(EditorBatchedTest):
-        from .tests.collider import Collider_ColliderPositionOffset as test_module
-
     class RigidBody_AngularDampingAffectsRotation(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
