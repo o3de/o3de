@@ -8,7 +8,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 
-from aws_cdk import core
+from aws_cdk import (
+    App, Environment
+)
 
 from aws_gamelift.aws_gamelift_construct import AWSGameLift
 
@@ -33,11 +35,11 @@ O3DE_FEATURE_TAG_NAME = 'O3DEFeature'
 """End of Configuration"""
 
 # Set-up regions to deploy stack to, or use default if not set
-env = core.Environment(
+env = Environment(
     account=ACCOUNT,
     region=REGION)
 
-app = core.App()
+app = App()
 feature_struct = AWSGameLift(
     app,
     id_=PROJECT_FEATURE_NAME,

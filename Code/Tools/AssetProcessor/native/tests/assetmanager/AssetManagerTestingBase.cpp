@@ -88,6 +88,7 @@ namespace UnitTests
 
         // Create the APM
         m_assetProcessorManager = AZStd::make_unique<TestingAssetProcessorManager>(m_platformConfig.get());
+        m_assetProcessorManager->SetMetaCreationDelay(0);
 
         // Cache the db pointer because the TEST_F generates a subclass which can't access this private member
         m_stateData = m_assetProcessorManager->m_stateData;
@@ -207,7 +208,44 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(expectedFileCount);
 
-        QCoreApplication::processEvents();
+        AZStd::atomic_bool delayed = false;
+
+        QObject::connect(
+            m_assetProcessorManager.get(),
+            &AssetProcessor::AssetProcessorManager::ProcessingDelayed,
+            [&delayed](QString filePath)
+            {
+                delayed = true;
+            });
+
+        QObject::connect(
+            m_assetProcessorManager.get(),
+            &AssetProcessor::AssetProcessorManager::ProcessingResumed,
+            [&delayed](QString filePath)
+            {
+                delayed = false;
+            });
+
+        QCoreApplication::processEvents(); // execute CheckSource
+
+        if (delayed)
+        {
+            // Wait for the QTimer to elapse.  This should be a very quick, sub 10ms wait.
+            // Add 5ms just to be sure the required time has elapsed.
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(MetadataProcessingDelayMs + 5));
+
+            ASSERT_TRUE(delayed);
+
+            QCoreApplication::processEvents(); // Process the timer
+
+            // Sometimes the above processEvents runs CheckSource
+            if (delayed)
+            {
+                QCoreApplication::processEvents(); // execute CheckSource again
+            }
+
+            ASSERT_FALSE(delayed);
+        }
 
         m_assetProcessorManager->CheckActiveFiles(0);
         m_assetProcessorManager->CheckFilesToExamine(expectedFileCount + dependencyFileCount);

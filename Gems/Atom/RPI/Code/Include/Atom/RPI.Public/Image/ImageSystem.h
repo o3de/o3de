@@ -54,6 +54,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // ImageSystemInterface
             const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const override;
+            const Data::Instance<AttachmentImage>& GetSystemAttachmentImage(RHI::Format format) override;
             const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const override;
             const Data::Instance<AttachmentImagePool>& GetSystemAttachmentPool() const override;
             const Data::Instance<StreamingImagePool>& GetStreamingPool() const override;
@@ -76,6 +77,9 @@ namespace AZ
             Data::Instance<StreamingImagePool> m_assetStreamingPool;
 
             AZStd::fixed_vector<Data::Instance<Image>, static_cast<uint32_t>(SystemImage::Count)> m_systemImages;
+
+            AZStd::shared_mutex m_systemAttachmentImagesUpdateMutex;
+            AZStd::unordered_map<RHI::Format, Data::Instance<AttachmentImage>> m_systemAttachmentImages;
 
             bool m_initialized = false;
 

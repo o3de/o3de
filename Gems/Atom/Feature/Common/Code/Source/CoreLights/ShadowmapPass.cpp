@@ -97,8 +97,7 @@ namespace AZ
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
 
-            // [GFX TODO][ATOM-2470] stop caring about attachment
-            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOwnedAttachment(Name("ShadowmapImage"));
+            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOutputBinding(0).GetAttachment();
             if (!attachment)
             {
                 AZ_Assert(false, "[ShadowmapPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
@@ -172,11 +171,11 @@ namespace AZ
         {
             Base::SetupFrameGraphDependencies(frameGraph);
 
-            // Override the estimated item count to be what the raster pass would report + 1.
-            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()) + 1);
+            // Override the estimated item count set by the base class.
+            frameGraph.SetEstimatedItemCount(GetNumDraws());
         }
 
-        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        uint32_t ShadowmapPass::GetNumDraws() const
         {
             if (m_isStatic && !m_forceRenderNextFrame)
             {
@@ -187,11 +186,20 @@ namespace AZ
                     if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
                     {
                         // Shadow is static and no casters moved since last frame.
-                        return;
+                        return 0;
                     }
                 }
             }
-            m_forceRenderNextFrame = false;
+            // Report + 1 to make room for the clear draw packet.
+            return static_cast<uint32_t>(m_drawListView.size() + 1);
+        }
+
+        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        {
+            if (GetNumDraws() == 0)
+            {
+                return;
+            }
 
             if (m_clearShadowDrawPacket)
             {
@@ -211,6 +219,18 @@ namespace AZ
                 ++offset;
             }
             Base::SubmitDrawItems(context, startIndex, endIndex, offset);
+        }
+
+        void ShadowmapPass::FrameEndInternal()
+        {
+            if (m_clearShadowDrawPacket)
+            {
+                // If m_clearShadowDrawPacket is valid, then this pass would have rendered this frame if
+                // m_forceRenderNextFrame was set to true, so set it to false now. This can't be done safely
+                // in SubmitDrawItems because it may be called multiple times from different threads.
+                m_forceRenderNextFrame = false;
+            }
+            Base::FrameEndInternal();
         }
 
     } // namespace Render

@@ -62,7 +62,7 @@ real3 GetIblSpecular(
         if (reflectionProbe.m_useParallaxCorrection)
         {
             reflectDir = ApplyParallaxCorrectionOBB(
-                real4x4(reflectionProbe.GetReflectionProbeWorldMatrixInverse()),
+                real4x4(GetReflectionProbeWorldMatrixInverse(reflectionProbe)),
                 real3(reflectionProbe.m_outerObbHalfLengths),
                 position,
                 reflectDir);
@@ -74,7 +74,7 @@ real3 GetIblSpecular(
 #if ENABLE_REFLECTIONPROBE_BLENDING
         // compute blend amount based on world position in the reflection probe volume
         real blendAmount = ComputeLerpBetweenInnerOuterOBBs(
-            (real3x4)reflectionProbe.GetReflectionProbeWorldMatrixInverse(),
+            (real3x4)GetReflectionProbeWorldMatrixInverse(reflectionProbe),
             real3(reflectionProbe.m_innerObbHalfLengths),
             real3(reflectionProbe.m_outerObbHalfLengths),
             position);

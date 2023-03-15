@@ -1118,7 +1118,7 @@ namespace AzToolsFramework
 
         if (rowWidget->IsExpanded())
         {
-            for (int childIndex = 0, numChildren = rowWidget->m_domOrderedChildren.size(); childIndex < numChildren; ++childIndex)
+            for (int childIndex = 0, numChildren = static_cast<int>(rowWidget->m_domOrderedChildren.size()); childIndex < numChildren; ++childIndex)
             {
                 DPERowWidget* childRow = qobject_cast<DPERowWidget*>(rowWidget->m_domOrderedChildren[childIndex]);
                 if (childRow)

@@ -30,7 +30,7 @@ process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill Proje
 logger = logging.getLogger(__name__)
 
 
-def setup(launcher: pytest.fixture, asset_processor: pytest.fixture) -> typing.Tuple[pytest.fixture, str]:
+def _setup(launcher: pytest.fixture, asset_processor: pytest.fixture) -> typing.Tuple[pytest.fixture, str]:
     """
     Set up the resource mapping configuration and start the log monitor.
     :param launcher: Client launcher for running the test level.
@@ -76,8 +76,8 @@ def write_test_data_to_dynamodb_table(resource_mappings: pytest.fixture, aws_uti
 
 
 @pytest.mark.SUITE_awsi
-@pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('asset_processor')
+@pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.parametrize('feature_name', [AWS_CORE_FEATURE_NAME])
 @pytest.mark.parametrize('region_name', [constants.AWS_REGION])
 @pytest.mark.parametrize('assume_role_arn', [constants.ASSUME_ROLE_ARN])
@@ -123,7 +123,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         Verification: Script canvas nodes can communicate with AWS services successfully.
         """
 
-        log_monitor, s3_download_dir = setup(launcher, asset_processor)
+        log_monitor, s3_download_dir = _setup(launcher=launcher, asset_processor=asset_processor)
         write_test_data_to_dynamodb_table(resource_mappings, aws_utils)
 
         launcher.args = ['+LoadLevel', level]
@@ -171,7 +171,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         """
 
         resource_mappings.clear_select_keys([AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY])
-        log_monitor, s3_download_dir = setup(launcher, asset_processor)
+        log_monitor, s3_download_dir = _setup(launcher=launcher, asset_processor=asset_processor)
         write_test_data_to_dynamodb_table(resource_mappings, aws_utils)
 
         launcher.args = ['+LoadLevel', level]

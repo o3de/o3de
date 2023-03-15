@@ -158,6 +158,7 @@ set(FILES
     Passes/SkyRayMarching.pass
     Passes/SkyTransmittanceLUT.pass
     Passes/SkyViewLUT.pass
+    Passes/SkyVolumeLUT.pass
     Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
@@ -527,6 +528,8 @@ set(FILES
     Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
     Shaders/SkyAtmosphere/SkyViewLUT.azsl
     Shaders/SkyAtmosphere/SkyViewLUT.shader
+    Shaders/SkyAtmosphere/SkyVolumeLUT.azsl
+    Shaders/SkyAtmosphere/SkyVolumeLUT.shader
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
     Shaders/SkyBox/SkyBox_TwoOutputs.shader
