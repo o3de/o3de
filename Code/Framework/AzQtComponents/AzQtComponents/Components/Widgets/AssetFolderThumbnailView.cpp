@@ -315,6 +315,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -343,6 +344,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -919,6 +921,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 

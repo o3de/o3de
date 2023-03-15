@@ -69,6 +69,7 @@ namespace AzQtComponents
             int topItemsHorizontalSpacing;
             int topItemsVerticalSpacing;
             int childrenItemsHorizontalSpacing;
+            int scrollSpeed;
             Thumbnail rootThumbnail;
             Thumbnail childThumbnail;
             ExpandButton expandButton;
