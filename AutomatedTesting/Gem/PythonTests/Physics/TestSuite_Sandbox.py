@@ -190,9 +190,6 @@ class EditorTestAutomation(EditorTestSuite):
         # Note: Test needs to be updated to log for unexpected lines
         # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
 
-    class ForceRegion_PxMeshShapedForce(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
-
     class Joints_HingeSoftLimitsConstrained(EditorBatchedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
