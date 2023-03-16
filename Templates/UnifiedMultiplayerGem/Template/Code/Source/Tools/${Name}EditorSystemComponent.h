@@ -23,11 +23,7 @@ namespace ${SanitizedCppName}
     {
         using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(${SanitizedCppName}EditorSystemComponent)
-        AZ_RTTI_NO_TYPE_INFO_DECL();
-        AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(${SanitizedCppName}EditorSystemComponent);
-        AZ_COMPONENT_BASE_DECL();
-        AZ_CLASS_ALLOCATOR_DECL
+        AZ_COMPONENT_DECL(${SanitizedCppName}EditorSystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

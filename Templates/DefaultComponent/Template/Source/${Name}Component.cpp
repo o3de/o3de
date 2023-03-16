@@ -16,10 +16,7 @@
 
 namespace ${GemName}
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(${SanitizedCppName}Component, "${SanitizedCppName}Component", "{${Random_Uuid}}");
-    AZ_RTTI_NO_TYPE_INFO_IMPL(${SanitizedCppName}Component, AZ::Component);
-    AZ_COMPONENT_BASE_IMPL(${SanitizedCppName}Component);
-    AZ_CLASS_ALLOCATOR_IMPL(${SanitizedCppName}Component, AZ::SystemAllocator);
+    AZ_COMPONENT_IMPL(${SanitizedCppName}Component, "${SanitizedCppName}Component", "{${Random_Uuid}}");
 
     void ${SanitizedCppName}Component::Activate()
     {

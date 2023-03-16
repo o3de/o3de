@@ -22,11 +22,7 @@ namespace ${SanitizedCppName}
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_TYPE_INFO_WITH_NAME_DECL(${SanitizedCppName}SystemComponent)
-        AZ_RTTI_NO_TYPE_INFO_DECL();
-        AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(${SanitizedCppName}SystemComponent);
-        AZ_COMPONENT_BASE_DECL();
-        AZ_CLASS_ALLOCATOR_DECL
+        AZ_COMPONENT_DECL(${SanitizedCppName}SystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

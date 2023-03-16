@@ -15,11 +15,8 @@
 
 namespace ${SanitizedCppName}
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(${SanitizedCppName}EditorSystemComponent, "${SanitizedCppName}EditorSystemComponent",
+    AZ_COMPONENT_IMPL(${SanitizedCppName}EditorSystemComponent, "${SanitizedCppName}EditorSystemComponent",
         ${SanitizedCppName}EditorSystemComponentTypeId);
-    AZ_RTTI_NO_TYPE_INFO_IMPL(${SanitizedCppName}EditorSystemComponent, AZ::Component);
-    AZ_COMPONENT_BASE_IMPL(${SanitizedCppName}EditorSystemComponent);
-    AZ_CLASS_ALLOCATOR_IMPL(${SanitizedCppName}EditorSystemComponent, AZ::SystemAllocator);
 
     void ${SanitizedCppName}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {

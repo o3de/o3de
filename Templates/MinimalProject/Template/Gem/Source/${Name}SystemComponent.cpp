@@ -16,11 +16,8 @@
 
 namespace ${SanitizedCppName}
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL(${SanitizedCppName}SystemComponent, "${SanitizedCppName}SystemComponent",
+    AZ_COMPONENT_IMPL(${SanitizedCppName}SystemComponent, "${SanitizedCppName}SystemComponent",
         ${SanitizedCppName}SystemComponentTypeId);
-    AZ_RTTI_NO_TYPE_INFO_IMPL(${SanitizedCppName}SystemComponent, AZ::Component);
-    AZ_COMPONENT_BASE_IMPL(${SanitizedCppName}SystemComponent);
-    AZ_CLASS_ALLOCATOR_IMPL(${SanitizedCppName}SystemComponent, AZ::SystemAllocator);
 
     void ${SanitizedCppName}SystemComponent::Reflect(AZ::ReflectContext* context)
     {
