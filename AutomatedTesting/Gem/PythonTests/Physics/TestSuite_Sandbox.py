@@ -121,9 +121,6 @@ class EditorTestAutomation(EditorTestSuite):
         # needs to be updated to log for unexpected lines
         # expected_lines = test_module.LogLines.expected_lines
 
-    class ForceRegion_ZeroPointForceDoesNothing(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_ZeroPointForceDoesNothing as test_module
-
     class ForceRegion_ZeroWorldSpaceForceDoesNothing(EditorBatchedTest):
         from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
 
