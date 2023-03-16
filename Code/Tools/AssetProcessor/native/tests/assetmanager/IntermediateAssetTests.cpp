@@ -600,12 +600,13 @@ namespace UnitTests
     TEST_F(IntermediateAssetTests, IntermediateAsset_SourceDependencyOnSourceAsset_Reprocesses)
     {
         using namespace AssetBuilderSDK;
+        using namespace AzToolsFramework::AssetDatabase;
 
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
 
         m_builderInfoHandler.CreateBuilderDesc(
             "stage2", AZ::Uuid::CreateRandom().ToFixedString().c_str(), { AssetBuilderPattern{ "*.stage2", AssetBuilderPattern::Wildcard } },
-            CreateJobStage("stage2", false, "one.test"),
+            CreateJobStage("stage2", false, PathOrUuid("one.test")),
             ProcessJobStage("stage3", ProductOutputFlags::ProductAsset, false), "fingerprint");
 
         CreateBuilder("normal file builder", "*.test", "test", false, ProductOutputFlags::ProductAsset);

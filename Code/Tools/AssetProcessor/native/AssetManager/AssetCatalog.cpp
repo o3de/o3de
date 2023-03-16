@@ -18,6 +18,7 @@
 
 #include <QElapsedTimer>
 #include "PathDependencyManager.h"
+#include <utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
@@ -586,11 +587,23 @@ namespace AssetProcessor
                     AzToolsFramework::AssetSystem::JobStatus::Any,
                     true); /*we still need legacy IDs - hardly anyone else does*/
 
+                auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
+                AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available.");
+
+                AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer productDependenciesToUpdate;
+
                 m_db->QueryProductDependenciesTable(
-                    [this, &platform](AZ::Data::AssetId& assetId, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
+                    [this, &platform, uuidInterface, &productDependenciesToUpdate](AZ::Data::AssetId& assetId, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                     {
                         if (AzFramework::StringFunc::Equal(entry.m_platform.c_str(), platform.toUtf8().data()))
                         {
+                            // Attempt to update the dependency UUID to the canonical UUID if possible
+                            if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_dependencySourceGuid); canonicalUuid && canonicalUuid.value() != entry.m_dependencySourceGuid)
+                            {
+                                entry.m_dependencySourceGuid = canonicalUuid.value();
+                                productDependenciesToUpdate.emplace_back(entry);
+                            }
+
                             m_registries[platform].RegisterAssetDependency(
                                 assetId,
                                 AZ::Data::ProductDependency{ AZ::Data::AssetId(entry.m_dependencySourceGuid, entry.m_dependencySubID),
@@ -600,10 +613,59 @@ namespace AssetProcessor
                         return true;
                     });
 
+                AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer sourceDependenciesToUpdate;
+                m_db->QuerySourceDependencies(
+                    [&sourceDependenciesToUpdate, &uuidInterface](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
+                    {
+                        bool update = false;
+
+                        // Check if the sourceGuid needs to be updated
+                        if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_sourceGuid);
+                            canonicalUuid && canonicalUuid.value() != entry.m_sourceGuid)
+                        {
+                            if (canonicalUuid.value() != entry.m_sourceGuid)
+                            {
+                                update = true;
+                                entry.m_sourceGuid = canonicalUuid.value();
+                            }
+                        }
+
+                        // Check if the dependency uses a UUID and if it needs to be updated
+                        if (entry.m_dependsOnSource.IsUuid())
+                        {
+                            if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_dependsOnSource.GetUuid());
+                                canonicalUuid && canonicalUuid != entry.m_dependsOnSource.GetUuid())
+                            {
+                                update = true;
+                                entry.m_dependsOnSource = AzToolsFramework::AssetDatabase::PathOrUuid(canonicalUuid.value());
+                            }
+                        }
+
+                        if (update)
+                        {
+                            sourceDependenciesToUpdate.emplace_back(entry);
+                        }
+
+                        return true; // Iterate all entries
+                    });
+
                 // Update any old source UUIDs
                 for (auto& sourceDatabaseEntry : sourceEntriesToUpdate)
                 {
                     m_db->SetSource(sourceDatabaseEntry);
+                }
+
+                // Update any old product dependencies
+                for (auto& productDependencyEntry : productDependenciesToUpdate)
+                {
+                    m_db->SetProductDependency(productDependencyEntry);
+                }
+
+                // Update any old source dependencies
+                if (!sourceDependenciesToUpdate.empty())
+                {
+                    m_db->RemoveSourceFileDependencies(sourceDependenciesToUpdate);
+                    m_db->SetSourceFileDependencies(sourceDependenciesToUpdate);
                 }
 
                 AZ_TracePrintf(
@@ -1578,7 +1640,17 @@ namespace AssetProcessor
 
     bool AssetCatalog::GetSourceFileInfoFromAssetId(const AZ::Data::AssetId &assetId, SourceAssetReference& sourceAsset)
     {
-        // Check the database first
+        // Try checking the UuidManager, it keeps track of legacy UUIDs
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
+        if (auto result = uuidInterface->FindHighestPriorityFileByUuid(assetId.m_guid); result)
+        {
+            sourceAsset = SourceAssetReference(result.value());
+            return true;
+        }
+
+        // Check the database next
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;

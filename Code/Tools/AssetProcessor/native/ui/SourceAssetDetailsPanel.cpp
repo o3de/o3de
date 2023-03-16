@@ -17,6 +17,7 @@
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
 #include <native/utilities/assetUtils.h>
+#include <utilities/UuidManager.h>
 
 namespace AssetProcessor
 {
