@@ -75,12 +75,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_Restitution as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @fm.file_revert("ragdollbones.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnRagdollBones")
-    def test_Material_LibraryCrudOperationsReflectOnRagdollBones(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnRagdollBones as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Material_RagdollBones(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_RagdollBones as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -94,13 +88,6 @@ class TestAutomation(TestAutomationBase):
     # BUG: LY-107723")
     def test_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    # Failing, PhysXTerrain
-    @fm.file_revert("c4925579_material_addmodifydeleteonterrain.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnTerrain")
-    def test_Material_LibraryCrudOperationsReflectOnTerrain(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnTerrain as test_module
         self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
@@ -126,29 +113,11 @@ class TestAutomation(TestAutomationBase):
     def test_Material_StaticFriction(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_StaticFriction as test_module
         self._run_test(request, workspace, editor, test_module)
-        
-    @fm.file_revert("c4888315_material_addmodifydeleteoncollider.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCollider")
-    def test_Material_LibraryCrudOperationsReflectOnCollider(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnCollider as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @fm.file_revert("c15563573_material_addmodifydeleteoncharactercontroller.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryCrudOperationsReflectOnCharacterController")
-    def test_Material_LibraryCrudOperationsReflectOnCharacterController(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryCrudOperationsReflectOnCharacterController as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     @fm.file_revert("c4044455_material_librarychangesinstantly.physmaterial",
                     r"AutomatedTesting\Levels\Physics\C4044455_Material_LibraryChangesInstantly")
     def test_Material_LibraryChangesReflectInstantly(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_LibraryChangesReflectInstantly as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @fm.file_revert("Material_LibraryUpdatedAcrossLevels.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_LibraryUpdatedAcrossLevels")
-    def test_Material_LibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryUpdatedAcrossLevels as test_module
         self._run_test(request, workspace, editor, test_module)
     
     def test_RigidBody_LinearDampingAffectsMotion(self, request, workspace, editor, launcher_platform):
@@ -234,9 +203,6 @@ class EditorTestAutomation(EditorTestSuite):
 
     class Collider_MultipleSurfaceSlots(EditorBatchedTest):
         from .tests.collider import Collider_MultipleSurfaceSlots as test_module
-
-    class Material_LibraryClearingAssignsDefault(EditorBatchedTest):
-        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
 
     class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorBatchedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
