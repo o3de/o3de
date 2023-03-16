@@ -110,9 +110,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_AngularDampingAffectsRotation(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
-    class Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether(EditorBatchedTest):
-        from .tests import Physics_VerifyColliderRigidBodyMeshAndTerrainWorkTogether as test_module
-
     class ScriptCanvas_TriggerEvents(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # needs to be updated to log for unexpected lines
