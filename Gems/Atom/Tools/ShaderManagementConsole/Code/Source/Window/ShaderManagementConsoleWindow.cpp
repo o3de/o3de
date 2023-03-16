@@ -12,11 +12,18 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzCore/Utils/Utils.h>
-#include <Window/ShaderManagementConsoleWindow.h>
+
+#include <Data/ShaderVariantStatisticData.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <Window/ShaderManagementConsoleWindow.h>
+#include <Window/ShaderManagementConsoleStatisticView.h>
+#include <ShaderManagementConsoleRequestBus.h>
 
 #include <QFileDialog>
+#include <QMenu>
+#include <QProgressDialog>
 #include <QUrl>
 #include <QWindow>
 #include <QMessageBox>

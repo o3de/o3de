@@ -6,10 +6,12 @@
  *
  */
 
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <Window/ShaderManagementConsoleStatisticView.h>
 #include <ShaderManagementConsoleRequestBus.h>
 
+#include <QHeaderView>
 #include <QMenu>
 #include <QMessageBox>
 #include <QProgressDialog>
