@@ -33,6 +33,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
         {
             AzFramework::Application::Descriptor appDesc;
 
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsPythonFuncsHandler::CreateDescriptor());
 
@@ -67,6 +68,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
         {
             AzFramework::Application::Descriptor appDesc;
 
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
 

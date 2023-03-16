@@ -195,6 +195,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

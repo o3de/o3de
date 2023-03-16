@@ -26,6 +26,47 @@
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <QColor>
 
+#include <chrono>
+#include <iostream>
+
+class Timer
+{
+public:
+    Timer() = delete; // always provide a name
+    Timer(AZStd::string name)
+    {
+        m_name = name;
+        m_stopped = false;
+        m_timepoint = std::chrono::high_resolution_clock::now();
+    }
+
+    ~Timer()
+    {
+        Stop();
+    }
+
+    void Stop()
+    {
+        auto end_timepoint = std::chrono::high_resolution_clock::now();
+        if (!m_stopped)
+        {
+            m_stopped = true;
+            auto begin = std::chrono::time_point_cast<std::chrono::microseconds>(m_timepoint).time_since_epoch().count();
+            auto end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
+
+            auto duration = end - begin;
+            auto ms = duration * 0.001;
+
+            std::cout << m_name.c_str() << " took " << duration << "us (" << ms << "ms)\n";
+        }
+    }
+
+private:
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_timepoint;
+    bool m_stopped;
+    AZStd::string m_name;
+};
+
 namespace AzToolsFramework
 {
     // Used to promote some functions to public so the unit tests can access them.
@@ -224,6 +265,7 @@ namespace AzToolsFramework
     protected:
         void SetUp() override
         {
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(m_descriptor);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -362,6 +404,7 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_EntityCreatedWithLayer_HasLayerReturnsTrue)
     {
+        Timer timer(__FUNCTION__);
         bool isLayerEntity = false;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             isLayerEntity,

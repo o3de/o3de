@@ -20,6 +20,7 @@ namespace AzToolsFramework
     protected:
         void SetUp() override
         {
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(m_descriptor);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

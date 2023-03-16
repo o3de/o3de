@@ -25,6 +25,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(m_descriptor);
             // Without this, the user settings component would sometimes attempt to save
             // changes on shutdown. In some cases this would cause a crash while the unit test

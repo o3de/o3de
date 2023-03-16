@@ -269,6 +269,9 @@ namespace AZ
         //! loaded into the AZ::SettingsRegistry plus the list of modules stored in the Descriptor::m_modules array
         void LoadDynamicModules();
 
+        //! Disables or re-enables automatic read/write of the Settings Registry
+        void SetSettingsRegistryEnabled(bool enabled);
+
     protected:
         void InitializeSettingsRegistry();
         void InitializeEventLoggerFactory();
@@ -355,6 +358,7 @@ namespace AZ
         bool                                        m_isStarted{ false };
         IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
+        bool                                        m_isSettingsRegistryEnabled{ true };
 
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;

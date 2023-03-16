@@ -124,6 +124,7 @@ namespace EMotionFX
             {
                 AZ::Test::AddActiveGem("EMotionFX", *settingsRegistry);
             }
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(AZ::ComponentApplication::Descriptor{}, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

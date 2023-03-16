@@ -41,6 +41,7 @@ namespace UnitTest
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(desc);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -977,6 +978,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Start(AZ::ComponentApplication::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
