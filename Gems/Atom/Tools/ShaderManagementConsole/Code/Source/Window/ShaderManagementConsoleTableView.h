@@ -15,6 +15,8 @@
 #include <QTableWidget>
 #endif
 
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleTableView
