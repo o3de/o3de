@@ -127,9 +127,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_ZeroWorldSpaceForceDoesNothing(EditorBatchedTest):
         from .tests.force_region import ForceRegion_ZeroWorldSpaceForceDoesNothing as test_module
 
-    class ForceRegion_ZeroLinearDampingDoesNothing(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_ZeroLinearDampingDoesNothing as test_module
-
     class ScriptCanvas_CollisionEvents(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
