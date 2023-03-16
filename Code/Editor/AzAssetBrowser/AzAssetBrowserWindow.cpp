@@ -26,6 +26,7 @@
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -42,6 +43,7 @@ AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFla
 //! When the Asset Browser window is resized to be less than this many pixels in width
 //! the layout changes to accomodate its narrow state better. See AzAssetBrowserWindow::SetNarrowMode
 static constexpr int s_narrowModeThreshold = 700;
+static constexpr int MinimumWidth = 328;
 
 using namespace AzToolsFramework::AssetBrowser;
 
@@ -91,6 +93,8 @@ public:
     }
 };
 
+
+
 AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
@@ -116,6 +120,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
     m_assetBrowserModel->EnableTickBus();
+
+    this->setMinimumWidth(MinimumWidth);
 
     if (ed_useNewAssetBrowserTableView)
     {
@@ -260,14 +266,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_middleStackWidget->hide();
         m_ui->m_treeViewButton->hide();
         m_ui->m_thumbnailViewButton->hide();
-        m_ui->m_tableViewButton->hide();
+        m_ui->m_expandedTableViewButton->hide();
         m_ui->m_createButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     }
 
     m_ui->horizontalLayout->setAlignment(m_ui->m_toolsMenuButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_treeViewButton, Qt::AlignTop);
-    m_ui->horizontalLayout->setAlignment(m_ui->m_tableViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_expandedTableViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
@@ -290,12 +296,16 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     });
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
-    connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_tableView); });
+    connect(m_ui->m_expandedTableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_expandedTableView); });
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    
     // !!! Need to set the model on the tree widget first
-    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
+
+    // !!! Need to set the model on the tree widget first
+    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -321,6 +331,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             if (selected.indexes().size() > 0)
             {
                 CurrentIndexChangedSlot(selected.indexes()[0]);
+                m_ui->m_createButton->setDisabled(false);
+            }
+            else
+            {
+                m_ui->m_createButton->setDisabled(true);
             }
         });
 
@@ -359,7 +374,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
 
-    m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
+    m_ui->m_thumbnailView->SetIsAssetBrowserMainView(m_ui->m_assetBrowserTreeViewWidget);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -490,18 +505,31 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_toolsMenu->addAction(collapseAllAction);
 
         m_toolsMenu->addSeparator();
-        auto* projectSourceAssets = new QAction(tr("Hide Product Assets"), this);
+        auto* projectSourceAssets = new QAction(tr("Hide Engine Folders"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
         connect(projectSourceAssets, &QAction::triggered, this,
             [this, projectSourceAssets]
             {
-                m_ui->m_thumbnailView->HideProductAssets(projectSourceAssets->isChecked());
                 m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
-
         m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+
+        auto* unusableProductAssets = new QAction(tr("Hide Unusable Product Assets"), this);
+        unusableProductAssets->setCheckable(true);
+        unusableProductAssets->setChecked(true);
+        connect(
+            unusableProductAssets,
+            &QAction::triggered,
+            this,
+            [this, unusableProductAssets]
+            {
+                m_ui->m_searchWidget->ToggleUnusableProductsFilter(unusableProductAssets->isChecked());
+            });
+        m_toolsMenu->addAction(unusableProductAssets);
+        m_ui->m_searchWidget->ToggleUnusableProductsFilter(unusableProductAssets->isChecked());
+
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
@@ -630,6 +658,11 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             if (thumbnailWidget)
             {
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+            }
+            auto expandedTableWidget = m_ui->m_expandedTableView->GetExpandedTableViewWidget();
+            if (expandedTableWidget)
+            {
+                expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
             }
         }
     }

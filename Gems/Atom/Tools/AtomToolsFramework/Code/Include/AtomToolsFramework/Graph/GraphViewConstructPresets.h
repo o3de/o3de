@@ -12,6 +12,11 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 #endif
 
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/containers/map.h>
+
 namespace AtomToolsFramework
 {
     //! The implementation of the graph view requires construct presets in order to be able to create node groups and comment blocks.

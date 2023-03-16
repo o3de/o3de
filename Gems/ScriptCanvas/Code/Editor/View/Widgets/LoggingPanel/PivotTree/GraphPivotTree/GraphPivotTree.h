@@ -161,7 +161,6 @@ namespace ScriptCanvasEditor
 
         LoggingDataId m_loggedDataId;
 
-        bool m_capturingData;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
     };
 

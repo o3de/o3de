@@ -107,6 +107,64 @@ namespace AZ
             return pipeline;
         }
 
+        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForImage(const RenderPipelineDescriptor& desc, Data::Asset<AttachmentImageAsset> imageAsset)
+        {
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
+
+            PassRequest passRequest;
+
+            PassImageAttachmentDesc imageAttachmentDesc;
+            imageAttachmentDesc.m_assetRef.m_assetId = imageAsset.GetId();
+            imageAttachmentDesc.m_lifetime = RHI::AttachmentLifetimeType::Imported;
+            imageAttachmentDesc.m_name = Name("OutputImage");
+            passRequest.m_imageAttachmentOverrides.push_back(imageAttachmentDesc);
+
+            auto passTemplate = passSystem->GetPassTemplate(Name(desc.m_rootPassTemplate));
+
+            if (!passTemplate)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: the render pipeline root pass template doesn't exist");
+                return nullptr;
+            }
+
+            PassConnection passConnection;
+
+            // use first output slot for connection
+            for (auto slot : passTemplate->m_slots)
+            {
+                if (slot.m_slotType == RPI::PassSlotType::Output || slot.m_slotType == RPI::PassSlotType::InputOutput)
+                {
+                    passConnection.m_localSlot = slot.m_name;
+                    break;
+                }
+            }
+
+            if (passConnection.m_localSlot.IsEmpty())
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: the render pipeline root pass template doesn't have output slot for render target");
+                return nullptr;
+            }
+
+            passConnection.m_attachmentRef.m_pass = "This";
+            passConnection.m_attachmentRef.m_attachment = imageAttachmentDesc.m_name;
+            passRequest.m_passName = desc.m_name;
+            passRequest.m_templateName = desc.m_rootPassTemplate;
+            passRequest.m_connections.push_back(passConnection);
+                        
+            auto rootPass = passSystem->CreatePassFromRequest(&passRequest);
+            if (!rootPass)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: failed to create root pass for the render pipeline");
+                return nullptr;
+            }
+            pipeline->m_passTree.m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
+
+            InitializeRenderPipeline(pipeline.get(), desc);
+
+            return pipeline;
+        }
+
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
         {
             pipeline->m_descriptor = desc;
@@ -117,6 +175,35 @@ namespace AZ
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
+
+            pipeline->UpdateViewportScissor();
+        }
+
+        void RenderPipeline::UpdateViewportScissor()
+        {
+            for (PassAttachmentBinding& binding : m_passTree.m_rootPass->m_attachmentBindings)
+            {
+                if (binding.m_slotType == PassSlotType::Output || binding.m_slotType == PassSlotType::InputOutput)
+                {
+                    auto attachment = binding.GetAttachment();
+                    if (attachment && attachment->GetAttachmentType() == RHI::AttachmentType::Image)
+                    {
+                        RHI::ImageDescriptor imageDesc;
+                        if (attachment->m_importedResource)
+                        {
+                            AttachmentImage* image = static_cast<AttachmentImage*>(attachment->m_importedResource.get());
+                            imageDesc = image->GetDescriptor();
+                        }
+                        else
+                        {
+                            imageDesc = attachment->m_descriptor.m_image;
+                        }
+                        m_viewport = RHI::Viewport(0, (float)imageDesc.m_size.m_width, 0, (float)imageDesc.m_size.m_height);
+                        m_scissor = RHI::Scissor(0, 0, imageDesc.m_size.m_width, imageDesc.m_size.m_height);
+                        return;
+                    }
+                }
+            }
         }
 
         RenderPipeline::~RenderPipeline()
@@ -359,6 +446,8 @@ namespace AZ
 
         void RenderPipeline::OnRemovedFromScene([[maybe_unused]] Scene* scene)
         {
+            m_passTree.ClearQueues();
+
             AZ_Assert(m_scene == scene, "Pipeline isn't added to the specified scene");
             m_scene = nullptr;
             PassSystemInterface::Get()->RemoveRenderPipeline(this);
@@ -440,9 +529,18 @@ namespace AZ
                         SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
                     }
                 }
+                                
+                UpdateViewportScissor();
 
                 // Reset change flags
                 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
+
+                if (m_scene)
+                {
+                    // Process any changes that may have happened due to SceneNotification Events. This may cause the
+                    // m_pipelinePassChanges flag to change and be handled later.
+                    m_passTree.ProcessQueuedChanges();
+                }
             }
         }
 
@@ -498,6 +596,8 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RPI);
             if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
             {
+                params.m_viewportState = m_viewport;
+                params.m_scissorState = m_scissor;
                 m_passTree.m_rootPass->FrameBegin(params);
             }
         }

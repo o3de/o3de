@@ -68,6 +68,10 @@ namespace O3DE::ProjectManager
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
         m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+        if (!gemInfo.m_path.isEmpty())
+        {
+            m_pathToIndexMap[gemInfo.m_path] = modelIndex;
+        }
 
         return modelIndex;
     }
@@ -216,6 +220,17 @@ namespace O3DE::ProjectManager
     {
         const auto iterator = m_nameToIndexMap.find(nameString);
         if (iterator != m_nameToIndexMap.end())
+        {
+            return iterator.value();
+        }
+
+        return {};
+    }
+
+    QModelIndex GemModel::FindIndexByPath(const QString& path) const
+    {
+        const auto iterator = m_pathToIndexMap.find(path);
+        if (iterator != m_pathToIndexMap.end())
         {
             return iterator.value();
         }

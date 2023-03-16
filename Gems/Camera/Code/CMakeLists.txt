@@ -69,4 +69,3 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 # The DefaultPrefab contains an EditorCameraComponent which makes this gem required
-ly_enable_gems(GEMS Camera)

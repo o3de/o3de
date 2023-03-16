@@ -61,11 +61,6 @@ namespace GraphModelIntegration
             return 0;
         }
 
-        int GetDisplayDecimalPlaces() const
-        {
-            return 0;
-        }
-
         double GetMin() const
         {
             return static_cast<double>(AZStd::numeric_limits<T>::min());

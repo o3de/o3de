@@ -10,7 +10,6 @@
 
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzFramework/DocumentPropertyEditor/RoutingAdapter.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AZ::DocumentPropertyEditor
@@ -68,6 +67,11 @@ namespace AZ::DocumentPropertyEditor
         //! @param labelText The text string to be displayed in label.
         //! @param serializedPath The serialized path fetched from AZ::Reflection::DescriptorAttributes.
         virtual void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath);
+
+        //! Updates the contents of adapter Dom contents using the property change information provided. Child adapters can override
+        //! this function to make more changes to the Dom in addition to the property changes.
+        //! @param propertyChangeInfo Object containing information about the property change.
+        virtual void UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo);
 
         void* GetInstance() { return m_instance; }
         const void* GetInstance() const { return m_instance; }

@@ -53,7 +53,7 @@ float3 GetIblSpecular(
         if (reflectionProbe.m_useParallaxCorrection)
         {
             reflectDir = ApplyParallaxCorrectionOBB(
-                reflectionProbe.GetReflectionProbeWorldMatrixInverse(),
+                GetReflectionProbeWorldMatrixInverse(reflectionProbe),
                 reflectionProbe.m_outerObbHalfLengths,
                 position,
                 reflectDir);
@@ -64,7 +64,7 @@ float3 GetIblSpecular(
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
-            (float3x4)reflectionProbe.GetReflectionProbeWorldMatrixInverse(),
+            (float3x4)GetReflectionProbeWorldMatrixInverse(reflectionProbe),
             reflectionProbe.m_innerObbHalfLengths,
             reflectionProbe.m_outerObbHalfLengths,
             position);

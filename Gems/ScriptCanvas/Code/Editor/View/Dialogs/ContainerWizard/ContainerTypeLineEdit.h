@@ -142,8 +142,6 @@ namespace ScriptCanvasEditor
         int m_index;
         AZ::TypeId m_lastId;
 
-        const QPixmap* m_iconPixmap;
-
         QCompleter m_completer;
         ContainerTypeMenu m_dataTypeMenu;
 

@@ -18,10 +18,13 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
+#include <QTimer>
 #endif
 
 namespace AzToolsFramework
@@ -175,7 +178,7 @@ namespace AzToolsFramework
                   }
             }
         }
- 
+
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const
         {
             return m_thumbnailViewWidget;
@@ -191,9 +194,16 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
         {
             SetName(ThumbnailViewMainViewName);
+
+            bool isAssetBrowserComponentReady = false;
+            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
+            if (isAssetBrowserComponentReady)
+            {
+                  SetAssetTreeView(treeView);
+            }
         }
 
         bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()
@@ -323,11 +333,6 @@ namespace AzToolsFramework
                 &AssetBrowserThumbnailView::HandleTreeViewSelectionChanged);
         }
 
-        void AssetBrowserThumbnailView::HideProductAssets(bool checked)
-        {
-            m_thumbnailViewWidget->HideProductAssets(checked);
-        }
-
         void AssetBrowserThumbnailView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
             m_thumbnailViewWidget->setSelectionMode(mode);
@@ -376,6 +381,21 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserThumbnailView::EnsureItemIsSelected()
+        {
+            QTimer::singleShot(
+                0,
+                this,
+                [this]
+                {
+                    if (!m_assetTreeView->selectionModel()->hasSelection() && m_assetTreeView->model()->rowCount())
+                    {
+                        QModelIndex firstItem = m_assetTreeView->model()->index(0, 0);
+                        m_assetTreeView->selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
+                    }
+                });
+        }
+
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()
         {
             if (!m_assetTreeView)
@@ -421,8 +441,11 @@ namespace AzToolsFramework
                     filterCopy->AddFilter(subFilter);
                 }
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
+            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
+
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+
+            EnsureItemIsSelected();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

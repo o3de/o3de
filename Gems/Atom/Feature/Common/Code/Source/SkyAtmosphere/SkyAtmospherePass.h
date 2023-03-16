@@ -99,7 +99,7 @@ namespace AZ::Render
             float m_sunShadowFarClip = 0.f;
 
             float m_luminanceFactor[3] = {1.f, 1.f, 1.f};
-            float m_pad3 = 0.f; // not used
+            float m_aerialDepthFactor = 1.f;
 
             float m_planetOrigin[3] = {0.f, 0.f, 0.f};
             float m_pad4 = 0.f;
@@ -109,6 +109,7 @@ namespace AZ::Render
 
         ImageInstance m_transmittanceLUTImage;
         ImageInstance m_skyViewLUTImage;
+        ImageInstance m_skyVolumeLUTImage;
 
         RHI::ShaderInputNameIndex m_constantsIndexName = "m_constants";
 
@@ -121,14 +122,18 @@ namespace AZ::Render
         AZStd::vector<AtmospherePassData> m_atmospherePassData;
 
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
+        RPI::Ptr<RPI::Pass> m_skyViewLUTPass = nullptr;
+        RPI::Ptr<RPI::Pass> m_skyVolumeLUTPass = nullptr;
 
         AtmosphereGPUParams m_constants;
         SkyAtmosphereParams m_atmosphereParams;
         bool m_lutUpdateRequired = true;
         bool m_updateConstants = false;
 
-        bool m_enableLUTPass = false;
+        bool m_enableSkyTransmittanceLUTPass = false;
         bool m_enableFastSky = true;
+        bool m_fastAerialPerspectiveEnabled = true;
+        bool m_aerialPerspectiveEnabled = true;
         bool m_enableShadows = false;
         bool m_enableSun = true;
     };

@@ -165,6 +165,48 @@ namespace UnitTests
         AssetProcessor::ScanFolderInfo m_scanFolderInfo;
     };
 
+    struct MockMultiPathConversion : AZ::Interface<AssetProcessor::IPathConversion>::Registrar
+    {
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override
+        {
+            auto scanfolder = GetScanFolderForFile(fullFileName);
+            EXPECT_TRUE(scanfolder);
+
+            scanFolderName = scanfolder->ScanPath();
+            databaseSourceName = fullFileName.mid(scanFolderName.size() + 1);
+
+            return true;
+        }
+
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const override
+        {
+            for (const auto& scanfolder : m_scanFolderInfo)
+            {
+                if (AZ::IO::PathView(fullFileName.toUtf8().constData())
+                    .IsRelativeTo(AZ::IO::PathView(scanfolder.ScanPath().toUtf8().constData())))
+                {
+                    return &scanfolder;
+                }
+            }
+
+            return nullptr;
+        }
+
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override
+        {
+            return &m_scanFolderInfo[id - 1];
+        }
+
+        void AddScanfolder(QString path, QString name)
+        {
+            m_scanFolderInfo.push_back(
+                AssetProcessor::ScanFolderInfo(path, name, name, false, true, { AssetBuilderSDK::PlatformInfo{ "pc", {} } }, 0, m_scanFolderInfo.size() + 1));
+        }
+
+    private:
+        AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolderInfo;
+    };
+
     struct MockVirtualFileIO
     {
         static constexpr AZ::u32 ComputeHandle(AZ::IO::PathView path)

@@ -10,6 +10,7 @@
 
 #include <sqlite3.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
@@ -711,6 +712,11 @@ namespace AzToolsFramework
             static const auto s_queryCombinedLikeProductnamePlatform = MakeSqlQuery(QUERY_COMBINED_LIKE_PRODUCTNAME_PLATFORM, QUERY_COMBINED_LIKE_PRODUCTNAME_PLATFORM_STATEMENT, LOG_NAME,
                     SqlParam<const char*>(":productname"),
                     SqlParam<const char*>(":platform"));
+
+            static const char* QUERY_SOURCEDEPENDENCY = "AzToolsFramework::AssetDatabase::QuerySourceDependency";
+            static const char* QUERY_SOURCEDEPENDENCY_STATEMENT = "SELECT * FROM SourceDependency";
+
+            static const auto s_querySourceDependency = MakeSqlQuery(QUERY_SOURCEDEPENDENCY, QUERY_SOURCEDEPENDENCY_STATEMENT, LOG_NAME);
 
             static const char* QUERY_SOURCEDEPENDENCY_BY_SOURCEDEPENDENCYID = "AzToolsFramework::AssetDatabase::QuerySourceDependencyBySourceDependencyID";
             static const char* QUERY_SOURCEDEPENDENCY_BY_SOURCEDEPENDENCYID_STATEMENT =
@@ -1441,6 +1447,14 @@ namespace AzToolsFramework
                    m_flags == other.m_flags;//don't compare legacy guid
         }
 
+        bool ProductDatabaseEntry::IsSameLogicalProductAs(const ProductDatabaseEntry& other) const
+        {
+            return m_jobPK == other.m_jobPK &&
+                m_subID == other.m_subID &&
+                m_assetType == other.m_assetType &&
+                AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str());
+        }
+
         AZStd::string ProductDatabaseEntry::ToString() const
         {
             return AZStd::string::format("ProductDatabaseEntry id:%" PRId64 " jobpk: %" PRId64 " subid: %i productname: %s assettype: %s hash: %" PRId64 " flags: %" PRId64,
@@ -1923,6 +1937,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryCombinedLikeProductname);
             AddStatement(m_databaseConnection, s_queryCombinedLikeProductnamePlatform);
 
+            AddStatement(m_databaseConnection, s_querySourceDependency);
             AddStatement(m_databaseConnection, s_querySourcedependencyBySourcedependencyid);
             AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSource);
             AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSourceWildcard);
@@ -2606,7 +2621,13 @@ namespace AzToolsFramework
             return found && succeeded;
         }
 
-        bool AssetDatabaseConnection::QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler)
+        bool AssetDatabaseConnection::QuerySourceDependencies(sourceFileDependencyHandler handler)
+        {
+            return s_querySourceDependency.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult);
+        }
+
+        bool AssetDatabaseConnection::QuerySourceDependencyBySourceDependencyId(
+            AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler)
         {
             return s_querySourcedependencyBySourcedependencyid.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceDependencyID);
         }

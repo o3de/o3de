@@ -16,7 +16,6 @@
 #include <AzNetworking/Utilities/TimedThread.h>
 
 #include "Utilities/RemoteToolsJoinThread.h"
-#include "Utilities/RemoteToolsOutboxThread.h"
 
 namespace RemoteToolsPackets
 {
@@ -147,7 +146,6 @@ namespace RemoteTools
         ////////////////////////////////////////////////////////////////////////
 
         AZStd::unique_ptr<RemoteToolsJoinThread> m_joinThread;
-        AZStd::unique_ptr<RemoteToolsOutboxThread> m_outboxThread;
 
         AZStd::unordered_map<AZ::Crc32, RemoteToolsRegistryEntry> m_entryRegistry;
 

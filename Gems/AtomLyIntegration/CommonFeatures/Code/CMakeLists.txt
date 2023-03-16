@@ -189,4 +189,3 @@ endif()
 # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
 # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
 # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

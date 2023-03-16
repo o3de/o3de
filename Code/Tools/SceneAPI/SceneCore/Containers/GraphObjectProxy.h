@@ -7,8 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
+
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 namespace AZ
 {
@@ -17,6 +18,7 @@ namespace AZ
     class BehaviorClass;
     class BehaviorMethod;
     class BehaviorProperty;
+    class ReflectContext;
 
     namespace Python
     {
