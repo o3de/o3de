@@ -69,13 +69,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_FrictionCombinePriorityOrder.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_FrictionCombinePriorityOrder(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_FrictionCombinePriorityOrder as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
