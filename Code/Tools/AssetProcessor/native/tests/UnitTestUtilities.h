@@ -171,7 +171,6 @@ namespace UnitTests
         {
             auto scanfolder = GetScanFolderForFile(fullFileName);
             EXPECT_TRUE(scanfolder);
-            //EXPECT_TRUE(fullFileName.startsWith(m_scanFolderInfo.ScanPath(), Qt::CaseInsensitive));
 
             scanFolderName = scanfolder->ScanPath();
             databaseSourceName = fullFileName.mid(scanFolderName.size() + 1);
