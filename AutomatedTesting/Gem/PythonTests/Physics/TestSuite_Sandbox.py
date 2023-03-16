@@ -152,9 +152,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_MassDifferentValuesWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
 
-    class ForceRegion_SplineRegionWithModifiedTransform(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_SplineRegionWithModifiedTransform as test_module
-
     class RigidBody_InitialAngularVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
 
