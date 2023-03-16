@@ -12,6 +12,7 @@
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Component/EntityBus.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -23,6 +24,7 @@ namespace AZ::DocumentPropertyEditor
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
         , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
+        , private AZ::EntitySystemBus::Handler
     {
     public:
         //! Creates an uninitialized (empty) ComponentAdapter.
@@ -54,6 +56,9 @@ namespace AZ::DocumentPropertyEditor
         //! @param labelText The text string to be displayed in label.
         //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
+
+        void OnEntityDestroyed(const AZ::EntityId&) override;
+        void OnEntityDeactivated(const AZ::EntityId&) override;
 
     protected:
         AZ::EntityId m_entityId;

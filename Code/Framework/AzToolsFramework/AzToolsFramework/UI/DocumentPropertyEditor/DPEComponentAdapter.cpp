@@ -79,6 +79,7 @@ namespace AZ::DocumentPropertyEditor
     {
         m_entityId = componentInstance->GetEntityId();
         m_componentId = componentInstance->GetId();
+        AZ::EntitySystemBus::Handler::BusConnect();
 
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
@@ -90,6 +91,11 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::DoRefresh()
     {
+        if (!m_entityId.IsValid())
+        {
+            return;
+        }
+
         if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
         {
             return;
@@ -146,4 +152,14 @@ namespace AZ::DocumentPropertyEditor
     {
         ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
     }
+
+    void ComponentAdapter::OnEntityDestroyed(const AZ::EntityId& entityId)
+    {
+        if (entityId == m_entityId)
+        {
+            m_entityId.SetInvalid();
+            AZ::EntitySystemBus::Handler::BusDisconnect();
+        }
+    }
+
 } // namespace AZ::DocumentPropertyEditor
