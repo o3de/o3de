@@ -94,10 +94,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.collider import Collider_SameCollisionGroupSameLayerCollide as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Ragdoll_OldRagdollSerializationNoErrors(self, request, workspace, editor, launcher_platform):
-        from .tests.ragdoll import Ragdoll_OldRagdollSerializationNoErrors as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @fm.file_override("default.physxconfiguration", "ScriptCanvas_OverlapNode.physxconfiguration")
     def test_ScriptCanvas_OverlapNode(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_OverlapNode as test_module

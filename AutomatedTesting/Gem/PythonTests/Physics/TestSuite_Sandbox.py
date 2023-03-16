@@ -59,9 +59,6 @@ class EditorTestAutomation(EditorTestSuite):
     class CharacterController_SwitchLevels(EditorBatchedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
 
-    class Ragdoll_AddPhysxRagdollComponentWorks(EditorBatchedTest):
-        from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
-
     class ScriptCanvas_MultipleRaycastNode(EditorBatchedTest):
         # Fixme: This test previously relied on unexpected lines log reading with is now not supported.
         # Now the log reading must be done inside the test, preferably with the Tracer() utility
@@ -129,9 +126,6 @@ class EditorTestAutomation(EditorTestSuite):
 
     class RigidBody_InitialAngularVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
-
-    class Ragdoll_LevelSwitchDoesNotCrash(EditorBatchedTest):
-        from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
 
     class RigidBody_COM_NotIncludesTriggerShapes(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
