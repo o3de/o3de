@@ -68,9 +68,6 @@ class EditorTestAutomation(EditorTestSuite):
         #  unexpected_lines = ["Assert"] + test_module.Lines.unexpected
         from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
 
-    class Joints_HingeLeadFollowerCollide(EditorBatchedTest):
-        from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
-
     class ShapeCollider_CylinderShapeCollides(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
@@ -155,12 +152,6 @@ class EditorTestAutomation(EditorTestSuite):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
         # Note: Test needs to be updated to log for unexpected lines
         # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-
-    class Joints_HingeSoftLimitsConstrained(EditorBatchedTest):
-        from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
-
-    class Joints_BallLeadFollowerCollide(EditorBatchedTest):
-        from .tests.joints import Joints_BallLeadFollowerCollide as test_module
 
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module

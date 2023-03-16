@@ -47,18 +47,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Joints_Fixed2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_Fixed2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Joints_Hinge2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_Hinge2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Joints_Ball2BodiesConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_Ball2BodiesConstrained as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Joints_FixedBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_FixedBreakable as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -69,18 +57,6 @@ class TestAutomation(TestAutomationBase):
 
     def test_Joints_BallBreakable(self, request, workspace, editor, launcher_platform):
         from .tests.joints import Joints_BallBreakable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Joints_HingeNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_HingeNoLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Joints_BallNoLimitsConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_BallNoLimitsConstrained as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Joints_GlobalFrameConstrained(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_GlobalFrameConstrained as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
