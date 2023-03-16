@@ -62,25 +62,3 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
-    
-    @revert_physics_config
-    def test_Material_DefaultLibraryUpdatedAcrossLevels(self, request, workspace, editor, launcher_platform):
-        @fm.file_override("physxsystemconfiguration.setreg",
-                          "Material_DefaultLibraryUpdatedAcrossLevels_before.setreg",
-                          "AutomatedTesting",
-                          search_subdirs=True)
-        def levels_before(self, request, workspace, editor, launcher_platform):
-            from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_before as test_module_0
-            self._run_test(request, workspace, editor, test_module_0)
-
-        # File override replaces the previous physxconfiguration file with another where the only difference is the default material library
-        @fm.file_override("physxsystemconfiguration.setreg",
-                          "Material_DefaultLibraryUpdatedAcrossLevels_after.setreg",
-                          "AutomatedTesting",
-                          search_subdirs=True)
-        def levels_after(self, request, workspace, editor, launcher_platform):
-            from .tests.material import Material_DefaultLibraryUpdatedAcrossLevels_after as test_module_1
-            self._run_test(request, workspace, editor, test_module_1)
-
-        levels_before(self, request, workspace, editor, launcher_platform)
-        levels_after(self, request, workspace, editor, launcher_platform)
