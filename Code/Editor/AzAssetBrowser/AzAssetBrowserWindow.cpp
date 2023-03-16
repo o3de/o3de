@@ -43,6 +43,7 @@ AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFla
 //! When the Asset Browser window is resized to be less than this many pixels in width
 //! the layout changes to accomodate its narrow state better. See AzAssetBrowserWindow::SetNarrowMode
 static constexpr int s_narrowModeThreshold = 700;
+static constexpr int MinimumWidth = 328;
 
 using namespace AzToolsFramework::AssetBrowser;
 
@@ -92,6 +93,8 @@ public:
     }
 };
 
+
+
 AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
@@ -117,6 +120,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
     m_assetBrowserModel->EnableTickBus();
+
+    this->setMinimumWidth(MinimumWidth);
 
     if (ed_useNewAssetBrowserTableView)
     {
