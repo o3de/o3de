@@ -130,9 +130,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_StartAsleepWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class ForceRegion_ZeroSimpleDragForceDoesNothing(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_ZeroSimpleDragForceDoesNothing as test_module
-
     class RigidBody_COM_ComputingWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module
 
@@ -141,9 +138,6 @@ class EditorTestAutomation(EditorTestSuite):
 
     class RigidBody_InitialAngularVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
-
-    class ForceRegion_ZeroSplineForceDoesNothing(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_ZeroSplineForceDoesNothing as test_module
 
     class Ragdoll_LevelSwitchDoesNotCrash(EditorBatchedTest):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
