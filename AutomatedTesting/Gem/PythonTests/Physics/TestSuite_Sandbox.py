@@ -114,9 +114,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_AddRigidBodyComponent(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_AddRigidBodyComponent as test_module
 
-    class ForceRegion_SplineForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_SplineForceOnRigidBodies as test_module
-
     class RigidBody_AngularDampingAffectsRotation(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
