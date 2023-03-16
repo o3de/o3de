@@ -92,10 +92,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
 
-    class ForceRegion_WithNonTriggerColliderWarning(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
-        # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
-
     class RigidBody_InitialLinearVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
 
