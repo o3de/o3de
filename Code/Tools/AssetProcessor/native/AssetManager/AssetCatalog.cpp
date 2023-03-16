@@ -637,7 +637,7 @@ namespace AssetProcessor
                                 canonicalUuid && canonicalUuid != entry.m_dependsOnSource.GetUuid())
                             {
                                 update = true;
-                                entry.m_dependsOnSource = AzToolsFramework::AssetDatabase::PathOrUuid::PathOrUuid(canonicalUuid.value());
+                                entry.m_dependsOnSource = AzToolsFramework::AssetDatabase::PathOrUuid(canonicalUuid.value());
                             }
                         }
 
