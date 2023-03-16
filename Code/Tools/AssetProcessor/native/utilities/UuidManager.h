@@ -37,11 +37,17 @@ namespace AssetProcessor
         //! Returns the full set of UUID entry details for the given asset.
         virtual AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetUuidDetails(const SourceAssetReference& sourceAsset) = 0;
         //! Returns the file(s) matching the provided UUID.  If the UUID provided is a legacy UUID there may be multiple matches.
+        //! Note this API relies on the internal cache and expects all files to have had Get(Legacy)Uuid(s) called at least once already.
+        //! This is expected to happened already as part of normal AP operations.
         virtual AZStd::vector<AZ::IO::Path> FindFilesByUuid(AZ::Uuid uuid) = 0;
         //! Returns the highest priority file matching the provided UUID.
         //! In the case of a legacy UUID provided which matches multiple files, the oldest file in the highest priority scanfolder will be returned.
+        //! Note this API relies on the internal cache and expects all files to have had Get(Legacy)Uuid(s) called at least once already.
+        //! This is expected to happened already as part of normal AP operations.
         virtual AZStd::optional<AZ::IO::Path> FindHighestPriorityFileByUuid(AZ::Uuid uuid) = 0;
-        //! Upgrades a potentially legacy UUID to the canonical UUID associated with the asset
+        //! Upgrades a potentially legacy UUID to the canonical UUID associated with the asset.
+        //! Note this API relies on the internal cache and expects all files to have had Get(Legacy)Uuid(s) called at least once already.
+        //! This is expected to happened already as part of normal AP operations.
         virtual AZStd::optional<AZ::Uuid> GetCanonicalUuid(AZ::Uuid legacyUuid) = 0;
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
