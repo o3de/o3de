@@ -297,5 +297,7 @@ namespace Terrain
         bool m_rebuildDrawPackets{ false };
 
         AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
+
+        AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
     };
 }
