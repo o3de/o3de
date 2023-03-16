@@ -460,7 +460,15 @@ namespace AZ
             m_colorBlendAttachments.resize(info.attachmentCount);
             for (uint32_t index = 0; index < info.attachmentCount; ++index)
             {
-                FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                // If m_independentBlendEnable is not enabled, we use the values from attachment 0 (same as D3D12)
+                if (index == 0 || blendState.m_independentBlendEnable)
+                {
+                    FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                }
+                else
+                {
+                    m_colorBlendAttachments[index] = m_colorBlendAttachments[0];
+                }
             }
             info.pAttachments = m_colorBlendAttachments.empty() ? nullptr : m_colorBlendAttachments.data();
             for (uint32_t index = 0; index < BlendConstantsCount; ++index)
