@@ -28,6 +28,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <dx12ma/D3D12MemAlloc.h>
+
 AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
 AZ_DX12_REFCOUNTED(D3D12MA::Allocation);
 
@@ -73,7 +74,7 @@ namespace AZ
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
 
-            MemoryView CreateDx12maBuffer(
+            MemoryView CreateD3d12maBuffer(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
                 D3D12_HEAP_TYPE heapType);
@@ -184,7 +185,7 @@ namespace AZ
 
             void InitDeviceRemovalHandle();
 
-            RHI::ResultCode InitDx12maAllocator();
+            RHI::ResultCode InitD3d12maAllocator();
             void InitFeatures();
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
@@ -193,7 +194,7 @@ namespace AZ
             RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
 
             ReleaseQueue m_releaseQueue;
-            Dx12maReleaseQueue m_dx12maReleaseQueue;
+            D3d12maReleaseQueue m_D3d12maReleaseQueue;
 
             PipelineLayoutCache m_pipelineLayoutCache;
 
