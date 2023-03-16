@@ -564,14 +564,6 @@ namespace RemoteTools
             m_joinThread->Start();
         }
 
-        // Check if there are any active connections, if not stop the outbox thread
-        bool hasActiveConnection = false;
-        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
-        {
-            hasActiveConnection =
-                AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(registryIt->second.m_name) != nullptr;
-        }
-
     }
 
 } // namespace RemoteTools
