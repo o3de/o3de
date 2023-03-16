@@ -27,29 +27,30 @@ namespace AZ
     {
         namespace
         {
-            constexpr D3D12MA::ALLOCATOR_FLAGS s_dx12maAllocatorFlags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+            constexpr D3D12MA::ALLOCATOR_FLAGS s_D3d12maAllocatorFlags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
             D3D12MA::ALLOCATION_CALLBACKS s_AllocationCallbacks = {};
 
-            constexpr uintptr_t s_Dx12maAllocationPrivateData = 0x1200A110C;
+            // constant value attached to D3D12MA cpu memory allocations
+            constexpr uintptr_t s_D3d12maAllocationPrivateData = 0x1200A110C;
 
             // utility functions to forward cpu mem allocations to o3de memory systems
-            static void* Dx12maAllocate(size_t size, size_t alignment, void* privateData)
+            static void* D3d12maAllocate(size_t size, size_t alignment, void* privateData)
             {
-                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_Dx12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory allocation");
+                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_D3d12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory allocation");
                 void* memory = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(size, alignment);
                 return memory;
             }
 
-            static void Dx12maFree(void* memory, void* privateData)
+            static void D3d12maFree(void* memory, void* privateData)
             {
-                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_Dx12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory deallocation");
+                AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_D3d12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory deallocation");
                 if(memory)
                 {
                     AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(memory);
                 }
             }
 
-            static void Dx12maRelease(D3D12MA::Allocation& allocation)
+            static void D3d12maRelease(D3D12MA::Allocation& allocation)
             {
                 allocation.GetResource()->Release();
                 allocation.Release();
@@ -81,7 +82,7 @@ namespace AZ
                 return resultCode;
             }
 
-            resultCode = InitDx12maAllocator();
+            resultCode = InitD3d12maAllocator();
             if (resultCode != RHI::ResultCode::Success)
             {
                 return resultCode;
@@ -98,13 +99,13 @@ namespace AZ
 
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
 
-                Dx12maReleaseQueue::Descriptor dx12maReleaseQueueDescriptor;
-                dx12maReleaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
-                dx12maReleaseQueueDescriptor.m_collectFunction = &Dx12maRelease;
-                m_dx12maReleaseQueue.Init(dx12maReleaseQueueDescriptor);
+                D3d12maReleaseQueue::Descriptor D3d12maReleaseQueueDescriptor;
+                D3d12maReleaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
+                D3d12maReleaseQueueDescriptor.m_collectFunction = &D3d12maRelease;
+                m_D3d12maReleaseQueue.Init(D3d12maReleaseQueueDescriptor);
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
@@ -164,7 +165,7 @@ namespace AZ
             m_descriptorContext = nullptr;
 
             m_releaseQueue.Shutdown();
-            m_dx12maReleaseQueue.Shutdown();
+            m_D3d12maReleaseQueue.Shutdown();
 
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
@@ -175,17 +176,17 @@ namespace AZ
             m_dx12Device = nullptr;
         }
 
-        RHI::ResultCode Device::InitDx12maAllocator()
+        RHI::ResultCode Device::InitD3d12maAllocator()
         {
-            // Create DX12MA allocator
+            // Create D3d12ma allocator
             D3D12MA::ALLOCATOR_DESC desc = {};
-            desc.Flags = s_dx12maAllocatorFlags;
+            desc.Flags = s_D3d12maAllocatorFlags;
             desc.pDevice = m_dx12Device.get();
             desc.pAdapter = m_dxgiAdapter.get();
 
-            s_AllocationCallbacks.pAllocate = &Dx12maAllocate;
-            s_AllocationCallbacks.pFree = &Dx12maFree;
-            s_AllocationCallbacks.pPrivateData = reinterpret_cast<void*>(s_Dx12maAllocationPrivateData);
+            s_AllocationCallbacks.pAllocate = &D3d12maAllocate;
+            s_AllocationCallbacks.pFree = &D3d12maFree;
+            s_AllocationCallbacks.pPrivateData = reinterpret_cast<void*>(s_D3d12maAllocationPrivateData);
             desc.pAllocationCallbacks = &s_AllocationCallbacks;
 
             D3D12MA::Allocator* dx12MemAlloc = nullptr;
@@ -324,14 +325,14 @@ namespace AZ
             m_stagingMemoryAllocator.GarbageCollect();
 
             m_releaseQueue.Collect();
-            m_dx12maReleaseQueue.Collect();
+            m_D3d12maReleaseQueue.Collect();
         }
 
         void Device::WaitForIdleInternal()
         {
             m_commandQueueContext.WaitForIdle();
             m_releaseQueue.Collect(true);
-            m_dx12maReleaseQueue.Collect(true);
+            m_D3d12maReleaseQueue.Collect(true);
         }
 
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
@@ -421,7 +422,7 @@ namespace AZ
         void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
         {
             m_releaseQueue.Notify(notifyFunction);
-            m_dx12maReleaseQueue.Notify(notifyFunction);
+            m_D3d12maReleaseQueue.Notify(notifyFunction);
         }
 
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -513,7 +514,7 @@ namespace AZ
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
         }
 
-        MemoryView Device::CreateDx12maBuffer(
+        MemoryView Device::CreateD3d12maBuffer(
             const RHI::BufferDescriptor& bufferDescriptor,
             D3D12_RESOURCE_STATES initialState,
             D3D12_HEAP_TYPE heapType)
@@ -718,9 +719,9 @@ namespace AZ
 
         void Device::QueueForRelease(const MemoryView& memoryView)
         {
-            if (auto* dx12maAllocation = memoryView.GetDx12maAllocation())
+            if (auto* D3d12maAllocation = memoryView.GetD3d12maAllocation())
             {
-                m_dx12maReleaseQueue.QueueForCollect(dx12maAllocation);
+                m_D3d12maReleaseQueue.QueueForCollect(D3d12maAllocation);
             }
             else
             {

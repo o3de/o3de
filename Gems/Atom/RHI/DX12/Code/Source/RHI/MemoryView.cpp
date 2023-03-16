@@ -34,7 +34,7 @@ namespace AZ
         MemoryView::MemoryView(D3D12MA::Allocation* allocation, RHI::Ptr<Memory> memory, size_t offset, size_t size, size_t alignment, MemoryViewType viewType)
             : m_memoryAllocation(MemoryAllocation(memory, offset, size, alignment))
             , m_viewType(viewType)
-            , m_dx12maAllocation(allocation)
+            , m_d3d12maAllocation(allocation)
         {
             Construct();
         }
@@ -49,9 +49,9 @@ namespace AZ
             return m_memoryAllocation.m_memory.get();
         }
 
-        D3D12MA::Allocation* MemoryView::GetDx12maAllocation() const
+        D3D12MA::Allocation* MemoryView::GetD3d12maAllocation() const
         {
-            return m_dx12maAllocation;
+            return m_d3d12maAllocation;
         }
 
         size_t MemoryView::GetOffset() const
@@ -72,31 +72,47 @@ namespace AZ
         CpuVirtualAddress MemoryView::Map(RHI::HostMemoryAccess hostAccess) const
         {
             CpuVirtualAddress cpuAddress = nullptr;
-            D3D12_RANGE readRange = {};
-            if (hostAccess == RHI::HostMemoryAccess::Read)
+            if (m_d3d12maAllocation)
             {
-                readRange.Begin = m_memoryAllocation.m_offset;
-                readRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                // buffers allocated through D3D12MA map the whole buffer
+                m_memoryAllocation.m_memory->Map(0, nullptr, reinterpret_cast<void**>(&cpuAddress));
             }
-            m_memoryAllocation.m_memory->Map(0, m_dx12maAllocation?&readRange:nullptr, reinterpret_cast<void**>(&cpuAddress));
-
-            // Make sure we return null if the map operation failed.
-            if (cpuAddress)
+            else
             {
-                cpuAddress += m_memoryAllocation.m_offset;
+                D3D12_RANGE readRange = {};
+                if (hostAccess == RHI::HostMemoryAccess::Read)
+                {
+                    readRange.Begin = m_memoryAllocation.m_offset;
+                    readRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                }
+                m_memoryAllocation.m_memory->Map(0, &readRange, reinterpret_cast<void**>(&cpuAddress));
+
+                // Make sure we return null if the map operation failed.
+                if (cpuAddress)
+                {
+                    cpuAddress += m_memoryAllocation.m_offset;
+                }
             }
             return cpuAddress;
         }
 
         void MemoryView::Unmap(RHI::HostMemoryAccess hostAccess) const
         {
-            D3D12_RANGE writeRange = {};
-            if (hostAccess == RHI::HostMemoryAccess::Write)
+            if (m_d3d12maAllocation)
             {
-                writeRange.Begin = m_memoryAllocation.m_offset;
-                writeRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                // buffers allocated through D3D12MA unmap the whole buffer
+                m_memoryAllocation.m_memory->Unmap(0, nullptr);
             }
-            m_memoryAllocation.m_memory->Unmap(0, m_dx12maAllocation?&writeRange:nullptr);
+            else
+            {
+                D3D12_RANGE writeRange = {};
+                if (hostAccess == RHI::HostMemoryAccess::Write)
+                {
+                    writeRange.Begin = m_memoryAllocation.m_offset;
+                    writeRange.End = m_memoryAllocation.m_offset + m_memoryAllocation.m_size;
+                }
+                m_memoryAllocation.m_memory->Unmap(0, &writeRange);
+            }
         }
 
         GpuVirtualAddress MemoryView::GetGpuAddress() const

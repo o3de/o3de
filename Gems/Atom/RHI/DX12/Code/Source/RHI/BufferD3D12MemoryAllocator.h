@@ -15,11 +15,11 @@ namespace AZ
 {
     namespace DX12
     {
-        class BufferMemoryAllocator
+        class BufferD3D12MemoryAllocator
         {
         public:
-            BufferMemoryAllocator() = default;
-            BufferMemoryAllocator(const BufferMemoryAllocator&) = delete;
+            BufferD3D12MemoryAllocator() = default;
+            BufferD3D12MemoryAllocator(const BufferD3D12MemoryAllocator&) = delete;
 
             using Descriptor = MemoryPageAllocator::Descriptor;
 
@@ -36,17 +36,8 @@ namespace AZ
             float ComputeFragmentation() const;
 
         private:
-            BufferMemoryView AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor);
-
-            void DeAllocateUnique(const BufferMemoryView& memoryView);
 
             Descriptor m_descriptor;
-            MemoryPageAllocator m_pageAllocator;
-            bool m_usePageAllocator = true;
-
-            AZStd::mutex m_subAllocatorMutex;
-            MemoryFreeListSubAllocator m_subAllocator;
-            size_t m_subAllocationAlignment = Alignment::Buffer;
         };
     }
 }

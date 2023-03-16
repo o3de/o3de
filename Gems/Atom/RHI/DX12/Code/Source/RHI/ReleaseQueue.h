@@ -38,15 +38,17 @@ namespace AZ
         using ReleaseQueue = RHI::ObjectCollector<ReleaseQueueTraits>;
 
         /**
-         * This is a deferred-release queue for DX12MA allocations. Any DX12MA
-         * allocation that needs to be released on the CPU timeline should be queued
-         * here to ensure that a reference is held until the GPU has flushed the
-         * the last frame using it.
+         * This is a deferred-release queue for allocations made through the 
+         * AMD D3D12MA library.
+         * 
+         * Any D3D12MA allocation that needs to be released on the CPU timeline 
+         * should be queued here to ensure that a reference is held until the 
+         * GPU has flushed the the last frame using it.
          *
          * Each device has an object queue, and will synchronize its collect latency
          * to match the maximum number of frames allowed on the device.
          */
-        class Dx12maReleaseQueueTraits
+        class D3d12maReleaseQueueTraits
             : public RHI::ObjectCollectorTraits
         {
         public:
@@ -54,7 +56,7 @@ namespace AZ
             using ObjectType = D3D12MA::Allocation;
         };
 
-        using Dx12maReleaseQueue = RHI::ObjectCollector<Dx12maReleaseQueueTraits>;
+        using D3d12maReleaseQueue = RHI::ObjectCollector<D3d12maReleaseQueueTraits>;
 
     }
 }
