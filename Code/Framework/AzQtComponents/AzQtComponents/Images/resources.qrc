@@ -70,5 +70,6 @@
     </qresource>
     <qresource prefix="/Icons">
         <file alias="material.svg">AssetBrowser/material.svg</file>
+        <file alias="materialtype.svg">AssetBrowser/materialtype.svg</file>
     </qresource>
 </RCC>

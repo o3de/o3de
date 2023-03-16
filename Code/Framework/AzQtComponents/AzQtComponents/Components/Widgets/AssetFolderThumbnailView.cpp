@@ -156,11 +156,20 @@ namespace AzQtComponents
 
         // pixmap
 
-        const auto& iconVariant = index.data(Qt::DecorationRole);
-        if (!iconVariant.isNull())
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
         {
-            const auto& icon = iconVariant.value<QIcon>();
-            icon.paint(painter, imageRect);
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, rect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
         }
 
         if (isTopLevel)
@@ -306,6 +315,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -334,6 +344,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -910,6 +921,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 
