@@ -22,7 +22,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
-            -L/snap/o3de/x1/usr/bin/../lib/gcc/x86_64-linux-gnu/12/
+            -L$ENV{SNAP}/usr/lib/gcc/x86_64-linux-gnu/12/
             -L/snap/core22/current/lib/x86_64-linux-gnu
             -L/snap/core22/current/usr/lib/x86_64-linux-gnu
             -L$ENV{SNAP}/lib/x86_64-linux-gnu
@@ -32,7 +32,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -fpie
             -Wl,-z,relro,-z,now
             -Wl,-z,noexecstack
-            -L/snap/o3de/x1/usr/bin/../lib/gcc/x86_64-linux-gnu/12/
+            -L$ENV{SNAP}/usr/lib/gcc/x86_64-linux-gnu/12/
             -L/snap/core22/current/lib/x86_64-linux-gnu
             -L/snap/core22/current/usr/lib/x86_64-linux-gnu
             -L$ENV{SNAP}/lib/x86_64-linux-gnu
