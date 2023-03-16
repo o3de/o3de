@@ -46,6 +46,7 @@ namespace Multiplayer
     using HostId = AzNetworking::IpAddress;
     static const HostId InvalidHostId = HostId();
 
+    // The NetEntityId is the same across all clients and servers.
     AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
