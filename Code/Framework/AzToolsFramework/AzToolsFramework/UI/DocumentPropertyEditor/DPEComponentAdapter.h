@@ -58,7 +58,6 @@ namespace AZ::DocumentPropertyEditor
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
         void OnEntityDestroyed(const AZ::EntityId&) override;
-        void OnEntityDeactivated(const AZ::EntityId&) override;
 
     protected:
         AZ::EntityId m_entityId;
