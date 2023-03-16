@@ -21,6 +21,7 @@
     "requirements": "${Requirements}",
     "documentation_url": "${DocumentationURL}",
     "dependencies": [
+        "Multiplayer"
     ],
     "repo_uri": "${RepoURI}",
     "compatible_engines": [
