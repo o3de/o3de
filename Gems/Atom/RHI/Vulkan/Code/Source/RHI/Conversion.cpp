@@ -366,7 +366,9 @@ namespace AZ
             if (usagesAndAccesses.size() > 1)
             {
                 // The Attachment is used multiple times: If all usages/accesses are the same type, we can determine the
-                // vk image layout from the first usage. If not, use the fallback VK_IMAGE_LAYOUT_GENERAL for now.
+                // vk image layout from the first usage. If not, we check if all usages are depth/stencil read only (because we can use
+                // the VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL for all those cases).
+                // Finally we just use the fallback VK_IMAGE_LAYOUT_GENERAL that can be applied for multiple uses.
                 // [GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized.
                 bool sameUsageAndAccess = true;
                 bool readOnlyDepthStencil = true;
