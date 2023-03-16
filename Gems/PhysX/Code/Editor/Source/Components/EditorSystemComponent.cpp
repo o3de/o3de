@@ -62,13 +62,13 @@ namespace PhysX
     void EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("PhysicsService"));
-        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::Activate()
