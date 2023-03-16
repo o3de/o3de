@@ -207,7 +207,11 @@ namespace AZ
             if (component)
             {
                 AZStd::string componentAlias = component->GetSerializedIdentifier();
-                AZ_Assert(!componentAlias.empty(), "Component alias is empty.");
+                if (componentAlias.empty())
+                {
+                    AZ_Assert(false, "Component alias is empty when serializing.");
+                    componentAlias = AZStd::string::format("Component_[%llu]", component->GetId());
+                }
                 componentMapOut.emplace(componentAlias, component);
             }
         }

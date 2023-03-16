@@ -205,7 +205,6 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
-
             AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
         };
