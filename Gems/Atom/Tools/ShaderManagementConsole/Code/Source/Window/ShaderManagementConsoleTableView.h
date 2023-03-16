@@ -10,12 +10,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 
 #include <QStandardItemModel>
 #include <QTableWidget>
 #endif
-
-#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 
 namespace ShaderManagementConsole
 {
