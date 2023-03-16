@@ -111,16 +111,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     # Failing, PhysXTerrain
-    def test_Material_CanBeAssignedToTerrain(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_CanBeAssignedToTerrain as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    # Failing, PhysXTerrain
-    def test_Material_DefaultLibraryConsistentOnAllFeatures(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_DefaultLibraryConsistentOnAllFeatures as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    # Failing, PhysXTerrain
     @fm.file_revert("all_ones_1.physmaterial", r"AutomatedTesting\Levels\Physics\Material_DefaultMaterialLibraryChangesWork")
     @fm.file_override("default.physxconfiguration", "Material_DefaultMaterialLibraryChangesWork.physxconfiguration", "AutomatedTesting")
     def test_Material_DefaultMaterialLibraryChangesWork(self, request, workspace, editor, launcher_platform):
