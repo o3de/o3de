@@ -323,6 +323,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             if (selected.indexes().size() > 0)
             {
                 CurrentIndexChangedSlot(selected.indexes()[0]);
+                m_ui->m_createButton->setDisabled(false);
+            }
+            else
+            {
+                m_ui->m_createButton->setDisabled(true);
             }
         });
 

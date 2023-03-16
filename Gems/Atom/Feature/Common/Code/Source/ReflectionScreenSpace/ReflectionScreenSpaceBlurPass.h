@@ -29,9 +29,6 @@ namespace AZ
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurPass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! The total number of mip levels in the blur (including mip0)
-            static const uint32_t NumMipLevels = 5;
-
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
 
@@ -40,6 +37,10 @@ namespace AZ
             // Pass Overrides...
             void ResetInternal() override;
             void BuildInternal() override;
+            void FrameBeginInternal(FramePrepareParams params) override;
+
+            RHI::Size m_imageSize;
+            uint32_t m_mipLevels = 0;
 
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_verticalBlurChildPasses;
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;

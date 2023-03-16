@@ -18,7 +18,6 @@
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #include <RemoteToolsSystemComponent.h>
-#include <Utilities/RemoteToolsOutboxThread.h>
 
 namespace UnitTest
 {
@@ -102,13 +101,6 @@ namespace UnitTest
         m_remoteTools->ClearReceivedMessages(TestToolsKey);
     }
 
-    TEST(RemoteToolsOutboxTests, RemoteToolsOutboxMessagePush)
-    {
-        RemoteToolsOutboxThread outThread(1000);
-        OutboundToolingDatum datum;
-        outThread.PushOutboxMessage(nullptr, AzNetworking::ConnectionId(0), AZStd::move(datum));
-        EXPECT_EQ(outThread.GetPendingMessageCount(), 1);
-    }
 }
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
