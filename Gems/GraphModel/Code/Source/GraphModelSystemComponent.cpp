@@ -33,22 +33,32 @@ namespace GraphModel
     void GraphModelSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         // Reflect core graph classes
-        GraphModel::Graph::Reflect(context);
-        GraphModel::DataType::Reflect(context);
+        DataType::Reflect(context);
+        GraphContext::Reflect(context);
+        GraphElement::Reflect(context);
+        SlotId::Reflect(context);
+        Slot::Reflect(context);
+        Node::Reflect(context);
+        Connection::Reflect(context);
+        Graph::Reflect(context);
+
+        // Reflect module node data types
+        BaseInputOutputNode::Reflect(context);
+        GraphInputNode::Reflect(context);
+        GraphOutputNode::Reflect(context);
+        ModuleNode::Reflect(context);
+
+        // Reflect data types for integrating graph model with graph canvas
         GraphModelIntegration::GraphCanvasMetadata::Reflect(context);
 
-        // Mime Events for Graph Canvas nodes
+        // Reflect MIME events for graph canvas nodes
         GraphModelIntegration::CreateGraphCanvasNodeMimeEvent::Reflect(context);
         GraphModelIntegration::CreateNodeGroupNodeMimeEvent::Reflect(context);
         GraphModelIntegration::CreateCommentNodeMimeEvent::Reflect(context);
 
-        // Reflect all the nodes needed to support ModuleNode
-        GraphModel::BaseInputOutputNode::Reflect(context);
-        GraphModel::GraphInputNode::Reflect(context);
-        GraphModel::GraphOutputNode::Reflect(context);
-        GraphModel::ModuleNode::Reflect(context);
-        GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphModel::GraphInputNode>::Reflect(context);
-        GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphModel::GraphOutputNode>::Reflect(context);
+        // Reflect MIME events for module node
+        GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphInputNode>::Reflect(context);
+        GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphOutputNode>::Reflect(context);
         GraphModelIntegration::CreateModuleNodeMimeEvent::Reflect(context);
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -57,8 +67,8 @@ namespace GraphModel
                 ->Version(0)
                 ;
 
-            serialize->RegisterGenericType<GraphModel::NodePtrList>();
-            serialize->RegisterGenericType<GraphModel::SlotPtrList>();
+            serialize->RegisterGenericType<NodePtrList>();
+            serialize->RegisterGenericType<SlotPtrList>();
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
