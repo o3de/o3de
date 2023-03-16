@@ -291,7 +291,3 @@ class EditorTestAutomation(EditorTestSuite):
         reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
     class RigidBody_MaxAngularVelocityWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
-
-    @pytest.mark.xfail(reason="GHI #9582: Test periodically fails")
-    class ForceRegion_WorldSpaceForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
