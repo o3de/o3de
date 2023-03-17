@@ -15,6 +15,7 @@ set(FILES
     CompilerSettings_linux.cmake
     Configurations_linux.cmake
     Install_linux.cmake
+    libzstd_linux.cmake
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
     OpenSSL_linux.cmake
