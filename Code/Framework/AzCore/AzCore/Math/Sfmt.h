@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/typetraits/static_storage.h>
 #include <AzCore/Math/Internal/MathTypes.h>
@@ -106,10 +105,10 @@ namespace AZ
         void    PeriodCertification();
 
         SfmtInternal::w128_t        m_sfmt[SfmtInternal::N];
-        size_t                      m_index;   ///  Index into the pre-generated tables
-        AZ::u32*                    m_psfmt32; ///  Read only tables of pre-generated random numbers
-        AZ::u64*                    m_psfmt64;
+        size_t                      m_index = 0;         ///  Index into the pre-generated tables
+        AZ::u32*                    m_psfmt32 = nullptr; ///  Read only tables of pre-generated random numbers
+        AZ::u64*                    m_psfmt64 = nullptr;
 
-        AZStd::mutex                m_sfmtMutex;   /// Guards access to m_index and m_sfmt
+        AZStd::mutex                m_sfmtMutex;         /// Guards access to m_index and m_sfmt
     };
 }
