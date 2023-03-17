@@ -391,9 +391,9 @@ namespace AZ
             // there might be a bug / race condition in the id generator. The same assert also occurs *after*
             // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
             AZ_Assert(
-                m_database.find(id) == m_database.end(),
+                m_database.contains(id),
                 "Database already contains an instance for this id, possibly a random id generation collision?",
-                id.ToString<AZStd::string>().c_str());
+                id.ToFixedString().c_str());
 
             // Emplace a new instance and return it.
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
