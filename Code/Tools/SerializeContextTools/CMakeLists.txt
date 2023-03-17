@@ -63,6 +63,5 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME AZ::SerializeContextTools.Tests
         TEST_COMMAND $<TARGET_FILE:AZ::SerializeContextTools.Tests> AzRunUnitTests
-        LABELS REQUIRES_tiaf
     )
 endif()

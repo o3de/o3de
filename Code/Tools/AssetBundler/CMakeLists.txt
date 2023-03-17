@@ -105,7 +105,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME AZ::AssetBundler.Tests
         TEST_COMMAND $<TARGET_FILE:AZ::AssetBundler.Tests> --unittest
-        LABELS REQUIRES_tiaf
     )
 
 endif()
