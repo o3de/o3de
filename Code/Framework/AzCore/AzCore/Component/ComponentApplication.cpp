@@ -463,7 +463,7 @@ namespace AZ
             m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
         }
 
-        InitializeSettingsRegistry(); //40ms
+        InitializeSettingsRegistry();
 
         InitializeEventLoggerFactory();
 
