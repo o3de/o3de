@@ -16,7 +16,7 @@ namespace AssetProcessor
 {
     AZStd::string ProductOutputUtil::GetPrefix(AZ::s64 scanfolderId)
     {
-        return AZStd::string::format("(%" PRId64 ")", scanfolderId);
+        return AZStd::string::format("(%" PRId64 ")", int64_t(scanfolderId));
     }
 
     void ProductOutputUtil::ModifyProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
