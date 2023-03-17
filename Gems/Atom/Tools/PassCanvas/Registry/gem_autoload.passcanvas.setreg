@@ -149,6 +149,13 @@
                     }
                 }
             },
+            "MotionMatching": {
+                "Targets": {
+                    "MotionMatching.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "EMotionFX": {
                 "Targets": {
                     "EMotionFX.Editor": {

@@ -1479,6 +1479,9 @@ namespace AssetProcessor
                 }
             }
 
+            auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
             //set the new products
             for (size_t productIdx = 0; productIdx < newProducts.size(); ++productIdx)
             {
@@ -1524,8 +1527,14 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
                 dependencyContainer.reserve(dependencySet.size());
 
-                for(const auto& entry : dependencySet)
+                for(auto& entry : dependencySet)
                 {
+                    // Attempt to update legacy UUID references to canonical UUIDs if possible
+                    if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_dependencySourceGuid); canonicalUuid)
+                    {
+                        entry.m_dependencySourceGuid = canonicalUuid.value();
+                    }
+
                     dependencyContainer.push_back(entry);
                 }
 
@@ -4333,12 +4342,22 @@ namespace AssetProcessor
         Q_EMIT CreateJobsDurationChanged(sourceAsset.RelativePath().c_str());
     }
 
-    bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
+    bool AssetProcessorManager::ResolveSourceFileDependencyPath(AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
     {
         resultDatabaseSourceName.clear();
         if (!sourceDependency.m_sourceFileDependencyUUID.IsNull())
         {
             // if the UUID has been provided, we will use that
+
+            auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
+            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available.");
+
+            // Try to get the canonical UUID for the file in case this is a legacy UUID
+            if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(sourceDependency.m_sourceFileDependencyUUID); canonicalUuid)
+            {
+                sourceDependency.m_sourceFileDependencyUUID = canonicalUuid.value();
+            }
+
             resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
         }
         else if (!sourceDependency.m_sourceFileDependencyPath.empty())
@@ -4529,13 +4548,13 @@ namespace AssetProcessor
         AZStd::unordered_set<DependencyDeduplication, DependencyDeduplication::Hasher> jobDependenciesDeduplication;
 
         // gather the job dependencies first, since they're more specific and we'll use the dedupe set to check for unnecessary source dependencies
-        for (const JobDetails& jobToCheck : entry.m_jobsToAnalyze)
+        for (JobDetails& jobToCheck : entry.m_jobsToAnalyze)
         {
             // Since we're dealing with job dependencies here, we're going to be saving these SourceDependencies as JobToJob dependencies
             constexpr SourceFileDependencyEntry::TypeOfDependency JobDependencyType = SourceFileDependencyEntry::DEP_JobToJob;
 
             const AZ::Uuid& builderId = jobToCheck.m_assetBuilderDesc.m_busId;
-            for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
+            for (AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
                 // figure out whether we can resolve the dependency or not:
                 QStringList resolvedWildcardDependencies;
@@ -4580,7 +4599,7 @@ namespace AssetProcessor
 
         AZStd::unordered_set<AZStd::string> resolvedSourceDependenciesDeduplication;
 
-        for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
+        for (AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
         {
             // figure out whether we can resolve the dependency or not:
             QStringList resolvedWildcardDependencies;
@@ -4841,6 +4860,16 @@ namespace AssetProcessor
                 result = foundSource->second;
                 return true;
             }
+        }
+
+        // Try checking the UuidManager, it keeps track of legacy UUIDs
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
+        if (auto foundFile = uuidInterface->FindHighestPriorityFileByUuid(sourceUuid); foundFile)
+        {
+            result = SourceAssetReference(foundFile.value());
+            return true;
         }
 
         // try the database next:

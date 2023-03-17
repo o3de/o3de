@@ -9,6 +9,7 @@
 set(FILES
     ../Common/Configurations_common.cmake
     ../Common/MSVC/Configurations_msvc.cmake
+    ../Common/MSVC/Configurations_clang.cmake
     ../Common/MSVC/CodeAnalysis.ruleset
     ../Common/MSVC/Directory.Build.props
     ../Common/MSVC/TestProject.props
