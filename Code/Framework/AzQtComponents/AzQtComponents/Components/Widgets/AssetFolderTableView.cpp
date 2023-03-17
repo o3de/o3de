@@ -31,14 +31,31 @@ namespace AzQtComponents
         if (index != rootIndex())
         {
             QAbstractItemView::setRootIndex(index);
-            emit rootIndexChanged(index);
+            emit tableRootIndexChanged(index);
         }
     }
-
 
     void AssetFolderTableView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
+    }
+
+    void AssetFolderTableView::mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        const auto p = event->pos();
+        if (auto idx = indexAt(p); idx.isValid())
+        {
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit doubleClicked(idx);
+            return;
+        }
+    }
+
+    void AssetFolderTableView::contextMenuEvent(QContextMenuEvent* event)
+    {
+        const auto p = event->pos();
+        emit tableContextMenu(indexAt(p));
+        return;
     }
 
 } // namespace AzQtComponents

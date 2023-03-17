@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QItemSelection>
 #include <QWidget>
@@ -33,11 +34,16 @@ namespace AzToolsFramework
         class ExpandedTableViewDelegate
             : public QStyledItemDelegate
         {
+            Q_OBJECT
         public:
             AZ_CLASS_ALLOCATOR(ExpandedTableViewDelegate, AZ::SystemAllocator);
             ExpandedTableViewDelegate(QWidget* parent = nullptr);
 
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+            QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        signals:
+            void renameTableEntry(const QString& value) const;
         };
 
         class AssetBrowserExpandedTableView
@@ -51,6 +57,20 @@ namespace AzToolsFramework
             ~AssetBrowserExpandedTableView() override;
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
+
+            void SetName(const QString& name);
+            QString& GetName();
+            void SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView);
+            bool GetIsAssetBrowserMainView();
+            void SetExpandedTableViewActive(bool isActiveView);
+            bool GetExpandedTableViewActive();
+
+            void DuplicateEntries();
+            void MoveEntries();
+            void DeleteEntries();
+            void RenameEntry();
+            void AfterRename(QString newVal);
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets() const;
 
             AzQtComponents::AssetFolderTableView* GetExpandedTableViewWidget() const;
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
@@ -66,6 +86,8 @@ namespace AzToolsFramework
             AzQtComponents::AssetFolderTableView* m_expandedTableViewWidget = nullptr;
             AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
             AssetBrowserExpandedFilterModel* m_assetFilterModel = nullptr;
+            QString m_name;
+            bool m_isActiveView = false;
 
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();
