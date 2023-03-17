@@ -116,10 +116,11 @@ namespace UnitTest
             Sfmt sfmt;
 
             // Arbitrary but deterministic seed values to guarantee that we get the same random numbers produced every time.
-            AZ::u32 buffer[32] = { 0x8236ed73, 0x854aa369, 0xc7b68864, 0x5f1e49da, 0x58ea5a08, 0xa33fc74b, 0x0336bd81, 0x8d3c11ac,
-                                   0x7312bc57, 0x92fee3d1, 0x4b852f9f, 0xa7ac02ad, 0x4d72fb7a, 0x630641c6, 0x1edbeebf, 0xc18fdabe,
-                                   0xc6588dba, 0x6a821cf5, 0xec7e24b3, 0x44246d7e, 0x24af2f32, 0x4f64d44c, 0x44b24116, 0x65585572,
-                                   0x0f95038d, 0xd3e4c521, 0x6eea6bc1, 0x6d651ab5, 0x25dfc39e, 0x7502d183, 0xd32fc9bf, 0x9854093f };
+            constexpr AZ::u32 buffer[32] = {
+                0x8236ed73, 0x854aa369, 0xc7b68864, 0x5f1e49da, 0x58ea5a08, 0xa33fc74b, 0x0336bd81, 0x8d3c11ac,
+                0x7312bc57, 0x92fee3d1, 0x4b852f9f, 0xa7ac02ad, 0x4d72fb7a, 0x630641c6, 0x1edbeebf, 0xc18fdabe,
+                0xc6588dba, 0x6a821cf5, 0xec7e24b3, 0x44246d7e, 0x24af2f32, 0x4f64d44c, 0x44b24116, 0x65585572,
+                0x0f95038d, 0xd3e4c521, 0x6eea6bc1, 0x6d651ab5, 0x25dfc39e, 0x7502d183, 0xd32fc9bf, 0x9854093f };
 
             // Seed the sfmt generator.
             sfmt.Seed(buffer, AZ_ARRAY_SIZE(buffer));
@@ -147,7 +148,7 @@ namespace UnitTest
                     for (int i = 0; i < NumResultsPerThread; ++i)
                     {
                         // Call Rand32 when uint32_t is the passed-in type, and Rand64 if uint64_t is the passed-in type.
-                        if constexpr (AZStd::is_same<ResultType, uint32_t>::value)
+                        if constexpr (AZStd::is_same_v<ResultType, uint32_t>)
                         {
                             results[startOffset + i] = sfmt.Rand32();
                         }

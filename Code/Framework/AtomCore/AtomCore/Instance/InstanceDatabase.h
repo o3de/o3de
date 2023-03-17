@@ -393,7 +393,7 @@ namespace AZ
             AZ_Assert(
                 !m_database.contains(id),
                 "Database already contains an instance for this id (%s), possibly a random id generation collision?",
-                id.ToFixedString().c_str());
+                id.ToString<AZStd::string>().c_str());
 
             // Emplace a new instance and return it.
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
@@ -414,7 +414,7 @@ namespace AZ
                     !m_database.contains(id),
                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToFixedString().c_str());
+                    id.ToString<AZStd::string>().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;

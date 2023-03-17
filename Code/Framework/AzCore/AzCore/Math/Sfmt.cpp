@@ -347,7 +347,7 @@ namespace AZ
     // Seed
     // [4/10/2012]
     //=========================================================================
-    Sfmt::Sfmt(AZ::u32* keys, int numKeys)
+    Sfmt::Sfmt(const AZ::u32* keys, int numKeys)
     {
         m_psfmt32 = &m_sfmt[0].u[0];
         m_psfmt64 = reinterpret_cast<AZ::u64*>(m_psfmt32);
@@ -390,7 +390,7 @@ namespace AZ
     // Seed
     // [4/10/2012]
     //=========================================================================
-    void Sfmt::Seed(AZ::u32* keys, int numKeys)
+    void Sfmt::Seed(const AZ::u32* keys, int numKeys)
     {
         AZStd::scoped_lock lock(m_sfmtMutex);
 

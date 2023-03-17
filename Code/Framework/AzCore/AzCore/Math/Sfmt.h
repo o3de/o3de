@@ -59,12 +59,12 @@ namespace AZ
         /// By default we seed with Seed()
         Sfmt();
         /// Seed the generator with user defined seed Seed(AZ::u32* keys, int numKeys)
-        Sfmt(AZ::u32* keys, int numKeys);
+        Sfmt(const AZ::u32* keys, int numKeys);
 
         /// Seed the generator, with the best pseudo-random number the system can generate \ref BetterPseudoRandom
         void Seed();
         /// Seed the generator with user defined seed.
-        void Seed(AZ::u32* keys, int numKeys);
+        void Seed(const AZ::u32* keys, int numKeys);
 
         /// Return u32 pseudo random integer
         AZ::u32 Rand32();
