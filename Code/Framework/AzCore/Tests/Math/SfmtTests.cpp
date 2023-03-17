@@ -226,10 +226,6 @@ namespace UnitTest
     TEST_F(MATH_SfmtTest, TestParallel64)
     {
         // This test verifies that we can call Rand64() successfully in parallel.
-        // It also performs a reasonable verification that we haven't reintroduced a race condition in which the random number
-        // sequence could get repeated for periods of time if multiple threads hit the point where Sfmt refills its number cache
-        // simultaneously. Because it was a race condition, this test isn't foolproof, but the test conditions set below were
-        // causing a near-100% failure rate with the previous race condition and has a 100% success rate with the fix.
 
         // The following numbers were chosen to be high enough to expose the problem at least once per run but low enough to keep
         // the overall test runtime down.
