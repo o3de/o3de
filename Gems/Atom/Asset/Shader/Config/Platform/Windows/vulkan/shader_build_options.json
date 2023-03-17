@@ -1,18 +1,12 @@
 {
     "AddBuildArguments": {
         "debug": false,
-        "preprocessor": ["-P"],
+        "preprocessor": [],
         "azslc": ["--namespace=vk"
                 , "--unique-idx"
-                , "--no-line-directive"
         ],
         "dxc": ["-spirv"
               , "-fvk-use-dx-layout" // Use the same memory layout as DX12, otherwise some offset of constant may get wrong.
-              //, "-Zi"
-              //, "-Qembed_debug"
-              //, "-Od"
-              //, "-fspv-debug=vulkan-with-source"
-              //, "-ignore-line-directives"
         ]
     }
 }

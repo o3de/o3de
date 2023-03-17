@@ -26,7 +26,7 @@ struct VSOutput
 {
     float4 m_position : SV_Position;
     float4 m_color : COLOR;
-    //[[vk::builtin("PointSize")]]
+    [[vk::builtin("PointSize")]]
     float  m_pointSize  : PSIZE;
 };
 
@@ -42,7 +42,6 @@ VSOutput MainVS(VSInput vsInput)
         OUT.m_position = mul(PerDrawSrg::m_viewProjectionOverride, float4(vsInput.m_position.xyz, 1.0));
     }
     OUT.m_color = vsInput.m_color;
-    OUT.m_color += float4(0.000, 0.000, 0.000, 0.0); 
 
     // On Vulkan you need to specify the point size in the VS when using the point topology.
     OUT.m_pointSize = PerDrawSrg::m_pointSize;
