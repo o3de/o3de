@@ -10,7 +10,7 @@
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Module/Environment.h>
-#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 #include <string.h> // for memset
 
@@ -392,7 +392,7 @@ namespace AZ
     //=========================================================================
     void Sfmt::Seed(AZ::u32* keys, int numKeys)
     {
-        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_sfmtMutex);
 
         using SfmtInternal::N;
         using SfmtInternal::N32;
@@ -517,7 +517,7 @@ namespace AZ
     //=========================================================================
     AZ::u32 Sfmt::Rand32()
     {
-        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_sfmtMutex);
 
         m_index++;
         if (m_index >= SfmtInternal::N32)
@@ -535,7 +535,7 @@ namespace AZ
     //=========================================================================
     AZ::u64 Sfmt::Rand64()
     {
-        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_sfmtMutex);
 
         m_index += 2;
         if (m_index >= (SfmtInternal::N32 - 1))
@@ -553,7 +553,7 @@ namespace AZ
     //=========================================================================
     void Sfmt::FillArray32(AZ::u32* array, int size)
     {
-        AZStd::scoped_lock lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_sfmtMutex);
 
         AZ_MATH_ASSERT(m_index == SfmtInternal::N32, "Invalid m_index! Reinitialize!");
         AZ_MATH_ASSERT(size % 4 == 0, "Size must be multiple of 4!");
@@ -569,7 +569,7 @@ namespace AZ
     //=========================================================================
     void Sfmt::FillArray64(AZ::u64* array, int size)
     {
-        AZStd::scoped_lock lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_sfmtMutex);
 
         AZ_MATH_ASSERT(m_index == SfmtInternal::N32, "Invalid m_index! Reinitialize!");
         AZ_MATH_ASSERT(size % 4 == 0, "Size must be multiple of 4!");

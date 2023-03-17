@@ -391,8 +391,8 @@ namespace AZ
             // there might be a bug / race condition in the id generator. The same assert also occurs *after*
             // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
             AZ_Assert(
-                m_database.contains(id),
-                "Database already contains an instance for this id, possibly a random id generation collision?",
+                !m_database.contains(id),
+                "Database already contains an instance for this id (%s), possibly a random id generation collision?",
                 id.ToFixedString().c_str());
 
             // Emplace a new instance and return it.
@@ -411,10 +411,10 @@ namespace AZ
             if (instance)
             {
                 AZ_Assert(
-                    m_database.find(id) == m_database.end(),
+                    !m_database.contains(id),
                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToString<AZStd::string>().c_str());
+                    id.ToFixedString().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;

@@ -110,6 +110,6 @@ namespace AZ
         AZ::u32*                    m_psfmt32; ///  Read only tables of pre-generated random numbers
         AZ::u64*                    m_psfmt64;
 
-        AZStd::mutex                m_generationMutex;
+        AZStd::mutex                m_sfmtMutex;   /// Guards access to m_index and m_sfmt
     };
 }
