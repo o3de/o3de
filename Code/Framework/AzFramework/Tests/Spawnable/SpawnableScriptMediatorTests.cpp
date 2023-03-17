@@ -50,6 +50,7 @@ namespace UnitTest
 
             m_application = new AzFramework::Application();
             AZ::ComponentApplication::Descriptor descriptor;
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(descriptor);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

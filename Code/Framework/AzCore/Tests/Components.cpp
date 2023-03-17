@@ -57,6 +57,7 @@ namespace UnitTest
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
+        app.SetSettingsRegistryEnabled(false);
         Entity* systemEntity = app.Create(appDesc);
 
         systemEntity->CreateComponent<StreamerComponent>();
@@ -173,6 +174,7 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
+        componentApp.SetSettingsRegistryEnabled(false);
         Entity* systemEntity = componentApp.Create(desc, {});
         AZ_TEST_ASSERT(systemEntity);
         systemEntity->Init();
@@ -1105,6 +1107,7 @@ namespace UnitTest
         // Create application environment code driven
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
+        app.SetSettingsRegistryEnabled(false)
         Entity* systemEntity = app.Create(appDesc);
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
@@ -1970,6 +1973,7 @@ namespace Benchmark
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
+        componentApp.SetSettingsRegistryEnabled(false);
         Entity* systemEntity = componentApp.Create(desc, {});
         systemEntity->Init();
 

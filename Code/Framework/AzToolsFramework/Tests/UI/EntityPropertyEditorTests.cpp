@@ -48,6 +48,7 @@ namespace UnitTest
         ToolsApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
+        app.SetSettingsRegistryEnabled(false);
         Entity* systemEntity = app.Create(desc, {});
 
         // Need to reflect the components so that edit attribute used for sorting, such as FixedComponentListIndex, get set.

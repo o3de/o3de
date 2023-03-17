@@ -43,6 +43,7 @@ namespace UnitTest
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
+            m_app->SetSettingsRegistryEnabled(false);
             m_app->Create(desc);
 
             if constexpr (AZ::g_currentPlatform == AZ::PlatformID::PLATFORM_WINDOWS_64)

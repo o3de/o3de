@@ -44,6 +44,7 @@ namespace UnitTest
             ComponentApplication app;
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
+            app.SetSettingsRegistryEnabled(false);
             app.Create(desc);
 
             Data::AssetManager::Instance().RegisterHandler(aznew SliceAssetHandler(app.GetSerializeContext()), AZ::AzTypeInfo<AZ::SliceAsset>::Uuid());

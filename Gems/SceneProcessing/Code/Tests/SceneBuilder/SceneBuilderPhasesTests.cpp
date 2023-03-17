@@ -145,6 +145,7 @@ public:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
+        m_app.SetSettingsRegistryEnabled(false);
         m_app.Start(AZ::ComponentApplication::Descriptor());
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

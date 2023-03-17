@@ -267,6 +267,7 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor componentApplicationDesc;
             componentApplicationDesc.m_useExistingAllocator = true;
             m_application = aznew ToolsTestApplication("ComponentPaletteTests");
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(componentApplicationDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

@@ -96,6 +96,7 @@ namespace UnitTest
             appDescriptor.m_useExistingAllocator = true;
 
             m_application = aznew UiTooltipTestApplication();
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(appDescriptor, AZ::ComponentApplication::StartupParameters());
         }
 

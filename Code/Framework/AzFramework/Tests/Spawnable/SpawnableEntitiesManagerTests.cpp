@@ -109,6 +109,7 @@ namespace UnitTest
 
             m_application = new TestApplication();
             AZ::ComponentApplication::Descriptor descriptor;
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(descriptor);
             m_application->RegisterComponentDescriptor(ComponentWithEntityReference::CreateDescriptor());
             m_application->RegisterComponentDescriptor(SourceSpawnableComponent::CreateDescriptor());

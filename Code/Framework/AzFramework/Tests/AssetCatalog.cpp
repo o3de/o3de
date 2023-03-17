@@ -298,6 +298,7 @@ namespace UnitTest
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadAssetCatalog = false;
+            m_app->SetSettingsRegistryEnabled(false);
             m_app->Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

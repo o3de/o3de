@@ -86,6 +86,7 @@ namespace UnitTest
 
             AzFramework::Application::Descriptor appDesc;
             appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
+            m_app.SetSettingsRegistryEnabled(false);
             m_app.Create(appDesc);
 
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();

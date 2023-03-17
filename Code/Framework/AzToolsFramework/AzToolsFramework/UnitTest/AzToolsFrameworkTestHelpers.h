@@ -280,6 +280,7 @@ namespace UnitTest
                 AZ::ComponentApplication::StartupParameters startupParameters;
                 startupParameters.m_loadAssetCatalog = false;
 
+                m_app->SetSettingsRegistryEnabled(false);
                 m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
             }
 

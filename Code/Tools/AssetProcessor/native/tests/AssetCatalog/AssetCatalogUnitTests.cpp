@@ -104,6 +104,7 @@ namespace AssetProcessor
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
+            m_app->SetSettingsRegistryEnabled(false);
             m_systemEntity = m_app->Create(desc);
 
             m_data = azcreate(DataMembers, ());

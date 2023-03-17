@@ -821,6 +821,7 @@ namespace Benchmark
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
+        componentApp.SetSettingsRegistryEnabled(false);
         componentApp.Create(desc, {});
 
         UnitTest::MyTestComponent1::Reflect(componentApp.GetSerializeContext());

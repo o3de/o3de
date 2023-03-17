@@ -59,6 +59,7 @@ namespace SceneProcessing
         {
             SceneProcessing::InitSceneAPIFixture::SetUp();
 
+            m_app.SetSettingsRegistryEnabled(false);
             m_systemEntity = m_app.Create({}, {});
             m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
             m_systemEntity->Init();

@@ -48,6 +48,7 @@ namespace UnitTest
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

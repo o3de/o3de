@@ -95,7 +95,6 @@ AZ_POP_DISABLE_WARNING
 #include <QJsonObject>
 #include <QMap>
 
-
 // Not possible to use AZCore's operator new overrides until we address the overall problems
 // with allocators, or more likely convert AzToolsFramework to a DLL and restrict overloading to
 // within the DLL. Since this is currently linked as a lib, overriding new and delete would require

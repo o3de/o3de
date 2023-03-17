@@ -27,6 +27,7 @@ namespace UnitTest
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew ComponentApplication);
+            m_app->SetSettingsRegistryEnabled(false);
             m_app->Create(desc);
         }
 

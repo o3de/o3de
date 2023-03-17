@@ -403,6 +403,7 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew AZ::ComponentApplication);
+            m_app->SetSettingsRegistryEnabled(false);
             m_app->Create(desc);
         }
 

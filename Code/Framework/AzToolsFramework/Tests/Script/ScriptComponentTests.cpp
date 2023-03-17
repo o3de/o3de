@@ -42,6 +42,7 @@ namespace UnitTest
             appDesc.m_memoryBlocksByteSize = 100 * 1024 * 1024;
             //appDesc.m_recordsMode = AllocationRecords::RECORD_FULL;
             //appDesc.m_stackRecordLevels = 20;
+            m_app.SetSettingsRegistryEnabled(false);
             Entity* systemEntity = m_app.Create(appDesc);
 
             systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component

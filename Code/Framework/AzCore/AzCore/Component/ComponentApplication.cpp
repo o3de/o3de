@@ -463,7 +463,7 @@ namespace AZ
             m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
         }
 
-        InitializeSettingsRegistry();
+        InitializeSettingsRegistry(); //40ms
 
         InitializeEventLoggerFactory();
 
@@ -551,7 +551,7 @@ namespace AZ
     }
 
     void ComponentApplication::InitializeSettingsRegistry()
-    {        
+    {
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
         // Create the settings registry and register it with the AZ interface system

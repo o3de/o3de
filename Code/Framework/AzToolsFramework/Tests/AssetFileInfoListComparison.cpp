@@ -94,6 +94,7 @@ namespace UnitTest
             // asset3 -> asset4
             assetRegistry.RegisterAssetDependency(m_assets[3], AZ::Data::ProductDependency(m_assets[4], 0));
 
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

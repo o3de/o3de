@@ -30,6 +30,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             m_app = AZStd::make_unique<AZ::ComponentApplication>();
+            m_app->SetSettingsRegistryEnabled(false);
             m_systemEntity = m_app->Create(appDesc);
         }
 

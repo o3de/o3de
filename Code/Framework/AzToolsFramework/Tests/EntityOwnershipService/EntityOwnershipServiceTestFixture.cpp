@@ -20,6 +20,7 @@ namespace UnitTest
         AZ::ComponentApplication::Descriptor componentApplicationDescriptor;
         componentApplicationDescriptor.m_useExistingAllocator = true;
         m_app = AZStd::make_unique<EntityOwnershipServiceApplication>();
+        m_app->SetSettingsRegistryEnabled(false);
         m_app->Start(componentApplicationDescriptor);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

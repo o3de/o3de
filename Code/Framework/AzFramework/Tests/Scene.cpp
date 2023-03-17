@@ -111,6 +111,7 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
+            m_app.SetSettingsRegistryEnabled(false);
             m_systemEntity = m_app.Create(desc);
             m_systemEntity->Init();
 

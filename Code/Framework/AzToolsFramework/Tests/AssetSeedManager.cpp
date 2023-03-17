@@ -70,6 +70,7 @@ namespace UnitTest
             m_assetSeedManager = new AzToolsFramework::AssetSeedManager();
             m_assetRegistry = new AzFramework::AssetRegistry();
 
+            m_application->SetSettingsRegistryEnabled(false);
             m_application->Start(AzFramework::Application::Descriptor());
 
             // By default @products@ is setup to include the platform at the end. But this test is going to
