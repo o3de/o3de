@@ -1,6 +1,0 @@
-<Material MtlFlags="524288" DccMaterialHash="0" Shader="Illum" GenMask="800000000003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0.043735031,0.043735031,0.043735031,1" Opacity="1" Shininess="150" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="textures/default/_dev_solid_fill.dds"/>
- </Textures>
- <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>
