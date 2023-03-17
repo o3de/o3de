@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator);
 
     JsonSerializationResult::Result JsonEntitySerializer::Load(void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -89,6 +89,7 @@ namespace AZ
                 if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
                 {
                     entityInstance->m_components.emplace_back(component);
+                    component->SetSerializedIdentifier(componentKey);
                 }
             }
 

@@ -19,7 +19,7 @@ namespace Profiler
     {
     public:
         AZ_RTTI(ProfilerImGuiModule, "{5946991E-A96C-4E7A-A9B3-605E3C8EC3CB}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ProfilerImGuiModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProfilerImGuiModule, AZ::SystemAllocator);
 
         ProfilerImGuiModule()
         {

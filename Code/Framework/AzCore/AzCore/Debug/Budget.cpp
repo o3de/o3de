@@ -26,7 +26,7 @@ namespace AZ::Debug
 {
     struct BudgetImpl
     {
-        AZ_CLASS_ALLOCATOR(BudgetImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BudgetImpl, AZ::SystemAllocator);
         // TODO: Budget implementation for tracking budget wall time per-core, memory, etc.
     };
 

@@ -44,7 +44,7 @@ namespace AzToolsFramework
         capsuleViewportEdit->InstallSetCapsuleRadius(AZStd::move(setCapsuleRadius));
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CapsuleComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CapsuleComponentMode, AZ::SystemAllocator)
 
     void CapsuleComponentMode::Reflect(AZ::ReflectContext* context)
     {

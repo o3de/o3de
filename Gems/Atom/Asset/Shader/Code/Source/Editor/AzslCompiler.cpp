@@ -60,7 +60,7 @@ namespace AZ
                 AZStd::string overridePath;
                 if (setReg->Get(overridePath, AzslCompilerOverridePath))
                 {
-                    AZ_TracePrintfOnce("AzslCompiler", "AZSLc executable override specified, using %s", azslcPath.c_str());
+                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", azslcPath.c_str());
                     azslcPath = AZStd::move(overridePath);
                 }
             }
@@ -775,9 +775,7 @@ namespace AZ
 
                                     if (attributeArrayMemberName == "count")
                                     {
-                                        uint32_t count = itr4->value.GetInt();
-                                        AZ_Assert(count == 1, "Invalid buffer count %d", count);
-                                        buffer.m_count = count;
+                                        buffer.m_count = itr4->value.GetInt();
                                     }
                                     else if (attributeArrayMemberName == "id")
                                     {

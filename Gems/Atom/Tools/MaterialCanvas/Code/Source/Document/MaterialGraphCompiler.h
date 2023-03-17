@@ -21,7 +21,7 @@ namespace MaterialCanvas
     {
     public:
         AZ_RTTI(MaterialGraphCompiler, "{570E3923-48C4-4B91-BC44-3145BE771E9B}", AtomToolsFramework::GraphCompiler);
-        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(MaterialGraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -126,6 +126,9 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
+        // Returns the name that will be used to replace material graph name during any substitutions 
+        AZStd::string GetUniqueGraphName() const;
+
         // All slots and nodes will be visited to collect all of the unique include paths.
         AZStd::set<AZStd::string> m_includePaths;
 
@@ -140,6 +143,9 @@ namespace MaterialCanvas
         // Table of values for every slot, on every node, including values redirected from incoming connections, and values upgraded to
         // match types and sizes of values on related slots.
         AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
+
+        // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
+        int m_templateNodeCount = 0;
 
         // Container of paths for template files that need to be evaluated and have products generated for the current node.
         AZStd::set<AZStd::string> m_templatePathsForCurrentNode;

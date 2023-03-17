@@ -22,7 +22,7 @@ namespace AZ
             : public PassData
         {
             AZ_RTTI(CopyPassData, "{A0E4DBBF-2FE7-4027-B6B1-4F15AEB03B04}", PassData);
-            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator);
 
             CopyPassData() = default;
             virtual ~CopyPassData() = default;

@@ -85,7 +85,7 @@ namespace UnitTest
     struct TestStreamingImagePoolDescriptor
         : public AZ::RHI::StreamingImagePoolDescriptor
     {
-        AZ_CLASS_ALLOCATOR(TestStreamingImagePoolDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStreamingImagePoolDescriptor, AZ::SystemAllocator);
         AZ_RTTI(TestStreamingImagePoolDescriptor, "{8D0CA5A2-F886-42EF-9B00-09E6C9F6B90B}", AZ::RHI::StreamingImagePoolDescriptor);
 
         static constexpr uint32_t Magic = 0x1234;
@@ -116,7 +116,7 @@ namespace UnitTest
         , public AZStd::intrusive_list_node<TestStreamingImageContext>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestStreamingImageContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStreamingImageContext, AZ::SystemAllocator);
         AZ_RTTI(TestStreamingImageContext, "{E2FC3EB5-4F66-41D0-9ABE-6EDD2622DD88}", AZ::RPI::StreamingImageContext);
     };
 
@@ -710,8 +710,8 @@ namespace UnitTest
         // Validate retrieving a region of pixels
         AZStd::vector<float> pixelValues;
         pixelValues.reserve(size.m_width * size.m_height);
-        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
-        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(size.m_width, size.m_height);
+        auto topLeft = AZStd::make_pair(0U, 0U);
+        auto bottomRight = AZStd::make_pair(size.m_width, size.m_height);
         RPI::GetSubImagePixelValues(imageAsset, topLeft, bottomRight, [&pixelValues]([[maybe_unused]] const AZ::u32& x, [[maybe_unused]] const AZ::u32& y, const float& value) {
             pixelValues.push_back(value);
         });

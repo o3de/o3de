@@ -10,6 +10,8 @@
 
 #include "EditorPreferencesPageViewportManipulator.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 // Editor

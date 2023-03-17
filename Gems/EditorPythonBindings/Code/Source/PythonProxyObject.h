@@ -22,7 +22,7 @@ namespace EditorPythonBindings
     {
     public:
         AZ_TYPE_INFO(PythonProxyObject, "{448A4480-CCA8-4F14-9F17-41B0491F9FD1}");
-        AZ_CLASS_ALLOCATOR(PythonProxyObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonProxyObject, AZ::SystemAllocator);
 
         PythonProxyObject() = default;
         explicit PythonProxyObject(const AZ::TypeId& typeId);

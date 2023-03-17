@@ -757,14 +757,14 @@ class EditorEntity:
         as this will currently always return as True on a container entity.
         :return: True if overrides are present, False otherwise
         """
-        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "AreOverridesPresent", self.id)
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "AreOverridesPresent", self.id, "")
 
     def revert_overrides(self) -> bool:
         """
         Reverts overrides on a given entity if overrides are present
         :return: True is overrides were detected and reverted, False otherwise
         """
-        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id)
+        return prefab.PrefabOverridePublicRequestBus(bus.Broadcast, "RevertOverrides", self.id, "")
 
 
 class EditorLevelEntity:

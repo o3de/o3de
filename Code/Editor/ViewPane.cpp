@@ -217,6 +217,13 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
         {
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         }
+
+        // If this is being instantiated after the Action Manager was alreadi initialized, add the toolbar.
+        // Else it will be added in OnToolBarRegistrationHook.
+        if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
+        {
+            addToolBar(Qt::TopToolBarArea, toolBar);
+        }
     }
 
     m_id = -1;
@@ -224,7 +231,7 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
 
 CLayoutViewPane::~CLayoutViewPane() 
 {
-    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+    if (AzToolsFramework::IsNewActionManagerEnabled())
     {
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
     }
@@ -288,7 +295,7 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
     m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
 
     // Add toolbar to top of viewport.
-    QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
+    QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
     addToolBar(Qt::TopToolBarArea, toolBar);
 }
 
@@ -578,9 +585,11 @@ void CLayoutViewPane::OnMenuBindingHook()
 
     // Helpers
     {
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleHelpers", 100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 200);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleSelectedEntityHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.toggleIcons", 100);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showHelpers", 300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.showSelectedEntityHelpers", 400);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, "o3de.action.view.hideHelpers", 500);
     }
 
     // Size
@@ -646,7 +655,7 @@ void CLayoutViewPane::OnToolBarBindingHook()
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.info.toggle", EditorIdentifiers::ViewportDebugInfoMenuIdentifier, 600);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.toggleHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(

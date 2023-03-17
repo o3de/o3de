@@ -397,13 +397,13 @@ namespace WhiteBox
         // Mesh - value operations/queries that relate to the entire mesh.
         //
         //! Return how many faces the white box mesh has.
-        size_t MeshFaceCount(const WhiteBoxMesh& whiteBox);
+        AZ::u64 MeshFaceCount(const WhiteBoxMesh& whiteBox);
 
         //! Return how many vertices the white box mesh has.
-        size_t MeshVertexCount(const WhiteBoxMesh& whiteBox);
+        AZ::u64 MeshVertexCount(const WhiteBoxMesh& whiteBox);
 
         //! Return how many halfedges the white box mesh has.
-        size_t MeshHalfedgeCount(const WhiteBoxMesh& whiteBox);
+        AZ::u64 MeshHalfedgeCount(const WhiteBoxMesh& whiteBox);
 
         //! Return all face value types in the mesh.
         //! @note Face is a collection for three vertices/positions.

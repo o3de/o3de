@@ -136,10 +136,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -153,7 +150,9 @@ class TestPrintRegistration:
         return json.loads(TEST_ENGINE_JSON_PAYLOAD)
 
     @staticmethod
-    def get_project_json_data(project_path: pathlib.Path = None):
+    def get_project_json_data(project_name: str = None,
+                            project_path: str or pathlib.Path = None,
+                            user: bool = False) -> dict or None:
         return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
     @staticmethod

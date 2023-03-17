@@ -15,11 +15,12 @@
 #define FORCE_IBL_IN_FORWARD_PASS       1
 #define ENABLE_AREA_LIGHT_VALIDATION    0
 #define FORCE_EARLY_DEPTH_STENCIL 1
+
 #define FORCE_OPAQUE 1
 #define OUTPUT_SUBSURFACE 0
 #define ENABLE_TRANSMISSION 0
 #define ENABLE_SHADER_DEBUGGING 1
-#define ENABLE_CLEAR_COAT 1
+#define ENABLE_CLEAR_COAT 0
 #define ENABLE_SHADOWS 0
 #define ENABLE_LIGHT_CULLING 0
 #define ENABLE_AREA_LIGHTS 0
@@ -42,6 +43,6 @@
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
 
-#include <Atom/Features/Pipeline/Forward/MultiViewForwardPassVertexAndPixel.azsli>
+#include "MultiViewForwardPassVertexAndPixel.azsli"
 
 

@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/function/function_base.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/string/string.h>
 
 class QAction;
 class QWidget;
@@ -21,6 +20,8 @@ namespace AzToolsFramework
 
     class ActionContextWidgetWatcher;
     class EditorAction;
+
+    enum class ActionVisibility;
 
     //! ActionManagerInternalInterface
     //! Internal Interface to query implementation details for actions.
@@ -74,6 +75,12 @@ namespace AzToolsFramework
         //! Update all actions that are parented to a specific action context.
         //! @param actionContextIdentifier The action context identifier for the context to update all actions for.
         virtual void UpdateAllActionsInActionContext(const AZStd::string& actionContextIdentifier) = 0;
+
+        //! Completely reset the Action Manager from all items registered after initialization.
+        //! Clears all Action Contexts, Actions and Widget Actions.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
+
     };
 
 } // namespace AzToolsFramework

@@ -20,6 +20,7 @@
 #include <RHI/ReleaseContainer.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/SwapChain.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -795,7 +796,8 @@ namespace AZ
 
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
 
             if (result == VkResult::VK_SUCCESS)
             {
@@ -805,7 +807,7 @@ namespace AZ
                 device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &memoryRequirements);
                 if (memoryRequirements.alignment != SparseImageInfo::StandardBlockSize)
                 {
-                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, nullptr);
+                    device.GetContext().DestroyImage(device.GetNativeDevice(), m_vkImage, VkSystemAllocator::Get());
                     m_vkImage = VK_NULL_HANDLE;
                     return RHI::ResultCode::Fail;
                 }
@@ -867,7 +869,8 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result =
+                device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImage);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -1027,7 +1030,7 @@ namespace AZ
         // We don't use vkGetImageSubresourceLayout to calculate the subresource layout because we don't use linear images.
         // vkGetImageSubresourceLayout only works for linear images.
         // We always use optimal tiling since it's more efficient. We upload the content of the image using a staging buffer.
-        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayoutPlaced* subresourceLayouts, size_t* totalSizeInBytes) const
+        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayout* subresourceLayouts, size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
             uint32_t byteOffset = 0;
@@ -1044,7 +1047,7 @@ namespace AZ
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
+                        RHI::ImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
                         layout.m_offset = byteOffset;

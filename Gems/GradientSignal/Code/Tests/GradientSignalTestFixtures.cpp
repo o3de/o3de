@@ -77,6 +77,7 @@ namespace UnitTest
 
             MockShapeComponent::CreateDescriptor(),
             MockSurfaceProviderComponent::CreateDescriptor(),
+            MockGradientSignal::CreateDescriptor()
         });
     }
 
@@ -96,12 +97,43 @@ namespace UnitTest
         LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
     }
 
+    GradientSignalBaseFixture::GradientSignalBaseFixture()
+    {
+        // Even though this is an empty function, it needs to appear here so that the destruction code for the unique pointers
+        // is created here instead of inline wherever the GradientSignalTest class is used. This lets us keep the #includes for
+        // these Atom classes private to this file instead of exposing them outward through the header and requiring everything
+        // using this class to include the Atom libs as well.
+    }
+
+    GradientSignalBaseFixture::~GradientSignalBaseFixture()
+    {
+        // This also needs to appear here, even though it's an empty function.
+    }
+
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
+        // Create a stub RHI for use by Atom
+        m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
+
+        // Create the Atom RPISystem
+        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
+        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
+        m_rpiSystem->Initialize(rpiSystemDescriptor);
+
+        AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
+        m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
+        m_imageSystem->Init(imageSystemDescriptor);
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
+        m_imageSystem->Shutdown();
+        m_rpiSystem->Shutdown();
+
+        m_imageSystem = nullptr;
+        m_rpiSystem = nullptr;
+        m_rhiFactory = nullptr;
+
         AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
     }
 
@@ -414,46 +446,15 @@ namespace UnitTest
         return entity;
     }
 
-    GradientSignalTest::GradientSignalTest()
-    {
-        // Even though this is an empty function, it needs to appear here so that the destruction code for the unique pointers
-        // is created here instead of inline wherever the GradientSignalTest class is used. This lets us keep the #includes for
-        // these Atom classes private to this file instead of exposing them outward through the header and requiring everything
-        // using this class to include the Atom libs as well.
-    }
-
-    GradientSignalTest::~GradientSignalTest()
-    {
-        // This also needs to appear here, even though it's an empty function.
-    }
-
     void GradientSignalTest::SetUp()
     {
         SetupCoreSystems();
-
-        // Create a stub RHI for use by Atom
-        m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
-
-        // Create the Atom RPISystem
-        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
-        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
-        m_rpiSystem->Initialize(rpiSystemDescriptor);
-
-        AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
-        m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
-        m_imageSystem->Init(imageSystemDescriptor);
     }
 
     void GradientSignalTest::TearDown()
     {
-        m_imageSystem->Shutdown();
-        m_rpiSystem->Shutdown();
-        m_rpiSystem = nullptr;
-        m_rhiFactory = nullptr;
-
         TearDownCoreSystems();
     }
-
 
     void GradientSignalTest::TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId)
     {

@@ -20,7 +20,7 @@ namespace AZ::Prefab
     {
     public:
         AZ_RTTI(PrefabDomData, "{C73A3360-D772-4D41-9118-A039BF9340C1}");
-        AZ_CLASS_ALLOCATOR(PrefabDomData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabDomData, AZ::SystemAllocator);
 
         PrefabDomData() = default;
         ~PrefabDomData() = default;
@@ -40,7 +40,7 @@ namespace AZ::Prefab
     {
     public:
         AZ_RTTI(PrefabDomDataJsonSerializer, "{9FC48652-A00B-4EFA-8FD9-345A8E625439}", BaseJsonSerializer);
-        AZ_CLASS_ALLOCATOR(PrefabDomDataJsonSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabDomDataJsonSerializer, AZ::SystemAllocator);
 
         ~PrefabDomDataJsonSerializer() override = default;
 
@@ -64,7 +64,7 @@ namespace AZ::Prefab
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(ProceduralPrefabAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProceduralPrefabAsset, AZ::SystemAllocator);
         AZ_RTTI(ProceduralPrefabAsset, "{9B7C8459-471E-4EAD-A363-7990CC4065A9}", AZ::Data::AssetData);
 
         static bool UseProceduralPrefabs();

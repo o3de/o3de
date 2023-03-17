@@ -31,9 +31,9 @@ namespace AssetProcessor
 
         //! Gets the canonical UUID for a given source asset.  A new metadata file may be created with a randomly generated UUID if
         //! generation is enabled for the file type.  Otherwise the UUID returned will follow the legacy system based on the file path.
-        virtual AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) = 0;
+        virtual AZ::Outcome<AZ::Uuid, AZStd::string> GetUuid(const SourceAssetReference& sourceAsset) = 0;
         //! Gets the set of legacy UUIDs for the given source asset.  These are all the UUIDs that may have been used to reference this asset based on previous generation methods.
-        virtual AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(const SourceAssetReference& sourceAsset) = 0;
+        virtual AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacyUuids(const SourceAssetReference& sourceAsset) = 0;
 
         //! Notifies the manager a metadata file has changed so the cache can be cleared.
         //! @param file Absolute path to the metadata file that changed.
@@ -56,6 +56,7 @@ namespace AssetProcessor
 
         static void Reflect(AZ::ReflectContext* context);
 
+        AZ::u32 m_metaCreationDelayMs;
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
 
@@ -67,8 +68,8 @@ namespace AssetProcessor
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Uuid GetUuid(const SourceAssetReference& sourceAsset) override;
-        AZStd::unordered_set<AZ::Uuid> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
+        AZ::Outcome<AZ::Uuid, AZStd::string> GetUuid(const SourceAssetReference& sourceAsset) override;
+        AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacyUuids(const SourceAssetReference& sourceAsset) override;
         void FileChanged(AZ::IO::PathView file) override;
         void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
@@ -76,9 +77,10 @@ namespace AssetProcessor
 
     private:
         AZStd::string GetCanonicalPath(AZ::IO::PathView file);
-        AzToolsFramework::MetaUuidEntry GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
+        AZ::Outcome<AzToolsFramework::MetaUuidEntry, AZStd::string> GetOrCreateUuidEntry(const SourceAssetReference& sourceAsset);
         AzToolsFramework::IMetadataRequests* GetMetadataManager();
         AzToolsFramework::MetaUuidEntry CreateUuidEntry(const SourceAssetReference& sourceAsset, bool enabledType);
+        AZ::Outcome<void, AZStd::string> CacheUuidEntry(AZStd::string_view normalizedPath, AzToolsFramework::MetaUuidEntry entry, bool enabledType);
         AZ::Uuid CreateUuid();
         AZStd::unordered_set<AZ::Uuid> CreateLegacyUuids(const AZStd::string& file);
         void InvalidateCacheEntry(AZ::IO::FixedMaxPath file);
@@ -88,6 +90,8 @@ namespace AssetProcessor
         AZStd::unordered_map<AZStd::string, AzToolsFramework::MetaUuidEntry> m_uuids;
         // Types which should use randomly generated UUIDs
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
+        // List of already existing UUIDs
+        AZStd::unordered_map<AZ::Uuid, AZStd::string> m_existingUuids;
         AzToolsFramework::IMetadataRequests* m_metadataManager{};
     };
 } // namespace AssetProcessor

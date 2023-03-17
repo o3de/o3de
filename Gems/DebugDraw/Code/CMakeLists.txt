@@ -41,6 +41,7 @@ ly_add_target(
 
 # servers do not need debug draw components, only clients
 ly_create_alias(NAME DebugDraw.Clients NAMESPACE Gem TARGETS DebugDraw)
+ly_create_alias(NAME DebugDraw.Unified NAMESPACE Gem TARGETS DebugDraw)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -59,7 +60,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::DebugDraw.Static
+                AZ::AtomCore
+                Gem::Atom_RPI.Public
+                Gem::Atom_Bootstrap.Headers
+                Legacy::CryCommon
                 AZ::AzToolsFramework
     )
 

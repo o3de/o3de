@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 class QMenu;
 class QMenuBar;
@@ -63,6 +65,11 @@ namespace AzToolsFramework
 
         //! Serialize a menu bar by its identifier.
         virtual MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Completely reset the Menu Manager from all items registered after initialization.
+        //! Clears all Menus and Menu Bars.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
     };
 
 } // namespace AzToolsFramework

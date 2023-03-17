@@ -1020,7 +1020,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator);
         AZ_RTTI(AssetType1, "{64ECE3AE-2BEB-4502-9243-D17425249E08}", AZ::Data::AssetData);
 
         AssetType1()
@@ -1047,7 +1047,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator);
         AZ_RTTI(AssetType2, "{F5EDAAAB-2398-4967-A2C7-6B7C9421C1CE}", AZ::Data::AssetData);
 
         AssetType2()

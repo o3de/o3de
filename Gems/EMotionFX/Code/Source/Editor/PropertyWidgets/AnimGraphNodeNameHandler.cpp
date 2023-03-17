@@ -14,8 +14,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameLineEdit, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameLineEdit, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameHandler, EditorAllocator)
 
     AnimGraphNodeNameLineEdit::AnimGraphNodeNameLineEdit(QWidget* parent)
         : LineEditValidatable(parent)
@@ -65,7 +65,8 @@ namespace EMotionFX
 
         connect(lineEdit, &AnimGraphNodeNameLineEdit::TextEditingFinished, this, [lineEdit]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, lineEdit);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, lineEdit);
         });
 
         return lineEdit;

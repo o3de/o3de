@@ -59,8 +59,8 @@ namespace UnitTests
         ASSERT_EQ(builders.size(), 1);
 
         auto builderUuid = builders[0].m_busId;
-        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
-        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+        auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str())).GetValueOr(AZ::Uuid());
+        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str())).GetValueOr(AZ::Uuid());
         auto uuidFormat = AZStd::string::format(
             AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
             AZ_STRING_ARG(sourceUuid.ToFixedString()),
@@ -98,15 +98,19 @@ namespace UnitTests
         auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
         auto actualIntermediateUuid =
             AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+
+        ASSERT_TRUE(sourceUuid);
+        ASSERT_TRUE(actualIntermediateUuid);
+
         auto uuidFormat = AZStd::string::format(
             AZ_STRING_FORMAT ":" AZ_STRING_FORMAT ":%d",
-            AZ_STRING_ARG(sourceUuid.ToFixedString()),
+            AZ_STRING_ARG(sourceUuid.GetValue().ToFixedString()),
             AZ_STRING_ARG(builderUuid.ToFixedString()),
             AssetSubId);
 
         auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
 
-        EXPECT_EQ(actualIntermediateUuid, expectedIntermediateUuid);
+        EXPECT_EQ(actualIntermediateUuid.GetValue(), expectedIntermediateUuid);
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)

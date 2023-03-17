@@ -125,7 +125,6 @@ namespace AzToolsFramework
                     "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }

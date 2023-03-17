@@ -97,7 +97,7 @@ namespace AZ::Render
         }
 
         // Child passes
-        auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("InputColor"));
+        auto previousOutput = AZStd::make_pair(Name("Parent"), Name("InputColor"));
         AZ::u32 passCount = 0;
         for (const auto& childPassTemplate : state.GetChildPassNameList())
         {

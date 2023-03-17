@@ -10,6 +10,7 @@
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -103,7 +104,8 @@ namespace AZ
             createInfo.components = VkComponentMapping{}; // identity mapping
             createInfo.subresourceRange = vkRange;
 
-            const VkResult result = device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImageView);
+            const VkResult result =
+                device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImageView);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -116,16 +118,26 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isDSRendertarget)
+            if (!viewDescriptor.m_isArray && !isDSRendertarget)
             {
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                if (!viewDescriptor.m_isCubemap)
                 {
-                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
-                }
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                    }
 
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    }
+                }
+                else
                 {
-                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadCubeMapImage(this);
+                    }
                 }
             }
 
@@ -158,9 +170,19 @@ namespace AZ
         void ImageView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+
             if (m_readIndex != InvalidBindlessIndex)
             {
-                device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                if (!viewDescriptor.m_isCubemap)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                }
+                else
+                {
+                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                }
+
                 m_readIndex = InvalidBindlessIndex;
             }
 

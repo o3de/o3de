@@ -35,7 +35,7 @@ namespace GradientSignal
     class PaintBrushUndoBuffer : public AzToolsFramework::UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushUndoBuffer, AZ::SystemAllocator);
         AZ_RTTI(PaintBrushUndoBuffer, "{E37936AC-22E1-403A-A36B-55390832EDE4}");
 
         PaintBrushUndoBuffer(AZ::EntityId imageEntityId)

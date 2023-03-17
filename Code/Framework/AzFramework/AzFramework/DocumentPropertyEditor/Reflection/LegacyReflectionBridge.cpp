@@ -173,13 +173,24 @@ namespace AZ::Reflection
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
+            // Specify whether the visit starts from the root of the instance.
+            bool m_visitFromRoot = true;
+
             virtual ~InstanceVisitor() = default;
 
-            InstanceVisitor(IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, SerializeContext* serializeContext)
+            InstanceVisitor(
+                IReadWrite* visitor, void* instance,
+                const AZ::TypeId& typeId,
+                SerializeContext* serializeContext,
+                bool visitFromRoot = true)
                 : m_visitor(visitor)
                 , m_serializeContext(serializeContext)
             {
+                // Push a dummy node into stack, which serves as the parent node for the first node.
                 m_stack.push_back({ instance, nullptr, typeId });
+
+                m_visitFromRoot = visitFromRoot;
+
                 RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
@@ -227,6 +238,7 @@ namespace AZ::Reflection
                     SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
                     nullptr);
 
+                // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
                 const StackEntry& nodeData = m_stack.back();
                 m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
@@ -254,7 +266,10 @@ namespace AZ::Reflection
                 else if (classElement)
                 {
                     AZStd::string_view elementName = classElement->m_name;
-                    if (!elementName.empty())
+
+                    // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
+                    // serialized paths looking like "token1////token2/token3"
+                    if (!elementName.empty() && classElement->m_editData)
                     {
                         path.append("/");
                         path.append(elementName);
@@ -320,6 +335,8 @@ namespace AZ::Reflection
                         }
                     }
                 }
+                
+                // Push the current node into the stack
                 m_stack.push_back(
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
                 StackEntry* nodeData = &m_stack.back();
@@ -408,6 +425,7 @@ namespace AZ::Reflection
                     }
                 }
 
+                // Cache attributes for the current node. Attribute data will be used in ReflectionAdapter.
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
@@ -421,8 +439,6 @@ namespace AZ::Reflection
                         nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, changeNotifyValue });
                     }
                 }
-
-                // If this node has no edit data and is not the child of a container, only show its children
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
                 Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
@@ -553,28 +569,40 @@ namespace AZ::Reflection
 
                 using DocumentPropertyEditor::Nodes::PropertyEditor;
                 using DocumentPropertyEditor::Nodes::PropertyVisibility;
+
+                // DPE defaults to show everything, and picks what to hide.
                 PropertyVisibility visibility = PropertyVisibility::Show;
 
-                AZ::Name handlerName;
+                // If the stack contains 2 nodes, it means we are now processing the root node. The first node is a dummy parent node.
+                // Hide the root node itself if the visitor is visiting from the instance's root.
+                if (m_stack.size() == 2 && m_visitFromRoot)
+                {
+                    visibility = PropertyVisibility::ShowChildrenOnly;
+                }
 
-                // This array node is for caching related GenericValue attributes if any are seen
+                Name handlerName;
+
+                // This array node is for caching related GenericValue and EnumValueKey attributes if any are seen
                 Dom::Value genericValueCache = Dom::Value(Dom::Type::Array);
-                const AZ::Name genericValueName = AZ::Name("GenericValue");
+                const Name genericValueName = Name("GenericValue");
+                const Name enumValueKeyName = Name("EnumValueKey");
+                const Name genericValueListName = Name("GenericValueList");
+                const Name enumValuesCrcName = Name(static_cast<u32>(Crc32("EnumValues")));
 
-                auto checkAttribute = [&](const AZ::AttributePair* it, void* instance, bool shouldDescribeChildren)
+                auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
                     }
 
-                    AZ::Name name = propertyEditorSystem->LookupNameFromId(it->first);
+                    Name name = propertyEditorSystem->LookupNameFromId(it->first);
                     if (!name.IsEmpty())
                     {
-                        // If an attribute of the same name is already loaded then ignore the new value
-                        // unless it is a GenericValue attribute since each represents an individual
-                        // pair destined for a combobox and thus multiple are expected
-                        if (visitedAttributes.find(name) != visitedAttributes.end() && name != genericValueName)
+                        // If an attribute of the same name is already loaded then ignore the new value unless
+                        // it is a GenericValue or EnumValueKey attribute since each represents an individual
+                        // (value, description) pair destined for a combobox and thus multiple are expected
+                        if (visitedAttributes.contains(name) && name != genericValueName && name != enumValueKeyName)
                         {
                             return;
                         }
@@ -592,19 +620,13 @@ namespace AZ::Reflection
                         Dom::Value attributeValue;
                         propertyEditorSystem->EnumerateRegisteredAttributes(
                             name,
-                            [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
                             {
                                 if (attributeValue.IsNull())
                                 {
                                     attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                                 }
                             });
-
-                        // Collect related GenericValue attributes so they can be stored together
-                        if (name == genericValueName && !attributeValue.IsNull())
-                        {
-                            genericValueCache.ArrayPushBack(attributeValue);
-                        }
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -619,11 +641,29 @@ namespace AZ::Reflection
                             // omit our normal synthetic Handler attribute.
                             if (name == DescriptorAttributes::Handler)
                             {
-                                handlerName = AZ::Name();
+                                handlerName = Name();
                             }
 
+                            // Collect related GenericValue attributes so they can be stored together as GenericValueList
                             if (name == genericValueName)
                             {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                return;
+                            }
+                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
+                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // because such nodes also have internal EnumValueKey attributes that we won't use.
+                            // The cached values will be stored as a GenericValueList attribute.
+                            if (name == enumValueKeyName &&
+                                !visitedAttributes.contains(enumValuesCrcName) &&
+                                !visitedAttributes.contains(genericValueListName))
+                            {
+                                genericValueCache.ArrayPushBack(attributeValue);
+                                // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
+                                // in the PropertyEditorSystem.
+                                // This is reasonable since the attribute's value is an enum with an underlying integral
+                                // type which is safely convertible to AZ::u64.
+                                nodeData.m_typeId = AzTypeInfo<u64>::Uuid();
                                 return;
                             }
 
@@ -820,11 +860,14 @@ namespace AZ::Reflection
                         break;
                     }
                 }
+
+                // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
                 if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }
+
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });

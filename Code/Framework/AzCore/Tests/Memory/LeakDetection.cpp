@@ -51,7 +51,7 @@ namespace UnitTest
     class TestClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator);
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ namespace UnitTest
     class TestClassLeakDetection_TestAllocator
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestClass, LeakDetection_TestAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, LeakDetection_TestAllocator);
     };
 
 
@@ -232,7 +232,7 @@ namespace UnitTest
         class ThisAllocatorTestClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(ThisAllocatorTestClass, AllocatorType, 0);
+            AZ_CLASS_ALLOCATOR(ThisAllocatorTestClass, AllocatorType);
         };
 
     protected:

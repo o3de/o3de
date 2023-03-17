@@ -65,7 +65,6 @@ namespace TestImpact
 
         if (jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone)
         {
-        
             if (auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
             {
                 return result;
@@ -144,8 +143,7 @@ namespace TestImpact
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
-        : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
+        : m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
             sourceDir,
             targetBinaryDir,
             artifactDir,
@@ -177,8 +175,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -193,10 +190,7 @@ namespace TestImpact
             testFailurePolicy,
             targetOutputCapture,
             testTargetTimeout,
-            globalTimeout,
-            callback,
-            AZStd::nullopt
-            );
+            globalTimeout);
     }
 
     TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage> NativeTestEngine::InstrumentedRun(
@@ -206,8 +200,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -222,9 +215,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
 
             if(const auto integrityErrors = GenerateIntegrityErrorString(result);
                 !integrityErrors.empty())

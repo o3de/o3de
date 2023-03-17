@@ -37,5 +37,5 @@
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli"
 #include "../../../Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli"
 
-#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
+#include "LowEndForwardPassVertexAndPixel.azsli"
 

@@ -33,9 +33,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Recorder, RecorderAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(Recorder::ActorInstanceData, RecorderAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(Recorder::RecordSettings, RecorderAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Recorder, RecorderAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(Recorder::ActorInstanceData, RecorderAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(Recorder::RecordSettings, RecorderAllocator)
 
 
     void Recorder::TransformTracks::Reflect(AZ::ReflectContext* context)

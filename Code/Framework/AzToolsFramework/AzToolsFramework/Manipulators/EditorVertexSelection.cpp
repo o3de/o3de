@@ -1647,10 +1647,10 @@ namespace AzToolsFramework
     template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator)
 
     template class EditorVertexSelectionBase<AZ::Vector2>;
     template class EditorVertexSelectionBase<AZ::Vector3>;

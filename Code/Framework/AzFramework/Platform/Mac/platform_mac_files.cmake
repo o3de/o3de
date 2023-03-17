@@ -13,6 +13,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Mac.h
     AzFramework/Application/Application_Mac.mm
     AzFramework/Asset/AssetSystemComponentHelper_Mac.cpp
+    AzFramework/Process/ProcessUtils_Mac.cpp
     AzFramework/Process/ProcessWatcher_Mac.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Mac.cpp

@@ -31,7 +31,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager(QWidget* defaultParentWidget);
+        explicit MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -66,8 +66,10 @@ namespace AzToolsFramework
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
+        MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const override;
+        MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const override;
 
-        // MenuManagerInterface overrides ...
+        // MenuManagerInternalInterface overrides ...
         QMenu* GetMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) override;
@@ -77,6 +79,7 @@ namespace AzToolsFramework
         void RefreshMenuBars() override;
         MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
         MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
+        void Reset() override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

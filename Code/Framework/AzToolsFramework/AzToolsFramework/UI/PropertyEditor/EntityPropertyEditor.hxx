@@ -130,7 +130,7 @@ namespace AzToolsFramework
         Q_OBJECT;
     public:
 
-        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator)
 
         enum class ReorderState
         {
@@ -261,6 +261,7 @@ namespace AzToolsFramework
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
+        void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
 
         // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -401,7 +402,6 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
-        QAction* m_resetToSliceAction = nullptr;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 
@@ -492,6 +492,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;
@@ -640,6 +641,7 @@ namespace AzToolsFramework
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
+        // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
@@ -686,6 +688,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();

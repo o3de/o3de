@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace UnitTest
 {
@@ -210,4 +211,4 @@ namespace UnitTest
     }
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

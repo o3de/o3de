@@ -12,12 +12,15 @@
 
 namespace EMotionFX
 {
+    class BoolParameter;
+    AZ_TYPE_INFO_SPECIALIZE(BoolParameter, "{1057BEFA-09A8-4B13-93CD-614BACF18106}");
+
     class BoolParameter 
         : public DefaultValueParameter<bool, BoolParameter>
     {
         using BaseType = DefaultValueParameter<bool, BoolParameter>;
     public:
-        AZ_RTTI(BoolParameter, "{1057BEFA-09A8-4B13-93CD-614BACF18106}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
         AZ_CLASS_ALLOCATOR_DECL
 
         BoolParameter()

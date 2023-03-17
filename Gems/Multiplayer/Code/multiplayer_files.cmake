@@ -19,6 +19,7 @@ set(FILES
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
     Include/Multiplayer/Components/SimplePlayerSpawnerComponent.h
+    Include/Multiplayer/Components/ISimplePlayerSpawner.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
     Include/Multiplayer/Components/MultiplayerController.h

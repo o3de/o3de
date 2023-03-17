@@ -331,7 +331,7 @@ namespace LUAEditor
         : public QStandardItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceItem, AZ::SystemAllocator);
 
         ReferenceItem(const QIcon& icon, const QString& text, size_t id);
         ReferenceItem(const QString& text, size_t id);
@@ -359,7 +359,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(LUAEditorContextSavedState, "{3FEBF499-760C-4275-AF47-C1D5A131D4BA}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(LUAEditorContextSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorContextSavedState, AZ::SystemAllocator);
 
         bool m_MainEditorWindowIsVisible;
         bool m_MainEditorWindowIsOpen;

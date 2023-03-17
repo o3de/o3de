@@ -23,7 +23,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SMAANeighborhoodBlendingPass, "{EED89560-137F-4666-8E43-FF8A004F82A5}", SMAABasePass);
-            AZ_CLASS_ALLOCATOR(SMAANeighborhoodBlendingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SMAANeighborhoodBlendingPass, SystemAllocator);
             virtual ~SMAANeighborhoodBlendingPass() = default;
 
             //! Creates a SMAANeighborhoodBlendingPass

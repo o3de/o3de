@@ -110,5 +110,15 @@ namespace AZ
         {
             return static_cast<const Buffer&>(Base::GetBuffer());
         }
+
+        uint32_t BufferView::GetBindlessReadIndex() const
+        {
+            return m_staticReadDescriptor.m_index;
+        }
+
+        uint32_t BufferView::GetBindlessReadWriteIndex() const
+        {
+            return m_staticReadWriteDescriptor.m_index;
+        }
     }
 }

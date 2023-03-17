@@ -6,8 +6,12 @@
  *
  */
 
+#include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
-
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <QtCore/QTimer>
 
 namespace AZ::DocumentPropertyEditor
@@ -23,7 +27,10 @@ namespace AZ::DocumentPropertyEditor
     {
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_componentInstance->GetEntityId());
+        if (m_entityId.IsValid())
+        {
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
+        }
     }
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
@@ -71,11 +78,13 @@ namespace AZ::DocumentPropertyEditor
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
         m_componentInstance = componentInstance;
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_componentInstance->GetEntityId());
+        m_entityId = m_componentInstance->GetEntityId();
+
+        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
-        AZ::Uuid instanceTypeId = azrtti_typeid(m_componentInstance);
-        SetValue(m_componentInstance, instanceTypeId);
+
+        SetValue(m_componentInstance, azrtti_typeid(m_componentInstance));
     }
 
     void ComponentAdapter::DoRefresh()
@@ -111,9 +120,7 @@ namespace AZ::DocumentPropertyEditor
                         else
                         {
                             AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode,
-                                &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch,
-                                "Modify Entity Property");
+                                m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
                         }
 
                         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -138,4 +145,8 @@ namespace AZ::DocumentPropertyEditor
         return returnValue;
     }
 
+    void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
+    {
+        ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
+    }
 } // namespace AZ::DocumentPropertyEditor

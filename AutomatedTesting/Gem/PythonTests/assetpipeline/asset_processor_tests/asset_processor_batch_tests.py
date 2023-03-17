@@ -18,6 +18,7 @@ import stat
 import shutil
 
 # Import LyTestTools
+import ly_test_tools
 from ly_test_tools.o3de import asset_processor as asset_processor_utils
 
 # Import fixtures
@@ -649,7 +650,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
+    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):

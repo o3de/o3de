@@ -70,6 +70,7 @@
 #include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
@@ -104,7 +105,7 @@ namespace EMotionFX
             : public EMotionFX::EventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EMotionFXEventHandler, EMotionFXAllocator);
 
             const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
@@ -383,7 +384,6 @@ namespace EMotionFX
                 {
                     ec->Class<SystemComponent>("EMotion FX Animation", "Enables the EMotion FX animation solution")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_numThreads, "Number of threads", "Number of threads used internally by EMotion FX")
                     ;
@@ -510,6 +510,7 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -535,6 +536,7 @@ namespace EMotionFX
                 EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName());
             }
 
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -748,7 +750,7 @@ namespace EMotionFX
             if (rootPath)
             {
                 AZStd::string mediaRootPath = rootPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, mediaRootPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, mediaRootPath);
                 EMotionFX::GetEMotionFX().SetMediaRootFolder(mediaRootPath.c_str());
             }
             else
@@ -788,7 +790,6 @@ namespace EMotionFX
             }
             return rayResult;
         }
-
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
 
@@ -990,6 +991,31 @@ namespace EMotionFX
                           AZ::Crc32(),
                           true);
                   } });
+        }
+
+        void SystemComponent::OnActionContextRegistrationHook()
+        {
+            constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+            constexpr AZStd::string_view AnimationEditorAnimGraphActionContextIdentifier = "o3de.context.animationEditor.animGraph";
+
+            if(auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+            {
+                // EMFX Main Window
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorActionContextIdentifier, contextProperties);
+                }
+
+                // AnimGraph
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor - Anim Graph";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorAnimGraphActionContextIdentifier, contextProperties);
+                }
+            }
         }
 
         bool SystemComponent::HandlesSource(AZStd::string_view fileName) const

@@ -40,7 +40,7 @@ namespace ScriptCanvas
 
     public:
         AZ_RTTI(ValidationEvent, "{58F76284-987C-4A15-A31B-407475586958}");
-        AZ_CLASS_ALLOCATOR(ValidationEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ValidationEvent, AZ::SystemAllocator);
 
         virtual ~ValidationEvent() = default;
 

@@ -45,7 +45,7 @@ namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
 
-    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator)
 
     AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
         const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
@@ -239,7 +239,15 @@ namespace AZ::Render
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(*m_meshHandle, materials);
+            m_meshFeatureProcessor->SetCustomMaterials(*m_meshHandle, ConvertToCustomMaterialMap(materials));
+        }
+    }
+
+    void AtomActorInstance::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+    {
+        if (m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingDirty(*m_meshHandle);
         }
     }
 
@@ -671,7 +679,7 @@ namespace AZ::Render
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));
         }
 
         // If render proxies already exist, they will be auto-freed

@@ -20,7 +20,7 @@ namespace Physics
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(Physics::MaterialAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Physics::MaterialAsset, AZ::SystemAllocator);
         AZ_RTTI(Physics::MaterialAsset, "{E4EF58EE-B1D1-46C8-BE48-BB62B8247386}", AZ::Data::AssetData);
 
         static constexpr const char* FileExtension = "physicsmaterial";

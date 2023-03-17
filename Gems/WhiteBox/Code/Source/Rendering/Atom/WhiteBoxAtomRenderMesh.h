@@ -93,7 +93,7 @@ namespace WhiteBox
         AZ::Data::Instance<AZ::RPI::Model> m_model;
         AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
-        AZ::Render::MaterialAssignmentMap m_materialMap;
+        AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
         uint32_t m_vertexCount = 0;
         AZStd::unique_ptr<IndexBuffer> m_indexBuffer;
         AZStd::array<

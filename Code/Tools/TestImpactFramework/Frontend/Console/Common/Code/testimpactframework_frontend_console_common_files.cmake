@@ -12,10 +12,10 @@ set(FILES
     Include/Static/TestImpactCommandLineOptionsUtils.h
     Include/Static/TestImpactCommandLineOptions.h
     Include/Static/TestImpactRuntimeConfigurationFactory.h
-    Include/Static/TestImpactConsoleTestSequenceEventHandler.h
+    Include/Static/TestImpactTestSequenceNotificationHandler.h
     Source/TestImpactConsoleUtils.cpp
     Source/TestImpactCommandLineOptionsUtils.cpp
     Source/TestImpactCommandLineOptions.cpp
     Source/TestImpactRuntimeConfigurationFactory.cpp
-    Source/TestImpactConsoleTestSequenceEventHandler.cpp
+    Source/TestImpactTestSequenceNotificationHandler.cpp
 )

@@ -62,7 +62,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(PropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyAssetCtrl, AZ::SystemAllocator);
 
         // This is meant to be used with the "EditCallback" Attribute
         using EditCallbackType = AZ::Edit::AttributeFunction<void(const AZ::Data::AssetId&, const AZ::Data::AssetType&)>;
@@ -290,7 +290,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetPropertyHandlerDefault, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetPropertyHandlerDefault, AZ::SystemAllocator);
 
         virtual AZ::TypeId GetHandledType() const override;
         virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("Asset"); }
@@ -323,7 +323,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetIdPropertyHandlerDefault, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetIdPropertyHandlerDefault, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("AssetId"); }
         virtual bool IsDefaultHandler() const override { return true; }
@@ -345,7 +345,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(SimpleAssetPropertyHandlerDefault, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetPropertyHandlerDefault, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ_CRC_CE("SimpleAssetRef"); }
         virtual bool IsDefaultHandler() const override { return true; }

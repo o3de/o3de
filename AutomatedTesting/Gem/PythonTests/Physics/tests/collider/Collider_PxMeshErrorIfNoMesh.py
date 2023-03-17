@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # Test case ID : C14861498
-# Test Case Title : Confirm that when a PhysXCollider has no physics asset, the physics asset collider \
+# Test Case Title : Confirm that when a PhysXMeshCollider has no physics asset, the physics asset collider \
 #   shape throw an error
 
 
@@ -24,11 +24,11 @@ class Tests():
 def Collider_PxMeshErrorIfNoMesh():
     """
     Summary:
-    This test looks for the presence of an error when an entity with a PhysXCollider has no physics mesh, but has its
+    This test looks for the presence of an error when an entity with a PhysXMeshCollider has no physics mesh, but has its
     collider shape set to a physics mesh.
 
     Level Description:
-    One entity with a PhysXCollider with the collider shape set to "physics asset" and no actual physics mesh.
+    One entity with a PhysXMeshCollider with the collider shape set to "physics asset" and no actual physics mesh.
     That's it!
 
     Steps:
@@ -60,7 +60,7 @@ def Collider_PxMeshErrorIfNoMesh():
         def has_physx_warning():
             return warning_tracer.has_warnings and any(
                 'PhysX' in warningInfo.window and
-                'EditorColliderComponent' in warningInfo.message for warningInfo in warning_tracer.warnings)
+                'EditorMeshColliderComponent' in warningInfo.message for warningInfo in warning_tracer.warnings)
 
         # 1) Load level / enter game mode
         helper.open_level("Physics", "Collider_PxMeshErrorIfNoMesh")

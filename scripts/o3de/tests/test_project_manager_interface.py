@@ -11,7 +11,7 @@ from unittest.mock import patch
 from inspect import signature
 import pathlib
 
-from o3de import manifest, engine_properties, register, cmake, engine_template, enable_gem, disable_gem, project_properties, repo, download
+from o3de import manifest, engine_properties, register, engine_template, enable_gem, disable_gem, project_properties, repo, download
 
 # If any tests are failing in this, this means the interface Project Manager depends on has changed.
 # This likely means that some Project Manager functionality has been broken.
@@ -249,7 +249,7 @@ def test_remove_invalid_o3de_projects():
 
 # cmake interface
 def test_get_enabled_gem_cmake_file():
-    sig = signature(cmake.get_enabled_gem_cmake_file)
+    sig = signature(manifest.get_enabled_gem_cmake_file)
     assert len(sig.parameters) >= 2
 
     project_path = list(sig.parameters.values())[1]
@@ -259,7 +259,7 @@ def test_get_enabled_gem_cmake_file():
     assert sig.return_annotation == pathlib.Path
 
 def test_get_enabled_gems():
-    sig = signature(cmake.get_enabled_gems)
+    sig = signature(manifest.get_enabled_gems)
     assert len(sig.parameters) >= 1
 
     cmake_file = list(sig.parameters.values())[0]

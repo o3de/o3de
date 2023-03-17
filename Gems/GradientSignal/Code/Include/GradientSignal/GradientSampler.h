@@ -28,7 +28,7 @@ namespace GradientSignal
     class GradientSampler final
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientSampler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSampler, AZ::SystemAllocator);
         AZ_RTTI(GradientSampler, "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}");
         static void Reflect(AZ::ReflectContext* context);
 

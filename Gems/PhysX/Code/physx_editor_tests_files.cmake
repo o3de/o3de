@@ -17,9 +17,14 @@ set(FILES
     Tests/PhysXEditorTest.cpp
     Tests/PolygonPrismMeshUtilsTest.cpp
     Tests/PhysXColliderComponentModeTests.cpp
-    Tests/ShapeColliderComponentTests.cpp
+    Tests/PhysXMeshColliderComponentModeTests.cpp
+    Tests/PhysXMeshTestData.h
+    Tests/EditorColliderComponentTests.cpp
+    Tests/EditorMeshColliderComponentTests.cpp
+    Tests/EditorShapeColliderComponentTests.cpp
     Tests/EditorHeightfieldColliderComponentTests.cpp
     Tests/TestColliderComponent.h
+    Tests/TestMeshColliderComponent.h
     Tests/SystemComponentTest.cpp
     Tests/RigidBodyComponentTests.cpp
     Tests/StaticRigidBodyComponentTests.cpp

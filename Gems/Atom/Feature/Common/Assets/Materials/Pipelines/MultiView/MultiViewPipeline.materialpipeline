@@ -61,14 +61,14 @@
             {
                 "type": "Lua",
                 "args": {
-                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
                     "file": "Materials/Pipelines/Common/ShaderEnable.lua"
                 }
             },
             {
                 "type": "Lua",
                 "args": {
-                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
                     "file": "Materials/Pipelines/Common/DoubleSided.lua"
                 }
             }

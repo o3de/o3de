@@ -12,19 +12,13 @@ import csv
 import argparse
 import xml.etree.ElementTree as xmlElementTree
 import datetime
+import uuid
 
 from common import logging
 
 DEFAULT_CTEST_LOG_FILENAME = 'Test.xml'
 TAG_FILE = 'TAG'
 TESTING_DIR = 'Testing'
-
-
-def _get_default_csv_filename():
-    # Format default file name based off of date
-    now = datetime.datetime.now()
-    return f"{now.year}_{now.month:02d}_{now.day:02d}.csv"
-
 
 # Setup logging.
 logger = logging.get_logger("test_metrics")
@@ -38,22 +32,36 @@ CTEST_FIELDS_HEADER = [
 ]
 
 
+def _get_default_csv_filename():
+    # Format default file name based off of date
+    now = datetime.datetime.isoformat(datetime.datetime.now(tz=datetime.timezone.utc), timespec='seconds')
+    return f"{now.replace('+00:00', 'Z').replace('-', '_').replace('.', '_').replace(':', '_')}.csv"
+
+
 def main():
     # Parse args
     args = parse_args()
 
     # Construct the full path to the xml file
-    file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
+    xml_file_path = _get_test_xml_path(args.build_folder, args.ctest_log)
 
-    # Create csv file
-    if os.path.exists(args.csv_file):
-        logger.warning(f"The file {args.csv_file} already exists. It will be overriden.")
-    with open(args.csv_file, 'w', encoding='UTF8', newline='') as csv_file:
+    # Define directory format as branch/year/month/day/filename
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    full_path = os.path.join(args.output_directory, args.branch, f"{now.year:04d}", f"{now.month:02d}", f"{now.day:02d}"
+                             , f"{str(uuid.uuid4())[:8]}.{args.csv_file}")
+
+    if os.path.exists(full_path):
+        logger.warning(f"The file {full_path} already exists. It will be overridden.")
+    if not os.path.exists(os.path.dirname(full_path)):
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(full_path))
+
+    with open(full_path, 'w', encoding='UTF8', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=CTEST_FIELDS_HEADER, restval='N/A')
         writer.writeheader()
 
         # Parse CTest xml and write to csv file
-        parse_ctest_xml_to_csv(file_path, writer)
+        parse_ctest_xml_to_csv(xml_file_path, writer)
 
 
 def parse_args():
@@ -70,8 +78,17 @@ def parse_args():
     )
     parser.add_argument(
         "--csv-file", action="store", default=_get_default_csv_filename(),
-        help=f"The directory and file name for the csv to be saved (defaults to YYYY_MM_DD)."
+        help=f"The directory and file name for the csv to be saved."
     )
+    parser.add_argument(
+        "-o", "--output-directory", action="store", default=os.getcwd(),
+        help=f"The directory where the csv to be saved. Prepends the --csv-file arg."
+    )
+    parser.add_argument(
+        "-b", "--branch", action="store", default="UnknownBranch",
+        help="The branch the metrics were generated on. Used for directory saving."
+    )
+
     args = parser.parse_args()
     return args
 
@@ -106,7 +123,7 @@ def _get_test_xml_path(build_path, xml_file):
 
 
 def parse_ctest_xml_to_csv(full_xml_path, writer):
-    # type (str, dict, DictWriter) -> None
+    # type (str, DictWriter) -> None
     """
     Parses the CTest xml file and writes the data to a csv file. Each test result will be written as a separate line.
     The structure of the CTest xml is assumed to be as followed:
@@ -153,6 +170,9 @@ def parse_ctest_xml_to_csv(full_xml_path, writer):
     :return: None
     """
     xml_root = xmlElementTree.parse(full_xml_path).getroot()
+    if not os.path.exists(full_xml_path):
+        logger.warning(f"XML file not found at: {full_xml_path}. Script has nothing to convert.")
+        return
 
     # Each CTest test module will have a Test entry
     try:
