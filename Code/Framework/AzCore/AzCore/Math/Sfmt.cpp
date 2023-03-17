@@ -553,7 +553,7 @@ namespace AZ
     //=========================================================================
     void Sfmt::FillArray32(AZ::u32* array, int size)
     {
-        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+        AZStd::scoped_lock lock(m_generationMutex);
 
         AZ_MATH_ASSERT(m_index == SfmtInternal::N32, "Invalid m_index! Reinitialize!");
         AZ_MATH_ASSERT(size % 4 == 0, "Size must be multiple of 4!");
