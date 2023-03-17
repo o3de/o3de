@@ -478,8 +478,6 @@ namespace UnitTests
     void AssetManagerTestingBase::ProcessFileMultiStage(
         int endStage, bool doProductOutputCheck, AssetProcessor::SourceAssetReference sourceAsset, int startStage, bool expectAutofail, bool hasExtraFile)
     {
-        auto intermediatesDir = GetIntermediateAssetsDir();
-
         if (!sourceAsset)
         {
             sourceAsset = AssetProcessor::SourceAssetReference(m_testFilePath.c_str());
