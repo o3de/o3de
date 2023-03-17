@@ -149,7 +149,8 @@ namespace AssetProcessor
             AZ_Error(
                 "ProductOutputUtil",
                 false,
-                "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT,
+                "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                ".  See previous log messages for details on failure.",
                 AZ_STRING_ARG(oldAbsolutePath),
                 AZ_STRING_ARG(newAbsolutePath));
         }
