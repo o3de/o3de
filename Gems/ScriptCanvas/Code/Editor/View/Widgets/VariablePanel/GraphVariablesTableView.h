@@ -142,6 +142,7 @@ namespace ScriptCanvasEditor
 
         AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator);
         GraphVariablesTableView(QWidget* parent);
+        ~GraphVariablesTableView();
 
         void SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         void SetFilter(const QString& filterString);
