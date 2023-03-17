@@ -515,21 +515,16 @@ namespace AZ
     //=========================================================================
     AZ::u32 Sfmt::Rand32()
     {
-        int index = m_index.fetch_add(1);
-        if (index >= SfmtInternal::N32)
+        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+
+        m_index++;
+        if (m_index >= SfmtInternal::N32)
         {
-            AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
-            // if this thread is the one that sets m_index to 0, then this thread
-            // does the generation
-            index += 1; // compare against the result of fetch_add(1) above
-            if (m_index.compare_exchange_strong(index, 0))
-            {
-                SfmtInternal::gen_rand_all(*this);
-            }
-            // try again, with the new table
-            return Rand32();
+            SfmtInternal::gen_rand_all(*this);
+            m_index = 0;
         }
-        return m_psfmt32[index];
+
+        return m_psfmt32[m_index];
     }
 
     //=========================================================================
@@ -538,24 +533,16 @@ namespace AZ
     //=========================================================================
     AZ::u64 Sfmt::Rand64()
     {
-        int index = m_index.fetch_add(2);
-        if (index >= (SfmtInternal::N32 - 1))
+        AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
+
+        m_index += 2;
+        if (m_index >= (SfmtInternal::N32 - 1))
         {
-            AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
-            // if this thread is the one that sets m_index to 0, then this thread
-            // does the generation
-            index += 2; // compare against the result of fetch_add(2) above
-            if (m_index.compare_exchange_strong(index, 0))
-            {
-                SfmtInternal::gen_rand_all(*this);
-            }
-            // try again, with the new table
-            return Rand64();
+            SfmtInternal::gen_rand_all(*this);
+            m_index = 0;
         }
 
-        AZ::u64 r;
-        r = m_psfmt64[index / 2];
-        return r;
+        return m_psfmt64[m_index / 2];
     }
 
     //=========================================================================

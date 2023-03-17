@@ -106,10 +106,10 @@ namespace AZ
         void    PeriodCertification();
 
         SfmtInternal::w128_t        m_sfmt[SfmtInternal::N];
-        AZStd::atomic_int           m_index;   ///  Index into the pre-generated tables
+        size_t                      m_index;   ///  Index into the pre-generated tables
         AZ::u32*                    m_psfmt32; ///  Read only tables of pre-generated random numbers
         AZ::u64*                    m_psfmt64;
 
-        AZStd::recursive_mutex      m_generationMutex;
+        AZStd::mutex                m_generationMutex;
     };
 }
