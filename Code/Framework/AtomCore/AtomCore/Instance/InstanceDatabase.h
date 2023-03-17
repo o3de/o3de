@@ -387,6 +387,14 @@ namespace AZ
         Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
             const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
         {
+            // This assert is here to catch any potential non-randomness in our id generation. If it triggers,
+            // there might be a bug / race condition in the id generator. The same assert also occurs *after*
+            // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
+            AZ_Assert(
+                m_database.find(id) == m_database.end(),
+                "Database already contains an instance for this id, possibly a random id generation collision?",
+                id.ToString<AZStd::string>().c_str());
+
             // Emplace a new instance and return it.
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
             // the contents of m_database may change within this call.
