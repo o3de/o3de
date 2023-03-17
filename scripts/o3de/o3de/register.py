@@ -448,7 +448,7 @@ def register_gem_path(json_data: dict,
         # because most gems depend on engine gems which would not be found
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
+            incompatible_objects = compatibility.get_gems_project_incompatible_objects([gem_path], [gem_json_data['gem_name']], project_path)
             if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
