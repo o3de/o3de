@@ -101,9 +101,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_COM_ManualSettingWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_COM_ManualSettingWorks as test_module
 
-    class RigidBody_AddRigidBodyComponent(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_AddRigidBodyComponent as test_module
-
     class RigidBody_AngularDampingAffectsRotation(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_AngularDampingAffectsRotation as test_module
 
