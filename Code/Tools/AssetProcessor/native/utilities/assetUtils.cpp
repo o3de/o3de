@@ -39,6 +39,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 #include <xxhash/xxhash.h>
+#include <native/utilities/UuidManager.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
@@ -873,6 +874,37 @@ namespace AssetUtilities
         return AZ::Uuid::CreateName(lowerVersion.c_str());
     }
 
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        if (!sourceAsset)
+        {
+            return {};
+        }
+
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetUuid(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
+    }
+
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetLegacyUuids(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
+    }
+
     void NormalizeFilePaths(QStringList& filePaths)
     {
         for (int pathIdx = 0; pathIdx < filePaths.size(); ++pathIdx)
@@ -1434,6 +1466,28 @@ namespace AssetUtilities
         } while (db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(source.m_sourceName.c_str()).c_str(), sources));
 
         return source;
+    }
+
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        auto topLevelSourceDbEntry = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSourceDbEntry)
+        {
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+        if(!db->GetScanFolderByScanFolderID(topLevelSourceDbEntry->m_scanFolderPK, scanfolderForTopLevelSource))
+        {
+            return {};
+        }
+
+        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+        fullPath /= topLevelSourceDbEntry->m_sourceName;
+
+        return fullPath;
     }
 
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(

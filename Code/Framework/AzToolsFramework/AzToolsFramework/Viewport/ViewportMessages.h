@@ -83,23 +83,6 @@ namespace AzToolsFramework
             MouseInteractionResult InternalHandleAllMouseInteractions(const MouseInteractionEvent& mouseInteraction);
         };
 
-        inline MouseInteractionResult InternalMouseViewportRequests::InternalHandleAllMouseInteractions(
-            const MouseInteractionEvent& mouseInteraction)
-        {
-            if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Manipulator;
-            }
-            else if (InternalHandleMouseViewportInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Viewport;
-            }
-            else
-            {
-                return MouseInteractionResult::None;
-            }
-        }
-
         //! Interface for viewport selection behaviors.
         class ViewportDisplayNotifications
         {
@@ -187,15 +170,7 @@ namespace AzToolsFramework
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
-        inline ProjectedViewportRay ViewportScreenToWorldRay(
-            const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
-        {
-            ProjectedViewportRay viewportRay{};
-            ViewportInteractionRequestBus::EventResult(
-                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
-
-            return viewportRay;
-        }
+        ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint);
 
         //! The EBusTraits for ViewportInteractionNotifications.
         class ViewportNotificationsEBusTraits : public AZ::EBusTraits
@@ -284,9 +259,6 @@ namespace AzToolsFramework
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
             {
             }
-            virtual void OnOnlyShowHelpersForSelectedEntitiesChanged([[maybe_unused]] bool enabled)
-            {
-            }
             virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
             {
             }
@@ -344,12 +316,8 @@ namespace AzToolsFramework
 
         using EditorModifierKeyRequestBus = AZ::EBus<EditorModifierKeyRequests>;
 
-        inline KeyboardModifiers QueryKeyboardModifiers()
-        {
-            KeyboardModifiers keyboardModifiers;
-            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
-            return keyboardModifiers;
-        }
+        //! Convenience method to call the above EditorModifierKeyRequestBus's QueryKeyModifiers event
+        KeyboardModifiers QueryKeyboardModifiers();
 
         //! An interface to deal with time requests relating to viewports.
         //! @note The bus is global and not per viewport.
@@ -402,13 +370,7 @@ namespace AzToolsFramework
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.
-    inline AzFramework::EntityContextId GetEntityContextId()
-    {
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        return entityContextId;
-    }
+    AzFramework::EntityContextId GetEntityContextId();
 
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
@@ -462,3 +424,5 @@ namespace AzToolsFramework
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
     float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);

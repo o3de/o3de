@@ -123,7 +123,7 @@ namespace AZ
             friend class Device;
 
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
             AZ_RTTI(Image, "725F56BF-5CCA-4110-91EE-C94E84A35B2C", Base);
 
             static RHI::Ptr<Image> Create();
@@ -210,7 +210,7 @@ namespace AZ
             // RHI::Image
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::ImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
 

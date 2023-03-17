@@ -140,7 +140,6 @@ namespace StartingPointInput
                         "Starting point input", "Manages input bindings and events")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ;
                 }
             }

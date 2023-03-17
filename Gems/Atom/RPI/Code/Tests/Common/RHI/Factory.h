@@ -21,7 +21,7 @@ namespace UnitTest
             Factory();
             ~Factory();
 
-            AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator);
 
             static AZ::RHI::Ptr<AZ::RHI::Device> CreateDefaultDevice();
 

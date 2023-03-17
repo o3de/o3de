@@ -25,7 +25,7 @@ namespace Physics
     class ColliderConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ColliderConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ColliderConfiguration, "{16206828-F867-4DA9-9E4E-549B7B2C6174}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -72,6 +72,13 @@ namespace Physics
     private:
         void OnRestOffsetChanged();
         void OnContactOffsetChanged();
+
+        // m_dummyIsSimulated is used for EditContext only, it will always be false and read-only.
+        // It will be shown instead of the real m_isSimulated property when m_isTrigger is enabled,
+        // this way it'll be clear that when the collider is a trigger it won't be simulated.
+        bool m_dummyIsSimulated = false;
+        AZ::Crc32 GetSimulatedPropertyVisibility() const;
+        AZ::Crc32 GetDummySimulatedPropertyVisibility() const;
     };
 
     struct RayCastRequest;
@@ -79,12 +86,13 @@ namespace Physics
     class Shape
     {
     public:
-        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Shape, AZ::SystemAllocator);
         AZ_RTTI(Shape, "{0A47DDD6-2BD7-43B3-BF0D-2E12CC395C13}");
         virtual ~Shape() = default;
 
         virtual void SetMaterial(const AZStd::shared_ptr<Material>& material) = 0;
         virtual AZStd::shared_ptr<Material> GetMaterial() const = 0;
+        virtual Physics::MaterialId GetMaterialId() const = 0;
 
         virtual void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) = 0;
         virtual AzPhysics::CollisionLayer GetCollisionLayer() const = 0;

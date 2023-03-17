@@ -166,6 +166,9 @@ Please note that only those seed files will get updated that are active for your
     QHash<QString, int> SourceFileRelocator::GetSources(QStringList pathMatches, const ScanFolderInfo* scanFolderInfo,
         SourceFileRelocationContainer& sources) const
     {
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
         QHash<QString, int> sourceIndexMap;
         QSet<QString> filesNotInAssetDatabase;
         for (auto& file : pathMatches)
@@ -174,11 +177,17 @@ Please note that only those seed files will get updated that are active for your
 
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
             filesNotInAssetDatabase.insert(databaseSourceName);
-            m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName, &filesNotInAssetDatabase](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            m_stateData->QuerySourceBySourceNameScanFolderID(
+                databaseSourceName.toUtf8().constData(),
+                scanFolderInfo->ScanFolderID(),
+                [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName, &filesNotInAssetDatabase, uuidInterface](
+                    const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                 {
-                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo);
+                    const bool isMetadataType = uuidInterface->IsGenerationEnabledForFile(databaseSourceName.toUtf8().constData());
+                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo, isMetadataType);
                     filesNotInAssetDatabase.remove(databaseSourceName);
-                    sourceIndexMap[databaseSourceName] = aznumeric_cast<int> (sources.size() - 1);
+                    sourceIndexMap[databaseSourceName] = aznumeric_cast<int>(sources.size() - 1);
+
                     return true;
                 });
         }
@@ -226,7 +235,7 @@ Please note that only those seed files will get updated that are active for your
                     if (!metaDataFileEntries.contains(normalizedFilePath))
                     {
                         SourceFileRelocationInfo metaDataFile(file.toUtf8().data(), scanFolderInfo);
-                        metaDataFile.m_isMetaDataFile = true;
+                        metaDataFile.m_metadataIndex = idx;
                         metadataFiles.emplace_back(metaDataFile);
                         metaDataFileEntries.insert(normalizedFilePath);
                     }
@@ -268,7 +277,7 @@ Please note that only those seed files will get updated that are active for your
                         if (sourceFileIndex != sourceIndexMap.end())
                         {
                             SourceFileRelocationInfo metaDataFile(metadaFileCorrectCase.toUtf8().data(), scanFolderInfo);
-                            metaDataFile.m_isMetaDataFile = true;
+                            metaDataFile.m_metadataIndex = idx;
                             metaDataFile.m_sourceFileIndex = sourceFileIndex.value();
                             metadataFiles.emplace_back(metaDataFile);
                             metaDataFileEntries.insert(metadaFileCorrectCase);
@@ -452,6 +461,12 @@ Please note that only those seed files will get updated that are active for your
     {
         for (auto& relocationInfo : relocationContainer)
         {
+            if (relocationInfo.m_isMetadataEnabledType)
+            {
+                // Metadata enabled files do not use dependency fixup system
+                continue;
+            }
+
             m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceGuid, relocationInfo.m_sourceEntry.m_sourceName.c_str(), relocationInfo.m_oldAbsolutePath.c_str(),
                 AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, [&relocationInfo](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& dependencyEntry)
                 {
@@ -618,13 +633,21 @@ Please note that only those seed files will get updated that are active for your
             }
             else
             {
+                const auto& metadataInfo = m_platformConfig->GetMetaDataFileTypeAt(relocationInfo.m_metadataIndex);
                 newDestinationPath = relocationContainer[relocationInfo.m_sourceFileIndex].m_newAbsolutePath;
-                AZStd::string fullFileName;
-                AZ::StringFunc::Path::GetFullFileName(relocationInfo.m_oldAbsolutePath.c_str(), fullFileName);
-                AZ::StringFunc::Path::ReplaceFullName(newDestinationPath, fullFileName.c_str());
+
+                if (!metadataInfo.second.isEmpty())
+                {
+                    // Replace extension
+                    newDestinationPath = AZ::IO::FixedMaxPath(newDestinationPath).ReplaceExtension(metadataInfo.first.toUtf8().constData()).c_str();
+                }
+                else
+                {
+                    // Append extension
+                    newDestinationPath += ".";
+                    newDestinationPath += metadataInfo.first.toUtf8().constData();
+                }
             }
-
-
 
             if (!AzFramework::StringFunc::Path::IsRelative(newDestinationPath.c_str()))
             {
@@ -788,7 +811,7 @@ Please note that only those seed files will get updated that are active for your
 
         for (const SourceFileRelocationInfo& relocationInfo : relocationEntries)
         {
-            if (relocationInfo.m_isMetaDataFile)
+            if (relocationInfo.m_metadataIndex != SourceFileRelocationInvalidIndex)
             {
                 report.append(AZStd::string::format(
                     "Metadata file CURRENT PATH: %s, NEW PATH: %s\n",

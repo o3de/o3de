@@ -91,7 +91,6 @@ namespace AZ
             void OnTick(float timeDelta) override;
             void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
-            void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
@@ -133,6 +132,7 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...
@@ -159,6 +159,8 @@ namespace AZ
             bool GetVisibility() const override;
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
             void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
 

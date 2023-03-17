@@ -25,7 +25,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionWidget, SystemAllocator);
 
             NodeTreeSelectionWidget::NodeTreeSelectionWidget(QWidget* parent)
                 : QWidget(parent)

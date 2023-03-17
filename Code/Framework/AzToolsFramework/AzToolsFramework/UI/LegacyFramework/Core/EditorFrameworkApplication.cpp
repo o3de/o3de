@@ -131,7 +131,7 @@ namespace LegacyFramework
 #ifdef AZ_PLATFORM_WINDOWS
     BOOL CTRL_BREAK_HandlerRoutine(DWORD /*dwCtrlType*/)
     {
-        EBUS_EVENT(FrameworkApplicationMessages::Bus, SetAbortRequested);
+        FrameworkApplicationMessages::Bus::Broadcast(&FrameworkApplicationMessages::Bus::Events::SetAbortRequested);
         return TRUE;
     }
 #endif
@@ -205,7 +205,7 @@ namespace LegacyFramework
 
             // if we're not the primary instance, what exactly do we do?  This is a generic framework - not a specific app
             // and what we do might depend on implementation specifics for each app.
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, RunAsAnotherInstance);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::RunAsAnotherInstance);
         }
         else
         {
@@ -215,7 +215,7 @@ namespace LegacyFramework
                 CreateApplicationComponent();
             }
 
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, Run);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::Run);
 
             // as a precaution here, we save our app and system entities BEFORE we destroy anything
             // so that we have the highest chance of storing the user's precious application state and preferences

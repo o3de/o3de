@@ -24,7 +24,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_RTTI(SourceControlFileInfo, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
+            AZ_RTTI(SourceControlThumbnailKey, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
 
             explicit SourceControlThumbnailKey(const char* fileName);
 

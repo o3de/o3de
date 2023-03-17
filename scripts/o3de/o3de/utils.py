@@ -349,14 +349,30 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     return ancestor_file.parent if ancestor_file else None
 
 
-def get_gem_names_set(gems: list) -> set:
+def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     """
     For working with the 'gem_names' lists in project.json
     Returns a set of gem names in a list of gems
     :param gems: The original list of gems, strings or small dicts (json objects)
+    :param include_optional: If false, exclude optional gems
     :return: A set of gem name strings
     """
-    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems])
+    return set([gem['name'] if isinstance(gem, dict) and (include_optional or not gem.get('optional', False)) else gem for gem in gems])
+
+
+def contains_object_name(object_name:str, candidates:list) -> bool:
+    """
+    Returns True if any item in the list of candidates contains object_name with or
+    without a version specifier
+    :param object_name: The object name to search for 
+    :param candidates: The list of candidate object names with optional version specifiers 
+    :return: True if a match is found 
+    """
+    for candidate in candidates:
+        candidate_name, _ = get_object_name_and_optional_version_specifier(candidate)
+        if candidate_name == object_name:
+            return True
+    return False
 
 
 def remove_gem_duplicates(gems: list) -> list:
@@ -474,6 +490,15 @@ def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
     return match.group("object_name").strip(), match.group("version_specifier").strip()
 
 
+def object_name_found(input:str, match:str) -> bool:
+    """
+    Returns True if the object name in the input string matches match 
+    :param input: The input string
+    :param match: The object name to match
+    """
+    object_name, _ = get_object_name_and_optional_version_specifier(input)
+    return object_name == match
+
 def get_object_name_and_optional_version_specifier(input:str):
     """
     Returns an object name and optional version specifier 
@@ -485,7 +510,7 @@ def get_object_name_and_optional_version_specifier(input:str):
         return input, None
 
 
-def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None):
+def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None, place_values_in_list:bool = False):
     """
     Takes a dictionary of dictionaries and replaces the keys with the value of 
     a specific value key.
@@ -494,6 +519,7 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
     :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
     :param value_key: The value's key to replace the current key with
     :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
+    :param place_values_in_list: (Optional) Put the values in a list, useful when the new key is not unique
     """
 
     # we cannot iterate over the dict while deleting entries
@@ -515,4 +541,9 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
         del input[key]
 
         # replace with an entry keyed on value_key's value
-        input[value[value_key]] = value
+        if place_values_in_list:
+            entries = input.get(value[value_key], [])
+            entries.append(value)
+            input[value[value_key]] = entries
+        else:
+            input[value[value_key]] = value

@@ -22,7 +22,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(GraphTemplateFileDataCache, "{7C1C1C29-FE94-4743-A09A-070F83074F96}");
-        AZ_CLASS_ALLOCATOR(GraphTemplateFileDataCache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphTemplateFileDataCache, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(GraphTemplateFileDataCache);
 
         GraphTemplateFileDataCache(const AZ::Crc32& toolId);
@@ -33,6 +33,7 @@ namespace AtomToolsFramework
 
     private:
         const AZ::Crc32 m_toolId = {};
+        AZStd::mutex m_graphTemplateFileDataMapMutex;
         AZStd::unordered_map<AZStd::string, GraphTemplateFileData> m_graphTemplateFileDataMap;
     };
 } // namespace AtomToolsFramework

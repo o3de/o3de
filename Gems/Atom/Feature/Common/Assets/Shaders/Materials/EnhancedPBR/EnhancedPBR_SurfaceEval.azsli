@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_EnhancedPBR(geoData)
+#define EvaluateSurface EvaluateSurface_EnhancedPBR
 #endif
 
 #include "../StandardPBR/StandardPBR_SurfaceEval.azsli"
@@ -20,7 +20,7 @@
 
 Surface EvaluateSurface_EnhancedPBR(
     float3 positionWS,
-    float3 vertexNormal,
+    float3 normalWS,
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
@@ -49,12 +49,12 @@ Surface EvaluateSurface_EnhancedPBR(
 
     // ------- Normal -------
     
-    surface.vertexNormal = vertexNormal;
+    surface.vertexNormal = normalWS;
     float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
     surface.normal = GetDetailedNormalInputWS(
-        isFrontFace, vertexNormal,
+        isFrontFace, normalWS,
         tangents[MaterialSrg::m_normalMapUvIndex],      bitangents[MaterialSrg::m_normalMapUvIndex],      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor,  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                      o_normal_useTexture,
         tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,      MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, MaterialSrg::m_detailUvMatrix, o_detail_normal_useTexture);
 
@@ -133,7 +133,7 @@ Surface EvaluateSurface_EnhancedPBR(
     // ------- Emissive -------
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, MaterialSrg::m_emissiveAffectedByAlpha, surface.alpha, o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
     
@@ -151,7 +151,7 @@ Surface EvaluateSurface_EnhancedPBR(
             float3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
             GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_clearCoatFactor, o_clearCoat_factor_useTexture,
                                MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
-                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
+                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], normalWS, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
                                uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
@@ -168,7 +168,7 @@ Surface EvaluateSurface_EnhancedPBR(
     return surface;
 }
 
-Surface EvaluateSurface_EnhancedPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_EnhancedPBR(
         geoData.positionWS,

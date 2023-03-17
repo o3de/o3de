@@ -18,13 +18,6 @@
 
 namespace AZ::Render
 {
-    SkyAtmosphereFeatureProcessor::SkyAtmosphere::~SkyAtmosphere()
-    {
-        m_id.Reset();
-        m_passNeedsUpdate = false;
-        m_enabled = false;
-    }
-
     void SkyAtmosphereFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -82,6 +75,27 @@ namespace AZ::Render
         atmosphere.m_params = params;
         atmosphere.m_passNeedsUpdate = true;
     }
+
+    void SkyAtmosphereFeatureProcessor::SetAtmosphereEnabled(AtmosphereId id, bool enabled)
+    {
+        if (id.IsValid())
+        {
+            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+            atmosphere.m_enabled = enabled;
+        }
+    }
+
+    bool SkyAtmosphereFeatureProcessor::GetAtmosphereEnabled(AtmosphereId id)
+    {
+        if (id.IsValid())
+        {
+            auto& atmosphere = m_atmospheres.GetElement(id.GetIndex());
+            return atmosphere.m_enabled;
+        }
+
+        return false;
+    }
+
 
     void SkyAtmosphereFeatureProcessor::InitializeAtmosphere(AtmosphereId id)
     {

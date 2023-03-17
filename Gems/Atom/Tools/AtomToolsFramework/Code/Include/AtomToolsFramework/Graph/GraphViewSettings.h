@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     struct GraphViewSettings : private GraphCanvas::AssetEditorSettingsRequestBus::Handler
     {
         AZ_RTTI(GraphViewSettings, "{00E392C7-C372-4E09-9C07-5803B8864B85}");
-        AZ_CLASS_ALLOCATOR(GraphViewSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphViewSettings, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(GraphViewSettings);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -108,8 +108,8 @@ namespace AtomToolsFramework
         bool m_nodeNudgingEnabled = true;
 
         // Settings related to how lines are rendered between connections
-        GraphCanvas::Styling::ConnectionCurveType m_connectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
-        GraphCanvas::Styling::ConnectionCurveType m_dataConnectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Curved;
+        GraphCanvas::Styling::ConnectionCurveType m_connectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Straight;
+        GraphCanvas::Styling::ConnectionCurveType m_dataConnectionCurveType = GraphCanvas::Styling::ConnectionCurveType::Straight;
 
         // Other miscellaneous settings
         bool m_groupDoubleClickCollapseEnabled = true;

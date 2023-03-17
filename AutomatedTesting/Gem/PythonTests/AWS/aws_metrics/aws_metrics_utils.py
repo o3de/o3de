@@ -33,8 +33,8 @@ class AWSMetricsUtils:
 
     def start_kinesis_data_analytics_application(self, application_name: str) -> None:
         """
-        Start the Kenisis Data Analytics application for real-time analytics.
-        :param application_name: Name of the Kenisis Data Analytics application.
+        Start the Kinesis Data Analytics application for real-time analytics.
+        :param application_name: Name of the Kinesis Data Analytics application.
         """
         input_id = self.get_kinesis_analytics_application_input_id(application_name)
         assert input_id, 'invalid Kinesis Data Analytics application input.'
@@ -81,8 +81,8 @@ class AWSMetricsUtils:
 
     def stop_kinesis_data_analytics_application(self, application_name: str) -> None:
         """
-        Stop the Kenisis Data Analytics application.
-        :param application_name: Name of the Kenisis Data Analytics application.
+        Stop the Kinesis Data Analytics application.
+        :param application_name: Name of the Kinesis Data Analytics application.
         """
         client = self._aws_util.client('kinesisanalytics')
         client.stop_application(
@@ -223,6 +223,22 @@ class AWSMetricsUtils:
             DatabaseName=database_name,
             Name=table_name
         )
+
+    def try_delete_table(self, database_name: str, table_name: str) -> None:
+        """
+        Delete an existing Glue table. If table does not exist ignore
+
+        :param database_name: Name of the Glue database.
+        :param table_name: Name of the table to delete.
+        """
+        client = self._aws_util.client('glue')
+        try:
+            client.delete_table(
+                DatabaseName=database_name,
+                Name=table_name
+            )
+        except client.exceptions.EntityNotFoundException:
+            print(f"Table {table_name} does not exist in database {database_name}")
 
 
 @pytest.fixture(scope='function')

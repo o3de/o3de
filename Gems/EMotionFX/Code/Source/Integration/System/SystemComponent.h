@@ -20,6 +20,7 @@
 #include <CrySystemBus.h>
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
+#   include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -47,11 +48,12 @@ namespace EMotionFX
             , private AZ::TickBus::Handler
             , private CrySystemEventBus::Handler
             , private EMotionFXRequestBus::Handler
-            , private RaycastRequestBus::Handler
+            , private IRaycastRequests
 #if defined (EMOTIONFXANIMATION_EDITOR)
             , private AzToolsFramework::EditorEvents::Bus::Handler
             , private AzToolsFramework::EditorAnimationSystemRequestsBus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 #endif // EMOTIONFXANIMATION_EDITOR
 
         {
@@ -98,12 +100,11 @@ namespace EMotionFX
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // RaycastRequestBus
+            // IRaycastRequests overrides ...
             void EnableRayRequests() override;
             void DisableRayRequests() override;
-            RaycastRequests::RaycastResult Raycast(AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest) override;
+            IRaycastRequests::RaycastResult Raycast(AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest) override;
             ////////////////////////////////////////////////////////////////////////
-
 
             void RegisterAssetTypesAndHandlers();
             void SetMediaRoot(const char* alias);
@@ -118,6 +119,9 @@ namespace EMotionFX
             void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
             void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
             //////////////////////////////////////////////////////////////////////////////////////
+
+            // AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler...
+            void OnActionContextRegistrationHook() override;
 
             bool HandlesSource(AZStd::string_view fileName) const;
 

@@ -9,7 +9,6 @@
 #include "EditorCompoundShapeComponent.h"
 #include <QMessageBox>
 
-#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 

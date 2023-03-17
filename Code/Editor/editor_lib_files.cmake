@@ -400,8 +400,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    StringDlg.cpp
-    StringDlg.h
     ToolbarCustomizationDialog.ui
     ToolbarCustomizationDialog.cpp
     ToolbarCustomizationDialog.h
@@ -537,7 +535,6 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h

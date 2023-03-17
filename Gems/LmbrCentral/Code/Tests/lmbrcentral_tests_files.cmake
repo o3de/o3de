@@ -29,7 +29,6 @@ set(FILES
     ShapeTestUtils.cpp
     ShapeTestUtils.h
     ../Source/LmbrCentral.cpp
-    ../Source/Ai/NavigationComponent.cpp
     ../Source/Scripting/SpawnerComponent.cpp
     ../Source/Shape/TubeShape.cpp
 )

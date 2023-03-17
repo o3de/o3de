@@ -28,7 +28,7 @@ namespace ScriptCanvas
     namespace Grammar
     {
         void ReflectDebugSymbols(AZ::ReflectContext* context);
-        
+
         enum class DebugDataSourceType : AZ::u8
         {
             Internal,
@@ -40,7 +40,7 @@ namespace ScriptCanvas
         struct DebugDataSource
         {
             AZ_TYPE_INFO(DebugDataSource, "{0F20CB1B-7AC7-4338-99A8-718B0913D359}");
-            AZ_CLASS_ALLOCATOR(DebugDataSource, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugDataSource, AZ::SystemAllocator);
 
             DebugDataSourceType m_sourceType;
             SlotId m_slotId;
@@ -64,12 +64,12 @@ namespace ScriptCanvas
             static DebugDataSource FromReturn(const Slot& slot, ExecutionTreeConstPtr execution, VariableConstPtr variable);
 
             static DebugDataSource FromVariable(const SlotId& slotId, const Data::Type& originalType, const VariableId& source);
-                        
+
             // constructs internal
             DebugDataSource();
 
         protected:
-            
+
             // constructs local
             explicit DebugDataSource(const Slot& localSource, const Data::Type& ifInvalidType);
 
@@ -85,7 +85,7 @@ namespace ScriptCanvas
         struct DebugExecution
         {
             AZ_TYPE_INFO(DebugExecution, "{AE18AB4E-C359-4D85-9F1E-64F3A7262AE2}");
-            AZ_CLASS_ALLOCATOR(DebugExecution, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugExecution, AZ::SystemAllocator);
 
             NamedEndpoint m_namedEndpoint;
             AZStd::vector<DebugDataSource> m_data;
@@ -95,7 +95,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(DebugSymbolMap, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
-            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator);
 
             AZStd::vector<DebugExecution> m_ins;
             AZStd::vector<DebugExecution> m_outs;
@@ -107,8 +107,8 @@ namespace ScriptCanvas
         struct DebugSymbolMapReverse
         {
         public:
-            AZ_TYPE_INFO(DebugSymbolMap, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
-            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator, 0);
+            AZ_TYPE_INFO(DebugSymbolMapReverse, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
+            AZ_CLASS_ALLOCATOR(DebugSymbolMapReverse, AZ::SystemAllocator);
 
             AZStd::unordered_map<ExecutionTreeConstPtr, size_t> m_in;
             AZStd::unordered_map<ExecutionTreeConstPtr, AZStd::vector<size_t>> m_out;
@@ -117,6 +117,6 @@ namespace ScriptCanvas
             // maps the assignment index to variable change debug index, since not all assignments need one
             AZStd::unordered_map<OutputAssignmentConstPtr, AZStd::unordered_map<size_t, size_t>> m_assignments;
         };
-    } 
+    }
 
-} 
+}

@@ -50,7 +50,7 @@ namespace AzToolsFramework
         , protected HandlerQObject
     {
     public:
-        AZ_CLASS_ALLOCATOR(IntWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntWidgetHandler, AZ::SystemAllocator);
     protected:
         QWidget* GetFirstInTabOrder(PropertyControl* widget) override;
         QWidget* GetLastInTabOrder(PropertyControl* widget) override;

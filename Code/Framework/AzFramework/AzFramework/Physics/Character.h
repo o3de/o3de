@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include <AzFramework/Physics/Shape.h>
 
@@ -17,6 +18,11 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Physics
 {
@@ -59,7 +65,7 @@ namespace Physics
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator);
         AZ_RTTI(Physics::CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
 
         virtual ~CharacterConfiguration() = default;
@@ -87,7 +93,7 @@ namespace Physics
         : public AzPhysics::SimulatedBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator);
         AZ_RTTI(Physics::Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
 
         ~Character() override = default;

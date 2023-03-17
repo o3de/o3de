@@ -610,11 +610,17 @@ namespace AzToolsFramework
 
             // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
             // To avoid both game entities and Editor entities active at the same time
-            // we flush the tick queue to ensure the game entities are cleared first.
+            // we flush the tick queue and the spawnable queue to ensure the game entities are cleared first.
             // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
             // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
             // is the desired direction forward.
             AZ::TickBus::ExecuteQueuedEvents();
+            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+            if (rootSpawnableInterface)
+            {
+                rootSpawnableInterface->ProcessSpawnableQueue();
+                AzFramework::RootSpawnableNotificationBus::ExecuteQueuedEvents();
+            }
         }
 
         m_playInEditorData.m_isEnabled = false;

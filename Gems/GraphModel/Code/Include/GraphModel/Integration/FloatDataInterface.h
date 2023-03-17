@@ -21,16 +21,13 @@ namespace GraphModelIntegration
         : public GraphCanvas::NumericDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator);
 
         FloatDataInterface(GraphModel::SlotPtr slot);
         ~FloatDataInterface() = default;
         
         double GetNumber() const override;
         void SetNumber(double value) override;
-
-        int GetDecimalPlaces() const override;
-        int GetDisplayDecimalPlaces() const override;
 
         double GetMin() const override;
         double GetMax() const override;

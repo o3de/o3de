@@ -31,7 +31,7 @@ namespace AZ
         {
             friend class StreamingImageController;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImageContext, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImageContext, AZ::ThreadPoolAllocator);
 
             StreamingImageContext() = default;
             virtual ~StreamingImageContext() = default;

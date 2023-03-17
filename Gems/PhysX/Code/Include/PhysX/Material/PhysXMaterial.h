@@ -37,7 +37,7 @@ namespace PhysX
     namespace MaterialConstants
     {
         inline constexpr AZStd::string_view MaterialAssetType = "PhysX";
-        inline constexpr AZ::u32 MaterialAssetVersion = 1;
+        inline constexpr AZ::u32 MaterialAssetVersion = 2;
 
         inline constexpr AZStd::string_view DynamicFrictionName = "DynamicFriction";
         inline constexpr AZStd::string_view StaticFrictionName = "StaticFriction";
@@ -45,6 +45,9 @@ namespace PhysX
         inline constexpr AZStd::string_view DensityName = "Density";
         inline constexpr AZStd::string_view RestitutionCombineModeName = "RestitutionCombineMode";
         inline constexpr AZStd::string_view FrictionCombineModeName = "FrictionCombineMode";
+        inline constexpr AZStd::string_view CompliantContactModeEnabledName = "CompliantContactModeEnabled";
+        inline constexpr AZStd::string_view CompliantContactModeDampingName = "CompliantContactModeDamping";
+        inline constexpr AZStd::string_view CompliantContactModeStiffnessName = "CompliantContactModeStiffness";
         inline constexpr AZStd::string_view DebugColorName = "DebugColor";
 
         inline constexpr float MinDensityLimit = 0.01f; //!< Minimum possible value of density.
@@ -61,7 +64,7 @@ namespace PhysX
         , protected AZ::Data::AssetBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Material, AZ::SystemAllocator);
         AZ_RTTI(PhysX::Material, "{57A9681F-4025-4D66-891B-80CBC78BDEB9}", Physics::Material);
 
         //! Function to create a material instance from an asset.
@@ -109,6 +112,15 @@ namespace PhysX
         float GetDensity() const;
         void SetDensity(float density);
 
+        bool IsCompliantContactModeEnabled() const;
+        void EnableCompliantContactMode(bool enabled);
+
+        float GetCompliantContactModeDamping() const;
+        void SetCompliantContactModeDamping(float damping);
+
+        float GetCompliantContactModeStiffness() const;
+        void SetCompliantContactModeStiffness(float stiffness);
+
         const AZ::Color& GetDebugColor() const;
         void SetDebugColor(const AZ::Color& debugColor);
 
@@ -116,6 +128,7 @@ namespace PhysX
 
     protected:
         // AssetBus overrides...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
     private:
@@ -128,6 +141,9 @@ namespace PhysX
         using PxMaterialUniquePtr = AZStd::unique_ptr<physx::PxMaterial, AZStd::function<void(physx::PxMaterial*)>>;
 
         PxMaterialUniquePtr m_pxMaterial;
+        float m_restitution = 0.5f;
+        float m_compliantContactModeDamping = 1.0f;
+        float m_compliantContactModeStiffness = 1.0f;
         float m_density = 1000.0f;
         AZ::Color m_debugColor = AZ::Colors::White;
     };

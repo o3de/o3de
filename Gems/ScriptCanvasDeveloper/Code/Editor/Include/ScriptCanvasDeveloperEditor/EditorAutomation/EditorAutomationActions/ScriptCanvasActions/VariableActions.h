@@ -42,7 +42,7 @@ namespace ScriptCanvas::Developer
             Programmatic
         };
 
-        AZ_CLASS_ALLOCATOR(CreateVariableAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateVariableAction, AZ::SystemAllocator);
         AZ_RTTI(CreateVariableAction, "{0C2A4B3C-FCE3-4611-BACB-4651B40CD715}", CompoundAction);
 
         CreateVariableAction(ScriptCanvas::Data::Type dataType, CreationType creationType = CreationType::AutoComplete);
@@ -87,7 +87,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateVariableNodeFromGraphPalette, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateVariableNodeFromGraphPalette, AZ::SystemAllocator);
         AZ_RTTI(CreateVariableNodeFromGraphPalette, "{B0E36790-2BED-4338-A462-7F302AFA5671}", CompoundAction);
 
         CreateVariableNodeFromGraphPalette(const AZStd::string& variableName, const GraphCanvas::GraphId& graphId, QPoint scenePoint, Qt::KeyboardModifier = Qt::KeyboardModifier::ShiftModifier);
@@ -140,7 +140,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShowGraphVariablesAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShowGraphVariablesAction, AZ::SystemAllocator);
         AZ_RTTI(ShowGraphVariablesAction, "{853F34EB-F8AB-47E3-A601-35091DC23E11}", CompoundAction);
 
         ShowGraphVariablesAction() = default;

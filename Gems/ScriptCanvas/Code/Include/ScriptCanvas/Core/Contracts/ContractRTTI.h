@@ -18,7 +18,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(ContractRTTI, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ContractRTTI, AZ::SystemAllocator);
         AZ_RTTI(ContractRTTI, "{3CB87E9B-33A0-40B1-A7CC-72465814BEE6}", Contract);
 
         enum Flags

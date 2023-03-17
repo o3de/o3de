@@ -26,7 +26,7 @@ namespace AZ
             friend NameDictionary;
             friend Name;
         public:
-            AZ_CLASS_ALLOCATOR(NameData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NameData, AZ::SystemAllocator);
 
             using Hash = uint32_t; // We use a 32 bit hash especially for efficient transport over a network.
 

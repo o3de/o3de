@@ -23,7 +23,10 @@ namespace O3DE::ProjectManager
     ProjectGemCatalogScreen::ProjectGemCatalogScreen(DownloadController* downloadController, QWidget* parent)
         : GemCatalogScreen(downloadController , /*readOnly = */ false, parent)
     {
-
+        // We have to fetch the parent of our parent, because Project Manager Gem Catalog is usually embedded inside another workflow, like
+        // CreateProjectScreen or UpdateProjectScreen
+        // As such, it does not have direct access to ScreenControls
+        SetUpScreensControl(parent->parentWidget());
     }
 
     ProjectManagerScreen ProjectGemCatalogScreen::GetScreenEnum()
@@ -83,6 +86,10 @@ namespace O3DE::ProjectManager
 
                 return ConfiguredGemsResult::Failed;
             }
+            else
+            {
+                GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
+            }
 
             // register external gems that were added with relative paths
             if (m_gemsToRegisterWithProject.contains(gemPath))
@@ -101,6 +108,10 @@ namespace O3DE::ProjectManager
                     tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
                 return ConfiguredGemsResult::Failed;
+            }
+            else
+            {
+                GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, false);
             }
         }
 

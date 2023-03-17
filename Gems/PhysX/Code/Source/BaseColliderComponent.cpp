@@ -328,8 +328,11 @@ namespace PhysX
             return false;
         }
 
-        const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
+        const bool isAssetScaleUniform =
+            AZ::IsClose(physicsAssetConfiguration.m_assetScale.GetX(), physicsAssetConfiguration.m_assetScale.GetY()) &&
+            AZ::IsClose(physicsAssetConfiguration.m_assetScale.GetX(), physicsAssetConfiguration.m_assetScale.GetZ());
+        const bool hasNonUniformScale = !isAssetScaleUniform || (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        Utils::CreateShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
             physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 
         return true;

@@ -64,7 +64,7 @@ namespace AZ
         {
             using Base = RHI::Image;
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
             AZ_RTTI(Image, "{D2B32EE2-2ED5-477A-8346-95AF0D11DAC8}", Base);
             ~Image() = default;
 
@@ -136,7 +136,7 @@ namespace AZ
             // RHI::Image
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::ImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
                                 
             bool IsStreamableInternal() const override;
@@ -161,7 +161,7 @@ namespace AZ
             // The minimum resident size of this image. The size is the same as resident size when image was initialized.
             size_t m_minimumResidentSizeInBytes = 0;
 
-            AZStd::array<RHI::ImageSubresourceLayoutPlaced, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
+            AZStd::array<RHI::ImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
 
             // The layout of tiles with respect to each subresource in the image.
             ImageTileLayout m_tileLayout;

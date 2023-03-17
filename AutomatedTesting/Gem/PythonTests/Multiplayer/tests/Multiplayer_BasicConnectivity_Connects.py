@@ -46,7 +46,7 @@ def Multiplayer_BasicConnectivity_Connects():
     general.set_cvar_integer('editorsv_port', 33454)
 
     # 2) Enter game mode
-    helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode)
+    helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode, helper.EditorServerMode.DEDICATED_SERVER)
 
     # 3) Make sure the network player was spawned
     player_id = general.find_game_entity("Player")

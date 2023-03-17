@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace AZ
 {
@@ -74,7 +75,7 @@ namespace AZ
         
         AZStd::string MaterialConverterSystemComponent::GetFingerprintInfo() const
         {
-            static constexpr int Version = 1; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
+            static constexpr int Version = 2; // Bump this version whenever changes are made to the material conversion code to force the AP to reprocess scene files
 
             AZStd::string fingerprintInfo = AZStd::string::format("[MaterialConverter version=%d enabled=%d", Version, IsEnabled());
              
@@ -202,7 +203,8 @@ namespace AZ
 
         AZStd::string MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            return "Materials/Types/StandardPBR.materialtype";
+            AZStd::string intermediateMaterialTypePath = AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath("Materials/Types/StandardPBR.materialtype");
+            return intermediateMaterialTypePath;
         }
 
         AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const

@@ -22,7 +22,7 @@ namespace AzFramework
     {
     public:
         AZ_TYPE_INFO(Scene, "{DB449BB3-7A95-434D-BC61-47ACBB1F3436}");
-        AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator);
 
         friend class ISceneSystem;
 

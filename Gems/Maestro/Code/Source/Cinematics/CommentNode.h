@@ -20,7 +20,7 @@ class CCommentNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CCommentNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CCommentNode, AZ::SystemAllocator);
     AZ_RTTI(CCommentNode, "{9FCBF56F-B7B3-4519-B3D2-9B7E5F7E6210}", CAnimNode);
 
     CCommentNode(const int id);

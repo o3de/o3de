@@ -13,7 +13,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -31,7 +30,7 @@ namespace Terrain
 {
     struct TerrainSurfaceMaterialMapping final
     {
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -46,7 +45,7 @@ namespace Terrain
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialsListConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

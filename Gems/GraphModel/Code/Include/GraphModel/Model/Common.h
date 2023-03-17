@@ -22,8 +22,7 @@ namespace GraphModel
     using NodeId = int;
 
     // Slot ID that is unique within the context of a Node
-    struct SlotIdData;
-    using SlotId = SlotIdData;
+    struct SlotId;
 
     // An Endpoint is a specific Slot within a specific Node.
     // It's basically a Slot ID that is unique within the context of an entire Graph.

@@ -38,9 +38,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cube.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -65,7 +65,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.400000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -91,6 +91,14 @@ Node Path: RootNode.Cube.BitangentSet_0
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 24. Hash: 11372562338897179017
 	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Cube_ModifiedFBXFile_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
 
 Node Name: UVMap
 Node Path: RootNode.Cube_ModifiedFBXFile_optimized.UVMap
@@ -120,14 +128,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.Cube_ModifiedFBXFile_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
-
 Node Name: CubeMaterial
 Node Path: RootNode.Cube_ModifiedFBXFile_optimized.CubeMaterial
 Node Type: MaterialData
@@ -144,7 +144,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.400000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set

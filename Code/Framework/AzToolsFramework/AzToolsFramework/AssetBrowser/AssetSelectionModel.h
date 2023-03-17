@@ -26,7 +26,7 @@ namespace AzToolsFramework
         class AssetSelectionModel
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AssetSelectionModel, AZ::SystemAllocator)
 
             AssetSelectionModel();
             ~AssetSelectionModel() = default;

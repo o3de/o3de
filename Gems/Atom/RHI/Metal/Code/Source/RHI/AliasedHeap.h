@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::AliasedHeap;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{C181EDE0-2137-4EF4-B350-7B632B1F2302}", Base);
             
             using Descriptor = RHI::AliasedHeapDescriptor;

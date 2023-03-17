@@ -40,7 +40,7 @@ void QComponentEntityEditorInspectorWindow::Init()
 {
     QVBoxLayout* layout = new QVBoxLayout();
 
-    m_propertyEditor = new AzToolsFramework::EntityPropertyEditor(nullptr);
+    m_propertyEditor = new AzToolsFramework::EntityPropertyEditor(this);
     layout->addWidget(m_propertyEditor);
 
     QWidget* window = new QWidget();

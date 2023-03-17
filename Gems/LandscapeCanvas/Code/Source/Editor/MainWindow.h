@@ -54,7 +54,7 @@ namespace LandscapeCanvasEditor
         : public AzToolsFramework::EntityPropertyEditor
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator);
 
         CustomEntityPropertyEditor(QWidget* parent = nullptr);
 
@@ -67,7 +67,7 @@ namespace LandscapeCanvasEditor
         : public AzQtComponents::StyledDockWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator);
 
         CustomNodeInspectorDockWidget(QWidget* parent = nullptr);
 

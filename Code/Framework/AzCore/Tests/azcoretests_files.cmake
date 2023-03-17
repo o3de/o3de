@@ -102,6 +102,7 @@ set(FILES
     Geometry2DUtils.cpp
     Interface.cpp
     IO/FileReaderTests.cpp
+    IO/Path/PathReflectTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -177,6 +178,7 @@ set(FILES
     OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
+    RTTI/IsTypeofBenchmarks.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Rtti.cpp
     Script.cpp

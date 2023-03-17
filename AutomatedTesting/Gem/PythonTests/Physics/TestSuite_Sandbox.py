@@ -17,9 +17,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 
 from base import TestAutomationBase
 
-
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
-
 
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -42,47 +40,6 @@ class TestAutomation(TestAutomationBase):
         # Fixme: expected_lines=["GroupName: "]
         self._run_test(request, workspace, editor, test_module)
 
-
-# Custom test spec, it provides functionality to override files
-class EditorSingleTest_WithFileOverrides(EditorSingleTest):
-    # Specify here what files to override, [(original, override), ...]
-    files_to_override = [()]
-    # Base directory of the files (Default path is {ProjectName})
-    base_dir = None
-    # True will will search sub-directories for the files in base
-    search_subdirs = True
-
-    @classmethod
-    def wrap_run(cls, instance, request, workspace, editor_test_results):
-        root_path = cls.base_dir
-        if root_path is not None:
-            root_path = os.path.join(workspace.paths.engine_root(), root_path)
-        else:
-            # Default to project folder
-            root_path = workspace.paths.project()
-
-        # Try to locate both target and source files
-        original_file_list, override_file_list = zip(*cls.files_to_override)
-        try:
-            file_list = fm._find_files(original_file_list + override_file_list, root_path, cls.search_subdirs)
-        except RuntimeWarning as w:
-            assert False, (
-                    w.message
-                    + " Please check use of search_subdirs; make sure you are using the correct parent directory."
-            )
-
-        for f in original_file_list:
-            fm._restore_file(f, file_list[f])
-            fm._backup_file(f, file_list[f])
-
-        for original, override in cls.files_to_override:
-            fm._copy_file(override, file_list[override], original, file_list[original])
-
-        yield  # Run Test
-        for f in original_file_list:
-            fm._restore_file(f, file_list[f])
-
-
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -92,26 +49,6 @@ class EditorTestAutomation(EditorTestSuite):
     @staticmethod
     def get_number_parallel_editors():
         return 16
-
-    #########################################
-    # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
-    class Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
-        from .tests.material import Material_DynamicFriction as test_module
-        files_to_override = [
-            ('physxsystemconfiguration.setreg', 'Material_DynamicFriction.setreg_override')
-        ]
-        base_dir = "AutomatedTesting/Registry"
-
-    @pytest.mark.skip(reason="GHI #9422: Test Periodically Fails")
-    class Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(EditorSingleTest_WithFileOverrides):
-        from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
-        files_to_override = [
-            ('physxsystemconfiguration.setreg',
-             'Collider_DiffCollisionGroupDiffCollidingLayersNotCollide.setreg_override')
-        ]
-        base_dir = "AutomatedTesting/Registry"
-
-    #########################################
 
     class RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
@@ -140,16 +77,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ShapeCollider_CylinderShapeCollides(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
-    @pytest.mark.GROUP_tick
-    @pytest.mark.xfail(reason="Test still under development.")
-    class Tick_InterpolatedRigidBodyMotionIsSmooth(EditorBatchedTest):
-        from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
-
-    @pytest.mark.GROUP_tick
-    @pytest.mark.xfail(reason="Test still under development.")
-    class Tick_CharacterGameplayComponentMotionIsSmooth(EditorBatchedTest):
-        from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
-
     class Collider_BoxShapeEditing(EditorBatchedTest):
         from .tests.collider import Collider_BoxShapeEditing as test_module
 
@@ -159,24 +86,11 @@ class EditorTestAutomation(EditorTestSuite):
     class Collider_CapsuleShapeEditing(EditorBatchedTest):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
-    class Collider_CheckDefaultShapeSettingIsPxMesh(EditorBatchedTest):
-        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
-
-    class Collider_MultipleSurfaceSlots(EditorBatchedTest):
-        from .tests.collider import Collider_MultipleSurfaceSlots as test_module
-
     class Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
 
-    @pytest.mark.xfail(reason="AssertionError: Couldn't find Asset with path: Objects/SphereBot/r0-b_body.azmodel")
-    class Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(EditorBatchedTest):
-        from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
-
     class Collider_PxMeshConvexMeshCollides(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
-
-    class Material_LibraryClearingAssignsDefault(EditorBatchedTest):
-        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
 
     class ShapeCollider_CanBeAddedWitNoWarnings(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
@@ -191,13 +105,6 @@ class EditorTestAutomation(EditorTestSuite):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
 
-    @pytest.mark.skip(reason="GHI #9301: Test Periodically Fails")
-    class Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(EditorBatchedTest):
-        from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
-
-    class Collider_AddColliderComponent(EditorBatchedTest):
-        from .tests.collider import Collider_AddColliderComponent as test_module
-
     class Terrain_NoPhysTerrainComponentNoCollision(EditorBatchedTest):
         from .tests.terrain import Terrain_NoPhysTerrainComponentNoCollision as test_module
 
@@ -209,10 +116,6 @@ class EditorTestAutomation(EditorTestSuite):
 
     class RigidBody_KinematicModeWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
-
-    @pytest.mark.skip(reason="GHI #9364: Test Periodically Fails")
-    class ForceRegion_LinearDampingForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
 
     class ForceRegion_SimpleDragForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_SimpleDragForceOnRigidBodies as test_module
@@ -306,34 +209,17 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_MultipleComponentsCombineForces(EditorBatchedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
-    @pytest.mark.xfail(
-        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
-    class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
-
     class RigidBody_COM_NotIncludesTriggerShapes(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
 
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
-    @pytest.mark.xfail(reason="GHI #9579: Test periodically fails")
-    class Collider_TriggerPassThrough(EditorBatchedTest):
-        from .tests.collider import Collider_TriggerPassThrough as test_module
-
     class RigidBody_SetGravityWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
 
     class Material_EmptyLibraryUsesDefault(EditorBatchedTest):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
-
-    @pytest.mark.skip(reason="GHI #9365: Test periodically fails")
-    class ForceRegion_NoQuiverOnHighLinearDampingForce(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_NoQuiverOnHighLinearDampingForce as test_module
-
-    @pytest.mark.xfail(reason="GHI #9565: Test periodically fails")
-    class RigidBody_ComputeInertiaWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
 
     class ScriptCanvas_PostPhysicsUpdate(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
@@ -343,26 +229,11 @@ class EditorTestAutomation(EditorTestSuite):
     class ForceRegion_PxMeshShapedForce(EditorBatchedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
 
-    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(
-        reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
-    class RigidBody_MaxAngularVelocityWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
-
     class Joints_HingeSoftLimitsConstrained(EditorBatchedTest):
         from .tests.joints import Joints_HingeSoftLimitsConstrained as test_module
 
     class Joints_BallLeadFollowerCollide(EditorBatchedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
-
-    @pytest.mark.xfail(reason="GHI #9582: Test periodically fails")
-    class ForceRegion_WorldSpaceForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
-
-    @pytest.mark.xfail(reason="GHI #9566: Test periodically fails")
-    class ForceRegion_PointForceOnRigidBodies(EditorBatchedTest):
-        from .tests.force_region import ForceRegion_PointForceOnRigidBodies as test_module
 
     class ForceRegion_SphereShapedForce(EditorBatchedTest):
         from .tests.force_region import ForceRegion_SphereShapedForce as test_module
@@ -373,15 +244,8 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
-    @pytest.mark.xfail(reason="GHI #9368: Test Sporadically Fails")
-    class Collider_ColliderRotationOffset(EditorBatchedTest):
-        from .tests.collider import Collider_ColliderRotationOffset as test_module
-
     class ForceRegion_ParentChildForcesCombineForces(EditorBatchedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
-
-    class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorBatchedTest):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
 
     class ScriptCanvas_ShapeCast(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module

@@ -424,8 +424,8 @@ namespace AZ
         template<typename StringType, typename ConvertableToStringViewIterator, typename SeparatorString>
         inline void Join(
             StringType& joinTarget,
-            const ConvertableToStringViewIterator& iteratorBegin,
-            const ConvertableToStringViewIterator& iteratorEnd,
+            ConvertableToStringViewIterator iteratorBegin,
+            ConvertableToStringViewIterator iteratorEnd,
             const SeparatorString& separator)
         {
             using CharType = typename StringType::value_type;
@@ -439,18 +439,16 @@ namespace AZ
             {
                 separatorView = separator;
             }
-            auto ConvertToStringView = [](AZStd::iter_reference_t<ConvertableToStringViewIterator> convertToView)
-                 -> StringViewType { return convertToView; };
 
-            auto stringJoinView = AZStd::ranges::views::join_with(
-                AZStd::ranges::views::transform(AZStd::ranges::subrange(iteratorBegin, iteratorEnd), ConvertToStringView),
-                separatorView);
-
-            // Get the amount of additional characters to reserve in the join target
-            joinTarget.reserve(joinTarget.size() + AZStd::ranges::distance(stringJoinView));
-            // Append characters to join target
-            auto&& stringCommonJoinView = AZStd::ranges::views::common(stringJoinView);
-            joinTarget.insert(joinTarget.end(), stringCommonJoinView.begin(), stringCommonJoinView.end());
+            for (bool prependSeparator{}; iteratorBegin != iteratorEnd; ++iteratorBegin)
+            {
+                if (prependSeparator)
+                {
+                    joinTarget += separatorView;
+                }
+                joinTarget += StringViewType(*iteratorBegin);
+                prependSeparator = true;
+            }
         }
 
         template<typename StringType, typename Range, typename SeparatorString,

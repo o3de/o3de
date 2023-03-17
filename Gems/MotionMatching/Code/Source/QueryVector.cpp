@@ -11,7 +11,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(QueryVector, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(QueryVector, MotionMatchAllocator)
 
     void QueryVector::SetVector2(const AZ::Vector2& value, size_t offset)
     {

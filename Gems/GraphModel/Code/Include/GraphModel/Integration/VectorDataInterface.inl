@@ -22,7 +22,7 @@ namespace GraphModelIntegration
     class VectorDataInterface : public GraphCanvas::VectorDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(VectorDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VectorDataInterface, AZ::SystemAllocator);
 
         VectorDataInterface(GraphModel::SlotPtr slot)
             : m_slot(slot)

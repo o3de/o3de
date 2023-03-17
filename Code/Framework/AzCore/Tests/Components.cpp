@@ -100,7 +100,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(SimpleComponent, "{6DFA17AF-014C-4624-B453-96E1F9807491}", Component)
-        AZ_CLASS_ALLOCATOR(SimpleComponent, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SimpleComponent, SystemAllocator);
 
         SimpleComponent()
             : m_a(0)
@@ -123,7 +123,7 @@ namespace UnitTest
             // This requires advanced knowledge of the EBus and it's NOT recommended as a schema for
             // generic functionality. You should just call TickBus::Handler::BusConnect(GetEntityId()); in place
             // make sure you are doing this from the main thread.
-            EBUS_QUEUE_FUNCTION(TickBus, &TickBus::Handler::BusConnect, this);
+            TickBus::QueueFunction(&TickBus::Handler::BusConnect, this);
             m_isActivated = true;
         }
         void Deactivate() override
@@ -219,7 +219,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(entity->GetId() == oldID); // id should be unaffected.
 
                                                   // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 0); // it should still be 0
 
                                          // activate
@@ -228,7 +228,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated);
 
         // now the component should be active responsive to message
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // Make sure its NOT possible to set the id of the entity after Activate
@@ -269,7 +269,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated == false);
 
         // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 2);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 2);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // make sure we can remove components
@@ -288,7 +288,7 @@ namespace UnitTest
         : public Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentA, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ComponentA, SystemAllocator);
         AZ_RTTI(ComponentA, "{4E93E03A-0B71-4630-ACCA-C6BB78E6DEB9}", Component)
 
         void Activate() override {}
@@ -300,7 +300,7 @@ namespace UnitTest
         : public ComponentDescriptorHelper<ComponentA>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentADescriptor, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentADescriptor, SystemAllocator);
 
         ComponentADescriptor()
             : m_isDependent(false)
@@ -1084,7 +1084,7 @@ namespace UnitTest
         : public UserSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyUserSettings, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyUserSettings, SystemAllocator);
         AZ_RTTI(MyUserSettings, "{ACC60C7B-60D8-4491-AD5D-42BA6656CC1F}", UserSettings);
 
         static void Reflect(AZ::SerializeContext* sc)
@@ -1232,7 +1232,7 @@ namespace UnitTest
     struct EntityIdRemapContainer
     {
         AZ_TYPE_INFO(EntityIdRemapContainer, "{63854212-37E9-480B-8E46-529682AB9EF7}");
-        AZ_CLASS_ALLOCATOR(EntityIdRemapContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdRemapContainer, AZ::SystemAllocator);
 
         static void Reflect(SerializeContext& serializeContext)
         {
@@ -1654,7 +1654,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(HydraComponent, "", Component);
-        AZ_CLASS_ALLOCATOR(HydraComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HydraComponent, AZ::SystemAllocator);
 
         // serialized data
         HydraConfigV3 m_config;

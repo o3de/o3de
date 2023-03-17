@@ -12,32 +12,72 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QAbstractItemDelegate>
+#include <QLineEdit>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>
-#include <QMenu>
+#include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 
 namespace
 {
+    // Returns the QString that will be displayed under each thumbnail
     QString elidedTextWithExtension(const QFontMetrics& fm, const QString& text, int width)
     {
-        if (fm.horizontalAdvance(text) <= width)
-            return text;
+        auto textWidth = fm.horizontalAdvance(text);
+        const int dot = text.lastIndexOf(QLatin1Char{ '.' });
+        QString extension = "";
+        int extensionWidth = 0;
 
-        const int dot = text.lastIndexOf(QLatin1Char{'.'});
+        // If the file has an extension, move it to the second row
         if (dot != -1)
         {
-            const auto baseName = text.left(dot);
-            const auto extension = text.mid(dot + 1);
-            return fm.elidedText(baseName, Qt::ElideRight, width - fm.horizontalAdvance(extension)) + extension;
+            auto baseName = text.left(dot);
+            extension = text.mid(dot + 1);
+            extensionWidth = fm.horizontalAdvance(extension);
+            if (extensionWidth > width)
+            {
+                extension = fm.elidedText(extension, Qt::ElideRight, width);
+                extensionWidth = fm.horizontalAdvance(extension);
+            }
+            if (baseName.isEmpty())
+            {
+                return text;
+            }
+            if (fm.horizontalAdvance(baseName) <= width)
+            {
+                return baseName + "\n" + extension;
+            }
         }
-        else
+
+        // Return if text fits within one row
+        if (textWidth <= width)
         {
-            return fm.elidedText(text, Qt::ElideRight, width);
+            return text;
         }
+
+        // Text does not fit within one row, calculate the number of characters in each row
+        double percentOfTextPerLine = static_cast<double>(width) / static_cast<double>(textWidth);
+        int charactersPerLine = percentOfTextPerLine * text.size() - 1;
+        auto firstLine = text.left(charactersPerLine);
+        auto secondLine = text.mid(charactersPerLine);
+        auto secondLineWidth = fm.horizontalAdvance(secondLine);
+        // Check if text fits within the two rows
+        if (secondLineWidth <= width)
+        {
+            return firstLine + "\n" + secondLine;
+        }
+        // If there is an extension present, elide to show it
+        if (!extension.isEmpty())
+        {
+            auto secondLineBase = secondLine.left(dot);
+            auto elidedBase = fm.elidedText(secondLineBase, Qt::ElideRight, width - extensionWidth); 
+            return firstLine + "\n" + elidedBase + extension;
+        }
+        // Elide left to show the beginning of the text in the first row and the end of the text in the second row
+        return firstLine + "\n" + fm.elidedText(secondLine, Qt::ElideLeft, width);
     }
 }
 
@@ -73,22 +113,8 @@ namespace AzQtComponents
         painter->drawConvexPolygon(caret);
     }
 
-    class AssetFolderThumbnailViewDelegate : public QAbstractItemDelegate
-    {
-    public:
-        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
-
-        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
-        void polish(const AssetFolderThumbnailView::Config& config);
-
-    private:
-        AssetFolderThumbnailView::Config m_config;
-    };
-
     AssetFolderThumbnailViewDelegate::AssetFolderThumbnailViewDelegate(QObject* parent)
-        : QAbstractItemDelegate(parent)
+        : QStyledItemDelegate(parent)
     {
     }
 
@@ -130,11 +156,20 @@ namespace AzQtComponents
 
         // pixmap
 
-        const auto& iconVariant = index.data(Qt::DecorationRole);
-        if (!iconVariant.isNull())
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
         {
-            const auto& icon = iconVariant.value<QIcon>();
-            icon.paint(painter, imageRect);
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, rect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
         }
 
         if (isTopLevel)
@@ -160,26 +195,24 @@ namespace AzQtComponents
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight};
+            const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
         else
         {
             // text
 
             const auto textHeight = option.fontMetrics.height();
-            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight };
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            painter->drawText(
-                textRect,
-                elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width()),
-                QTextOption{ option.decorationAlignment });
+            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
         }
 
         painter->restore();
@@ -194,6 +227,42 @@ namespace AzQtComponents
     void AssetFolderThumbnailViewDelegate::polish(const AssetFolderThumbnailView::Config& config)
     {
         m_config = config;
+    }
+
+    QWidget* AssetFolderThumbnailViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+        QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
+        if (lineEdit)
+        {
+            connect(
+                lineEdit,
+                &QLineEdit::editingFinished,
+                this,
+                [this]()
+                {
+                    auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                    if (sendingLineEdit)
+                    {
+                        emit RenameThumbnail(sendingLineEdit->text());
+                    }
+                });
+        }
+        return widget;
+    }
+
+    void AssetFolderThumbnailViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            const auto& rect = option.rect;
+            const auto textHeight = option.fontMetrics.height();
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2 };
+            lineEdit->setGeometry(textRect);
+            lineEdit->setMaximumWidth(rect.width());
+            return;
+        }
+        QStyledItemDelegate::updateEditorGeometry(editor, option, index);
     }
 
     static void readColor(QSettings& settings, const QString& name, QColor& color)
@@ -246,6 +315,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -274,6 +344,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -339,6 +410,14 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+        connect(
+            m_delegate,
+            &AssetFolderThumbnailViewDelegate::RenameThumbnail,
+            this,
+            [this](const QString& value)
+            {
+                emit afterRename(value);
+            });
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -699,15 +778,13 @@ namespace AzQtComponents
 
         // check that the preview on one of the top level items was clicked
         // No need to do computations on m_itemGeometry entries since we handled the expand/collapse button with the case above
+        auto idx = indexAtPos(p);
+        if (idx.isValid())
         {
-            auto idx = indexAtPos(p);
-
-            if (idx.isValid())
-            {
-                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-                emit clicked(idx);
-                return;
-            }
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit clicked(idx);
+            update();
+            return;
         }
 
         // check the collapse button on one of the child frames was clicked
@@ -728,6 +805,14 @@ namespace AzQtComponents
                     return;
                 }
             }
+        }
+
+        // If empty space in the view is clicked, clear the current selection and update the view
+        if (!idx.isValid())
+        {
+            selectionModel()->clear();
+            update();
+            return;
         }
 
         QAbstractItemView::mousePressEvent(event);
@@ -752,19 +837,14 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-        // For now we only have a context menu in search mode for the "show in folder" option
-        if (!m_showSearchResultsMode)
-        {
-            return;
-        }
 
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
 
-        if (idx.isValid())
+        if (idx.isValid() && m_showSearchResultsMode)
         {
-            m_contextMenu = new QMenu(this);
-            auto action = m_contextMenu->addAction("Show In Folder");
+            QMenu* menu = new QMenu;
+            auto action = menu->addAction("Show In Folder");
             connect(
                 action,
                 &QAction::triggered,
@@ -773,9 +853,12 @@ namespace AzQtComponents
                 {
                     emit showInFolderTriggered(idx);
                 });
-            m_contextMenu->exec(event->globalPos());
-            delete m_contextMenu;
-            m_contextMenu = nullptr;
+            menu->exec(event->globalPos());
+            delete menu;
+        }
+        else
+        {
+            emit contextMenu(idx);
         }
     }
 
@@ -787,6 +870,29 @@ namespace AzQtComponents
     int AssetFolderThumbnailView::childThumbnailSizeInPixels() const
     {
         return m_config.childThumbnail.width;
+    }
+
+    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsInserted(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::reset()
+    {
+        m_itemGeometry.clear();
+        m_expandedIndexes.clear();
+        m_childFrames.clear();
+
+        QAbstractItemView::reset();
     }
 
     void AssetFolderThumbnailView::updateGeometries()
@@ -815,6 +921,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 

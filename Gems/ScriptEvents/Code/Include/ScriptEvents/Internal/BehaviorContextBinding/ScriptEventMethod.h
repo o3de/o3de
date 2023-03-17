@@ -29,7 +29,7 @@ namespace ScriptEvents
     public:
 
         AZ_TYPE_INFO(ScriptEventMethod, "{9C593217-5548-485C-89DF-A76228EBAD72}");
-        AZ_CLASS_ALLOCATOR(ScriptEventMethod, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventMethod, AZ::SystemAllocator);
 
         ScriptEventMethod(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, const AZStd::string eventName);
 
@@ -53,13 +53,13 @@ namespace ScriptEvents
         }
 
         const AZStd::string* GetArgumentName(size_t index) const override { return &m_argumentNames[index]; }
-        void SetArgumentName(size_t index, const AZStd::string& name) override;
+        void SetArgumentName(size_t index, AZStd::string name) override;
 
         const AZ::BehaviorParameter* GetResult() const override { return &m_result; }
         bool HasBusId() const override { return !m_busIdType.IsNull(); }
 
         const AZStd::string* GetArgumentToolTip(size_t index) const override { return &m_argumentToolTips[index]; }
-        void SetArgumentToolTip(size_t index, const AZStd::string& tooltip) override
+        void SetArgumentToolTip(size_t index, AZStd::string tooltip) override
         {
             if (index >= m_argumentToolTips.size())
             {

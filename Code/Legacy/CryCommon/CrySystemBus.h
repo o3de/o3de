@@ -6,8 +6,6 @@
  *
  */
 
-#ifndef CRYINCLUDE_CRYCOMMON_CRYSYSTEMBUS_H
-#define CRYINCLUDE_CRYCOMMON_CRYSYSTEMBUS_H
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -78,4 +76,4 @@ public:
 };
 using CrySystemRequestBus = AZ::EBus<CrySystemRequests>;
 
-#endif // CRYINCLUDE_CRYCOMMON_CRYSYSTEMBUS_H
+DECLARE_EBUS_EXTERN(CrySystemRequests);

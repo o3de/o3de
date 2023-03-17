@@ -29,7 +29,7 @@ namespace GraphCanvas
         : public SceneEventFilter
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExtenderLabelEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExtenderLabelEventFilter, AZ::SystemAllocator);
 
         ExtenderLabelEventFilter(const SlotId& slotId)
             : SceneEventFilter(nullptr)

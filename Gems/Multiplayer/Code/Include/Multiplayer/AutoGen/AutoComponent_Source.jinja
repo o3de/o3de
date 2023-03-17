@@ -1073,9 +1073,9 @@ m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ Service.attrib['Na
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
 {%          if Property.attrib['IsRewindable']|booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}Reflect, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%          else %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%          endif %}
 {%      endif %}
 {% endcall -%}
@@ -1109,7 +1109,7 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% macro DefineArchetypePropertyEditReflection(Component, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseArchetypeProperties(Component) %}
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
-->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Desc'] }}")
+->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) | camelToHuman }}", "{{ Property.attrib['Description'] }}")
 {%      endif %}
 {%      if Property.attrib['Suffix'] %}
 ->Attribute(AZ::Edit::Attributes::Suffix, " {{ Property.attrib['Suffix'] }}")
@@ -1564,6 +1564,8 @@ namespace {{ Component.attrib['Namespace'] }}
                 editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName | camelToHuman | replace(" Component", "") }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/{{ ComponentName | replace("Component", "")}}.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/{{ ComponentName | replace("Component", "")}}.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
                     {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
@@ -1575,6 +1577,8 @@ namespace {{ Component.attrib['Namespace'] }}
                 editContext->Class<{{ ComponentName }}>("{{ ComponentName | camelToHuman | replace(" Component", "") }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/{{ ComponentName | replace("Component", "")}}.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/{{ ComponentName | replace("Component", "")}}.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 {% endif %}
             }

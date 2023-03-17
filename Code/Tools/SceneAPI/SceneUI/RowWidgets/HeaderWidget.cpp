@@ -38,7 +38,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(HeaderWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(HeaderWidget, SystemAllocator);
 
             HeaderWidget::HeaderWidget(QWidget* parent)
                 : QWidget(parent)

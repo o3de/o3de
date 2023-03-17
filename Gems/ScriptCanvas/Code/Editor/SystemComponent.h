@@ -15,6 +15,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
@@ -43,6 +44,7 @@ namespace ScriptCanvasEditor
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::AssetSystemBus::Handler
         , private AZ::SystemTickBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
@@ -96,6 +98,11 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         // AssetSeedManagerRequests::Bus::Handler...
         AzToolsFramework::AssetSeedManagerRequests::AssetTypePairs GetAssetTypeMapping() override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ActionManagerRegistrationNotificationBus::Handler...
+        void OnActionContextRegistrationHook() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

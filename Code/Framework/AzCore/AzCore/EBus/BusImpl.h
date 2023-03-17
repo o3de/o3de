@@ -10,7 +10,7 @@
  * @file
  * Header file for internal EBus classes.
  * For more information about EBuses, see AZ::EBus and AZ::EBusTraits in this guide and
- * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/ebus/).
+ * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/messaging/ebus/).
  */
 
 #pragma once
@@ -631,6 +631,21 @@ namespace AZ
             , public EBusBroadcastEnumerator<Bus, Traits>
             , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
+            using EBusBroadcastEnumerator<Bus, Traits>::FindFirstHandler;
+
+            static typename Traits::InterfaceType* FindFirstHandler(const NullBusId&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
+
+            static typename Traits::InterfaceType* FindFirstHandler(const typename Traits::BusPtr&)
+            {
+                // Invoke the EBusBroadcastEnumerator FindFirstHandler function
+                // Since this EBus doesn't use a BusId, the argument isn't needed
+                return FindFirstHandler();
+            }
         };
 
         template <class Bus, class Traits>

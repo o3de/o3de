@@ -43,7 +43,7 @@ namespace UnitTest
         {
             m_handle = DynamicModuleHandle::Create("AzCoreTestDLL");
             bool isLoaded = m_handle->Load(true);
-            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename().c_str(); // failed to load the DLL, please check the output paths
+            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename(); // failed to load the DLL, please check the output paths
 
             auto createModule = m_handle->GetFunction<CreateModuleClassFunction>(CreateModuleClassFunctionName);
             // if this fails, we cannot continue as we will just nullptr exception

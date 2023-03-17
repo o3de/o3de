@@ -32,7 +32,7 @@ namespace MaterialCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
@@ -51,6 +51,7 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
+        void OnSettingsDialogClosed() override;
         AZStd::string GetHelpDialogText() const override;
 
     private:

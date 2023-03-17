@@ -30,7 +30,7 @@ class CAnimNode
     : public IAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimNode, "{57736B48-5EE7-4530-8051-657ACC9BA1EE}", IAnimNode);
 
     typedef AZStd::vector<AZStd::intrusive_ptr<IAnimTrack>> AnimTracks;

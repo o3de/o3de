@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphView.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #endif
 
 namespace AtomToolsFramework
@@ -22,7 +23,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphDocumentView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphDocumentView, AZ::SystemAllocator);
 
         GraphDocumentView(
             const AZ::Crc32& toolId, const AZ::Uuid& documentId, GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
@@ -34,7 +35,10 @@ namespace AtomToolsFramework
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
 
+        void OnSettingsChanged();
+
         const AZ::Uuid m_documentId;
         bool m_openedBefore = false;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_graphViewSettingsNotifyEventHandler;
     };
 } // namespace AtomToolsFramework

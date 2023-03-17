@@ -24,7 +24,7 @@ namespace AZ
         : public AllocatorBase
     {
     public:
-        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase)
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase);
 
         using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
@@ -118,12 +118,12 @@ namespace AZ
 
             return newPtr;
         }
-                
+
         size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override
         {
             return MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
         }
-        
+
         void GarbageCollect() override
         {
             m_schema->GarbageCollect();

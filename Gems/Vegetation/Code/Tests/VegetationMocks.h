@@ -404,7 +404,7 @@ namespace UnitTest
         : public AZ::RPI::ModelAsset
     {
         AZ_RTTI(MockMeshAsset, "{C314B960-9B54-468D-B37C-065738E7487C}", AZ::RPI::ModelAsset);
-        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
 
         MockMeshAsset()
         {
@@ -465,6 +465,15 @@ namespace UnitTest
         }
 
         bool GetRayTracingEnabled() const override
+        {
+            return false;
+        }
+
+        void SetExcludeFromReflectionCubeMaps([[maybe_unused]] bool excludeFromReflectionCubeMaps) override
+        {
+        }
+
+        bool GetExcludeFromReflectionCubeMaps() const override
         {
             return false;
         }

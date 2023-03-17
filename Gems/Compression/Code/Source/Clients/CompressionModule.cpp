@@ -10,7 +10,7 @@
 #include <CompressionModuleInterface.h>
 #include "CompressionSystemComponent.h"
 #include <Compression/DecompressionInterfaceAPI.h>
-#include "DecompressionFactoryImpl.h"
+#include "DecompressionRegistrarImpl.h"
 
 namespace Compression
 {
@@ -19,29 +19,29 @@ namespace Compression
     {
     public:
         AZ_RTTI(CompressionModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
-        AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator);
 
         CompressionModule()
         {
-            // Create and Register the Decompression Factory
-            m_decompressionFactoryInterface = AZStd::make_unique<DecompressionFactoryImpl>();
-            if (DecompressionFactory::Get() == nullptr)
+            // Create and Register the Decompression Registrar
+            m_decompressionRegistrarInterface = AZStd::make_unique<DecompressionRegistrarImpl>();
+            if (DecompressionRegistrar::Get() == nullptr)
             {
-                DecompressionFactory::Register(m_decompressionFactoryInterface.get());
+                DecompressionRegistrar::Register(m_decompressionRegistrarInterface.get());
             }
         }
 
         ~CompressionModule()
         {
-            if (DecompressionFactory::Get() == m_decompressionFactoryInterface.get())
+            if (DecompressionRegistrar::Get() == m_decompressionRegistrarInterface.get())
             {
-                DecompressionFactory::Unregister(m_decompressionFactoryInterface.get());
+                DecompressionRegistrar::Unregister(m_decompressionRegistrarInterface.get());
             }
         }
     private:
-        // DecompressionFactory interface used to register Decompression interfaces
+        // DecompressionRegistrar interface used to register Decompression interfaces
         // Available in ALL applications to allow decompression to occur
-        AZStd::unique_ptr<DecompressionFactoryInterface> m_decompressionFactoryInterface;
+        AZStd::unique_ptr<DecompressionRegistrarInterface> m_decompressionRegistrarInterface;
     };
 }// namespace Compression
 
