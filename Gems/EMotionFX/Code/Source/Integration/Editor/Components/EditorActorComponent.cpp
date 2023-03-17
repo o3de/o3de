@@ -185,7 +185,7 @@ namespace EMotionFX
             , m_attachmentJointIndex(0)
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
-            , m_excludeFromReflectionCubeMaps(false)
+            , m_excludeFromReflectionCubeMaps(true)
         {
         }
 
