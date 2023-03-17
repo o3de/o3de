@@ -87,13 +87,16 @@ namespace AZ
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
                             AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpacePass", attachmentName.GetCStr());
 
-                            RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
-                            if (attachment)
+                            if (attachmentBinding)
                             {
-                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+                                RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                                if (attachment.get())
+                                {
+                                    RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
-                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                }
                             }
                         }
 
@@ -140,13 +143,16 @@ namespace AZ
                                 RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
                                 AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceRayTracingPass", attachmentName.GetCStr());
 
-                                RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
-                                if (attachment.get())
+                                if (attachmentBinding)
                                 {
-                                    RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+                                    RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                                    if (attachment.get())
+                                    {
+                                        RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
-                                    sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                                    sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                        sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                        sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                    }
                                 }
                             }
                         }
@@ -167,13 +173,16 @@ namespace AZ
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
                             AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceTracePass", attachmentName.GetCStr());
 
-                            RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
-                            if (attachment.get())
+                            if (attachmentBinding)
                             {
-                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+                                RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                                if (attachment.get())
+                                {
+                                    RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
-                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                }
                             }
                         }
 
@@ -193,13 +202,16 @@ namespace AZ
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
                             AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [%s] on ReflectionScreenSpaceFilterPass", attachmentName.GetCStr());
 
-                            RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
-                            if (attachment.get())
+                            if (attachmentBinding)
                             {
-                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+                                RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                                if (attachment.get())
+                                {
+                                    RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
-                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                    sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                }
                             }
                         }
 
