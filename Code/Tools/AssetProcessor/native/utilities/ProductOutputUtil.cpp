@@ -16,7 +16,7 @@ namespace AssetProcessor
 {
     AZStd::string ProductOutputUtil::GetPrefix(AZ::s64 scanfolderId)
     {
-        return AZStd::string::format("(%" PRIu64 ")", scanfolderId);
+        return AZStd::string::format("(%" PRId64 ")", scanfolderId);
     }
 
     void ProductOutputUtil::ModifyProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
@@ -96,6 +96,18 @@ namespace AssetProcessor
                         }
                     }
 
+                    if (AZ::IO::FileIOBase::GetInstance()->Exists(newAbsolutePath.c_str()))
+                    {
+                        AZ_Error(
+                            "ProductOutputUtil",
+                            false,
+                            "Attempting to rename file " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                            " failed.  File already exists at destination with the same name",
+                            AZ_STRING_ARG(oldAbsolutePath),
+                            AZ_STRING_ARG(newAbsolutePath));
+                        continue;
+                    }
+
                     bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
 
                     if (!result)
@@ -103,7 +115,8 @@ namespace AssetProcessor
                         AZ_Error(
                             "ProductOutputUtil",
                             false,
-                            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT,
+                            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                            ".  See previous log messages for details on failure.",
                             AZ_STRING_ARG(oldAbsolutePath),
                             AZ_STRING_ARG(newAbsolutePath));
                     }
