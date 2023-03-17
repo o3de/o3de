@@ -47,7 +47,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 serializeContext->Class<EditorActorComponent, AzToolsFramework::Components::EditorComponentBase>()
-                    ->Version(5)
+                    ->Version(6)
                     ->Field("ActorAsset", &EditorActorComponent::m_actorAsset)
                     ->Field("AttachmentType", &EditorActorComponent::m_attachmentType)
                     ->Field("AttachmentTarget", &EditorActorComponent::m_attachmentTarget)
