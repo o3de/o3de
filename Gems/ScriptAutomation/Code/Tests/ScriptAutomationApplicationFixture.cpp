@@ -78,7 +78,6 @@ namespace UnitTest
             }
         }
 
-        m_application->SetSettingsRegistryEnabled(false);
         m_application->Start(appDesc);
 
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);

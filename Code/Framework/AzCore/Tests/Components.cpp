@@ -1107,7 +1107,7 @@ namespace UnitTest
         // Create application environment code driven
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-        app.SetSettingsRegistryEnabled(false)
+        app.SetSettingsRegistryEnabled(false);
         Entity* systemEntity = app.Create(appDesc);
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
