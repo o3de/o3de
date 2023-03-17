@@ -59,12 +59,6 @@ class EditorTestAutomation(EditorTestSuite):
     class CharacterController_SwitchLevels(EditorBatchedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
 
-    class ScriptCanvas_MultipleRaycastNode(EditorBatchedTest):
-        # Fixme: This test previously relied on unexpected lines log reading with is now not supported.
-        # Now the log reading must be done inside the test, preferably with the Tracer() utility
-        #  unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
-
     class ShapeCollider_CylinderShapeCollides(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
@@ -143,9 +137,6 @@ class EditorTestAutomation(EditorTestSuite):
 
     class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
-
-    class ScriptCanvas_ShapeCast(EditorBatchedTest):
-        from .tests.script_canvas import ScriptCanvas_ShapeCast as test_module
 
     class ForceRegion_PrefabFileInstantiates(EditorBatchedTest):
         from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
