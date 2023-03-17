@@ -521,8 +521,15 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
 
     result_mapping = None
     errors = None
+
+    # the resolver uses a single "round" to try and pin a single dependency
+    # so we need at least enough rounds as we have gems in the dependency tree
+    # for comparison, pypip uses 2 million rounds
+    # https://github.com/pypa/pip/blob/main/src/pip/_internal/resolution/resolvelib/resolver.py#L91
+    num_gems = sum(len(gem_versions) for _,gem_versions in all_gem_json_data.items()) 
+    try_to_avoid_resolution_too_deep = max(2000000, num_gems)
     try:
-        result = resolver.resolve(requirements=project_gem_requirements)
+        result = resolver.resolve(requirements=project_gem_requirements, max_rounds=try_to_avoid_resolution_too_deep)
 
         # Remove any EngineCandidates that may appear in the mappings
         result_mapping = {k: v for k, v in result.mapping.items() if isinstance(v, GemCandidate)}
