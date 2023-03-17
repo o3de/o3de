@@ -61,18 +61,15 @@ namespace GraphModel
         GraphModelIntegration::CreateInputOutputNodeMimeEvent<GraphOutputNode>::Reflect(context);
         GraphModelIntegration::CreateModuleNodeMimeEvent::Reflect(context);
 
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<GraphModelSystemComponent, AZ::Component>()
+            serializeContext->Class<GraphModelSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
-            serialize->RegisterGenericType<NodePtrList>();
-            serialize->RegisterGenericType<SlotPtrList>();
-
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (auto editContext = serializeContext->GetEditContext())
             {
-                ec->Class<GraphModelSystemComponent>("GraphModel", "A generic node graph data model")
+                editContext->Class<GraphModelSystemComponent>("GraphModel", "A generic node graph data model")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
