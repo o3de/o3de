@@ -30,8 +30,13 @@ namespace AzQtComponents
         void setRootIndex(const QModelIndex& index) override;
 
     signals:
-        void rootIndexChanged(const QModelIndex& idx);
-        void showInFolderTriggered(const QModelIndex& idx);
+        void tableRootIndexChanged(const QModelIndex& idx);
+        void showInTableFolderTriggered(const QModelIndex& idx);
+        void tableContextMenu(const QModelIndex& idx);
+
+    protected:
+        void mouseDoubleClickEvent(QMouseEvent* event) override;
+        void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
         bool m_showSearchResultsMode = false;

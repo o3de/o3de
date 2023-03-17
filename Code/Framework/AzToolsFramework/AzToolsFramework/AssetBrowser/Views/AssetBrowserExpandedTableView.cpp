@@ -12,6 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -24,12 +25,16 @@
 #include <QVBoxLayout>
 #include <QtWidgets/QApplication>
 #include <QHeaderView>
+#include <QLineEdit>
+#include <QMenu>
 #endif
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        static constexpr const char* const ExpandedTableViewMainViewName = "AssetBrowserExpandedTableView_main";
+
         AssetBrowserExpandedTableView::AssetBrowserExpandedTableView(QWidget* parent)
             : QWidget(parent)
             , m_expandedTableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
@@ -49,7 +54,61 @@ namespace AzToolsFramework
 
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderTableView::showInFolderTriggered,
+                &AzQtComponents::AssetFolderTableView::clicked,
+                this,
+                [this](const QModelIndex& index)
+                {
+                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    emit entryClicked(indexData);
+                });
+
+             connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderTableView::doubleClicked,
+                this,
+                [this](const QModelIndex& index)
+                {
+                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    emit entryDoubleClicked(indexData);
+                });
+
+             connect(
+                 m_expandedTableViewWidget,
+                 &AzQtComponents::AssetFolderTableView::tableContextMenu,
+                 this,
+                 [this](const QModelIndex& index)
+                 {
+                     if (index.isValid())
+                     {
+                         QMenu menu(this);
+                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                         AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                         AssetBrowserInteractionNotificationBus::Broadcast(
+                             &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                         if (!menu.isEmpty())
+                         {
+                             menu.exec(QCursor::pos());
+                         }
+                     }
+                     else if (!index.isValid() && m_assetTreeView)
+                     {
+                         m_assetTreeView->OnContextMenu(QCursor::pos());
+                     }
+                 });
+
+              connect(
+                 this,
+                 &ExpandedTableViewDelegate::RenameTableEntry, this,
+                 [this](QString name)
+                 {
+                     AfterRename(name);
+                 });
+
+            connect(
+                m_expandedTableViewWidget,
+                 &AzQtComponents::AssetFolderTableView::showInTableFolderTriggered,
                 this,
                 [this](const QModelIndex& index)
                 {
@@ -60,7 +119,7 @@ namespace AzToolsFramework
             // Track the root index on the proxy model as well so it can provide info such as whether an entry is first level or not
             connect(
                 m_expandedTableViewWidget,
-                &AzQtComponents::AssetFolderTableView::rootIndexChanged,
+                &AzQtComponents::AssetFolderTableView::tableRootIndexChanged,
                 m_expandedTableViewProxyModel,
                 &AssetBrowserExpandedTableViewProxyModel::SetRootIndex);
 
@@ -74,6 +133,97 @@ namespace AzToolsFramework
         AzQtComponents::AssetFolderTableView* AssetBrowserExpandedTableView::GetExpandedTableViewWidget() const
         {
             return m_expandedTableViewWidget;
+        }
+
+         void AssetBrowserExpandedTableView::SetName(const QString& name)
+        {
+            m_name = name;
+        }
+
+        QString& AssetBrowserExpandedTableView::GetName()
+        {
+            return m_name;
+        }
+
+        void AssetBrowserExpandedTableView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
+        {
+            SetName(ExpandedTableViewMainViewName);
+
+            bool isAssetBrowserComponentReady = false;
+            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
+            if (isAssetBrowserComponentReady)
+            {
+                SetAssetTreeView(treeView);
+            }
+        }
+
+        bool AssetBrowserExpandedTableView::GetIsAssetBrowserMainView()
+        {
+            return GetName() == ExpandedTableViewMainViewName;
+        }
+
+        void AssetBrowserExpandedTableView::SetExpandedTableViewActive(bool isActiveView)
+        {
+            m_isActiveView = isActiveView;
+        }
+
+        bool AssetBrowserExpandedTableView::GetExpandedTableViewActive()
+        {
+            return m_isActiveView;
+        }
+
+        void AssetBrowserExpandedTableView::DeleteEntries()
+        {
+            auto entries = GetSelectedAssets();
+
+            AssetBrowserViewUtils::DeleteEntries(entries, this);
+        }
+
+        void AssetBrowserExpandedTableView::MoveEntries()
+        {
+            auto entries = GetSelectedAssets();
+
+            AssetBrowserViewUtils::MoveEntries(entries, this);
+        }
+
+        void AssetBrowserExpandedTableView::DuplicateEntries()
+        {
+            auto entries = GetSelectedAssets();
+            AssetBrowserViewUtils::DuplicateEntries(entries);
+        }
+
+        void AssetBrowserExpandedTableView::RenameEntry()
+        {
+            auto entries = GetSelectedAssets();
+
+            if (AssetBrowserViewUtils::RenameEntry(entries, this))
+            {
+                QModelIndex selectedIndex = m_expandedTableViewWidget->selectionModel()->selectedIndexes()[0];
+                m_expandedTableViewWidget->edit(selectedIndex);
+            }
+        }
+
+        void AssetBrowserExpandedTableView::AfterRename(QString newVal)
+        {
+            auto entries = GetSelectedAssets();
+
+            AssetBrowserViewUtils::AfterRename(newVal, entries, this);
+        }
+
+        AZStd::vector<const AssetBrowserEntry*> AssetBrowserExpandedTableView::GetSelectedAssets() const
+        {
+            // There are no product assets in the expanded table view, just get the first item selected
+            AZStd::vector<const AssetBrowserEntry*> entries;
+            if (m_expandedTableViewWidget->selectionModel())
+            {
+                auto index = m_expandedTableViewWidget->selectionModel()->selectedIndexes()[0];
+                const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                if (item)
+                {
+                    entries.push_back(item);
+                }
+            }
+            return entries;
         }
 
         void AssetBrowserExpandedTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)
@@ -296,6 +446,28 @@ namespace AzToolsFramework
                 style->drawItemText(
                     painter, options.rect, Qt::AlignLeft | Qt::AlignVCenter, options.palette, options.state & QStyle::State_Enabled, text.toString());
             }
+        }
+
+        QWidget* ExpandedTableViewDelegate::createEditor(
+            QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+        {
+            QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+            if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
+            {
+                connect(
+                    lineEdit,
+                    &QLineEdit::editingFinished,
+                    this,
+                    [this]()
+                    {
+                        auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                        if (sendingLineEdit)
+                        {
+                            emit renameTableEntry(sendingLineEdit->text());
+                        }
+                    });
+            }
+            return widget;
         }
 
     } // namespace AssetBrowser
