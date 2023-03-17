@@ -278,12 +278,12 @@ namespace UnitTests
     }
 
     AssetBuilderSDK::CreateJobFunction AssetManagerTestingBase::CreateJobStage(
-        const AZStd::string& name, bool commonPlatform, const AZStd::string& sourceDependencyPath)
+        const AZStd::string& name, bool commonPlatform, const AzToolsFramework::AssetDatabase::PathOrUuid& sourceDependency)
     {
         using namespace AssetBuilderSDK;
 
         // Note: capture by copy because we need these to stay around for a long time
-        return [name, commonPlatform, sourceDependencyPath]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
+        return [name, commonPlatform, sourceDependency]([[maybe_unused]] const CreateJobsRequest& request, CreateJobsResponse& response)
         {
             if (commonPlatform)
             {
@@ -297,9 +297,10 @@ namespace UnitTests
                 }
             }
 
-            if (!sourceDependencyPath.empty())
+            if (sourceDependency)
             {
-                response.m_sourceFileDependencyList.push_back(SourceFileDependency{ sourceDependencyPath, AZ::Uuid::CreateNull() });
+                response.m_sourceFileDependencyList.push_back(
+                    SourceFileDependency{ sourceDependency.IsUuid() ? "" : sourceDependency.GetPath(), sourceDependency.IsUuid() ? sourceDependency.GetUuid() : AZ::Uuid::CreateNull() });
             }
 
             response.m_result = CreateJobsResultCode::Success;
@@ -307,12 +308,12 @@ namespace UnitTests
     }
 
     AssetBuilderSDK::ProcessJobFunction AssetManagerTestingBase::ProcessJobStage(
-        const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile)
+        const AZStd::string& outputExtension, AssetBuilderSDK::ProductOutputFlags flags, bool outputExtraFile, AZ::Data::AssetId dependencyId)
     {
         using namespace AssetBuilderSDK;
 
         // Capture by copy because we need these to stay around a long time
-        return [outputExtension, flags, outputExtraFile](const ProcessJobRequest& request, ProcessJobResponse& response)
+        return [outputExtension, flags, outputExtraFile, dependencyId](const ProcessJobRequest& request, ProcessJobResponse& response)
         {
             // If tests put the text "FAIL_JOB" at the beginning of the source file, then fail this job instead.
             // This lets tests easily handle cases where they want job processing to fail.
@@ -337,6 +338,10 @@ namespace UnitTests
 
             product.m_outputFlags = flags;
             product.m_dependenciesHandled = true;
+            if (dependencyId.IsValid())
+            {
+                product.m_dependencies.push_back(AssetBuilderSDK::ProductDependency(dependencyId, {}));
+            }
             response.m_outputProducts.push_back(product);
 
             if (outputExtraFile)
