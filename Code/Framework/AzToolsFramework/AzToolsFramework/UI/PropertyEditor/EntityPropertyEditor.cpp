@@ -2315,7 +2315,7 @@ namespace AzToolsFramework
 
             if (entityList.size())
             {
-                ScopedUndoBatch undoBatch("ModifyEntityName");
+                ScopedUndoBatch undoBatch("Modify Entity Name");
 
                 for (AZ::Entity* entity : entityList)
                 {
@@ -3709,7 +3709,7 @@ namespace AzToolsFramework
             // Need to queue an update for all inspectors in case multiples are viewing the same entity and the removal of a component internally triggers an invalidate call
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
-            ScopedUndoBatch undoBatch("Removing components.");
+            ScopedUndoBatch undoBatch("Remove Component(s)");
 
             AzToolsFramework::RemoveComponents(components);
         }
@@ -3728,7 +3728,7 @@ namespace AzToolsFramework
             QueuePropertyRefresh();
 
             //intentionally not using EntityCompositionRequests::CutComponents because we only want to copy components from first selected entity
-            ScopedUndoBatch undoBatch("Cut components.");
+            ScopedUndoBatch undoBatch("Cut Component(s)");
             CopyComponents();
             DeleteComponents();
         }
@@ -3747,7 +3747,7 @@ namespace AzToolsFramework
     {
         if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities())
         {
-            ScopedUndoBatch undoBatch("Paste components.");
+            ScopedUndoBatch undoBatch("Paste Component(s)");
 
             AZ::Entity::ComponentArrayType selectedComponents = GetSelectedComponents();
 
@@ -3825,7 +3825,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components up.");
+        ScopedUndoBatch undoBatch("Move Component(s) Up");
 
         ComponentEditorVector componentEditors = m_componentEditors;
         for (size_t sourceComponentEditorIndex = 1; sourceComponentEditorIndex < componentEditors.size(); ++sourceComponentEditorIndex)
@@ -3853,7 +3853,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components down.");
+        ScopedUndoBatch undoBatch("Move Component(s) Down");
 
         ComponentEditorVector componentEditors = m_componentEditors;
         for (size_t targetComponentEditorIndex = componentEditors.size() - 1; targetComponentEditorIndex > 0; --targetComponentEditorIndex)
@@ -3881,7 +3881,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components to top.");
+        ScopedUndoBatch undoBatch("Move Component(s) to Top");
 
         AZ::Entity::ComponentArrayType componentsOnEntity;
 
@@ -3923,7 +3923,7 @@ namespace AzToolsFramework
             return;
         }
 
-        ScopedUndoBatch undoBatch("Move components to bottom.");
+        ScopedUndoBatch undoBatch("Move Component(s) to Bottom");
 
         AZ::Entity::ComponentArrayType componentsOnEntity;
 
