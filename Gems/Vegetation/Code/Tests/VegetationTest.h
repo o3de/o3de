@@ -36,8 +36,9 @@ namespace UnitTest
                 records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
             }
 
-            m_app.SetSettingsRegistryEnabled(false);
-            m_app.Create({});
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Create({}, startupParameters);
             RegisterComponentDescriptors();
         }
 

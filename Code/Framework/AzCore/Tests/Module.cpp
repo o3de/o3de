@@ -145,7 +145,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::StartupParameters startupParams;
             startupParams.m_createStaticModulesCallback = AZCreateStaticModules;
-            app.SetSettingsRegistryEnabled(false);
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
             EXPECT_NE(nullptr, systemEntity);
             systemEntity->Init();
@@ -241,7 +241,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::Descriptor appDesc;
             ComponentApplication::StartupParameters startupParams;
-            app.SetSettingsRegistryEnabled(false);
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
 
             EXPECT_NE(nullptr, systemEntity);
@@ -369,7 +369,7 @@ namespace UnitTest
         // Start up application
         ComponentApplication::Descriptor appDesc;
         ComponentApplication::StartupParameters startupParams;
-        app.SetSettingsRegistryEnabled(false);
+        startupParams.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParams);
 
         ASSERT_NE(nullptr, systemEntity);

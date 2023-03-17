@@ -54,7 +54,8 @@ namespace UnitTest
             m_appDescriptor.m_allocationRecordsSaveNames = true;
             m_appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
             m_application = new (AZStd::addressof(m_applicationBuffer)) NoUserSettingsApplication();
-            m_application->SetSettingsRegistryEnabled(false);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            m_appStartupParams.m_loadSettingsRegistry = false;
             m_application->Start(m_appDescriptor, m_appStartupParams);
         }
 
