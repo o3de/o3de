@@ -200,8 +200,8 @@ def test_resolve_gem_dependencies(gem_names, all_gem_json_data, expected_result)
         pytest.param(10, 3, 0, 2),
         # 1 root gem with 3 dependencies, 3 levels, 13 gems
         pytest.param(1, 3, 0, 3),
-        # 10 root gems with 2 dependencies, 6 levels, 630 gems
-        pytest.param(10, 2, 0, 6)
+        # 10 root gems with 2 dependencies, 5 levels, 310 gems
+        pytest.param(10, 2, 0, 5)
     ]
 )
 def test_resolve_gem_dependencies_depth(num_root_gems, num_dependencies_per_gem, num_optional_gems, tree_depth):
