@@ -96,18 +96,6 @@ namespace AssetProcessor
                         }
                     }
 
-                    if (AZ::IO::FileIOBase::GetInstance()->Exists(newAbsolutePath.c_str()))
-                    {
-                        AZ_Error(
-                            "ProductOutputUtil",
-                            false,
-                            "Attempting to rename file " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
-                            " failed.  File already exists at destination with the same name",
-                            AZ_STRING_ARG(oldAbsolutePath),
-                            AZ_STRING_ARG(newAbsolutePath));
-                        continue;
-                    }
-
                     bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
 
                     if (!result)
