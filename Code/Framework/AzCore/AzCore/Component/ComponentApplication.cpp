@@ -552,54 +552,51 @@ namespace AZ
 
     void ComponentApplication::InitializeSettingsRegistry()
     {
-        if (m_startupParameters.m_loadSettingsRegistry)
+        SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
+
+        // Create the settings registry and register it with the AZ interface system
+        // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
+        // can be read to determine the Game folder and the asset platform
+        m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+
+        // Register the Settings Registry with the AZ Interface if there isn't one registered already
+        if (SettingsRegistry::Get() == nullptr)
         {
-            SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
-
-            // Create the settings registry and register it with the AZ interface system
-            // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
-            // can be read to determine the Game folder and the asset platform
-            m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
-
-            // Register the Settings Registry with the AZ Interface if there isn't one registered already
-            if (SettingsRegistry::Get() == nullptr)
-            {
-                SettingsRegistry::Register(m_settingsRegistry.get());
-            }
-
-            m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
-
-            // Register the Settings Registry Origin Tracker with the AZ Interface system
-            if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
-            {
-                AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
-            }
-
-            // Add the Command Line arguments into the SettingsRegistry
-            SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
-
-            // Add a notifier to update the project_settings when
-            // 1. The 'project_path' key changes
-            // 2. The project specialization when the 'project-name' key changes
-            // 3. The ComponentApplication command line when the command line is stored to the registry
-            m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{ *m_settingsRegistry });
-            m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{ *m_settingsRegistry });
-            m_commandLineUpdatedHandler =
-                m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
-
-            // Merge Command Line arguments
-            constexpr bool executeRegDumpCommands = false;
-
-            if constexpr (
-                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
-            {
-                // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
-                SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
-                    *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-            }
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
+            SettingsRegistry::Register(m_settingsRegistry.get());
         }
+
+        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
+
+        // Register the Settings Registry Origin Tracker with the AZ Interface system
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
+        }
+
+        // Add the Command Line arguments into the SettingsRegistry
+        SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
+
+        // Add a notifier to update the project_settings when
+        // 1. The 'project_path' key changes
+        // 2. The project specialization when the 'project-name' key changes
+        // 3. The ComponentApplication command line when the command line is stored to the registry
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{ *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{ *m_settingsRegistry });
+        m_commandLineUpdatedHandler =
+            m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
+
+        // Merge Command Line arguments
+        constexpr bool executeRegDumpCommands = false;
+
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        {
+            // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+        }
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
 
     void ComponentApplication::InitializeEventLoggerFactory()
