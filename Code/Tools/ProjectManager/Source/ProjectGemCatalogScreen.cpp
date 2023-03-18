@@ -93,10 +93,11 @@ namespace O3DE::ProjectManager
                 QString messageBoxQuestion =
                     gemNames.length() == 1 ? tr("Do you still want to add this gem?") : tr("Do you still want to add these gems?");
                 QString messageBoxText = QString(tr("%1\n\n%2")).arg(incompatibleGems.join("\n")).arg(messageBoxQuestion);
-                QMessageBox::StandardButton forceAddGems = QMessageBox::warning(this, tr("Gem compatibility issues found"), messageBoxText);
+                QMessageBox::StandardButton forceAddGems = QMessageBox::warning(this, tr("Gem compatibility issues found"), messageBoxText,
+                    QMessageBox::Yes | QMessageBox::No);
                 if (forceAddGems != QMessageBox::StandardButton::Yes)
                 {
-                    return ConfiguredGemsResult::Failed;
+                    return ConfiguredGemsResult::Cancel;
                 }
             }
 
