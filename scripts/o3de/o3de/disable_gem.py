@@ -84,7 +84,7 @@ def disable_gem_in_project(gem_name: str = None,
     ret_val = 0
 
     # Remove the gem from the deprecated enabled_gems.cmake file
-    gem_enabled_in_cmake = False
+    gem_found_in_cmake = False
     if not enabled_gem_file:
         enabled_gem_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gem_file.is_file():

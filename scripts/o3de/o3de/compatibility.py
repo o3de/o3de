@@ -357,7 +357,7 @@ def has_compatible_version(name_and_version_specifier_list:list, object_name:str
 
 class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):
     def __repr__(self):
-        return f"<GemRequirement({self.name}{self.specifier})>"
+        return f'<GemRequirement({self.name}{self.specifier if self.specifier else ""})>'
 
     def identify(self):
         # IMPORTANT don't use the specifier or we will get multiple mappings
@@ -365,7 +365,7 @@ class GemRequirement(namedtuple("GemRequirement", ["name", "specifier"])):
         return f"GemRequirement:{self.name}"
 
     def failure_reason(self, object_name):
-        return f'{object_name} requires {self.name}{self.specifier}'
+        return f'{object_name} requires {self.name}{self.specifier if self.specifier else ""}'
 
 class EngineRequirement(namedtuple("EngineRequirement", ["gem_json_data"])):
     def __repr__(self):

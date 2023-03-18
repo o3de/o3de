@@ -1201,17 +1201,30 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(projectInfos));
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
+    IPythonBindings::DetailedOutcome PythonBindings::AddGemsToProject(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force)
     {
-        return ExecuteWithLockErrorHandling([&]
-        {
-            m_enableGemProject.attr("enable_gem_in_project")(
-                pybind11::none(), // gem name not needed as path is provided
-                QString_To_Py_Path(gemPath),
-                pybind11::none(), // project name not needed as path is provided
-                QString_To_Py_Path(projectPath)
+        bool activateResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+                auto pythonActivateResult = m_projectManagerInterface.attr("add_gems_to_project")(
+                    "gem_paths"_a = QStringList_To_Py_List(gemPaths),
+                    "gem_names"_a = QStringList_To_Py_List(gemNames),
+                    "project_path"_a = QString_To_Py_Path(projectPath),
+                    "force"_a = force
                 );
-        });
+
+                // Returns an exit code so boolify it then invert result
+                activateResult = !pythonActivateResult.cast<bool>();
+            });
+
+        if (!result || !activateResult)
+        {
+            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+        }
+
+        return AZ::Success();
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
@@ -1507,6 +1520,37 @@ namespace O3DE::ProjectManager
             });
 
         return result && refreshResult;
+    }
+
+    AZ::Outcome<QStringList, AZStd::string> PythonBindings::GetIncompatibleProjectGems(
+        const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath)
+    {
+        QStringList incompatibleGems;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+                auto pythonIncompatibleResult =
+                    m_projectManagerInterface.attr("get_incompatible_project_gems")(
+                        "gem_paths"_a = QStringList_To_Py_List(gemPaths),
+                        "gem_names"_a = QStringList_To_Py_List(gemNames),
+                        "project_path"_a = QString_To_Py_String(projectPath)
+                    );
+
+                // Returns an exit code so boolify it then invert result
+                for (auto& incompatibleGem : pythonIncompatibleResult)
+                {
+                    incompatibleGems.push_back(Py_To_String(incompatibleGem));
+                }
+            });
+
+        if (!result)
+        {
+            return AZ::Failure<AZStd::string>("Failed to get incompatible gems for project");
+        }
+
+        return AZ::Success(incompatibleGems);
+
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::AddGemRepo(const QString& repoUri)
