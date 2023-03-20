@@ -364,7 +364,7 @@ namespace O3DE::ProjectManager
     {
         if (!Py_IsInitialized())
         {
-            return AZ::Failure<AZStd::string>("Python is not initialized");
+            return AZ::Failure("Python is not initialized");
         }
 
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -380,7 +380,7 @@ namespace O3DE::ProjectManager
         catch ([[maybe_unused]] const std::exception& e)
         {
             AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
-            return AZ::Failure<AZStd::string>(e.what());
+            return AZ::Failure(e.what());
         }
 
         return AZ::Success();
@@ -611,7 +611,7 @@ namespace O3DE::ProjectManager
             return AZ::Success();
         }
 
-        return AZ::Failure<ErrorPair>(GetErrorPair());
+        return AZ::Failure(GetErrorPair());
     }
 
     bool PythonBindings::ValidateRepository(const QString& repoUri)
@@ -655,7 +655,7 @@ namespace O3DE::ProjectManager
         });
         if (!result.IsSuccess())
         {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+            return AZ::Failure(result.GetError().c_str());
         }
 
         AZStd::sort(gems.begin(), gems.end());
@@ -680,7 +680,7 @@ namespace O3DE::ProjectManager
         });
         if (!result.IsSuccess())
         {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+            return AZ::Failure(result.GetError().c_str());
         }
 
         AZStd::sort(gems.begin(), gems.end());
@@ -704,7 +704,7 @@ namespace O3DE::ProjectManager
 
         if (!result.IsSuccess())
         {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+            return AZ::Failure(result.GetError().c_str());
         }
         else
         {
@@ -749,11 +749,11 @@ namespace O3DE::ProjectManager
 
         if (!result.IsSuccess())
         {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+            return AZ::Failure(result.GetError().c_str());
         }
         else if (!registrationResult)
         {
-            return AZ::Failure<AZStd::string>(AZStd::string::format(
+            return AZ::Failure(AZStd::string::format(
                 "Failed to %s gem path %s", remove ? "unregister" : "register", gemPath.toUtf8().constData()));
         }
 
@@ -784,7 +784,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !registrationResult)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -806,7 +806,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !registrationResult)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -1221,7 +1221,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !activateResult)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -1297,7 +1297,7 @@ namespace O3DE::ProjectManager
         }
         else if (!updateProjectSucceeded)
         {
-            return AZ::Failure<AZStd::string>("Failed to update project.");
+            return AZ::Failure("Failed to update project.");
         }
 
         return AZ::Success();
@@ -1501,7 +1501,7 @@ namespace O3DE::ProjectManager
         }
         else if (!refreshResult)
         {
-            return AZ::Failure<AZStd::string>("Failed to refresh repo.");
+            return AZ::Failure("Failed to refresh repo.");
         }
 
         return AZ::Success();
@@ -1538,7 +1538,7 @@ namespace O3DE::ProjectManager
                     );
 
                 // Returns an exit code so boolify it then invert result
-                for (auto& incompatibleGem : pythonIncompatibleResult)
+                for (const auto& incompatibleGem : pythonIncompatibleResult)
                 {
                     incompatibleGems.push_back(Py_To_String(incompatibleGem));
                 }
@@ -1546,7 +1546,7 @@ namespace O3DE::ProjectManager
 
         if (!result)
         {
-            return AZ::Failure<AZStd::string>("Failed to get incompatible gems for project");
+            return AZ::Failure("Failed to get incompatible gems for project");
         }
 
         return AZ::Success(incompatibleGems);
@@ -1569,7 +1569,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !registrationResult)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -1675,7 +1675,7 @@ namespace O3DE::ProjectManager
             });
         if (!result.IsSuccess())
         {
-            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+            return AZ::Failure(result.GetError().c_str());
         }
 
         AZStd::sort(gemRepos.begin(), gemRepos.end());
@@ -1767,11 +1767,11 @@ namespace O3DE::ProjectManager
         if (!result.IsSuccess())
         {
             IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
-            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+            return AZ::Failure(AZStd::move(pythonRunError));
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -1806,11 +1806,11 @@ namespace O3DE::ProjectManager
         if (!result.IsSuccess())
         {
             IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
-            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+            return AZ::Failure(AZStd::move(pythonRunError));
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
@@ -1845,11 +1845,11 @@ namespace O3DE::ProjectManager
         if (!result.IsSuccess())
         {
             IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
-            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+            return AZ::Failure(AZStd::move(pythonRunError));
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure(GetErrorPair());
         }
 
         return AZ::Success();
