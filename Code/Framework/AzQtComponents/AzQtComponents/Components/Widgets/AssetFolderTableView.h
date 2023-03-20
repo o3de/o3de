@@ -32,12 +32,10 @@ namespace AzQtComponents
     signals:
         void tableRootIndexChanged(const QModelIndex& idx);
         void showInTableFolderTriggered(const QModelIndex& idx);
-        void tableContextMenu(const QModelIndex& idx);
 
     protected:
         void mousePressEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
-        void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
         bool m_showSearchResultsMode = false;

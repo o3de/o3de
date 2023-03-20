@@ -674,22 +674,7 @@ void AzAssetBrowserWindow::SetOneColumnMode()
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
 {
-    if (!m_ui->m_assetBrowserTreeViewWidget)
-    {
-        return;
-    }
-
-    if (!entry)
-    {
-        return;
-    }
-
-    if (!m_assetBrowserModel)
-    {
-        return;
-    }
-
-    if (!m_filterModel.data())
+    if (!m_ui->m_assetBrowserTreeViewWidget || !entry || !m_assetBrowserModel || !m_filterModel.data())
     {
         return;
     }
