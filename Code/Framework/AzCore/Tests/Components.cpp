@@ -1948,7 +1948,47 @@ namespace UnitTest
         EXPECT_EQ(dependencyList[1], AZ_CRC("AnotherService"));
         EXPECT_EQ(dependencyList[2], AZ_CRC("SomeService"));
         EXPECT_EQ(dependencyList[3], AZ_CRC("YetAnotherService"));
+    }
 
+    class ComponentDeclImpl
+        : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT_DECL(ComponentDeclImpl);
+        void Activate() override {}
+        void Deactivate() override {}
+
+        static void Reflect(AZ::ReflectContext*) {}
+    };
+
+    AZ_COMPONENT_IMPL(ComponentDeclImpl, "ComponentDeclImpl", "{8E5C2D28-8A6D-402E-8018-5AEC828CC3B1}");
+
+    template<class T, class U>
+    class TemplateComponent
+        : public ComponentDeclImpl
+    {
+    public:
+        AZ_COMPONENT_DECL((TemplateComponent, AZ_CLASS, AZ_CLASS));
+    };
+
+    AZ_COMPONENT_IMPL_INLINE((TemplateComponent, AZ_CLASS, AZ_CLASS), "TemplateComponent", "{E8B62C59-CAAC-466C-A583-4FCAABC399E6}", ComponentDeclImpl);
+
+    TEST_F(Components, ComponentDecl_ComponentImpl_Macros_ProvidesCompleteComponentDescriptor_Succeeds)
+    {
+        {
+            auto componentDeclImplDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(ComponentDeclImpl::CreateDescriptor());
+            ASSERT_NE(nullptr, componentDeclImplDescriptor);
+            auto componentDeclImplComponent = AZStd::unique_ptr<AZ::Component>(componentDeclImplDescriptor->CreateComponent());
+            EXPECT_NE(nullptr, componentDeclImplComponent);
+        }
+
+        {
+            using SpecializedComponent = TemplateComponent<int, int>;
+            auto specializedDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(SpecializedComponent::CreateDescriptor());
+            ASSERT_NE(nullptr, specializedDescriptor);
+            auto specializedDescriptorComponent = AZStd::unique_ptr<AZ::Component>(specializedDescriptor->CreateComponent());
+            EXPECT_NE(nullptr, specializedDescriptorComponent);
+        }
     }
 } // namespace UnitTest
 

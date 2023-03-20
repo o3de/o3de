@@ -13,14 +13,16 @@
 
 #include "${Name}SystemComponent.h"
 
+#include <${Name}/${Name}TypeIds.h>
+
 namespace ${SanitizedCppName}
 {
     class ${SanitizedCppName}Module
         : public AZ::Module
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}Module, ${SanitizedCppName}ModuleTypeId, AZ::Module);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator);
 
         ${SanitizedCppName}Module()
             : AZ::Module()
