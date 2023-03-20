@@ -322,6 +322,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);
             }
+            else if (m_ui->m_expandedTableView->GetExpandedTableViewActive())
+            {
+                m_ui->m_expandedTableView->OpenItemForEditing(index);
+            }
             m_ui->m_assetBrowserTreeViewWidget->OpenItemForEditing(index);
         });
 

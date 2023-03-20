@@ -40,6 +40,17 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
+    void AssetFolderTableView::mousePressEvent(QMouseEvent* event)
+    {
+        const auto p = event->pos();
+        if (auto idx = indexAt(p); !idx.isValid())
+        {
+            selectionModel()->clear();
+            return;
+        }
+        TableView::mousePressEvent(event);
+    }
+
     void AssetFolderTableView::mouseDoubleClickEvent(QMouseEvent* event)
     {
         const auto p = event->pos();
