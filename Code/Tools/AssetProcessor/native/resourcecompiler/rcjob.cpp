@@ -20,6 +20,7 @@
 #include "native/utilities/JobDiagnosticTracker.h"
 
 #include <qstorageinfo.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace
 {
@@ -808,6 +809,13 @@ namespace AssetProcessor
                 return false;
             }
 
+            const bool isSourceMetadataEnabled = !params.m_sourceUuid.IsNull();
+
+            if (isSourceMetadataEnabled)
+            {
+                ProductOutputUtil::ModifyProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+            }
+
             if(outputToCache)
             {
                 needCacheDirectory = true;
@@ -843,7 +851,7 @@ namespace AssetProcessor
                     // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
                     // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
                     // with the default path-based UUID.
-                    if (!params.m_sourceUuid.IsNull())
+                    if (isSourceMetadataEnabled)
                     {
                         // Generate a UUID for the intermediate as:
                         // SourceUuid:BuilderUuid:SubId

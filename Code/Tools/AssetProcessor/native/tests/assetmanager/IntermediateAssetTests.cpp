@@ -97,7 +97,7 @@ namespace UnitTests
         auto builderUuid = builders[0].m_busId;
         auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
         auto actualIntermediateUuid =
-            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
+            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("(2)test.stage2", true).c_str()));
 
         ASSERT_TRUE(sourceUuid);
         ASSERT_TRUE(actualIntermediateUuid);
@@ -292,7 +292,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 1 since we're expecting a failure at that point
@@ -327,7 +327,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 3);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 3);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 2 since we're expecting a failure at that point
@@ -364,7 +364,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 1 since we're expecting a failure at that point
@@ -486,7 +486,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2, true);
 
         ASSERT_EQ(m_jobDetailsList.size(), 1);
 
@@ -512,7 +512,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2, true);
 
         ASSERT_EQ(m_jobDetailsList.size(), 2);
 
@@ -530,7 +530,7 @@ namespace UnitTests
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset, true);
         CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
 
-        ProcessFileMultiStage(2, true, nullptr, 1, false, true);
+        ProcessFileMultiStage(2, true, {}, 1, false, true);
 
         AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
         AZStd::string testFilename = "test2.stage1";
@@ -575,7 +575,7 @@ namespace UnitTests
         // Process the intermediate-style file first
         ProcessFileMultiStage(2, true);
         // Process the regular source second
-        ProcessFileMultiStage(1, false, (scanFolderDir / testFilename).c_str());
+        ProcessFileMultiStage(1, false, AssetProcessor::SourceAssetReference((scanFolderDir / testFilename).c_str()));
 
         // Modify the intermediate-style file so it will be processed again
         QFile writer(m_testFilePath.c_str());
@@ -617,7 +617,7 @@ namespace UnitTests
         UnitTestUtils::CreateDummyFile((scanFolderDir / testFilename).c_str(), "unit test file");
 
         // Process the normal source first
-        ProcessFileMultiStage(1, false, (scanFolderDir / testFilename).c_str());
+        ProcessFileMultiStage(1, false, AssetProcessor::SourceAssetReference((scanFolderDir / testFilename).c_str()));
         // Process the intermediate-style source second
         ProcessFileMultiStage(2, true);
 
