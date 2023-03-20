@@ -8,9 +8,12 @@
 
 #include <native/utilities/ProductOutputUtil.h>
 #include <QString>
+#include <QFile>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <native/utilities/UuidManager.h>
+#include <native/utilities/IMetadataUpdates.h>
 
 namespace AssetProcessor
 {
@@ -174,6 +177,10 @@ namespace AssetProcessor
 
     bool ProductOutputUtil::DoFileRename(const AZStd::string& oldAbsolutePath, const AZStd::string& newAbsolutePath)
     {
+        auto* updateInterface = AZ::Interface<IMetadataUpdates>::Get();
+        AZ_Assert(updateInterface, "Programmer Error - IMetadataUpdates interface is not available.");
+        updateInterface->PrepareForFileMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+
         bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
 
         AZ_Error(
@@ -182,6 +189,24 @@ namespace AssetProcessor
             "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT ".  See previous log messages for details on failure.",
             AZ_STRING_ARG(oldAbsolutePath),
             AZ_STRING_ARG(newAbsolutePath));
+
+        auto oldMetadataFile = AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath);
+
+        if (QFile(oldMetadataFile.c_str()).exists())
+        {
+            // Move the metadata file
+            result = AssetUtilities::MoveFileWithTimeout(
+                oldMetadataFile.c_str(),
+                AzToolsFramework::MetadataManager::ToMetadataPath(newAbsolutePath).c_str());
+
+            AZ_Error(
+                "ProductOutputUtil",
+                result,
+                "Failed to move product metadata from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                ".  See previous log messages for details on failure.",
+                AZ_STRING_ARG(oldAbsolutePath),
+                AZ_STRING_ARG(newAbsolutePath));
+        }
 
         return result;
     }
@@ -203,14 +228,33 @@ namespace AssetProcessor
         auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
         auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
 
+        auto* updateInterface = AZ::Interface<IMetadataUpdates>::Get();
+        AZ_Assert(updateInterface, "Programmer Error - IMetadataUpdates interface is not available.");
+        updateInterface->PrepareForFileMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+
         bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
 
-        if (!result)
+        AZ_Error(
+            "ProductOutputUtil",
+            result,
+            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+            ".  See previous log messages for details on failure.",
+            AZ_STRING_ARG(oldAbsolutePath),
+            AZ_STRING_ARG(newAbsolutePath));
+
+        auto oldMetadataFile = AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath);
+
+        if (QFile(oldMetadataFile.c_str()).exists())
         {
+            // Move the metadata file
+            result = AssetUtilities::MoveFileWithTimeout(
+                AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath).c_str(),
+                AzToolsFramework::MetadataManager::ToMetadataPath(newAbsolutePath).c_str());
+
             AZ_Error(
                 "ProductOutputUtil",
-                false,
-                "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                result,
+                "Failed to move product metadata from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
                 ".  See previous log messages for details on failure.",
                 AZ_STRING_ARG(oldAbsolutePath),
                 AZ_STRING_ARG(newAbsolutePath));

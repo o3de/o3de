@@ -96,8 +96,8 @@ namespace UnitTests
 
         auto builderUuid = builders[0].m_busId;
         auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
-        auto actualIntermediateUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(
-            MakePath(AZStd::string::format("%stest.stage2", AssetProcessor::ProductOutputUtil::GetInterimPrefix(2).c_str()).c_str(), true).c_str()));
+        auto actualIntermediateUuid =
+            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
 
         ASSERT_TRUE(sourceUuid);
         ASSERT_TRUE(actualIntermediateUuid);
@@ -110,7 +110,7 @@ namespace UnitTests
 
         auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
 
-        EXPECT_EQ(actualIntermediateUuid.GetValue(), expectedIntermediateUuid);
+        EXPECT_STREQ(actualIntermediateUuid.GetValue().ToFixedString().c_str(), expectedIntermediateUuid.ToFixedString().c_str());
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)
