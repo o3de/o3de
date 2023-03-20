@@ -14,7 +14,7 @@
 
 namespace AssetProcessor
 {
-    AZStd::string ProductOutputUtil::GetTempPrefix(AZ::s64 scanfolderId)
+    AZStd::string ProductOutputUtil::GetInterimPrefix(AZ::s64 scanfolderId)
     {
         return AZStd::string::format("(TMP%" PRId64 "___)", int64_t(scanfolderId));
     }
@@ -24,9 +24,9 @@ namespace AssetProcessor
         return AZStd::string::format("(%" PRId64 ")", int64_t(scanfolderId));
     }
 
-    void ProductOutputUtil::GetTempProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
+    void ProductOutputUtil::GetInterimProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
     {
-        auto prefix = GetTempPrefix(sourceScanfolderId);
+        auto prefix = GetInterimPrefix(sourceScanfolderId);
         outputFilename = QStringLiteral("%1%2").arg(prefix.c_str()).arg(outputFilename);
     }
 
@@ -87,7 +87,7 @@ namespace AssetProcessor
                 for (auto& product : products)
                 {
                     AZStd::string newName;
-                    if (!ComputeFinalProductName(GetTempPrefix(sourceAsset.ScanFolderId()), "", product, newName))
+                    if (!ComputeFinalProductName(GetInterimPrefix(sourceAsset.ScanFolderId()), "", product, newName))
                     {
                         // Error handling is done by function
                         continue;
@@ -128,7 +128,7 @@ namespace AssetProcessor
                 {
                     AZStd::string newName;
 
-                    if (!ComputeFinalProductName(GetTempPrefix(sourceAsset.ScanFolderId()), GetFinalPrefix(sourceAsset.ScanFolderId()), product, newName))
+                    if (!ComputeFinalProductName(GetInterimPrefix(sourceAsset.ScanFolderId()), GetFinalPrefix(sourceAsset.ScanFolderId()), product, newName))
                     {
                         continue;
                     }

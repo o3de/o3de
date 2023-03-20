@@ -19,14 +19,14 @@ namespace AssetProcessor
     {
         //! Gets the prefix to apply to products when copying into the cache before being finalized.
         //! This is different from the final prefix version to avoid conflicts unprefixed assets that may use the same prefix as the final prefix.
-        //! The temp prefix shouldn't show up in any UI so its longer and uglier.
-        static AZStd::string GetTempPrefix(AZ::s64 scanfolderId);
+        //! The interim prefix shouldn't show up in any UI, so use a longer, less-likely-to-conflict version.
+        static AZStd::string GetInterimPrefix(AZ::s64 scanfolderId);
         //! Gets the prefix to apply to products when finalizing.
         static AZStd::string GetFinalPrefix(AZ::s64 scanfolderId);
 
-        //! Modifies product paths to have the temporary prefixed version while waiting on final processing.
+        //! Modifies product paths to have the interim prefixed version while waiting on final processing.
         //! This needs to be done before the files are copied into the cache to avoid overwriting the legacy non-prepended version.
-        static void GetTempProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId);
+        static void GetInterimProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId);
         //! Modifies product paths to the final prefixed version for the cache.
         static void GetFinalProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId);
 

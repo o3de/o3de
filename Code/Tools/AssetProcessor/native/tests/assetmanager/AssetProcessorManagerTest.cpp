@@ -380,6 +380,9 @@ public:
 
         using namespace AssetBuilderSDK;
 
+        // Set up a custom builder with a ProcessJob stage that will output 2 files, one of which is intentionally
+        // designed to output a product with a name that conflicts with the prefixing scheme (the (2) prefix).
+        // .stage1 is the input and .stage2 is the output.  This unit test framework currently requires those extensions.
         m_builderInfoHandler.CreateBuilderDesc(
             "stage1",
             AZ::Uuid::CreateRandom().ToFixedString().c_str(),
