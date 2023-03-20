@@ -59,11 +59,11 @@ namespace AzToolsFramework
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
             void SetName(const QString& name);
-            QString& GetName();
+            const QString& GetName() const;
             void SetIsAssetBrowserMainView();
-            bool GetIsAssetBrowserMainView();
+            bool GetIsAssetBrowserMainView() const;
             void SetExpandedTableViewActive(bool isActiveView);
-            bool GetExpandedTableViewActive();
+            bool GetExpandedTableViewActive() const;
 
             void DuplicateEntries();
             void MoveEntries();

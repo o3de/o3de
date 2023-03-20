@@ -79,11 +79,11 @@ namespace AzToolsFramework
 
              connect(
                  m_expandedTableViewWidget,
-                 &AzQtComponents::AssetFolderTableView::tableContextMenu,
+                 &AzQtComponents::AssetFolderTableView::customContextMenuRequested,
                  this,
-                 [this](const QModelIndex& index)
+                 [this](const QPoint& pos)
                  {
-                     if (index.isValid())
+                     if (auto index = m_expandedTableViewWidget->indexAt(pos); index.isValid())
                      {
                          QMenu menu(this);
                          const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
@@ -98,7 +98,7 @@ namespace AzToolsFramework
                      }
                      else if (!index.isValid() && m_assetTreeView)
                      {
-                         m_assetTreeView->OnContextMenu(QCursor::pos());
+                         m_assetTreeView->OnContextMenu(pos);
                      }
                  });
 
@@ -202,7 +202,7 @@ namespace AzToolsFramework
             m_name = name;
         }
 
-        QString& AssetBrowserExpandedTableView::GetName()
+        const QString& AssetBrowserExpandedTableView::GetName() const
         {
             return m_name;
         }
@@ -212,7 +212,7 @@ namespace AzToolsFramework
             SetName(ExpandedTableViewMainViewName);
         }
 
-        bool AssetBrowserExpandedTableView::GetIsAssetBrowserMainView()
+        bool AssetBrowserExpandedTableView::GetIsAssetBrowserMainView() const
         {
             return GetName() == ExpandedTableViewMainViewName;
         }
@@ -222,7 +222,7 @@ namespace AzToolsFramework
             m_isActiveView = isActiveView;
         }
 
-        bool AssetBrowserExpandedTableView::GetExpandedTableViewActive()
+        bool AssetBrowserExpandedTableView::GetExpandedTableViewActive() const
         {
             return m_isActiveView;
         }
