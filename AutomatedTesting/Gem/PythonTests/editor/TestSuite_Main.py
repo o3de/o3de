@@ -32,7 +32,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorBatchedTest):
         from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/15172")
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
 
         # Custom setup and teardown to remove level created during test
