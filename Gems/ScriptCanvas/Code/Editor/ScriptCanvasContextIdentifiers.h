@@ -18,4 +18,4 @@ namespace ScriptCanvasIdentifiers
     // Main Window Widgets
     inline constexpr AZStd::string_view ScriptCanvasVariablesActionContextIdentifier = "o3de.context.editor.scriptcanvas.variables";
 
-} // namespace EditorIdentifiers
+} // namespace ScriptCanvasIdentifiers
