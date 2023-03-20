@@ -1536,15 +1536,17 @@ namespace O3DE::ProjectManager
             [&]
             {
                 using namespace pybind11::literals;
-                pybind11::set incompatibleGemSet = 
+                auto incompatibleGemSet = 
                     m_projectManagerInterface.attr("get_incompatible_project_gems")(
                         "gem_paths"_a = QStringList_To_Py_List(gemPaths),
                         "gem_names"_a = QStringList_To_Py_List(gemNames),
                         "project_path"_a = QString_To_Py_String(projectPath)
                     );
 
-                // Returns an exit code so boolify it then invert result
-                for (const auto& incompatibleGem : incompatibleGemSet)
+                // We don't use a const ref here because pybind11 iterator
+                // returns a temp pybind11::handle so using a reference will cause
+                // a warning/error, and copying the handle is what we want to do
+                for (auto incompatibleGem : incompatibleGemSet)
                 {
                     incompatibleGems.push_back(Py_To_String(incompatibleGem));
                 }
