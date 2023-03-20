@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
             void SetName(const QString& name);
             QString& GetName();
-            void SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView);
+            void SetIsAssetBrowserMainView();
             bool GetIsAssetBrowserMainView();
             void SetExpandedTableViewActive(bool isActiveView);
             bool GetExpandedTableViewActive();

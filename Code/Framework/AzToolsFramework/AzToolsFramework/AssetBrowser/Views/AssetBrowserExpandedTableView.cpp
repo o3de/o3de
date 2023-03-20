@@ -207,16 +207,9 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserExpandedTableView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
+        void AssetBrowserExpandedTableView::SetIsAssetBrowserMainView()
         {
             SetName(ExpandedTableViewMainViewName);
-
-            bool isAssetBrowserComponentReady = false;
-            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
-            if (isAssetBrowserComponentReady)
-            {
-                SetAssetTreeView(treeView);
-            }
         }
 
         bool AssetBrowserExpandedTableView::GetIsAssetBrowserMainView()
