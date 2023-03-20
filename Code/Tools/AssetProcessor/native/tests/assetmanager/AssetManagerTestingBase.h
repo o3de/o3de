@@ -100,6 +100,8 @@ namespace UnitTests
         void SetUp() override;
         void TearDown() override;
 
+        virtual void SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms);
+
         static constexpr int AssetSubId = 1;
         static constexpr int ExtraAssetSubId = 2;
         static constexpr int MetadataProcessingDelayMs = 1;
@@ -118,7 +120,7 @@ namespace UnitTests
         void ProcessFileMultiStage(
             int endStage,
             bool doProductOutputCheck,
-            const char* file = nullptr,
+            AssetProcessor::SourceAssetReference = {},
             int startStage = 1,
             bool expectAutofail = false,
             bool hasExtraFile = false);

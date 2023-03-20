@@ -131,7 +131,7 @@ namespace UnitTests
             "fingerprint");
 
         // Process the file
-        ProcessFileMultiStage(1, false, testB.AbsolutePath().c_str());
+        ProcessFileMultiStage(1, false, testB);
 
         // Fetch and check the source dependency
         SourceFileDependencyEntryContainer dependencies;
