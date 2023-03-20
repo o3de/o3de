@@ -813,7 +813,7 @@ namespace AssetProcessor
 
             if (isSourceMetadataEnabled)
             {
-                ProductOutputUtil::ModifyProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+                ProductOutputUtil::GetTempProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
             }
 
             if(outputToCache)
