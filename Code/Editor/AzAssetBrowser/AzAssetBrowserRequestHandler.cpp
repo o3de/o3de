@@ -382,6 +382,91 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
     AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
 }
 
+void AzAssetBrowserRequestHandler::CreateSortAction(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    QString name,
+    AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+{
+    QAction* action = menu->addAction(
+        name,
+        [treeView, tableView, thumbnailView, sortMode]()
+        {
+            if (treeView)
+            {
+                treeView->SetSortMode(sortMode);
+            }
+            else if (tableView)
+            {
+                // tableView->RenameEntry();
+            }
+            else if (thumbnailView)
+            {
+                thumbnailView->SetSortMode(sortMode);
+            }
+        });
+
+    if (treeView)
+    {
+        // treeView->RenameEntry();
+    }
+    else if (tableView)
+    {
+        // tableView->RenameEntry();
+    }
+    else if (thumbnailView)
+    {
+        if (thumbnailView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+}
+    
+
+void AzAssetBrowserRequestHandler::AddSortMenu(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView)
+{
+    using namespace AzToolsFramework::AssetBrowser;
+
+    QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
+
+    CreateSortAction(
+        sortMenu,
+        treeView,
+        tableView,
+        thumbnailView,
+        QObject::tr("Name"),
+        AssetBrowserFilterModel::AssetBrowserSortMode::Name);
+    
+    CreateSortAction(
+        sortMenu,
+        treeView,
+        tableView,
+        thumbnailView,
+        QObject::tr("Kind"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
+
+    CreateSortAction(
+        sortMenu,
+        treeView,
+        tableView,
+        thumbnailView,
+        QObject::tr("Last Modified"),
+        AssetBrowserFilterModel::AssetBrowserSortMode::LastModified);
+
+    CreateSortAction(
+        sortMenu,
+        treeView,
+        tableView,
+        thumbnailView,
+        QObject::tr("Size"), AssetBrowserFilterModel::AssetBrowserSortMode::Size);
+}
+
 void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -749,6 +834,12 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     break;
     default:
         break;
+    }
+
+    // Add a sort order option in all cases.
+    if (calledFromAssetBrowser)
+    {
+        AddSortMenu(menu, treeView, tableView, thumbnailView);
     }
 }
 

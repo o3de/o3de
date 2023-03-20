@@ -635,6 +635,18 @@ namespace AzToolsFramework
                   }
                 });
         }
+
+        void AssetBrowserTreeView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        {
+            m_assetBrowserSortFilterProxyModel->SetSortMode(mode);
+
+            m_assetBrowserSortFilterProxyModel->sort(0, Qt::DescendingOrder);
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserTreeView::GetSortMode() const
+        {
+            return m_assetBrowserSortFilterProxyModel->GetSortMode();
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

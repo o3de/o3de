@@ -148,7 +148,28 @@ namespace AzToolsFramework
                     }
 
                     // if both entries are of same type, sort alphabetically
-                    return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry))
+                    {
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    }
+                    switch (m_sortMode)
+                    {
+                    case AssetBrowserSortMode::FileType:
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                        break;
+                    case AssetBrowserSortMode::LastModified:
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                        break;
+                    case AssetBrowserSortMode::Size:
+                        if (leftEntry->GetDiskSize() == rightEntry->GetDiskSize())
+                        {
+                            return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                        }
+                        return leftEntry->GetDiskSize() > rightEntry->GetDiskSize();
+
+                    default:
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    }
                 }
             }
             return QSortFilterProxyModel::lessThan(source_left, source_right);
@@ -232,6 +253,15 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+        {
+            m_sortMode = sortMode;
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserFilterModel::GetSortMode() const
+        {
+            return m_sortMode;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
