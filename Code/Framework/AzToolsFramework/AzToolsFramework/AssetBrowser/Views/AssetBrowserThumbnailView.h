@@ -46,12 +46,10 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
-            void HideProductAssets(bool checked);
-
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
             QString& GetName();
-            void SetIsAssetBrowserMainView();
+            void SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView);
             bool GetIsAssetBrowserMainView();
             void SetThumbnailActiveView(bool isActiveView);
             bool GetThumbnailActiveView();
@@ -68,6 +66,9 @@ namespace AzToolsFramework
 
             void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
             AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
+
+            void EnsureItemIsSelected();
+
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);

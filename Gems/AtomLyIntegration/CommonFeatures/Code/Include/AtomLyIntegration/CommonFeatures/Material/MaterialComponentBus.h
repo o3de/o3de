@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Component/ComponentBus.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
 
 namespace AZ
 {
@@ -177,6 +177,9 @@ namespace AZ
             //! This notification is forwarded from the consumer whenever material slot layout or default values are changed.
             virtual void OnMaterialSlotLayoutChanged(){};
 
+            //! This notification is sent once per tick whenever new material instances are created.
+            virtual void OnMaterialsCreated([[maybe_unused]] const MaterialAssignmentMap& materials){};
+
             //! This notification is sent whenever the material component has completed adding or removing a batch of instances for the
             //! material consumer to apply. The notification is not sent for individual property changes because the material component
             //! applies property changes directly to the material instances it manages.
@@ -185,8 +188,8 @@ namespace AZ
             //! script that might also result in this notification being sent.
             virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials){};
 
-            //! This notification is sent whenever the material component creates a new material instance.
-            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment){};
+            //! This notification is sent once per tick whenever the material component changes any material properties.
+            virtual void OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials){};
         };
         using MaterialComponentNotificationBus = EBus<MaterialComponentNotifications>;
 

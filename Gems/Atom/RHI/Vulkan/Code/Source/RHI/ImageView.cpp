@@ -118,16 +118,26 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isDSRendertarget)
+            if (!viewDescriptor.m_isArray && !isDSRendertarget)
             {
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                if (!viewDescriptor.m_isCubemap)
                 {
-                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
-                }
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                    }
 
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    }
+                }
+                else
                 {
-                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadCubeMapImage(this);
+                    }
                 }
             }
 
@@ -160,9 +170,19 @@ namespace AZ
         void ImageView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+
             if (m_readIndex != InvalidBindlessIndex)
             {
-                device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                if (!viewDescriptor.m_isCubemap)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                }
+                else
+                {
+                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                }
+
                 m_readIndex = InvalidBindlessIndex;
             }
 

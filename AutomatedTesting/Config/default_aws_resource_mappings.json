@@ -1,6 +1,6 @@
 {
     "AWSResourceMappings": {},
     "AccountId": "",
-    "Region": "us-west-2",
+    "Region": "us-east-1",
     "Version": "1.0.0"
 }

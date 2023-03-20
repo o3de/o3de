@@ -238,7 +238,7 @@ namespace AZ
          * This function is called by the entity.
          * @param entity The current entity.
          */
-        void SetEntity(Entity* entity);
+        virtual void SetEntity(Entity* entity);
 
         /**
          * Reflects the Component class.

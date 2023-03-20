@@ -49,6 +49,17 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
+        void EditorComponentBase::SetEntity(AZ::Entity* entity)
+        {
+            Component::SetEntity(entity);
+
+            if (entity && m_alias.empty())
+            {
+                AZ_Assert(GetId() != AZ::InvalidComponentId, "ComponentId is invalid.");
+                m_alias = AZStd::string::format("Component_[%llu]", GetId());
+            }
+        }
+
         void EditorComponentBase::SetDirty()
         {
             if (GetEntity())
