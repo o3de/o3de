@@ -194,9 +194,16 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
         {
             SetName(ThumbnailViewMainViewName);
+
+            bool isAssetBrowserComponentReady = false;
+            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
+            if (isAssetBrowserComponentReady)
+            {
+                  SetAssetTreeView(treeView);
+            }
         }
 
         bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()
@@ -326,11 +333,6 @@ namespace AzToolsFramework
                 &AssetBrowserThumbnailView::HandleTreeViewSelectionChanged);
         }
 
-        void AssetBrowserThumbnailView::HideProductAssets(bool checked)
-        {
-            m_thumbnailViewWidget->HideProductAssets(checked);
-        }
-
         void AssetBrowserThumbnailView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
             m_thumbnailViewWidget->setSelectionMode(mode);
@@ -439,7 +441,8 @@ namespace AzToolsFramework
                     filterCopy->AddFilter(subFilter);
                 }
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
+            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
+
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
 
             EnsureItemIsSelected();
