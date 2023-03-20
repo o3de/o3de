@@ -71,6 +71,7 @@ namespace AzToolsFramework
             void RenameEntry();
             void AfterRename(QString newVal);
             AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets() const;
+            void OpenItemForEditing(const QModelIndex& index);
 
             AzQtComponents::AssetFolderTableView* GetExpandedTableViewWidget() const;
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
@@ -86,6 +87,7 @@ namespace AzToolsFramework
             AzQtComponents::AssetFolderTableView* m_expandedTableViewWidget = nullptr;
             AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
             AssetBrowserExpandedFilterModel* m_assetFilterModel = nullptr;
+            ExpandedTableViewDelegate* m_expandedTableViewDelegate = nullptr;
             QString m_name;
             bool m_isActiveView = false;
 
