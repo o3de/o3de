@@ -128,6 +128,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add Terrain.Tests to googletest
     ly_add_googletest(
         NAME Gem::Terrain.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_googlebenchmark(

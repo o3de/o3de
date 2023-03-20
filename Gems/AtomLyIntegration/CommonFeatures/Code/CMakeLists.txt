@@ -181,6 +181,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         )
         ly_add_googletest(
             NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()
