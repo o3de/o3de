@@ -23,6 +23,7 @@
 #include <Editor/PropertyTypes.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
+#include <Pipeline/PhysicsPrefabProcessor.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -39,6 +40,8 @@ namespace PhysX
         JointsComponentMode::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
+
+        PhysicsPrefabProcessor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

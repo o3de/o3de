@@ -50,6 +50,8 @@ set(FILES
     Source/Pipeline/MeshGroup.h
     Source/Pipeline/MeshBehavior.cpp
     Source/Pipeline/MeshBehavior.h
+    Source/Pipeline/PhysicsPrefabProcessor.cpp
+    Source/Pipeline/PhysicsPrefabProcessor.h
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.cpp
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h
     Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.cpp

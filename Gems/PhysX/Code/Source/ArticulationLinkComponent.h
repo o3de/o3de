@@ -73,14 +73,14 @@ namespace PhysX
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-        ArticulationLinkData m_articulationLinkData;
+
+        AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
 
     private:
         void CreateRigidBody();
         void DestroyRigidBody();
 
         bool IsRootArticulation() const;
-        void UpdateArticulationHierarchy();
 
         void CreateArticulation();
         void CreateChildArticulationLinks(physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData);
@@ -94,7 +94,6 @@ namespace PhysX
 
         // AZ::TransformNotificationsBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-        void SetupSample();
         physx::PxArticulationReducedCoordinate* m_articulation = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
         bool m_tempClosing = true;

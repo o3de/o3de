@@ -23,8 +23,7 @@ namespace PhysX
                 ->Field("Configuration", &EditorArticulationLinkComponent::m_config)
                 ->Field("PhysXSpecificConfiguration", &EditorArticulationLinkComponent::m_physxSpecificConfig)
                 ->Field("JointConfig", &EditorArticulationLinkComponent::m_jointConfig)
-                ->Field("LinkData", &EditorArticulationLinkComponent::m_articulationLinkData)
-                ->Version(2)
+                ->Version(1)
             ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -32,7 +31,7 @@ namespace PhysX
                 constexpr const char* ToolTip = "Articulated rigid body.";
 
                 editContext
-                    ->Class<EditorArticulationLinkComponent>("PhysX Articulated Rigid Body", ToolTip)
+                    ->Class<EditorArticulationLinkComponent>("PhysX Articulation Link", ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
@@ -108,73 +107,15 @@ namespace PhysX
     void EditorArticulationLinkComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void EditorArticulationLinkComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
     void EditorArticulationLinkComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        ArticulationLinkComponent* component = gameEntity->CreateComponent<ArticulationLinkComponent>();
-        component->m_articulationLinkData = m_articulationLinkData;
+        gameEntity->CreateComponent<ArticulationLinkComponent>();
     }
-
-    void EditorArticulationLinkComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
-    {
-        if (IsRootArticulation())
-        {
-            UpdateArticulationHierarchy();
-        }
-    }
-
-    void EditorArticulationLinkComponent::UpdateArticulationHierarchy()
-    {
-        m_articulationLinkData.Reset();
-
-        AZStd::vector<AZ::EntityId> children = GetEntity()->GetTransform()->GetChildren();
-        for (auto childId : children)
-        {
-            AZ::Entity* childEntity = nullptr;
-
-            AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, childId);
-
-            if (!childEntity)
-            {
-                continue;
-            }
-
-            if (auto* articulatedComponent = childEntity->FindComponent<EditorArticulationLinkComponent>())
-            {
-                articulatedComponent->UpdateArticulationHierarchy();
-                m_articulationLinkData.m_childLinks.emplace_back(
-                    AZStd::make_shared<ArticulationLinkData>(articulatedComponent->m_articulationLinkData));
-            }
-        }
-
-        EditorColliderComponent* collider = GetEntity()->FindComponent<EditorColliderComponent>();
-        if (collider)
-        {
-            const EditorProxyShapeConfig& shapeConfigProxy = collider->GetShapeConfiguration();
-            const Physics::ColliderConfiguration& colliderConfig = collider->GetColliderConfiguration();
-
-            m_articulationLinkData.m_colliderConfiguration = colliderConfig;
-            m_articulationLinkData.m_shapeConfiguration = shapeConfigProxy.CloneCurrent();
-        }
-
-        m_articulationLinkData.m_entityId = GetEntity()->GetId();
-        m_articulationLinkData.m_relativeTransform = GetEntity()->GetTransform()->GetLocalTM();
-        m_articulationLinkData.m_config = m_config; //!< Generic properties from AzPhysics.
-        m_articulationLinkData.m_config.m_debugName = GetEntity()->GetName();
-        m_articulationLinkData.m_physxSpecificConfig = m_physxSpecificConfig;
-
-        // TODO : Set from the new articulation joint struct
-        m_articulationLinkData.m_genericProperties = m_jointConfig.ToGenericProperties();
-        m_articulationLinkData.m_limits;
-        m_articulationLinkData.m_motor;
-    }
-
 } // namespace PhysX

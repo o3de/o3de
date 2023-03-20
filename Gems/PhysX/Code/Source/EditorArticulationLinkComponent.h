@@ -18,7 +18,6 @@ namespace PhysX
     //! Class for in-editor PhysX Static Rigid Body Component.
     class EditorArticulationLinkComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , private AZ::TickBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -39,13 +38,8 @@ namespace PhysX
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        // AZ::TickBus::Handler overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-
-        void UpdateArticulationHierarchy();
         bool IsRootArticulation() const;
 
-        ArticulationLinkData m_articulationLinkData;
         EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
         EditorJointConfig m_jointConfig;
