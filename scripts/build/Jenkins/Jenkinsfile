@@ -47,7 +47,7 @@ def doit()
 doit()
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization']
+BUILD_SNAPSHOTS = ['development', 'stabilization/2305']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline parameter)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
